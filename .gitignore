@@ -1,0 +1,11 @@
+# Local Stitch credentials and state
+.env.stitch.local
+.stitch-mcp/
+stitch-credentials/
+stitch-token-cache/
+
+# Private design exports
+docs/design/exports/private/
+
+# Local-only package review evidence and configuration backups
+.security-review/
