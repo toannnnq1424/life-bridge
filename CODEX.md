@@ -257,6 +257,22 @@ Repository data must be synthetic or safely de-identified. Do not copy source mi
 
 Maintain Vietnamese/English terminology in `docs/research/DOMAIN_GLOSSARY.vi-en.md` and bilingual usage guidance in data documentation.
 
+Before every future phase, complete the risk-tiered gate in
+`docs/research/RESEARCH_PROTOCOL.md`. Before a slice contract or Stitch prompt,
+run its bounded research micro-cycle. Allowed results are `PASS`,
+`PASS WITH ASSUMPTIONS`, `BLOCKED`, and `NOT APPLICABLE`; record a rationale for
+the latter two.
+
+Every finding must change or confirm a requirement, acceptance criterion, test,
+non-goal, assumption, or decision not to build. Stop when another source would
+not change a decision. Reuse verified evidence until a recorded review trigger
+fires; do not browse merely to repeat a completed check.
+
+Commercial products are benchmark evidence only. High-risk legal, safety,
+medication, emergency, privacy, or public-claim decisions require applicable
+primary evidence and the appropriate counsel/specialist/user review; a checklist
+or one Level A source is not approval.
+
 ## 13. Git workflow
 
 The promotion flow is:

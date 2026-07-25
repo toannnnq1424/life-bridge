@@ -87,3 +87,22 @@ environments are intended to converge. It is not a substitute for Git history.
   through `data`, then forward into `dev`.
 - Back-merges and conflict resolution are explicit; never choose an entire side
   without contract review.
+
+## INT-2026-004 — Integrate the external research-driven runbook
+
+- Date: 2026-07-26
+- Status: Planning overlay accepted
+- Source: external runbook identified by SHA-256 in
+  `docs/RUNBOOK_ADOPTION.md`
+- Target: canonical repository planning/research/GitHub controls
+- Scope: research gates, evidence levels, assumption tracking, re-check
+  triggers, user-research safeguards, shared risk catalog, and phase crosswalk
+- Contracts/data affected: documentation contracts only; external source rows
+  are not imported as verified dataset records
+- Validation: three scoped independent reviews plus targeted repository
+  documentation/schema checks
+- Conflicts/risks: external P0 status is stale; P0–P15 order conflicts with the
+  early vertical-slice MVP; repeated edge matrices contain irrelevant rows
+- Decision/change references: `CHG-2026-003`, ADR-011
+- Follow-up: use GitHub milestones/issues for accepted P0–P6 slices and re-verify
+  candidate sources only when their phase/slice opens

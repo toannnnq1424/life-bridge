@@ -42,6 +42,10 @@ const requiredDocuments = [
   "docs/RELEASE_CHECKLIST.md",
   "docs/WORKSTREAM_BOARD.md",
   "docs/INTEGRATION_LOG.md",
+  "docs/RUNBOOK_ADOPTION.md",
+  "docs/GITHUB_ISSUE_PLAN.md",
+  "docs/research/RESEARCH_PROTOCOL.md",
+  "docs/research/ASSUMPTION_REGISTER.md",
   "docs/orchestration/WINDOWS_ENVIRONMENT.md",
 ] as const;
 
@@ -291,6 +295,8 @@ export function validateConfiguration(repoRoot: string): readonly Finding[] {
     "scripts/validate-phase0.ps1",
     ".github/workflows/ci.yml",
     ".github/pull_request_template.md",
+    ".github/ISSUE_TEMPLATE/vertical-slice.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
   ]) {
     try {
       if (!statSync(path.join(repoRoot, relativePath)).isFile()) {

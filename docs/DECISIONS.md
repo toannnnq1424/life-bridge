@@ -118,6 +118,38 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 - Planned baseline: Effective from Phase 0.
 - Actual: Commands and evidence are recorded by each session; no result is claimed in this ADR.
 
+## ADR-011 — Risk-tiered research gates overlay the compact roadmap
+
+- Status: Accepted
+- Date: 2026-07-26
+- Change ID: `CHG-2026-003`
+- Context: The supplied 4.9 MB execution runbook contains useful research,
+  accessibility, safety, operations, and decomposition detail, but its 16-phase
+  order delays the first complete task loop, repeats generic checklists, and
+  reports a stale P0 state.
+- Decision: Keep the validated P0–P6 roadmap and adopt a compact overlay:
+  phase research gate, slice research micro-cycle, evidence-to-action
+  traceability, assumption register, trigger-based source review, shared
+  slice-filtered risk catalog, and roadmap crosswalk. Treat runbook source rows
+  as candidates until independently verified.
+- Alternatives considered: replace the roadmap with P0–P15; copy the monolithic
+  file into Git; ignore the runbook; create every detailed work package as a
+  vertical slice.
+- Consequences: Future work gets stronger evidence and risk controls without
+  losing the early end-to-end demo. Each phase/slice must explicitly record gate
+  state and assumptions. Detailed work packages split a slice only through
+  Change Control and only if each split remains user-visible end to end.
+- Planned baseline: P0–P6 with `P1-S1` as the exact next product slice.
+- Actual: No phase/slice is reordered. New protocol, crosswalk, assumption, and
+  GitHub issue-plan documents implement the overlay.
+- Evidence IDs: external runbook hash in `docs/RUNBOOK_ADOPTION.md`;
+  `CHG-2026-003`.
+- Limitations: The external source list and its “checked” dates were not adopted
+  as verified evidence. Legal, safety, market, and tool claims still require
+  targeted primary review.
+- Review trigger: evidence forces a slice reorder/split, the runbook hash
+  changes, or the accepted release scope changes.
+
 ## Decision-change template
 
 ```md

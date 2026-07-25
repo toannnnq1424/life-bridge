@@ -104,3 +104,25 @@ Classify a failure before editing:
 - unrelated pre-existing failure.
 
 Fix only failures caused by or blocking the active slice. Record deferred validation and unresolved issues in persistent project documentation.
+
+## Research and risk validation
+
+- Validate research/source/assumption schemas and provenance offline.
+- Do not scrape live links in CI or treat HTTP success as evidence freshness.
+- Before release, trace every public numerical claim to source, date, geography,
+  limitation, and recorded re-check trigger.
+- For each slice, select applicable rows from the shared risk catalog in
+  `docs/RUNBOOK_ADOPTION.md`; do not run a generic matrix of irrelevant cases.
+- Cross-cutting security/accessibility/offline controls begin with the first
+  affected slice. The P6 campaign verifies them across the frozen release scope;
+  it does not postpone them.
+
+P6 stabilization follows one campaign:
+
+1. freeze the exact commit, schemas, fixtures, and journey inventory;
+2. run static/build/unit/contract validation;
+3. run integration and end-to-end validation;
+4. run security/privacy/accessibility validation;
+5. run performance/resilience/recovery validation;
+6. batch fixes by root cause, use targeted retests, then run one final Level D
+   validation.

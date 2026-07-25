@@ -32,6 +32,8 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 7. Research covers 2016–2026 and prioritizes 2021–2026 sources.
 8. PostgreSQL is the default with separate service ownership. Polyglot storage needs an ADR.
 9. Every roadmap deviation records planned versus actual, reason, impact, validation, and follow-up.
+10. Every future phase uses a risk-tiered research gate and every slice uses a
+    bounded research micro-cycle from `docs/research/RESEARCH_PROTOCOL.md`.
 
 ## Roadmap summary
 
@@ -46,6 +48,25 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 | `P6` Resilience and release | Harden offline/conflict behavior, deploy, and prepare a truthful demo/release  | `P6-S1`–`P6-S3`                                | Required prior slices                      | Planned       |
 
 Future phases are planning commitments only. At each phase start, confirm evidence and log any accepted change before implementation.
+
+## Research-driven runbook overlay
+
+The external 16-phase/85-slice runbook is accepted through `CHG-2026-003` as a
+research/risk/decomposition overlay, not as a replacement roadmap. The canonical
+crosswalk and rejected conflicts are in `docs/RUNBOOK_ADOPTION.md`.
+
+Every future phase must record:
+
+- `PASS`, `PASS WITH ASSUMPTIONS`, `BLOCKED`, or `NOT APPLICABLE`;
+- applicable official/primary and Vietnamese evidence or an explicit evidence
+  gap;
+- limitations and assumption IDs;
+- privacy, safety, accessibility, bilingual, offline, and operational impact;
+- acceptance/test changes and any Change ID.
+
+Every future slice begins with at most five decision-driving questions and stops
+research when additional sources would not change a decision. The shared risk
+catalog is filtered to the slice; generic edge cards are not copied wholesale.
 
 ## P0 — Foundation
 
@@ -428,6 +449,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | -------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
 | `CHG-2026-001` | Implemented in Phase 0         | Windows + Codex App replace legacy mixed-platform/tool delivery paths                |
 | `CHG-2026-002` | Baseline implemented; lane due | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control |
+| `CHG-2026-003` | Planning overlay implemented   | Adds risk-tiered research gates and runbook crosswalk without reordering P0–P6       |
 
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
@@ -440,9 +462,10 @@ When delivery starts, update each phase/slice with actual files, contracts, vali
 ## Exact next action
 
 Open one new conversation for `P1-S1 — Accountable care-task loop`. Begin with
-the current task/event contract and required Stitch handoff for `LB-011`,
-`LB-013`, `LB-014`, applicable `LB-019`, and shared state patterns. Production UI
-implementation remains blocked until the reviewed Stitch handoff is frozen.
+the P1 research gate, current task/event contract, and required Stitch handoff
+for `LB-011`, `LB-013`, `LB-014`, applicable `LB-019`, and shared state
+patterns. Production UI implementation remains blocked until the reviewed
+Stitch handoff is frozen.
 
 The independent research lane may instead open one separate conversation for
 `research/aggregate-context-fixture` on `init/research`; do not combine it with

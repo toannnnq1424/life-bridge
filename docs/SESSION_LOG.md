@@ -165,3 +165,68 @@ Open exactly one new conversation for `P1-S1 — Accountable care-task loop`,
 starting with the task/event contract and required Stitch handoff. The separate
 data task is `research/aggregate-context-fixture` on `init/research`; never
 combine both scopes in one conversation.
+
+## 2026-07-26 — Research-driven runbook overlay
+
+### Objective
+
+Use the supplied ultra execution runbook to make delivery clearer without
+reopening P0, delaying the first vertical slice, or creating a second source of
+truth.
+
+### Completed
+
+- Reviewed the 4,932,614-byte/115,507-line runbook by research protocol,
+  P0–P7, and P8–P15 scopes.
+- Recorded its SHA-256 and adopted it through `CHG-2026-003`/ADR-011 as a
+  planning overlay only.
+- Added the P0–P15 to P0–P6 crosswalk, phase research gate, slice micro-cycle,
+  evidence levels, stop/re-check rules, assumption register, and shared
+  slice-filtered risk catalog.
+- Preserved `P1-S1` as one create/assign/complete/notify/dashboard flow; the
+  runbook's component work packages do not become incomplete vertical slices.
+- Added the canonical GitHub plan for 7 milestones, 10 labels, and 19 controlled
+  issues, plus a reusable vertical-slice issue form.
+
+### Files changed
+
+- `CODEX.md` and canonical planning/change/decision/integration documents.
+- `docs/RUNBOOK_ADOPTION.md`, `docs/GITHUB_ISSUE_PLAN.md`.
+- `docs/research/RESEARCH_PROTOCOL.md`,
+  `docs/research/ASSUMPTION_REGISTER.md`, and the research index.
+- Test/release/repository-map/known-issue controls.
+- `.github/ISSUE_TEMPLATE/` and Phase 0 validation contracts.
+
+### Decisions
+
+- The external runbook is an inventory and evidence overlay, never canonical
+  state.
+- Source rows marked checked in that file are candidates until re-verified on
+  `init/research`.
+- Organization reporting, check-in/escalation, external sync, PWA, FHIR, and
+  non-Vietnam compliance remain deferred candidates.
+
+### Validation performed
+
+- Three scoped independent reviews: complete.
+- Phase 0 integrated validator after the overlay: pass; format, lint,
+  type-check, 9 unit tests, integration checks, and build passed.
+- No live-source scrape, product implementation, Stitch call, or system
+  configuration change occurred.
+
+### Validation intentionally deferred
+
+- Candidate-source verification until the relevant research/phase gate.
+- User studies until consent, recruitment, storage, retention, withdrawal, and
+  accessibility protocols have an approved execution plan.
+
+### Known issues
+
+- `KI-011` records the external runbook's unverified/repetitive content risk.
+- GitHub objects are planned but not yet reported as created in this entry.
+
+### Exact next step
+
+Commit and push the planning overlay, create the planned GitHub labels,
+milestones, and issues, record confirmed URLs, then open the Phase 0 pull
+request. Do not begin `P1-S1` in this conversation.

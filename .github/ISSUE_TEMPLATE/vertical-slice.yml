@@ -1,0 +1,83 @@
+name: Vertical slice
+description: Plan one user-visible LifeBridge slice with research and validation gates.
+title: "[PHASE-SLICE] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use one issue for one complete vertical slice. Keep the canonical acceptance criteria in `docs/IMPLEMENTATION_PLAN.md`.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User-visible outcome / Kết quả người dùng
+      description: State what a user can complete end to end in Vietnamese and English.
+    validations:
+      required: true
+  - type: dropdown
+    id: research_gate
+    attributes:
+      label: Research gate
+      options:
+        - PASS
+        - PASS WITH ASSUMPTIONS
+        - BLOCKED
+        - NOT APPLICABLE
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and assumptions
+      description: List source IDs, assumption IDs, limitations, and review triggers.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and non-goals
+      description: Include the minimum UI, API, service, data, and event path plus explicit deferrals.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Use observable, testable criteria including errors and recovery.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and gates
+      description: Link predecessor issues, Stitch handoff, credentials, data, ADRs, or external reviews.
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Applicable risk catalog
+      description: Select only relevant retry, concurrency, permission, privacy, offline, accessibility, and recovery risks.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Slice validation
+      description: List affected lint, type, unit, contract, integration, browser/accessibility, and build checks.
+    validations:
+      required: true
+  - type: checkboxes
+    id: done
+    attributes:
+      label: Definition of Done
+      options:
+        - label: End-to-end behavior and error handling are implemented.
+          required: true
+        - label: Relevant tests, lint, type-check, and build pass.
+          required: true
+        - label: Stitch handoff is frozen for implemented UI.
+          required: true
+        - label: Documentation, known issues, change control, and session log are current.
+          required: true
+        - label: The coherent change is reviewed for secrets and committed.
+          required: true

@@ -9,11 +9,12 @@
 - Current milestone: Phase 0 closed; `P1-S1` ready for a new conversation
 - Completed: repository/safety inventory; documentation; Windows tooling; CI;
   data governance; disabled Codex App Stitch contract; local promotion branches;
-  clean fresh-worktree bootstrap/validation
-- In progress: none in this closed Phase 0 conversation
+  clean fresh-worktree bootstrap/validation; research-driven runbook overlay
+- In progress: GitHub labels, milestones, and accepted-slice issue publication
 - Blocked: live Stitch canary pending credential-owner actions and explicit
   external-call approval
-- Next actions: open exactly one new conversation for `P1-S1`, or a separate
+- Next actions: publish the planned GitHub tracking objects, then open exactly
+  one new conversation for `P1-S1`, or a separate
   `research/aggregate-context-fixture` conversation on `init/research`
 - Known risks: see `docs/KNOWN_ISSUES.md`
 - Last verified baseline: coherent `phase/0-foundation` commit; exact hash is the

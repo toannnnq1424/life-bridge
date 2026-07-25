@@ -7,6 +7,10 @@
 - [ ] Planned versus implemented behavior reconciled in product and implementation docs.
 - [ ] Known limitations and deferred work disclosed.
 - [ ] Repository map matches release structure.
+- [ ] Research gate is current for every released slice.
+- [ ] Unvalidated assumptions are disclosed and do not masquerade as facts.
+- [ ] Public claims include current source, date, geography, and limitation.
+- [ ] Legal/specialist/user-review gates match the intended market and scope.
 
 ## Clean materialization
 
@@ -28,6 +32,8 @@
 - [ ] Primary bilingual end-to-end smoke test.
 - [ ] Accessibility and keyboard checks.
 - [ ] Visual/design comparison for implemented Stitch-backed screens.
+- [ ] Exact release journey/test inventory is traceable.
+- [ ] Blocker/critical/high defects meet the documented zero-or-exception policy.
 
 ## Security and data
 
@@ -47,6 +53,8 @@
 - [ ] Deployment configuration and secret injection reviewed.
 - [ ] Public URL smoke-tested once after deployment.
 - [ ] Rollback artifact and instructions verified.
+- [ ] Rollback and monitoring stop conditions were rehearsed.
+- [ ] Progressive rollout is verified or explicitly `N/A` with platform reason.
 
 ## Demo and submission
 
@@ -55,3 +63,4 @@
 - [ ] Screenshots contain synthetic data only.
 - [ ] Devpost claims match implemented behavior.
 - [ ] Repository URL, deployment URL, video, and disclosed limitations are current.
+- [ ] Internal persona rehearsal is not misreported as completed user research.

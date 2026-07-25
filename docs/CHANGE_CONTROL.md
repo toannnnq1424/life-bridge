@@ -105,3 +105,33 @@ link the change identifier.
   through review into `data`, then `dev`.
 - Exact follow-up: promote only approved synthetic/licensed artifacts from
   `init/research` into `data`
+
+### CHG-2026-003 — Adopt the research-driven runbook as a planning overlay
+
+- Date: 2026-07-26
+- Status: implemented in planning/governance documentation
+- Requested by: project owner
+- Evidence: supplied
+  `LIFEBRIDGE_RESEARCH_DRIVEN_ULTRA_EXECUTION_RUNBOOK.md`, SHA-256 recorded in
+  `docs/RUNBOOK_ADOPTION.md`, plus independent scoped reviews
+- Previous plan: P0–P6 roadmap with source governance but no formal phase gate,
+  slice micro-cycle, assumption register, or external-runbook crosswalk
+- Revised plan: keep P0–P6/P1-S1 order; add risk-tiered research gates,
+  evidence-to-action traceability, trigger-based re-checks, shared risk catalog,
+  assumption register, and GitHub issue/milestone plan
+- Reason: gain the useful detail of the 16-phase/85-slice runbook without
+  delaying the first end-to-end MVP or creating a second source of truth
+- Affected phases/slices: every future phase/slice; no accepted slice ID or order
+  changes
+- API/data/service impact: none immediately; future source/assumption IDs become
+  traceable inputs to acceptance and tests
+- Security/privacy/accessibility impact: high-risk evidence and review gates are
+  explicit; user research requires consent/data-handling controls
+- Validation impact: docs/schema/provenance checks are offline; no CI live-link
+  scraping; each slice selects only applicable edge risks
+- Migration/rollback: remove the overlay documents/rules and retain the original
+  P0–P6 baseline; never import the 4.9 MB external file as state
+- Documentation updated: Codex rules, implementation plan, runbook crosswalk,
+  research protocol/assumptions, test/release controls, GitHub planning
+- Exact follow-up: create labeled/milestoned GitHub issues for the accepted
+  P0–P6 slices, then start only `P1-S1` or the separate data research slice
