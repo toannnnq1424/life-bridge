@@ -24,6 +24,10 @@ The Windows doctor reports missing tools, an unavailable Docker daemon, unreadab
 ## Choose one unit of work
 
 One branch and one Codex conversation should own one phase or one vertical slice.
+The active roadmap is the cumulative production plan `P0`–`P12`. Production
+quality is applied in each relevant product slice and then proven across the
+release scope in `P6`–`P12`; it is not deferred until deployment. The exact next
+product slice remains `P1-S1 — Accountable care-task loop`.
 
 Before implementation:
 
@@ -44,18 +48,25 @@ init/research -> data -> dev -> test -> main
                       phase/*
 ```
 
-| Branch          | Purpose                                                               | Expected PR target                |
-| --------------- | --------------------------------------------------------------------- | --------------------------------- |
-| `main`          | Stable, releasable history                                            | none except promotion from `test` |
-| `test`          | Release candidate and phase-level QA                                  | `main`                            |
-| `dev`           | Integrated, accepted slices                                           | `test`                            |
-| `data`          | Reviewed research metadata, schemas, fixtures, migrations, provenance | `dev`                             |
-| `init/research` | Vietnamese/English real-world source investigation                    | `data`                            |
-| `phase/<name>`  | A phase or substantial vertical slice                                 | `dev`                             |
+| Branch          | Purpose                                                               | PR-only convergence                         |
+| --------------- | --------------------------------------------------------------------- | ------------------------------------------- |
+| `main`          | Stable, releasable history                                            | receives accepted `test`                    |
+| `test`          | Release candidate and phase-level QA                                  | receives `dev`; promotes to `main`          |
+| `dev`           | Integrated, accepted slices                                           | receives `phase/*` and `data`               |
+| `data`          | Reviewed research metadata, schemas, fixtures, migrations, provenance | receives `init/research`; promotes to `dev` |
+| `init/research` | Vietnamese/English real-world source investigation                    | promotes reviewed evidence to `data`        |
+| `phase/<name>`  | One short-lived phase or vertical slice from current `dev`            | returns to `dev`                            |
 
-Use `init/research`; Git does not allow `/init`. Do not commit directly to long-lived branches. Do not use `codex/*` for new work. Data-related implementation may use a scoped `phase/data-<slice>` branch and must pass the same review before promotion.
+Use `init/research`; Git does not allow `/init`. Do not commit directly to
+long-lived branches. Every promotion uses a reviewed pull request and required
+checks. Use merge history that keeps real divergence and convergence visible in
+GitHub Network. Do not create empty, decorative, duplicate, or permanently
+divergent branches. Do not use `codex/*`.
 
-Never force-push or rewrite public history. Do not merge until acceptance and required CI pass.
+Never force-push or rewrite public history. A `hotfix/*` branch may start from
+`main` only for an accepted production incident; after its reviewed release it
+must merge back through `test` and `dev`. Do not merge until acceptance and
+required CI pass.
 
 ## Vertical-slice pull requests
 
@@ -72,6 +83,20 @@ A PR description must include:
 - privacy, security, data, migration, and rollback impact;
 - known limitations and deferred work;
 - exact next slice.
+
+## Phase-close orientation
+
+Closing a phase or slice must append a next-phase orientation based on repository
+evidence, not aspiration:
+
+- planned versus actual behavior and architecture;
+- code, contract, migration, and test evidence now available;
+- new or retired dependencies and integration/MCP debt;
+- acceptance and validation changes for the next slice;
+- the exact next slice and its first action.
+
+This handoff may refine the plan through Change Control. It does not authorize
+implementing the next phase/slice in the same conversation.
 
 ## UI design workflow
 

@@ -8,12 +8,17 @@
 - Node.js 22
 - pnpm 11.9.0 through `pnpm.cmd`
 - ripgrep
+- Python 3.12 (optional; not required by Phase 0)
+- Docker Desktop 27.5.1 client/server in the current host-capable task
 
 ## Conditional
 
-- Docker Desktop: first database-backed integration slice; daemon currently not
-  verified
-- Google Stitch remote MCP: disabled pending credential and canary gates
+- Docker Desktop: no product runtime exists yet; recheck in the first
+  container-owning slice and classify restricted-context warnings without
+  system mutation
+- Google Stitch remote MCP: official canary/design session completed under
+  `CHG-2026-006`; committed configuration remains disabled; future sessions
+  require a new approved scope and credential path
 - Browser tooling: install when an executable web slice exists
 
 ## Not active

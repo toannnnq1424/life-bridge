@@ -22,6 +22,8 @@ This directory is the project's evidence register. It is **not** a store for per
 | [`DATA_GOVERNANCE.md`](./DATA_GOVERNANCE.md)                     | Collection, minimization, retention, legal and safety gates                           |
 | [`DOMAIN_GLOSSARY.vi-en.md`](./DOMAIN_GLOSSARY.vi-en.md)         | Shared Vietnamese/English domain language                                             |
 | [`RESEARCH_LOG.md`](./RESEARCH_LOG.md)                           | Search record, facts, inferences, missing evidence and decisions                      |
+| [`RESEARCH_PROTOCOL.md`](./RESEARCH_PROTOCOL.md)                 | Risk-tiered phase/slice gate, evidence levels, stop and re-check rules                |
+| [`ASSUMPTION_REGISTER.md`](./ASSUMPTION_REGISTER.md)             | Stable assumptions, risks, validation methods and states                              |
 | [`../../data/README.md`](../../data/README.md)                   | Data-directory boundary                                                               |
 | [`../../data/fixtures/README.md`](../../data/fixtures/README.md) | Deterministic synthetic-fixture contract                                              |
 

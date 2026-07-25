@@ -8,12 +8,12 @@ evidence.
 
 ## Environments
 
-| Environment | Branch/source                       | Purpose                          | Data                         |
-| ----------- | ----------------------------------- | -------------------------------- | ---------------------------- |
-| Local       | active `phase/*` or `dev`           | development and slice validation | synthetic only               |
-| CI          | pull-request commit                 | deterministic validation         | generated synthetic fixtures |
-| Test        | promoted `test` commit              | integrated release candidate     | synthetic/non-production     |
-| Production  | immutable commit promoted to `main` | approved public demo             | minimum approved data        |
+| Environment | Branch/source                                      | Purpose                             | Data                         |
+| ----------- | -------------------------------------------------- | ----------------------------------- | ---------------------------- |
+| Local       | active `phase/*` or `dev`                          | development and slice validation    | synthetic only               |
+| CI          | pull-request commit                                | deterministic validation            | generated synthetic fixtures |
+| Test        | promoted `test` commit                             | integrated release candidate        | synthetic/non-production     |
+| Production  | immutable artifact promoted through `test -> main` | bounded approved production release | minimum approved data        |
 
 Development, test, and production credentials must be distinct.
 
@@ -73,9 +73,31 @@ Promotion requires:
 - immutable lockfile and generated contract consistency;
 - migration and rollback/compensation review;
 - no unresolved release blocker;
+- zero open required MCP/integration debt marked `blocks deploy: yes`;
 - documentation and session log current;
 - environment-specific secrets configured outside Git;
-- smoke result recorded against the exact commit.
+- smoke result recorded against the exact commit and immutable artifact digest.
+
+Every arrow is a reviewed pull request. Cross-lane promotions use merge commits
+so GitHub Network preserves ancestry and convergence. Short-lived `phase/*`
+branches start from the accepted owning lane and are deleted only after their
+commits are reachable from the target. A production `hotfix/*` starts from
+`main`, reaches `main` by pull request, then is forward-merged by pull requests
+through `test` and `dev`.
+
+## Production rollout stages
+
+- P6 proves independent deployables, versioned rolling compatibility, service
+  identity, and dependency isolation.
+- P7 proves migrations, replay/reconciliation, backup/restore, retention, and
+  deletion.
+- P8 proves release security/privacy/supply-chain controls.
+- P9 proves SLOs, alerting, degradation, incident response, and DR.
+- P10 proves workload, capacity, scale, backpressure, and cost budgets.
+- P11 builds immutable artifacts, rehearses migration/rollback, performs a
+  staged consented pilot, and releases only after all gates pass.
+- P12 owns live support, patch/rotation/restore cadence, post-incident learning,
+  and the next governed roadmap.
 
 ## Rollback and recovery
 
@@ -88,6 +110,9 @@ Promotion requires:
 
 ## External deployment gate
 
-Creating cloud resources, changing DNS, enabling public access, adding production
-credentials, or deploying is a separate explicit approval. Phase 0 performs none
-of these actions.
+Creating cloud resources, changing DNS, enabling public access, adding
+production credentials, or deploying requires the accepted P11 slice and
+applicable platform authorization. Phase 0 performs none of these actions.
+Authorization never bypasses safety, validation, or debt gates. A development
+credential disclosed in chat is not an approved deployment secret and must be
+revoked rather than persisted.

@@ -216,9 +216,22 @@ The 35-screen inventory is a governed backlog:
 | Phase 3       | Timeline, calendar, appointment, care plan                                                       |
 | Phase 4       | Medication reminders, emergency contacts/plan, document vault                                    |
 | Phase 5       | Help request, community directory, volunteer matching, organization, moderation                  |
-| Phase 6       | Offline/conflict hardening and release-wide reusable state/accessibility validation              |
+| Phase 6       | Independently runnable services, versioned contracts, and ownership fitness                      |
+| Phase 7       | Durable data changes, event recovery, backup/restore, and truthful conflict reconciliation       |
+| Phase 8       | Authorization, privacy lifecycle, abuse resistance, secrets, and supply-chain hardening          |
+| Phase 9       | SLOs, end-to-end telemetry, graceful degradation, incident response, and disaster recovery       |
+| Phase 10      | Capacity model, load/soak evidence, scaling, latency, and cost controls                          |
+| Phase 11      | Reproducible production infrastructure, staged rollout, rollback, pilot, and release             |
+| Phase 12      | Post-launch operations, maintenance, feedback governance, and continuous production improvement  |
 
 This grouping is a plan, not an implementation claim. Each screen is implemented only through its approved slice and handoff. Reordering, splitting, removing, or adding a screen follows the change-control process.
+
+Production quality is not postponed until Phase 6. Every earlier product slice
+must include the authorization, service ownership, error handling, telemetry,
+data durability, accessibility, and rollback evidence applicable to its scope.
+Phases 6–12 prove those properties across independently deployable boundaries
+and the accepted release workload. Passing an end-to-end demo alone is never a
+production-readiness claim.
 
 ## 9. Explicit non-goals for the initial MVP
 

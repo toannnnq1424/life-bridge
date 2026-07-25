@@ -14,7 +14,7 @@ and future directories that do not yet exist.
 | ------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `.ai-orchestrator/` | Compact operational state, risks, safety, tickets, handoff/report contracts                                           | `PROJECT_STATE.md`, `RISK_REGISTER.md`, `tasks/TASK-000-phase0-foundation.md` |
 | `.codex/`           | Trusted-repository Codex configuration                                                                                | `config.toml` defines disabled-by-default Stitch MCP                          |
-| `.github/`          | Pull-request contract and Windows CI                                                                                  | `workflows/ci.yml`, `pull_request_template.md`                                |
+| `.github/`          | Pull-request/issue contracts and Windows CI                                                                           | `workflows/ci.yml`, PR template, `ISSUE_TEMPLATE/`                            |
 | `.vscode/`          | Inert VS Code MCP marker; not an active delivery path                                                                 | `mcp.json` has no configured server or credential input                       |
 | `data/`             | Governed fixture/reference-data boundary                                                                              | `README.md`, `fixtures/README.md`                                             |
 | `docs/`             | Canonical product, architecture, plan, contracts, quality, security, deployment, design, research, and session memory | See document map below                                                        |
@@ -36,6 +36,8 @@ only the minimum packages required by `P1-S1`.
 | `docs/PRODUCT_SPEC.md`        | Product identity, users, MVP outcome, requirements, non-goals                     |
 | `docs/ARCHITECTURE.md`        | Planned/actual topology, service boundaries, events, persistence, Stitch boundary |
 | `docs/IMPLEMENTATION_PLAN.md` | P0–P6 phases, exact slices, dependencies, acceptance, deferrals, next action      |
+| `docs/RUNBOOK_ADOPTION.md`    | External-runbook provenance, adoption decisions, and P0–P15 to P0–P6 crosswalk    |
+| `docs/GITHUB_ISSUE_PLAN.md`   | GitHub labels, milestones, and accepted-slice issue catalog                       |
 | `docs/WORKSTREAM_BOARD.md`    | Status, owner, dependencies, gates, exact handoffs                                |
 | `docs/CHANGE_CONTROL.md`      | Mandatory plan-delta process and change-record template                           |
 | `docs/DECISIONS.md`           | Authoritative ADR log                                                             |
@@ -80,6 +82,9 @@ in Phase 0. The 35-screen inventory is backlog, not implemented scope.
   synthetic-data gates.
 - `DOMAIN_GLOSSARY.vi-en.md`: reviewed Vietnamese/English domain language.
 - `RESEARCH_LOG.md`: method, facts, inferences, missing evidence, next slice.
+- `RESEARCH_PROTOCOL.md`: risk-tiered phase/slice research gate and stop rule.
+- `ASSUMPTION_REGISTER.md`: unvalidated product/market assumptions and planned
+  validation.
 
 Research window is 2016–2026 with preference for 2021–2026 evidence. Raw
 microdata and unreviewed downloads never enter Git.

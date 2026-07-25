@@ -14,15 +14,16 @@ localization keys, accessible interactions, and tests.
 
 ## Current status
 
-| Control                                    | Status                                     |
-| ------------------------------------------ | ------------------------------------------ |
-| Third-party `@_davideast/stitch-mcp@0.9.0` | `NO-GO`; do not install or execute         |
-| Official remote endpoint                   | Configured, disabled                       |
-| Project configuration                      | `.codex/config.toml`                       |
-| Literal credential in Git                  | Prohibited; none required by configuration |
-| Codex App tool discovery                   | Not run                                    |
-| Read-only canary                           | Not run                                    |
-| Design-generation calls                    | Blocked                                    |
+| Control                                    | Status                                                   |
+| ------------------------------------------ | -------------------------------------------------------- |
+| Third-party `@_davideast/stitch-mcp@0.9.0` | `NO-GO`; do not install or execute                       |
+| Official remote endpoint                   | Session activation succeeded; committed config disabled  |
+| Project configuration                      | `.codex/config.toml`                                     |
+| Literal credential in Git                  | Prohibited; none present                                 |
+| Codex App tool discovery                   | Handshake, complete schema discovery, and listing passed |
+| Read-only canary                           | Passed before approved design mutations                  |
+| Design-generation calls                    | P1 desktop/mobile review set created and audited         |
+| Chrome control                             | Unavailable; non-blocking because official MCP works     |
 
 The old VS Code/Cline workflow is historical evidence only. Cline, 9Router,
 macOS, and user-level VS Code configuration are outside the active LifeBridge
@@ -50,8 +51,10 @@ project identifier, or real care data.
 
 ## Credential gate
 
-Before enabling the server, the credential owner must confirm all of the
-following:
+### Standing policy
+
+Outside an explicitly recorded exception, the credential owner must confirm all
+of the following before enabling the server:
 
 1. The previously disclosed key was revoked.
 2. Recent usage and restrictions were reviewed.
@@ -65,6 +68,23 @@ following:
 Do not modify Windows Registry, system services, global PowerShell execution
 policy, firewall rules, or machine-wide credential configuration to satisfy this
 gate.
+
+### One-time `CHG-2026-006` exception
+
+On 2026-07-26, the user explicitly authorized one bounded use of a disposable
+non-production key so the official MCP path and initial LifeBridge design could
+be validated. The exception has these hard boundaries:
+
+- the credential value remains in session memory only;
+- it is never written to Git, repository configuration, issues, logs,
+  screenshots, command arguments, or task handoffs;
+- it is used only with the official Stitch endpoint and the private LifeBridge
+  design scope;
+- it is not a production credential and may not be reused for deployment;
+- it must be retired or revoked and its usage reviewed before any deployment.
+
+This exception does not weaken the standing credential policy or authorize
+machine-wide configuration changes.
 
 ## Offline checks
 
@@ -102,6 +122,18 @@ After approval:
 Schema discovery is not proof of a passed canary. A canary passes only when
 authentication, schema review, the approved read-only request, log hygiene, and
 filesystem checks all pass.
+
+The 2026-07-26 canary completed those controls through the official endpoint:
+handshake, complete schema discovery, and private project listing succeeded.
+After the read-only canary, the same bounded session created a private LifeBridge
+project, private design system, and P1 references for `LB-011`, `LB-013`,
+`LB-014`, `LB-019`, plus mobile `LB-013`/`LB-014` variants under the user's
+explicit design authorization. The returned images were visually audited and a
+correction list was recorded in
+`docs/design/reviews/P1_S1_STITCH_HANDOFF.md`. Design direction is accepted;
+service contracts and manual review still block design freeze. Chrome control
+was unavailable, but this did not block MCP execution or visual inspection of
+the returned design artifacts.
 
 ## Tool policy
 

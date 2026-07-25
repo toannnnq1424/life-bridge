@@ -7,6 +7,7 @@
 - Runtime implementation status: Not yet implemented
 - Current phase: Foundation
 - First implementation slice: `P1-S1`
+- Production-maturity plan: `PLAN-2026-07-26-PRODUCTION` (`P0`–`P12`)
 
 “Planned” below describes the approved target. “Actual” records repository/runtime evidence. Update both when implementation differs; do not rewrite the plan retroactively.
 
@@ -362,7 +363,25 @@ Health model:
 
 Docker availability is an environment concern. The doctor reports daemon/config issues without changing Windows services, Registry, firewall, Docker settings, or privileges.
 
-## 14. Architecture fitness checks
+## 14. Production architecture maturity
+
+Production architecture is accumulated and evidenced in stages:
+
+| Phase | Architecture proof                                                                                                         |
+| ----- | -------------------------------------------------------------------------------------------------------------------------- |
+| P1–P5 | Each product slice owns authorization, data, events, errors, telemetry, accessibility, and rollback applicable to its path |
+| P6    | Versioned rolling compatibility, independently runnable artifacts, service identity, and dependency isolation              |
+| P7    | Owner-scoped migrations, replay/reconciliation, backup/restore, retention/deletion, and polyglot exit plans                |
+| P8    | Household isolation, consent enforcement, secret/encryption boundaries, artifact provenance, and abuse/privacy response    |
+| P9    | Redacted end-to-end telemetry, SLO/error budget, actionable alerts, truthful degradation, incident and DR rehearsal        |
+| P10   | Representative workload budgets, backpressure, bounded resources, scale correctness, capacity, and cost                    |
+| P11   | Immutable deployment, protected environments, staged rollout, rollback, pilot, and released artifact evidence              |
+| P12   | Operational ownership, patch/rotation/restore cadence, post-incident learning, and governed successor architecture         |
+
+Later proof phases do not excuse an earlier slice from an applicable control.
+No end-to-end demo is itself evidence that the system is production-ready.
+
+## 15. Architecture fitness checks
 
 At each slice/phase gate, verify:
 
@@ -377,7 +396,7 @@ At each slice/phase gate, verify:
 - design handoff and accessibility evidence exist for UI changes;
 - planned versus actual technology is current.
 
-## 15. Change process
+## 16. Change process
 
 An architecture change requires:
 
