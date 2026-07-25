@@ -106,3 +106,28 @@ environments are intended to converge. It is not a substitute for Git history.
 - Decision/change references: `CHG-2026-003`, ADR-011
 - Follow-up: use GitHub milestones/issues for accepted P0–P6 slices and re-verify
   candidate sources only when their phase/slice opens
+
+## INT-2026-005 — Publish governed GitHub execution objects
+
+- Date: 2026-07-26
+- Status: Published; integration review open
+- Source: `phase/0-foundation`
+- Target: `dev`
+- Scope: 10 project labels, 7 undated milestones, 19 bilingual controlled
+  issues, and the Phase 0 integration pull request
+- Contracts/data affected: execution metadata only; no product contract,
+  migration, source dataset, or fixture value
+- Validation: 19/19 issue titles, label sets, and milestones matched
+  `docs/GITHUB_ISSUE_PLAN.md`; P0 has one closed issue; P1–P6 each have three
+  open issues
+- Conflicts/risks: [issue #3](https://github.com/toannnnq1424/life-bridge/issues/3)
+  remains the external Stitch credential/canary gate; the user-owned canary
+  diff remains excluded
+- Decision/change references: `CHG-2026-003`, ADR-011
+- Review:
+  [PR #21](https://github.com/toannnnq1424/life-bridge/pull/21),
+  `phase/0-foundation` → `dev`; do not merge until required review/checks pass
+- Follow-up: open either
+  [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5) or the
+  separate [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
+  in a new dedicated conversation

@@ -7,6 +7,12 @@
 - Current phase: `P0 — Foundation` (validated)
 - Current scope: Phase 0 closeout only
 - Next product slice after Phase 0: `P1-S1 — Accountable care-task loop`
+- GitHub execution:
+  [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
+  production UI gate
+  [#3](https://github.com/toannnnq1424/life-bridge/issues/3); separate
+  `init/research` task
+  [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -37,15 +43,15 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 
 ## Roadmap summary
 
-| Phase                       | Objective                                                                      | Planned slices                                 | Dependencies                               | Actual status |
-| --------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | ------------- |
-| `P0` Foundation             | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated     |
-| `P1` Daily task MVP         | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; approved Stitch handoffs          | Planned       |
-| `P2` Trust and household    | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Planned       |
-| `P3` Care planning          | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned       |
-| `P4` Safety and records     | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned       |
-| `P5` Community support      | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned       |
-| `P6` Resilience and release | Harden offline/conflict behavior, deploy, and prepare a truthful demo/release  | `P6-S1`–`P6-S3`                                | Required prior slices                      | Planned       |
+| Phase                       | Objective                                                                      | Planned slices                                 | Dependencies                               | Actual status   |
+| --------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | --------------- |
+| `P0` Foundation             | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated       |
+| `P1` Daily task MVP         | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; issue #3 before production UI     | Ready; UI gated |
+| `P2` Trust and household    | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Planned         |
+| `P3` Care planning          | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned         |
+| `P4` Safety and records     | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned         |
+| `P5` Community support      | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned         |
+| `P6` Resilience and release | Harden offline/conflict behavior, deploy, and prepare a truthful demo/release  | `P6-S1`–`P6-S3`                                | Required prior slices                      | Planned         |
 
 Future phases are planning commitments only. At each phase start, confirm evidence and log any accepted change before implementation.
 
@@ -461,12 +467,14 @@ When delivery starts, update each phase/slice with actual files, contracts, vali
 
 ## Exact next action
 
-Open one new conversation for `P1-S1 — Accountable care-task loop`. Begin with
-the P1 research gate, current task/event contract, and required Stitch handoff
-for `LB-011`, `LB-013`, `LB-014`, applicable `LB-019`, and shared state
-patterns. Production UI implementation remains blocked until the reviewed
-Stitch handoff is frozen.
+Open one new conversation for
+[`P1-S1 — Accountable care-task loop` issue #5](https://github.com/toannnnq1424/life-bridge/issues/5).
+Begin with the P1 research gate, current task/event contract, and required
+Stitch handoff for `LB-011`, `LB-013`, `LB-014`, applicable `LB-019`, and shared
+state patterns. Production UI implementation remains blocked until
+[`GATE-P1` issue #3](https://github.com/toannnnq1424/life-bridge/issues/3)
+freezes the reviewed Stitch handoff.
 
 The independent research lane may instead open one separate conversation for
-`research/aggregate-context-fixture` on `init/research`; do not combine it with
-`P1-S1`.
+[`DATA-S1` issue #4](https://github.com/toannnnq1424/life-bridge/issues/4) on
+`init/research`; do not combine it with `P1-S1`.

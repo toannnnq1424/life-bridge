@@ -230,3 +230,72 @@ truth.
 Commit and push the planning overlay, create the planned GitHub labels,
 milestones, and issues, record confirmed URLs, then open the Phase 0 pull
 request. Do not begin `P1-S1` in this conversation.
+
+## 2026-07-26 — Publish the governed GitHub execution board
+
+### Objective
+
+Materialize the accepted P0–P6 GitHub taxonomy and open the Phase 0 integration
+review without starting product code.
+
+### Completed
+
+- Added 10 project labels and 7 P0–P6 milestones with bilingual descriptions
+  and no invented due dates.
+- Created 19 bilingual issues covering the historical P0 record, the Stitch
+  gate, the independent data task, and all 16 accepted P1–P6 product slices.
+- Closed historical P0 issue #2; kept Stitch gate issue #3 blocked.
+- Audited 19/19 issue titles, label sets, and milestones against
+  `docs/GITHUB_ISSUE_PLAN.md`.
+- Opened PR #21 from `phase/0-foundation` to `dev`; it reports no base conflict
+  and remains unmerged for review.
+
+### Files changed
+
+- `docs/GITHUB_ISSUE_PLAN.md`
+- `docs/IMPLEMENTATION_PLAN.md`
+- `docs/INTEGRATION_LOG.md`
+- `docs/WORKSTREAM_BOARD.md`
+- `docs/KNOWN_ISSUES.md`
+- `docs/SESSION_LOG.md`
+- `.ai-orchestrator/PROJECT_STATE.md`
+- `.ai-orchestrator/CHANGELOG.md`
+
+### Decisions
+
+- GitHub issue creation does not imply a future research gate has passed.
+- The `ready` label on P1-S1 means contract/fixture work can begin; production
+  UI still depends on issue #3.
+- Supporting issues #3 and #4 remain separate from the 16 product vertical
+  slices.
+
+### Validation performed
+
+- GitHub label count: 19 total, including the 10 planned project labels.
+- GitHub milestone count: 7; distribution is P0 `1/1 closed`, P1–P6 `0/3
+closed`.
+- GitHub issue audit: 19/19 title, label, and milestone mappings passed.
+- PR base/head: `dev` ← `phase/0-foundation`; GitHub reported no conflict.
+- Changed-file Prettier check, Phase 0 docs validator, secret validator, and
+  scoped `git diff --check`: passed.
+- `pnpm.cmd exec prettier` could not resolve the existing local binary through
+  its runner PATH; direct `node_modules\.bin\prettier.CMD` succeeded without a
+  reinstall or system-policy change. The pnpm launcher emitted an engine
+  warning from its bundled Node 24 runtime; host `node.exe` remains the required
+  v22.22.3.
+
+### Validation intentionally deferred
+
+- PR/CI merge acceptance until this publication record is committed and pushed.
+- Live Stitch canary until issue #3 external credential conditions pass.
+- Product/browser/database/deployment validation until their accepted slices.
+
+### Known issues
+
+- `KI-001`–`KI-004` remain external/environment gates.
+- The user-owned `STITCH_MCP_CANARY.md` edit remains unstaged and unchanged.
+
+### Exact next step
+
+After PR #21 review, open exactly one dedicated conversation for P1-S1 issue #5
+or the separate DATA-S1 issue #4 on `init/research`. Do not combine their scope.

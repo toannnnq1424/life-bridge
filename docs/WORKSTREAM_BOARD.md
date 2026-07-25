@@ -37,25 +37,25 @@ Gates block only dependent validation/work. They do not authorize broad system r
 
 ## Roadmap queue
 
-| Priority | Item                                   | Status    | Starts only when                           | Completion handoff                           |
-| -------- | -------------------------------------- | --------- | ------------------------------------------ | -------------------------------------------- |
-| 0        | `P0` Foundation                        | Validated | Approved plan                              | Validated foundation commit; exact P1 action |
-| 1        | `P1-S1` Accountable care-task loop     | Planned   | P0 passes; required Stitch handoffs frozen | E2E demo/tests/docs/commit                   |
-| 2        | `P2-S1` Account access/onboarding      | Planned   | P1 passes; identity threat/contract ready  | Auth/accessibility flow                      |
-| 3        | `P2-S2` Household/invitation/context   | Planned   | P2-S1 passes                               | Household authorization flow                 |
-| 4        | `P2-S3` Consent/privacy/audit/settings | Planned   | P2-S2 passes                               | Consent/revocation/audit flow                |
-| 5        | `P3-S1` Timeline/handoff               | Planned   | P2 trust boundary passes                   | Timeline/handoff flow                        |
-| 6        | `P3-S2` Calendar/appointment           | Planned   | P3-S1/time contract                        | Calendar/agenda flow                         |
-| 7        | `P3-S3` Care-plan review               | Planned   | P2 consent + P3 time                       | Versioned care-plan flow                     |
-| 8        | `P4-S1` Medication reminder            | Planned   | P3 time + Notification reliability         | Non-clinical reminder flow                   |
-| 9        | `P4-S2` Emergency plan                 | Planned   | Consent + offline threat review            | Offline-readable configured plan             |
-| 10       | `P4-S3` Document vault                 | Planned   | Consent/audit + storage ADR                | Synthetic document flow                      |
-| 11       | `P5-S1` Help request/directory         | Planned   | Research + consent + community boundary    | Consented request/search                     |
-| 12       | `P5-S2` Match/organization             | Planned   | P5-S1                                      | Minimum-data match flow                      |
-| 13       | `P5-S3` Moderation                     | Planned   | P5-S2 + policy                             | Auditable resolution flow                    |
-| 14       | `P6-S1` Offline/conflict hardening     | Planned   | Release flow list fixed                    | Cross-flow resilience evidence               |
-| 15       | `P6-S2` Deployment/operations          | Planned   | Release scope passes                       | Reproducible production-like smoke           |
-| 16       | `P6-S3` Demo/release                   | Planned   | P6-S1/S2 pass                              | Truthful tagged release                      |
+| Priority | Item                                   | Status          | Starts only when                          | Completion handoff                           |
+| -------- | -------------------------------------- | --------------- | ----------------------------------------- | -------------------------------------------- |
+| 0        | `P0` Foundation                        | Validated       | Approved plan                             | Validated foundation commit; exact P1 action |
+| 1        | `P1-S1` Accountable care-task loop     | Ready; UI gated | P0 passes; issue #3 before production UI  | E2E demo/tests/docs/commit                   |
+| 2        | `P2-S1` Account access/onboarding      | Planned         | P1 passes; identity threat/contract ready | Auth/accessibility flow                      |
+| 3        | `P2-S2` Household/invitation/context   | Planned         | P2-S1 passes                              | Household authorization flow                 |
+| 4        | `P2-S3` Consent/privacy/audit/settings | Planned         | P2-S2 passes                              | Consent/revocation/audit flow                |
+| 5        | `P3-S1` Timeline/handoff               | Planned         | P2 trust boundary passes                  | Timeline/handoff flow                        |
+| 6        | `P3-S2` Calendar/appointment           | Planned         | P3-S1/time contract                       | Calendar/agenda flow                         |
+| 7        | `P3-S3` Care-plan review               | Planned         | P2 consent + P3 time                      | Versioned care-plan flow                     |
+| 8        | `P4-S1` Medication reminder            | Planned         | P3 time + Notification reliability        | Non-clinical reminder flow                   |
+| 9        | `P4-S2` Emergency plan                 | Planned         | Consent + offline threat review           | Offline-readable configured plan             |
+| 10       | `P4-S3` Document vault                 | Planned         | Consent/audit + storage ADR               | Synthetic document flow                      |
+| 11       | `P5-S1` Help request/directory         | Planned         | Research + consent + community boundary   | Consented request/search                     |
+| 12       | `P5-S2` Match/organization             | Planned         | P5-S1                                     | Minimum-data match flow                      |
+| 13       | `P5-S3` Moderation                     | Planned         | P5-S2 + policy                            | Auditable resolution flow                    |
+| 14       | `P6-S1` Offline/conflict hardening     | Planned         | Release flow list fixed                   | Cross-flow resilience evidence               |
+| 15       | `P6-S2` Deployment/operations          | Planned         | Release scope passes                      | Reproducible production-like smoke           |
+| 16       | `P6-S3` Demo/release                   | Planned         | P6-S1/S2 pass                             | Truthful tagged release                      |
 
 Only the first eligible item may move to In progress in a new conversation.
 
@@ -109,14 +109,18 @@ For every new proposal, add a stable `CHG-YYYY-NNN` row before implementation:
 | -------------- | ---------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `CHG-2026-001` | Implemented                        | Mixed Windows/macOS and legacy delivery tools      | Windows + Codex App only                                                | Project-owner direction and actual host       | All phases use one supported control plane                            | Windows CI/doctor and offline Codex config validation    | Credential and read-only Stitch canary gates                                        |
 | `CHG-2026-002` | Baseline implemented; lane pending | No dedicated research branch                       | Bilingual 2016–2026 register; `init/research → data → dev`              | Project-owner requirement for recent evidence | Provenance/fixture gates apply to data-dependent slices               | Source/license/privacy review; branch promotion evidence | Create branches, then start `research/aggregate-context-fixture` on `init/research` |
-| `CHG-2026-003` | Implemented                        | Compact P0–P6 plan without formal research overlay | Runbook crosswalk, protocol, assumptions, risk catalog, and GitHub plan | Project-owner supplied ultra runbook          | All future phases/slices gain bounded evidence gates; order unchanged | Targeted docs/schema review; no live scrape              | Create GitHub labels, milestones, and accepted-slice issues                         |
+| `CHG-2026-003` | Implemented                        | Compact P0–P6 plan without formal research overlay | Runbook crosswalk, protocol, assumptions, risk catalog, and GitHub plan | Project-owner supplied ultra runbook          | All future phases/slices gain bounded evidence gates; order unchanged | Targeted docs/schema review; 19/19 GitHub metadata audit | Use issue #5 for P1-S1 or separate issue #4 on `init/research`                      |
 
 Mirror accepted changes in `docs/IMPLEMENTATION_PLAN.md`; add an ADR for architecture/product policy, an integration-log entry for contract/promotion impact, and a session-log entry for evidence.
 
 ## Exact next handoff
 
-Open a new conversation for `P1-S1`, starting with the task-flow contract and
-Google Stitch handoffs for `LB-011`, `LB-013`, `LB-014`, and the relevant
-`LB-019`/state patterns. Alternatively, open a separate research conversation
-for `research/aggregate-context-fixture` on `init/research`; never combine the
-two scopes.
+Open a new conversation for
+[`P1-S1` issue #5](https://github.com/toannnnq1424/life-bridge/issues/5),
+starting with the task-flow contract and Google Stitch handoffs for `LB-011`,
+`LB-013`, `LB-014`, and the relevant `LB-019`/state patterns. Production UI
+remains gated by
+[`GATE-P1` issue #3](https://github.com/toannnnq1424/life-bridge/issues/3).
+Alternatively, open a separate research conversation for
+[`DATA-S1` issue #4](https://github.com/toannnnq1424/life-bridge/issues/4) on
+`init/research`; never combine the two scopes.
