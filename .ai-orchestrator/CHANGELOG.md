@@ -43,3 +43,18 @@ Product/runtime release notes will be introduced when executable behavior exists
   the PR unmerged instead of bypassing the first-workflow bootstrap gate.
 - Preserved Stitch issue #3 as blocked and kept DATA-S1 issue #4 separate from
   P1-S1 issue #5.
+
+## 2026-07-26 — Production roadmap and P1 design review synchronized
+
+- Applied `CHG-2026-004` as the cumulative P0–P12 production roadmap while
+  preserving the exact P1-S1 first product slice.
+- Added three GitHub labels, synchronized milestones P6–P12, created 18 new
+  slice issues, remapped #18–#20 with their historical bodies intact, and
+  created standing zero-MCP-debt gate #40.
+- Recorded official Stitch canary/design-generation evidence for the redacted
+  P1 review set; the handoff remains Design review—not Frozen.
+- Reconfirmed Docker client/server 27.5.1 from the current host-capable task and
+  retained the earlier restricted-sandbox result as environment-isolation
+  evidence.
+- Kept PR #21 open pending the final Phase 0 Level D campaign and a visible
+  hosted-CI result.

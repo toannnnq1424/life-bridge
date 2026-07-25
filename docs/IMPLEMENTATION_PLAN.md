@@ -2,8 +2,10 @@
 
 ## Plan control
 
-- Baseline ID: `PLAN-2026-07-25`
-- Baseline date: 2026-07-25
+- Active plan ID: `PLAN-2026-07-26-PRODUCTION`
+- Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
+- Change authority: `CHG-2026-004`
+- Active plan date: 2026-07-26
 - Current phase: `P0 — Foundation` (validated)
 - Current scope: Phase 0 closeout only
 - Next product slice after Phase 0: `P1-S1 — Accountable care-task loop`
@@ -14,9 +16,11 @@
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
 - Integration gate:
-  [PR #21](https://github.com/toannnnq1424/life-bridge/pull/21) has no base
-  conflict but zero registered checks; resolve `KI-012` before merge or P1
-  implementation
+  guarded workflow bootstrap
+  [PR #41](https://github.com/toannnnq1424/life-bridge/pull/41) registered
+  hosted CI on default `main`; require the full green check on the final commit
+  in [PR #21](https://github.com/toannnnq1424/life-bridge/pull/21) before merge
+  or P1 implementation
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -47,17 +51,28 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 
 ## Roadmap summary
 
-| Phase                       | Objective                                                                      | Planned slices                                 | Dependencies                               | Actual status   |
-| --------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | --------------- |
-| `P0` Foundation             | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated       |
-| `P1` Daily task MVP         | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; issue #3 before production UI     | Ready; UI gated |
-| `P2` Trust and household    | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Planned         |
-| `P3` Care planning          | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned         |
-| `P4` Safety and records     | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned         |
-| `P5` Community support      | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned         |
-| `P6` Resilience and release | Harden offline/conflict behavior, deploy, and prepare a truthful demo/release  | `P6-S1`–`P6-S3`                                | Required prior slices                      | Planned         |
+| Phase                                 | Objective                                                                      | Planned slices                                 | Dependencies                               | Actual status   |
+| ------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | --------------- |
+| `P0` Foundation                       | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated       |
+| `P1` Daily task MVP                   | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; issue #3 before production UI     | Ready; UI gated |
+| `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Planned         |
+| `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned         |
+| `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned         |
+| `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned         |
+| `P6` Microservice platform            | Prove independent runtime ownership, versioned compatibility, and isolation    | `P6-S1`–`P6-S3`                                | Accepted P1–P5 service boundaries          | Planned         |
+| `P7` Data and event reliability       | Prove migrations, event recovery, backup/restore, retention, and deletion      | `P7-S1`–`P7-S3`                                | P6 contracts and service ownership         | Planned         |
+| `P8` Security and privacy hardening   | Prove isolation, privacy lifecycle, abuse controls, secrets, and supply chain  | `P8-S1`–`P8-S3`                                | P2 trust; P6/P7 boundaries                 | Planned         |
+| `P9` SLO, resilience, incident and DR | Prove redacted observability, SLOs, degradation, incident response, and DR     | `P9-S1`–`P9-S3`                                | Accepted release journeys                  | Planned         |
+| `P10` Performance, capacity, and cost | Prove budgets, scale, backpressure, soak/spike behavior, and cost guardrails   | `P10-S1`–`P10-S3`                              | P9 telemetry and workload model            | Planned         |
+| `P11` Production rollout and release  | Reproduce production, stage rollout, pilot safely, rollback, and release       | `P11-S1`–`P11-S3`                              | P6–P10 gates; zero deploy-blocking debt    | Planned         |
+| `P12` Post-launch operations          | Operate, patch, recover, learn, and govern the next production roadmap         | `P12-S1`–`P12-S3`                              | Accepted P11 release                       | Planned         |
 
-Future phases are planning commitments only. At each phase start, confirm evidence and log any accepted change before implementation.
+Future phases are planning commitments only. `CHG-2026-004` preserves validated
+P0 and the exact P1–P5 product order, and splits the former overloaded P6 into
+production-maturity phases P6–P12. Production concerns are cumulative: every
+earlier slice implements the controls applicable to its behavior; later phases
+prove them across the accepted release scope. At each phase start, confirm
+evidence and log any accepted change before implementation.
 
 ## Research-driven runbook overlay
 
@@ -372,49 +387,286 @@ Acceptance:
 
 Dependencies: `P5-S2`; moderation policy and retention decision.
 
-## P6 — Resilience and release
+## P6 — Microservice platform and contracts
 
-### `P6-S1 — Offline, conflict, and reusable-state hardening`
+### `P6-S1 — Versioned contracts and rolling compatibility`
 
-Outcome: implemented core flows truthfully distinguish stale, queued, blocked, conflicted, rejected, and confirmed state while preserving safe recovery.
-
-Screens: `LB-032`–`LB-035` across implemented routes.
-
-Acceptance:
-
-- each mutation declares blocked/queued behavior; no false “saved” state;
-- reconnect/conflict reconciliation is deterministic and tested;
-- keyboard/focus/screen-reader state transitions pass;
-- 320 CSS px, zoom/reflow, reduced-motion, forced-color, long Vietnamese/English text checks pass.
-
-Dependencies: all product flows selected for release.
-
-### `P6-S2 — Production deployment and operations`
-
-Outcome: the selected release scope builds, migrates, starts, reports health, backs up/restores, and runs a fixture smoke test in a reproducible production-like environment.
+Outcome: the primary user journey remains correct while compatible service
+versions are rolled independently.
 
 Acceptance:
 
-- typed startup validation and secret injection;
-- per-service migrations/credentials/health/readiness;
-- production build/start, backup/restore rehearsal, fixture smoke, redacted telemetry;
-- deployment and rollback documentation;
-- no fixture authentication or private credential in public production.
+- current and previous supported API/event versions pass provider/consumer tests;
+- breaking changes fail CI and deprecation/migration policy is explicit;
+- the primary flow passes during a mixed-version rolling upgrade.
 
-Dependencies: accepted release scope; platform credentials require explicit user action.
+### `P6-S2 — Independently runnable service artifacts and ownership`
 
-### `P6-S3 — Demo, submission, and release`
-
-Outcome: a reviewer can reproduce and watch only implemented behavior with truthful claims, disclosed limitations, and a tagged release candidate.
+Outcome: every deployable can build, start, report health/readiness, and upgrade
+without another service's source tree or datastore credential.
 
 Acceptance:
 
-- clean install, full CI, production build, deployment smoke and demo rehearsal pass;
-- README, demo script, submission copy, known issues and release checklist match repository evidence;
-- screenshots/video contain synthetic data only;
-- branch promotion and PR/CI status are recorded; release tag follows acceptance.
+- every deployable has an owned build/start/config/health contract and artifact;
+- one service can be upgraded independently;
+- no cross-service business import, table access, credential, or shared ownership
+  exists; architecture fitness checks enforce the boundary.
 
-Dependencies: `P6-S1`, `P6-S2`.
+### `P6-S3 — Authenticated service communication and dependency isolation`
+
+Outcome: an unavailable secondary service cannot corrupt confirmed core state,
+and internal calls use explicit least-privilege identities outside local mode.
+
+Acceptance:
+
+- service identity and transport protection are documented and tested;
+- timeouts, retry, idempotency, rate, circuit/bulkhead, and payload bounds apply;
+- Notification or Community failure produces truthful degradation without
+  corrupting the care-task source of truth.
+
+Phase gate: independent artifacts, mixed-version flow, architecture fitness,
+authenticated calls, and dependency-failure tests pass.
+
+## P7 — Data durability and event reliability
+
+### `P7-S1 — Service-owned migrations and schema compatibility`
+
+Outcome: an operator upgrades owned service schemas without downtime, data
+ownership leakage, or an unsafe rollback claim.
+
+Acceptance:
+
+- `N-1 -> N` schema evolution works with mixed runtime versions;
+- migrations are owner-scoped, repeat-safe, observable, and forward-compatible;
+- rollback uses an evidenced roll-forward or compensation plan.
+
+### `P7-S2 — Durable event replay, reconciliation, and dead-letter recovery`
+
+Outcome: an operator recovers delayed or poison events without losing or
+duplicating the business result.
+
+Acceptance:
+
+- outbox/inbox replay is idempotent and reconciliation detects drift;
+- poison events, terminal retries, dead-letter ownership, and recovery are explicit;
+- recovery tests prove exactly one durable notification result where required.
+
+### `P7-S3 — Backup, restore, retention, deletion, and polyglot recovery`
+
+Outcome: each source of truth can be restored and governed deletion can be
+completed across service-owned stores.
+
+Acceptance:
+
+- measured restore evidence and accepted RPO/RTO exist per source of truth;
+- retention/deletion propagates without cross-service table access;
+- every additional engine has an accepted ADR plus rebuild, migration, and exit
+  plans.
+
+Phase gate: previous-schema upgrade, reconciliation/replay, restore,
+retention/deletion, RPO/RTO, and service-ownership checks pass.
+
+## P8 — Security, privacy, abuse, and supply-chain hardening
+
+### `P8-S1 — Household isolation and consent enforcement`
+
+Outcome: an authorized user can access only the accepted household/resource
+scope, while denied users cannot enumerate protected records.
+
+Acceptance:
+
+- authorization matrix and cross-household isolation tests pass;
+- consent revocation changes subsequent access deterministically;
+- privileged operations are least-privilege and auditable.
+
+### `P8-S2 — Secrets, encryption, runtime, and supply-chain hardening`
+
+Outcome: an operator rotates secrets and deploys traceable artifacts without
+placing long-lived credentials in source or logs.
+
+Acceptance:
+
+- secret rotation and encryption-boundary drills pass;
+- least-privilege runtime, SBOM, artifact provenance, dependency/container scans,
+  and exception ownership are evidenced;
+- debug/local credentials cannot enter production builds.
+
+### `P8-S3 — Abuse safeguards, privacy lifecycle, and security response`
+
+Outcome: abusive requests are bounded, privacy actions are fulfilled, and the
+team can execute a security response without claiming legal certification.
+
+Acceptance:
+
+- rate/abuse and moderation safeguards preserve legitimate recovery paths;
+- audit retention/redaction and privacy lifecycle behavior are tested;
+- a security/privacy tabletop records owner, evidence, containment, and follow-up.
+
+Phase gate: isolation matrix, rotation, SBOM/provenance, vulnerability review,
+threat/privacy model, abuse controls, and response drill pass.
+
+## P9 — Observability, SLOs, resilience, incident response, and DR
+
+### `P9-S1 — Redacted end-to-end observability and SLO baseline`
+
+Outcome: an operator can trace an accepted user journey across services without
+exposing sensitive task, household, medication, or document content.
+
+Acceptance:
+
+- correlated metrics, logs, and traces cover gateway, services, data, and events;
+- telemetry schemas are redacted, bounded, retained, and access-controlled;
+- dashboards distinguish user error, dependency failure, and data/event lag;
+- journey SLIs, initial measured SLO/error budgets, alert ownership, and
+  escalation are accepted.
+
+### `P9-S2 — Offline, conflict, and graceful degradation`
+
+Outcome: release flows truthfully distinguish stale, queued, blocked,
+conflicted, rejected, dependency-failed, and confirmed state through outage and
+reconnect.
+
+Acceptance:
+
+- every mutation declares offline/blocked/queued behavior; no false saved state;
+- conflict reconciliation and partial-dependency fallback are deterministic;
+- keyboard/focus/screen-reader, reflow, forced-color, and bilingual reusable
+  state tests pass.
+
+### `P9-S3 — Incident response and disaster-recovery game day`
+
+Outcome: the team detects, contains, recovers from, and explains a simulated
+user-impacting incident within approved recovery objectives.
+
+Acceptance:
+
+- bounded failure injection triggers an actionable alert and executable runbook;
+- incident roles, safe communication, failover, restore, and replay are tested;
+- measured RTO/RPO are compared with accepted objectives;
+- a redacted blameless postmortem records owned follow-up.
+
+Phase gate: redacted telemetry, actionable alert, accepted SLO/error budget,
+runbooks, degraded-state truthfulness, and DR rehearsal pass.
+
+## P10 — Performance, scalability, capacity, and cost
+
+### `P10-S1 — Workload model and measurable performance budgets`
+
+Outcome: the team can reproduce a representative synthetic workload and decide
+whether the release meets explicit user-journey budgets.
+
+Acceptance:
+
+- data sizes, concurrency, latency, throughput, and resource budgets are approved;
+- fixtures contain no real personal or care data;
+- measurements include correctness and error behavior, not latency alone.
+
+### `P10-S2 — Scalability, backpressure, and bounded-resource behavior`
+
+Outcome: scale-out and saturation preserve authorization, idempotency, and
+truthful state instead of losing or duplicating work.
+
+Acceptance:
+
+- queues, retries, caches, indexes, connections, and autoscaling stay bounded;
+- backpressure and overload responses are explicit and observable;
+- correctness and household isolation survive horizontal scale.
+
+### `P10-S3 — Soak, spike, capacity, and cost governance`
+
+Outcome: operators know the supported capacity, regression thresholds, and cost
+guardrails before public rollout.
+
+Acceptance:
+
+- accepted soak and spike suites pass without unbounded memory/storage/log growth;
+- capacity forecast and cost guardrails cover each deployable/store;
+- performance regressions block release at recorded thresholds.
+
+Phase gate: numeric budgets, load/spike/soak evidence, correctness under load,
+bounded resources, capacity, and cost plan pass.
+
+## P11 — Production deployment, staged rollout, pilot, and release
+
+### `P11-S1 — Reproducible production deployment and rollback`
+
+Outcome: the accepted release builds, migrates, starts, reports health,
+backs up/restores, and rolls back in a production-like environment.
+
+Acceptance:
+
+- versioned infrastructure/configuration and immutable artifact provenance exist;
+- protected secrets/environments, per-service migration/health, backup/restore,
+  fixture smoke, and redacted telemetry pass;
+- rollback is rehearsed; fixture authentication and private credentials cannot
+  enter public production.
+
+### `P11-S2 — Staged rollout and consented production pilot`
+
+Outcome: a bounded pilot moves through staging and canary/blue-green rollout
+with explicit stop and rollback decisions.
+
+Acceptance:
+
+- test/staging/production boundaries and access are distinct;
+- rollout metrics, rollback triggers, pilot consent/support, and incident ownership
+  are accepted;
+- no open high-risk privacy/security/reliability finding is hidden by the pilot.
+
+### `P11-S3 — Release evidence, demo, and submission`
+
+Outcome: a reviewer can reproduce only the behavior in the exact released
+commit with truthful claims, disclosed limitations, and a tagged release.
+
+Acceptance:
+
+- clean install, full CI/security/performance/DR gates, production smoke, and demo
+  rehearsal pass;
+- README, demo/submission copy, SBOM/provenance, screenshots, and known issues
+  match the release;
+- every required MCP/integration debt is closed before `test -> main`.
+
+Phase gate: immutable deployment, migration/rollback, staged pilot, full
+validation, zero deploy-blocking debt, smoke, and release tag pass.
+
+## P12 — Post-launch operations and continuous improvement
+
+### `P12-S1 — Live operations, support, and post-incident improvement`
+
+Outcome: service ownership and support paths take an alert through resolution,
+postmortem, and tracked follow-up.
+
+Acceptance:
+
+- on-call/support ownership and customer-safe status communication exist;
+- one alert-to-resolution exercise and blameless postmortem pass;
+- corrective actions have owners, priorities, and verification.
+
+### `P12-S2 — Patch, vulnerability, credential, and recovery maintenance`
+
+Outcome: operators execute the recurring patch, vulnerability, secret-rotation,
+backup verification, and restore cadence.
+
+Acceptance:
+
+- dependency/runtime/container patch policy and vulnerability SLAs are exercised;
+- credential rotation and restore drills remain current;
+- exceptions expire or have explicit accepted ownership and risk.
+
+### `P12-S3 — Privacy-safe feedback and next-roadmap governance`
+
+Outcome: consented operational/product evidence produces a governed successor
+roadmap rather than chat-only scope growth.
+
+Acceptance:
+
+- metrics/feedback have purpose, consent, retention, access, and deletion controls;
+- outcome claims distinguish facts, inferences, missing evidence, and recommendations;
+- the next roadmap records planned versus actual, debt, user evidence, and
+  production learning through Change Control.
+
+Phase gate: operations/support, incident and maintenance exercises, SLO review,
+privacy-safe feedback, and a successor roadmap baseline exist.
 
 ## Screen-to-phase control
 
@@ -425,7 +677,7 @@ Dependencies: `P6-S1`, `P6-S2`.
 | `LB-012`, `LB-015`–`LB-017`                     | P3                                | Planning and handoff         |
 | `LB-018`, `LB-020`, `LB-021`, `LB-023`          | P4                                | Reminder, emergency, records |
 | `LB-022`, `LB-024`–`LB-027`                     | P5                                | Community                    |
-| `LB-032`–`LB-035`                               | Applied per slice; hardened in P6 | Cross-cutting patterns       |
+| `LB-032`–`LB-035`                               | Applied per slice; hardened in P9 | Cross-cutting patterns       |
 
 No row means simultaneous implementation. Design generation/review may prepare a future slice, but production code remains gated by the active slice.
 
@@ -455,11 +707,15 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ### Current accepted changes
 
-| Change ID      | State                          | Effect on baseline                                                                   |
-| -------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
-| `CHG-2026-001` | Implemented in Phase 0         | Windows + Codex App replace legacy mixed-platform/tool delivery paths                |
-| `CHG-2026-002` | Baseline implemented; lane due | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control |
-| `CHG-2026-003` | Planning overlay implemented   | Adds risk-tiered research gates and runbook crosswalk without reordering P0–P6       |
+| Change ID      | State                           | Effect on baseline                                                                   |
+| -------------- | ------------------------------- | ------------------------------------------------------------------------------------ |
+| `CHG-2026-001` | Implemented in Phase 0          | Windows + Codex App replace legacy mixed-platform/tool delivery paths                |
+| `CHG-2026-002` | Baseline implemented; lane due  | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control |
+| `CHG-2026-003` | Partially superseded            | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded      |
+| `CHG-2026-004` | Implemented in docs/GitHub      | Preserves P0–P5 and expands production maturity through P6–P12                       |
+| `CHG-2026-005` | Accepted; debt gate active      | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt      |
+| `CHG-2026-006` | Bounded design session complete | Authorizes one disposable non-production Stitch session; handoff remains not frozen  |
+| `CHG-2026-007` | CI bootstrap implemented        | One guarded workflow-only PR registered hosted CI on default `main`                  |
 
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
@@ -468,6 +724,12 @@ post-baseline research changes must start on `init/research`; this bootstrap
 exception may not be reused.
 
 When delivery starts, update each phase/slice with actual files, contracts, validation, and status. If a new phase/slice is added, state which planned item moved, why it cannot be absorbed safely, and what downstream acceptance/validation changes.
+
+Every completed slice must also append a next-phase orientation: planned versus
+actual, new evidence, new or retired dependencies, integration/MCP debt,
+acceptance and validation changes, and the exact first action for the next
+slice. This handoff updates the plan; it does not authorize implementing the
+next slice in the same conversation.
 
 ## Exact next action
 

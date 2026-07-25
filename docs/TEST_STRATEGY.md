@@ -114,10 +114,22 @@ Fix only failures caused by or blocking the active slice. Record deferred valida
 - For each slice, select applicable rows from the shared risk catalog in
   `docs/RUNBOOK_ADOPTION.md`; do not run a generic matrix of irrelevant cases.
 - Cross-cutting security/accessibility/offline controls begin with the first
-  affected slice. The P6 campaign verifies them across the frozen release scope;
-  it does not postpone them.
+  affected slice. P6–P12 verify them across progressively broader production
+  scope; they do not postpone them.
 
-P6 stabilization follows one campaign:
+## Production-maturity validation campaigns
+
+| Phase | Required additional evidence                                                                                                                                |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P6    | Provider/consumer compatibility, mixed-version primary flow, independent artifact/start/health, architecture fitness, dependency isolation                  |
+| P7    | `N-1 -> N` migrations, replay/reconciliation/dead-letter recovery, duplicate/loss checks, backup/restore, retention/deletion, RPO/RTO                       |
+| P8    | Authorization/isolation matrix, consent revocation, secret rotation, SBOM/provenance, dependency/container scan, abuse and response exercise                |
+| P9    | Redacted telemetry journey, SLI/SLO/error budget, injected-alert/runbook test, degraded/offline/conflict states, incident and DR rehearsal                  |
+| P10   | Representative load, spike and soak, backpressure/saturation, correctness under scale, capacity and cost thresholds                                         |
+| P11   | Clean install, full CI/security/performance/DR evidence, immutable production build, migration/rollback, staged rollout, smoke, demo, and release rehearsal |
+| P12   | Alert-to-resolution/postmortem, patch/vulnerability/credential cadence, backup/restore recheck, SLO review, privacy-safe feedback governance                |
+
+Each campaign:
 
 1. freeze the exact commit, schemas, fixtures, and journey inventory;
 2. run static/build/unit/contract validation;
@@ -126,3 +138,8 @@ P6 stabilization follows one campaign:
 5. run performance/resilience/recovery validation;
 6. batch fixes by root cause, use targeted retests, then run one final Level D
    validation.
+
+An MCP becoming callable does not satisfy a test gate by itself. Close required
+MCP debt only after secret handling, least-privilege/data-egress and complete
+tool-schema review, one synthetic canary, and the affected slice validation are
+recorded. Any open deploy-blocking MCP debt fails P11 release validation.

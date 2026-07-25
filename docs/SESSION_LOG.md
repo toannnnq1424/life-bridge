@@ -306,3 +306,124 @@ Do not merge PR #21 until `KI-012` is resolved and hosted CI is visible. After
 the reviewed exact commit is integrated, open exactly one dedicated
 conversation for P1-S1 issue #5 or the separate DATA-S1 issue #4 on
 `init/research`. Do not combine their scope.
+
+## 2026-07-26 — P0 closeout, GitHub sync, and phase gate
+
+### Objective
+
+Close only Phase 0 from the copied `e5343f3` checkpoint: reconcile the
+P0–P12 production roadmap and change control, preserve the user-owned canary
+diff, synchronize governed GitHub state, restore hosted CI safely, validate one
+exact candidate, and hand off—without implementing P1 code.
+
+### Planned versus actual
+
+- Planned: finish documentation/state consistency, run targeted checks and one
+  Level D campaign, commit/push `phase/0-foundation`, and merge PR #21 only on a
+  green exact-head check.
+- Actual roadmap: `CHG-2026-004` preserved P0–P5 and replaced the overloaded P6
+  limit with cumulative production proof through P12; 21 P6–P12 slice issues
+  and standing gate #40 now match the canonical plan.
+- Actual design: `CHG-2026-006` completed the bounded official Stitch canary and
+  redacted P1 review set. The handoff is **Design review—not Frozen**; contracts,
+  corrections, localization, and manual reviews remain P1 gates.
+- Actual environment: current Docker client/server 27.5.1 is reachable. The
+  older named-pipe denial remains truthful evidence from a restricted context,
+  not a host-daemon defect or permission to change Windows/Docker configuration.
+- Actual CI: close/reopen of PR #21 still produced zero runs while default
+  `main` had no workflow. `CHG-2026-007` therefore used one workflow-only PR #41;
+  merge commit `b3095cc` registered the workflow, its guarded main push passed,
+  and reopening PR #21 produced a successful full hosted run on `e5343f3`.
+  The final pushed closeout commit still requires its own green check.
+
+### Completed
+
+- Audited the intended diff, documentation contracts, secret shapes, GitHub
+  policy/state, Phase 0 acceptance, and Docker evidence through three
+  independent read-only workstreams plus main-agent review.
+- Added `reliability`, `performance`, and `mcp-debt`; synchronized P6–P12
+  milestones; created #22–#39; remapped #18–#20 with historical bodies intact;
+  updated #3; and created zero-MCP-debt gate #40.
+- Recorded PR-only/merge-commit Network policy and the current platform limit:
+  branch protection is unavailable for this private repository on its present
+  plan, so enforcement remains manual and may not be claimed as configured.
+- Updated the P1 Stitch handoff to cover MVP-001–MVP-012 while retaining Design
+  review status and pre-freeze correction evidence.
+- Added `init/research` pull-request validation and the narrow fail-closed
+  default-branch bootstrap guard to `ci.yml`.
+- Closed bootstrap branch `phase/0-ci-bootstrap` only after its commit was
+  reachable from `main`; the commit remains recoverable through PR #41 and
+  merge commit `b3095cc`.
+- Preserved the unrelated dirty `STITCH_MCP_CANARY.md`: it was not edited,
+  formatted, staged, committed, copied into the candidate, or included in the
+  intended diff.
+
+### Files changed
+
+- Operating/governance: `AGENTS.md`, `CODEX.md`, `CONTRIBUTING.md`, `README.md`,
+  `.ai-orchestrator/PROJECT_STATE.md`, `.ai-orchestrator/CHANGELOG.md`,
+  `.ai-orchestrator/TOOLING.md`.
+- Plan/state/contracts: implementation, product, architecture, change control,
+  decisions, integration, known issues, workstream, test, security, deployment,
+  release, GitHub issue plan, runbook adoption, and this session log.
+- Design/Stitch: project register, implementation map, active operations/canary
+  report, and `docs/design/reviews/P1_S1_STITCH_HANDOFF.md`.
+- CI: `.github/workflows/ci.yml` only; no product application directory exists.
+- Repository map: unchanged because no architecture/package/service boundary
+  changed.
+
+### Decisions and Change IDs
+
+- `CHG-2026-004` / ADR-012: P0–P12 production-maturity roadmap.
+- `CHG-2026-005` / ADR-013: required MCP debt blocks production deployment.
+- `CHG-2026-006` / ADR-014: one bounded disposable non-production Stitch
+  session; retirement/usage review remains a deployment gate.
+- `CHG-2026-007` / ADR-015: one guarded workflow-only default-branch bootstrap
+  through PR #41; not reusable for product or release promotion.
+
+### Validation performed
+
+- Targeted changed-file Prettier, documentation validator, configuration
+  validator, and scoped `git diff --check`: passed.
+- GitHub 1:1 audit: 21/21 P6–P12 slice mappings passed; #18–#20 history markers,
+  issue #3 debt/status, gate #40, labels, milestones, and issue-body secret-shape
+  scan passed.
+- Docker/doctor evidence: 0 mandatory failures; client/server 27.5.1 reachable;
+  no service, Registry, ACL, firewall, or configuration mutation.
+- Hosted CI recovery: guarded main push run `30176671171` passed; full PR #21
+  recovery run `30176684309` passed on `e5343f3`.
+- Exactly one final Phase 0 Level D candidate campaign: `pnpm.cmd run
+validate:phase0` and `pnpm.cmd run security:deps` passed from a clean detached
+  candidate that excluded the user-owned dirty canary change.
+- Final intended/staged/history secret and private-resource scan reports only
+  category/path counts and found zero credential, signed-URL, or private Stitch
+  identifier shapes.
+
+### Validation intentionally deferred
+
+- The final hosted run occurs only after the closeout commit is pushed; PR #21
+  must not merge until that exact-head Windows check is green.
+- Product/service/database/browser/accessibility/deployment tests remain owned
+  by their accepted slices; Phase 0 contains no executable product runtime.
+- Provider-side retirement and usage review for the disposable Stitch key are
+  not claimed and remain a deployment gate.
+
+### Known issues
+
+- `KI-001`/`KI-002`: credential retirement and P1 design freeze remain open.
+- `KI-003`: the user-owned historical canary diff remains untouched/uncommitted.
+- `KI-004`: Docker access can differ by execution context; current host passes.
+- `KI-012`: workflow registration is mitigated; the final-head check remains a
+  hard merge gate.
+- `KI-014`: branch protection is not available on the current private plan;
+  PR-only and merge-commit governance remain manual.
+
+### Exact next step
+
+After the exact closeout commit passes hosted CI and PR #21 is merged into
+`dev`, the Project Controller creates a new task from `dev` for
+`P1-S1 — Accountable care-task loop` (issue #5). Start with the P1 research
+micro-cycle, review/freeze task-event-API contracts, then resolve the Stitch
+correction/localization/accessibility/privacy/security gates before production
+frontend implementation. Do not combine DATA-S1 and do not implement P1 in
+this Phase 0 task.

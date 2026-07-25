@@ -14,10 +14,22 @@ LifeBridge là công cụ điều phối. Sản phẩm **không** chẩn đoán,
 
 ### Trạng thái dự án
 
-- Đang ở **Phase 0 — Foundation**: chuẩn hóa repository, Windows bootstrap/doctor, CI, bảo mật, nghiên cứu dữ liệu và quy trình thiết kế.
+- **Phase 0 — Foundation** đã được kiểm chứng cục bộ và đang ở bước tích hợp/closeout.
+- Kế hoạch hiện hành là lộ trình production tích lũy **P0–P12**; đây là kế hoạch, không phải tuyên bố các phase tương lai đã được triển khai.
+- Vertical slice sản phẩm tiếp theo vẫn là chính xác `P1-S1 — Accountable care-task loop`, sau khi các gate CI và Stitch liên quan đạt.
 - Chưa có bản sản phẩm dùng cho dữ liệu chăm sóc thật.
 - `docs/design/SCREEN_INVENTORY.md` ghi 35 màn hình/trạng thái như **backlog có kiểm soát**, không phải cam kết triển khai đồng thời.
 - UI chỉ được triển khai sau khi luồng liên quan đã được thiết kế/review qua Google Stitch MCP và có handoff trong Git.
+
+### Lộ trình production P0–P12
+
+- `P0`: foundation, governance và research.
+- `P1–P5`: các vertical slice về task, trust/household, care planning, safety/records và community.
+- `P6–P10`: contract microservice, độ bền dữ liệu/sự kiện, security/privacy, observability/SLO/DR và performance/capacity/cost.
+- `P11`: production deployment, staged rollout, pilot và release.
+- `P12`: vận hành sau phát hành, bảo trì và lập roadmap kế tiếp từ bằng chứng thực tế.
+
+Chất lượng production được bổ sung ngay trong từng slice phù hợp; P6–P12 xác minh các kiểm soát đó trên toàn release scope, không phải nơi trì hoãn chúng đến cuối dự án.
 
 ### MVP theo vertical slice
 
@@ -54,6 +66,7 @@ Không thay đổi Execution Policy toàn máy. Không chạy với quyền Admi
 - Đọc `CODEX.md`, repository map, implementation plan và session log trước khi sửa.
 - Làm theo contract và test của slice; không quét lại toàn repository nếu bản đồ vẫn chính xác.
 - Ghi mọi thay đổi roadmap theo cấu trúc: kế hoạch gốc, thực tế, lý do, ảnh hưởng, validation và follow-up.
+- Khi đóng phase/slice, ghi định hướng chính xác cho phase/slice tiếp theo từ code, contract và kết quả test thực tế; chỉ handoff, không triển khai tiếp trong cùng conversation.
 - Không commit secret, dữ liệu nhận dạng cá nhân (PII), hồ sơ chăm sóc thật hay file môi trường cục bộ.
 
 Luồng nhánh:
@@ -65,7 +78,7 @@ init/research -> data -> dev -> test -> main
                       phase/*
 ```
 
-`init/research` là tên hợp lệ; `/init` không hợp lệ trong Git. Không dùng nhánh `codex/*`. Chi tiết ở `CONTRIBUTING.md`.
+Mọi promotion vào nhánh dài hạn phải qua pull request. `phase/*` là nhánh ngắn hạn từ `dev` và quay lại `dev`; research đi `init/research -> data -> dev`; release đi `dev -> test -> main`. GitHub Network phải thể hiện đúng sự hội tụ này, không có nhánh trang trí hoặc phân kỳ vĩnh viễn. `init/research` là tên hợp lệ; `/init` không hợp lệ trong Git. Không dùng nhánh `codex/*`. Chi tiết ở `CONTRIBUTING.md`.
 
 ### Nghiên cứu và dữ liệu
 
@@ -103,10 +116,22 @@ LifeBridge is a coordination tool. It does **not** diagnose, prescribe, replace 
 
 ### Project status
 
-- The repository is in **Phase 0 — Foundation**: repository governance, Windows bootstrap/doctor, CI, security, data research, and design workflow.
+- **Phase 0 — Foundation** is locally validated and is in integration/closeout.
+- The active plan is the cumulative production roadmap **P0–P12**; future phases are plans, not implementation claims.
+- The exact next product slice remains `P1-S1 — Accountable care-task loop` after its CI and Stitch gates pass.
 - It is not ready for real care data.
 - The 35 entries in `docs/design/SCREEN_INVENTORY.md` are a controlled **backlog**, not a promise to build everything at once.
 - UI implementation starts only after the relevant flow is designed/reviewed through Google Stitch MCP and handed off in Git.
+
+### P0–P12 production roadmap
+
+- `P0`: foundation, governance, and research.
+- `P1–P5`: task, trust/household, care-planning, safety/records, and community vertical slices.
+- `P6–P10`: microservice contracts, data/event durability, security/privacy, observability/SLO/DR, and performance/capacity/cost.
+- `P11`: production deployment, staged rollout, pilot, and release.
+- `P12`: post-launch operations, maintenance, and evidence-driven successor planning.
+
+Production controls are implemented in each applicable slice. P6–P12 prove them across the accepted release scope; they are not a reason to defer quality.
 
 ### First vertical slice
 
@@ -143,6 +168,7 @@ Do not change the machine-wide Execution Policy or elevate merely to bootstrap.
 - Read `CODEX.md`, the repository map, implementation plan, and session log before editing.
 - Work from the slice contract and focused tests; do not repeatedly rescan the repository.
 - Record every roadmap deviation as planned versus actual, reason, impact, validation, and follow-up.
+- At phase/slice close, derive the next orientation from actual code, contracts, and test evidence; hand it off without implementing it in the same conversation.
 - Never commit secrets, PII, real care records, or local environment files.
 
 Branch promotion is:
@@ -154,7 +180,7 @@ init/research -> data -> dev -> test -> main
                       phase/*
 ```
 
-`init/research` is valid; `/init` is not a valid Git branch name. New work must not use `codex/*`. See `CONTRIBUTING.md`.
+Every promotion into a long-lived branch is pull-request-only. Short-lived `phase/*` branches start from and return to `dev`; research promotes `init/research -> data -> dev`; releases promote `dev -> test -> main`. GitHub Network must show that real convergence without decorative or permanently divergent branches. `init/research` is valid; `/init` is not. New work must not use `codex/*`. See `CONTRIBUTING.md`.
 
 ### Research and data
 

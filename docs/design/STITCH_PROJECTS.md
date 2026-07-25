@@ -3,18 +3,21 @@
 ## Current status
 
 ```text
-Integration: Configured but inactive
+Integration: Official MCP canary passed; bounded design session complete
 Transport: Remote HTTPS MCP
-Tooling canary: Not run
-Approved Stitch projects: None
-Registered screens: None
+Tooling canary: PASS WITH CONTROLLED EXCEPTION (CHG-2026-006)
+Approved Stitch projects: 1 private non-production project
+Registered screens: LB-011, LB-013, LB-014, and LB-019 review references
 Imported artifacts: None
-Production design generation: Blocked
+Production UI implementation: Blocked until P1 handoff freeze
 ```
 
-No Stitch project has been created, listed, imported, modified, deleted, or downloaded during bootstrap.
-
-The disclosed API key is considered compromised. Do not use it. Activation remains blocked until its owner confirms revocation, reviews usage, creates a restricted non-production replacement, and enters that replacement through an approved secret mechanism.
+On 2026-07-26 the user authorized one bounded use of a disposable
+non-production credential under `CHG-2026-006`. The official endpoint completed
+handshake/schema review, a read-only listing canary, private project/design
+system creation, and the P1 design references listed below. The credential was
+not written to the repository or persistent Codex configuration; provider-side
+retirement and usage review remain required before deployment.
 
 The rejected package `@_davideast/stitch-mcp@0.9.0` was not approved for installation or execution.
 
@@ -59,7 +62,7 @@ Accessibility, security, privacy, localization, authorization, consent, service 
 
 ## Activation gate
 
-Before creating or modifying a Stitch project:
+Before a future Stitch session outside `CHG-2026-006`:
 
 1. Confirm the disclosed key was revoked and its usage reviewed.
 2. Confirm a restricted replacement exists in a dedicated non-production project.
@@ -71,17 +74,18 @@ Before creating or modifying a Stitch project:
 8. Approve project purpose, owner, access boundary, synthetic dataset, retention, and deletion authority.
 9. Obtain explicit approval for the exact write tool call.
 
-Canary discovery and one minimal read-only request may occur under the canary procedure. It must not create, modify, delete, bulk-download, or build a project.
+The 2026-07-26 canary already passed. A future canary discovery and one minimal
+read-only request may occur under this procedure, but it must not create,
+modify, delete, bulk-download, or build a project until a new write scope is
+approved.
 
 ## Project strategy
 
 Start with the fewest projects that preserve access isolation, review clarity, artifact size, and lifecycle ownership. Do not create one project per screen by default.
 
-No project is currently approved or registered.
-
-| Local reference | Redacted remote reference | Scope | Environment         | Owner | Data class     | Status      | Created | Last verified | Retention        |
-| --------------- | ------------------------- | ----- | ------------------- | ----- | -------------- | ----------- | ------- | ------------- | ---------------- |
-| None            | None                      | None  | Non-production only | `TBD` | Synthetic only | Not created | N/A     | N/A           | Pending approval |
+| Local reference | Redacted remote reference                 | Scope                            | Environment         | Owner                    | Data class     | Status        | Created    | Last verified | Retention                                                            |
+| --------------- | ----------------------------------------- | -------------------------------- | ------------------- | ------------------------ | -------------- | ------------- | ---------- | ------------- | -------------------------------------------------------------------- |
+| `STITCH-P1-001` | Private; identifier intentionally omitted | `P1-S1` accountable task handoff | Non-production only | LifeBridge project owner | Synthetic only | Design review | 2026-07-26 | 2026-07-26    | Retain through P1 handoff decision; deletion requires owner approval |
 
 Allowed status values:
 
@@ -144,9 +148,13 @@ Project creation remains blocked while any field affecting identity, access, dat
 docs/design/reviews/SCREEN_HANDOFF_TEMPLATE.md
 ```
 
-| Screen ID         | Local project reference | Redacted screen reference | Design version | Artifact path | Handoff | Design status | Accessibility status | Last reviewed |
-| ----------------- | ----------------------- | ------------------------- | -------------- | ------------- | ------- | ------------- | -------------------- | ------------- |
-| `LB-001`–`LB-035` | None                    | None                      | None           | None          | Pending | Not generated | Not reviewed         | N/A           |
+| Screen ID           | Local project reference | Redacted screen reference                             | Design version | Artifact path                                                 | Handoff                                                      | Design status | Accessibility status                                   | Last reviewed |
+| ------------------- | ----------------------- | ----------------------------------------------------- | -------------- | ------------------------------------------------------------- | ------------------------------------------------------------ | ------------- | ------------------------------------------------------ | ------------- |
+| `LB-011`            | `STITCH-P1-001`         | Private alias `LB011-DESKTOP-v1`                      | 0.1            | Remote reference only; temporary review image not committed   | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Contract review; manual evidence pending               | 2026-07-26    |
+| `LB-013`            | `STITCH-P1-001`         | Private aliases `LB013-DESKTOP-v1`, `LB013-MOBILE-v1` | 0.1            | Remote references only; temporary review images not committed | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Responsive direction accepted; manual evidence pending | 2026-07-26    |
+| `LB-014`            | `STITCH-P1-001`         | Private aliases `LB014-DESKTOP-v1`, `LB014-MOBILE-v1` | 0.1            | Remote references only; temporary review images not committed | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Responsive direction accepted; manual evidence pending | 2026-07-26    |
+| `LB-019`            | `STITCH-P1-001`         | Private alias `LB019-DESKTOP-v1`                      | 0.1            | Remote reference only; temporary review image not committed   | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Contract review; manual evidence pending               | 2026-07-26    |
+| Other inventory IDs | None                    | None                                                  | None           | None                                                          | Pending                                                      | Not generated | Not reviewed                                           | N/A           |
 
 Allowed design status values:
 
@@ -371,22 +379,24 @@ Product requirements
 
 ## Current blockers
 
-- Revocation of the disclosed API key is not user-confirmed.
-- No approved replacement credential has been entered.
-- The repository-scoped Codex configuration has not been activated in a fresh Codex App task.
-- Codex App Stitch remains disabled.
-- Live tool/resource schemas have not been inspected.
-- No read-only canary has run.
+- Provider-side retirement and usage review of the one-time disposable
+  credential are not yet user-confirmed; this is a deployment gate.
+- A future Stitch session requires a newly approved restricted credential and
+  scoped activation; the committed configuration remains disabled.
+- The P1 review references have an explicit correction list in
+  `docs/design/reviews/P1_S1_STITCH_HANDOFF.md`.
 - Foundation architecture and shared contract policy are defined; executable
   `P1-S1` service contracts are planned but not implemented or frozen.
 
-The Stitch gate blocks production UI implementation. It does not block non-UI
-contract work or local handoff preparation that is clearly marked unapproved:
+The Stitch generation gate is satisfied for P1 design direction. Production UI
+implementation remains blocked until the P1 handoff and service contracts are
+frozen:
 
 ```text
-Design documents
-→ local wireframes
-→ project design system
-→ draft component specification
-→ await Stitch activation, generation, review, and frozen handoff
+Reviewed Stitch direction
+→ freeze task/event/API contracts
+→ resolve correction list
+→ accessibility/privacy/security approval
+→ frozen handoff
+→ repository-native frontend implementation
 ```

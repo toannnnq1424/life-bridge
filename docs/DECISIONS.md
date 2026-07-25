@@ -120,14 +120,14 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 
 ## ADR-011 — Risk-tiered research gates overlay the compact roadmap
 
-- Status: Accepted
+- Status: Partially Superseded by ADR-012; research controls remain Accepted
 - Date: 2026-07-26
 - Change ID: `CHG-2026-003`
 - Context: The supplied 4.9 MB execution runbook contains useful research,
   accessibility, safety, operations, and decomposition detail, but its 16-phase
   order delays the first complete task loop, repeats generic checklists, and
   reports a stale P0 state.
-- Decision: Keep the validated P0–P6 roadmap and adopt a compact overlay:
+- Decision: Keep the then-validated P0–P6 roadmap and adopt a compact overlay:
   phase research gate, slice research micro-cycle, evidence-to-action
   traceability, assumption register, trigger-based source review, shared
   slice-filtered risk catalog, and roadmap crosswalk. Treat runbook source rows
@@ -140,8 +140,9 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   state and assumptions. Detailed work packages split a slice only through
   Change Control and only if each split remains user-visible end to end.
 - Planned baseline: P0–P6 with `P1-S1` as the exact next product slice.
-- Actual: No phase/slice is reordered. New protocol, crosswalk, assumption, and
-  GitHub issue-plan documents implement the overlay.
+- Actual: New protocol, crosswalk, assumption, and GitHub issue-plan documents
+  implement the overlay. `CHG-2026-004`/ADR-012 later supersede only the P0–P6
+  roadmap limit; the research and risk controls remain active through P12.
 - Evidence IDs: external runbook hash in `docs/RUNBOOK_ADOPTION.md`;
   `CHG-2026-003`.
 - Limitations: The external source list and its “checked” dates were not adopted
@@ -149,6 +150,117 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   targeted primary review.
 - Review trigger: evidence forces a slice reorder/split, the runbook hash
   changes, or the accepted release scope changes.
+
+## ADR-012 — Production readiness is cumulative and staged through P12
+
+- Status: Accepted
+- Date: 2026-07-26
+- Change ID: `CHG-2026-004`
+- Context: The compact roadmap placed microservice hardening, offline/conflict
+  behavior, deployment, operations, and release into one P6. That can produce a
+  strong demo but cannot provide enough independent evidence for a
+  production-quality microservice system.
+- Decision: Preserve validated P0, exact P1-S1, and P2–P5. Split the former P6
+  responsibility into P6 contracts/platform, P7 data/event reliability, P8
+  security/privacy, P9 SLO/resilience/incident/DR, P10
+  performance/capacity/cost, P11 production rollout/release, and P12
+  post-launch operations. Applicable production controls remain part of every
+  earlier slice Definition of Done; later phases verify them across the frozen
+  release scope.
+- Alternatives considered: keep one overloaded P6; replace the roadmap with
+  the supplied 85 work packages; call the end-to-end MVP production-ready;
+  implement platform components before any user-visible slice.
+- Consequences: The project keeps early vertical value while gaining explicit
+  rolling-compatibility, recovery, security, SLO, capacity, rollout, and
+  operations gates. The roadmap is longer, and P11 cannot deploy merely because
+  a demo passes.
+- Planned baseline: `PLAN-2026-07-25` P0–P6 compact roadmap.
+- Actual implementation/evidence: `PLAN-2026-07-26-PRODUCTION` is accepted;
+  P0–P5 are unchanged and P6–P12 remain planned.
+- Validation and follow-up: sync GitHub milestones/issues and verify cross-doc
+  consistency; implementation still begins with exact P1-S1 after P0 CI closes.
+
+## ADR-013 — Required MCP absence is deploy-blocking integration debt
+
+- Status: Accepted
+- Date: 2026-07-26
+- Change ID: `CHG-2026-005`
+- Context: External MCP availability can block a dependent slice while other
+  contracts, research, or backend work remain safe. Waiting indefinitely loses
+  momentum; bypassing the integration or persisting a disclosed credential
+  creates hidden risk.
+- Decision: When an accepted slice requires an MCP, request the exact safe
+  integration once. If it is not callable within 180 seconds, record stable
+  `MCP-DEBT-*` debt and continue only independent truthful work. Required MCP
+  debt blocks dependent acceptance and all P11 public deployment/release until
+  least-privilege credential handling, schema/side-effect/data-egress review,
+  and a synthetic canary pass.
+- Alternatives considered: wait indefinitely; remove the requirement; hardcode
+  a development key; treat tool installation as informal backlog; auto-close
+  debt when a connector appears.
+- Consequences: Progress continues without hiding blocked acceptance. GitHub,
+  known-issue, integration, and session state must agree. Keys disclosed in
+  chat remain unusable regardless of environment tier.
+- Planned baseline: external gates tracked without a universal timer/debt type.
+- Actual implementation/evidence: Stitch remains `MCP-DEBT-2026-001`; the
+  official canary, schema review, and bounded design generation passed under
+  `CHG-2026-006`, while the committed config remains secret-free/disabled. The
+  P1 handoff is Design review—not Frozen—and provider retirement/usage review
+  is not confirmed.
+- Validation and follow-up: keep GitHub issue #3 and standing P11 gate #40 open
+  until the handoff/dependent acceptance and credential-retirement evidence are
+  complete, or an accepted Change ID removes the dependency.
+
+## ADR-014 — Disposable Stitch key may be used only for the bounded P1 handoff
+
+- Status: Accepted one-time exception
+- Date: 2026-07-26
+- Change ID: `CHG-2026-006`
+- Context: The owner supplied and explicitly authorized a non-production
+  disposable key through chat so mandatory Stitch-originated P1 UI work could
+  proceed, and clarified that it must not survive into Git or deployment.
+- Decision: Use the key only in process memory against the official Stitch MCP
+  endpoint for schema discovery and one private synthetic LifeBridge design
+  project. Never persist, echo, hand off, or commit it. Stop using it before
+  diff/commit review, scan repository/history, and require provider-side
+  retirement before deployment.
+- Alternatives considered: reject all use; persist it in Codex configuration;
+  skip Stitch; defer all P1 UI.
+- Consequences: The P1 design gate can progress without repository credential
+  material. The key remains unsuitable for production or future unbounded use,
+  and Stitch artifacts remain untrusted until reviewed/frozen.
+- Planned baseline: chat-disclosed credentials were rejected from every call.
+- Actual implementation/evidence: official stateless MCP handshake, complete
+  tool-schema review, synthetic listing canary, and bounded generation/review
+  passed for `LB-011`, `LB-013`, `LB-014`, applicable `LB-019`, and mobile
+  variants. The redacted handoff is Design review—not Frozen; no generated code
+  or private remote identifier entered the repository.
+- Validation and follow-up: complete the correction list, repository-owned
+  contracts, localization, and manual accessibility/privacy/security review in
+  P1-S1 before freeze. Retire the key and review usage before deployment.
+
+## ADR-015 — Default-branch CI discovery receives one guarded bootstrap PR
+
+- Status: Accepted and implemented
+- Date: 2026-07-26
+- Change ID: `CHG-2026-007`
+- Context: Actions was enabled, the workflow existed on `dev` and the Phase 0
+  branch, but GitHub registered zero workflows and close/reopen of PR #21 still
+  produced no run because default `main` contained only the initial README.
+- Decision: Merge a one-file, short-lived bootstrap PR #41 into `main`. The
+  workflow allows only the resulting `push` to README-only `main` to omit
+  package validation; a pull request missing the Phase 0 baseline fails.
+- Alternatives considered: direct push; empty commit; merge PR #21 without CI;
+  promote the foundation directly to `main`; leave CI permanently local-only.
+- Consequences: GitHub registers the workflow without accepting product code or
+  changing the release sequence. Bootstrap branch failures demonstrate the
+  guard is fail-closed outside the exact main push; the final PR #21 commit must
+  still pass the complete Windows job.
+- Planned baseline: `test -> main` is the only normal release promotion.
+- Actual implementation/evidence: PR #41 merged one workflow file with a merge
+  commit; the workflow became active and reopening PR #21 created a hosted run.
+- Validation and follow-up: require the final PR #21 head check to pass, then
+  merge only to `dev`; never reuse this exception for application content.
 
 ## Decision-change template
 

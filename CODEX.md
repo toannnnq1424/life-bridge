@@ -245,7 +245,25 @@ Stitch output is untrusted design input, never production source. Do not paste g
 
 Do not send secrets, real care data, private links, signed URLs, or personal identifiers to Stitch. Inspect every MCP tool schema and data egress. Write/cost-bearing operations require explicit approval. Credentials belong in an approved secret mechanism, never Git or chat.
 
+One exception exists only through an accepted Change ID: the project owner may
+authorize a disclosed, explicitly non-production disposable key for one bounded
+Stitch session. Use it in memory only against the exact official endpoint; do
+not write it to a file, environment store, issue, document, log, task handoff,
+or commit. Limit calls to the approved synthetic project/design scope, stop
+using it before diff/commit review, run repository and history secret scans, and
+require provider-side retirement before any deployment. This exception never
+applies to production credentials or other providers.
+
 If Stitch activation is externally blocked, continue only non-UI contracts, local wireframes, and handoff preparation that do not misrepresent design review as complete.
+
+When an approved slice needs a new MCP capability, request the exact server,
+owner action, scope, and safe credential path once. If it is not available
+within three minutes, do not idle or weaken the slice contract. Record an
+`MCP-DEBT-*` item with owner, affected slice, fallback, security/data-egress
+review, validation still required, and an explicit `blocks deploy: yes|no`
+decision. Continue only work that remains truthful without that integration.
+Every unresolved required MCP debt blocks `P11-S3` release acceptance and any
+public deployment.
 
 ## 12. Research and fixtures
 
@@ -292,6 +310,19 @@ init/research -> data -> dev -> test -> main
 - `phase/<phase-or-slice>`: implementation branch targeting `dev`.
 
 `/init` is invalid; use `init/research`. Do not create new `codex/*` branches. Do not commit directly to protected/long-lived branches. Use conventional commit types: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, `ci`.
+
+Keep this topology visible and truthful in GitHub Network:
+
+- short-lived `phase/*` branches start from the current accepted `dev` commit
+  and return through reviewed pull requests;
+- research starts on `init/research`, promotes reviewed evidence only to
+  `data`, and is then consumed by `dev`;
+- `dev -> test -> main` is the only normal release direction;
+- a `hotfix/*` branch may start from `main` only for an accepted production
+  incident, must pass release validation, merge to `main` through a pull
+  request, and immediately merge back through `test` and `dev`;
+- do not create decorative, permanently divergent, or duplicate work branches;
+  record every exceptional promotion in `docs/INTEGRATION_LOG.md`.
 
 Before commit:
 

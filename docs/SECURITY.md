@@ -92,6 +92,18 @@ Follow `docs/orchestration/STITCH_CODEX_APP_OPERATIONS.md`.
 - Generated code/images are untrusted imports.
 - Write, delete, export, build, browser, bulk, or material-cost operations
   require explicit approval.
+- A required MCP that remains unavailable after 180 seconds becomes
+  `MCP-DEBT-*`; dependent acceptance stays blocked while unrelated safe work may
+  continue.
+- Required MCP debt closes only after approved runtime secret handling,
+  least-privilege and data-egress review, complete tool-schema/side-effect
+  review, a synthetic canary, and recorded affected validation.
+- Any key pasted into chat is treated as disclosed and cannot be a production
+  secret. `CHG-2026-006` is a one-time exception for the project-owner-approved
+  disposable Stitch key: use it only in process memory against the official
+  endpoint for the bounded private synthetic design session; never persist,
+  echo, hand off, or commit it; stop before diff/commit review and require
+  provider-side retirement before deployment.
 
 ## Security validation
 
@@ -112,6 +124,10 @@ Before release:
 - backup/restore rehearsal for each source of truth;
 - deployment configuration review;
 - incident-response and credential-rotation rehearsal.
+- artifact provenance, container/dependency scans, and owned exceptions;
+- zero unresolved required MCP/integration debt;
+- successful P8 security/privacy/abuse/supply-chain gate and current P9
+  incident/DR evidence.
 
 ## Incident response
 

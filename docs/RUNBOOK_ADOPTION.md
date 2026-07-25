@@ -8,8 +8,14 @@
 - Canonical execution state: `docs/IMPLEMENTATION_PLAN.md`,
   `docs/WORKSTREAM_BOARD.md`, and `docs/SESSION_LOG.md`
 
+The P0–P6 limit below is the historical baseline accepted by `CHG-2026-003`.
+`CHG-2026-004` later superseded only that roadmap limit with the cumulative
+P0–P12 production plan; the research protocol, evidence controls, crosswalk,
+and rejection of the external 85-slice backlog remain active.
+
 The supplied runbook is a useful planning input, not a second source of project
-state. LifeBridge keeps the validated P0–P6 roadmap and uses the runbook to
+state. At the time of this decision, LifeBridge kept the validated P0–P6
+roadmap and used the runbook to
 improve research gates, risk coverage, user-research safeguards, and future
 slice decomposition.
 
@@ -44,7 +50,7 @@ different revision is being considered.
 | Shared edge-state inventory            | Adapt                 | Select only slice-relevant risks; never copy every card                |
 | Calm, content-first UI guidance        | Candidate             | Must still pass Stitch critique and user/accessibility review          |
 | P0–P15 ordering                        | Reject as baseline    | It delays the first working care-task loop until its P5                |
-| 85 slices as mandatory release scope   | Reject                | Release scope is the accepted P0–P6 plan only                          |
+| 85 slices as mandatory release scope   | Reject                | Release scope is the accepted plan, now P0–P12 under `CHG-2026-004`    |
 | P0 `NOT STARTED` state                 | Reject                | Repository evidence says P0 is validated                               |
 | Source rows marked checked             | Reject until verified | Re-register through `init/research` after primary-source review        |
 | Empty per-source worksheets            | Reject                | Materialize one scoped summary only when a source is active            |
