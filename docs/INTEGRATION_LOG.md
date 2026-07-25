@@ -110,7 +110,7 @@ environments are intended to converge. It is not a substitute for Git history.
 ## INT-2026-005 — Publish governed GitHub execution objects
 
 - Date: 2026-07-26
-- Status: Published; integration review open
+- Status: Published; integration review open; hosted CI not registered
 - Source: `phase/0-foundation`
 - Target: `dev`
 - Scope: 10 project labels, 7 undated milestones, 19 bilingual controlled
@@ -122,11 +122,13 @@ environments are intended to converge. It is not a substitute for Git history.
   open issues
 - Conflicts/risks: [issue #3](https://github.com/toannnnq1424/life-bridge/issues/3)
   remains the external Stitch credential/canary gate; the user-owned canary
-  diff remains excluded
+  diff remains excluded; `KI-012` records the initial GitHub Actions bootstrap
+  gate
 - Decision/change references: `CHG-2026-003`, ADR-011
 - Review:
   [PR #21](https://github.com/toannnnq1424/life-bridge/pull/21),
-  `phase/0-foundation` → `dev`; do not merge until required review/checks pass
+  `phase/0-foundation` → `dev`; two commits, no base conflict, zero registered
+  checks after the latest push; do not merge until required review/checks pass
 - Follow-up: open either
   [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5) or the
   separate [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)

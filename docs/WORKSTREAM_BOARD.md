@@ -26,12 +26,13 @@ No owner role may mark another row complete without its evidence/handoff. Parall
 
 ## Known environment/external gates
 
-| Gate                                      | Classification                 | Current handling                                       | Prohibited shortcut                                                           | Exact acceptance action                                                                          |
-| ----------------------------------------- | ------------------------------ | ------------------------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Docker CLI present but daemon unavailable | Environment issue              | Doctor reports Docker-dependent validation unavailable | Do not elevate or edit services/Registry/firewall/Docker config automatically | User starts/repairs Docker; rerun the one deferred Docker check                                  |
-| Docker user config unreadable/restricted  | Environment/permission issue   | Report redacted path/category only                     | Do not take ownership/change ACL automatically                                | User resolves intended Docker access; rerun doctor                                               |
-| PowerShell blocks package `*.ps1` shims   | Environment policy, mitigated  | Use `npm.cmd`, `npx.cmd`, `pnpm.cmd`                   | Do not change machine-wide Execution Policy                                   | Canonical commands succeed through `.cmd`                                                        |
-| Stitch credential was exposed             | Security/external-account gate | Treat as compromised; no activation/write call         | Do not reuse, log, paste, or automate account/IAM changes                     | Owner revokes/reviews/replaces with restricted non-production key; one approved read-only canary |
+| Gate                                      | Classification                 | Current handling                                        | Prohibited shortcut                                                           | Exact acceptance action                                                                          |
+| ----------------------------------------- | ------------------------------ | ------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Docker CLI present but daemon unavailable | Environment issue              | Doctor reports Docker-dependent validation unavailable  | Do not elevate or edit services/Registry/firewall/Docker config automatically | User starts/repairs Docker; rerun the one deferred Docker check                                  |
+| Docker user config unreadable/restricted  | Environment/permission issue   | Report redacted path/category only                      | Do not take ownership/change ACL automatically                                | User resolves intended Docker access; rerun doctor                                               |
+| PowerShell blocks package `*.ps1` shims   | Environment policy, mitigated  | Use `npm.cmd`, `npx.cmd`, `pnpm.cmd`                    | Do not change machine-wide Execution Policy                                   | Canonical commands succeed through `.cmd`                                                        |
+| Stitch credential was exposed             | Security/external-account gate | Treat as compromised; no activation/write call          | Do not reuse, log, paste, or automate account/IAM changes                     | Owner revokes/reviews/replaces with restricted non-production key; one approved read-only canary |
+| First hosted CI check is not registered   | Integration bootstrap gate     | PR #21 stays open; local Phase 0 evidence remains valid | Do not merge, bypass checks, write directly to `main`, or weaken branch flow  | Approve a safe first-workflow promotion path; observe the required GitHub-hosted check           |
 
 Gates block only dependent validation/work. They do not authorize broad system repair and do not make unrelated Phase 0 documentation fail.
 
@@ -115,7 +116,9 @@ Mirror accepted changes in `docs/IMPLEMENTATION_PLAN.md`; add an ADR for archite
 
 ## Exact next handoff
 
-Open a new conversation for
+Resolve `KI-012` and obtain a visible required check on
+[PR #21](https://github.com/toannnnq1424/life-bridge/pull/21) before merge.
+After the foundation is integrated, open a new conversation for
 [`P1-S1` issue #5](https://github.com/toannnnq1424/life-bridge/issues/5),
 starting with the task-flow contract and Google Stitch handoffs for `LB-011`,
 `LB-013`, `LB-014`, and the relevant `LB-019`/state patterns. Production UI

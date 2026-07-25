@@ -13,6 +13,10 @@
   [#3](https://github.com/toannnnq1424/life-bridge/issues/3); separate
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
+- Integration gate:
+  [PR #21](https://github.com/toannnnq1424/life-bridge/pull/21) has no base
+  conflict but zero registered checks; resolve `KI-012` before merge or P1
+  implementation
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -467,7 +471,12 @@ When delivery starts, update each phase/slice with actual files, contracts, vali
 
 ## Exact next action
 
-Open one new conversation for
+First resolve `KI-012`, obtain a visible required hosted-CI result, and review
+the exact commit in
+[PR #21](https://github.com/toannnnq1424/life-bridge/pull/21). Do not merge or
+write directly to `main` to bypass this bootstrap gate.
+
+After the foundation is integrated, open one new conversation for
 [`P1-S1 — Accountable care-task loop` issue #5](https://github.com/toannnnq1424/life-bridge/issues/5).
 Begin with the P1 research gate, current task/event contract, and required
 Stitch handoff for `LB-011`, `LB-013`, `LB-014`, applicable `LB-019`, and shared

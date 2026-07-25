@@ -61,6 +61,9 @@ external gates are known.
   issues. No milestone due date was invented.
 - Integration review:
   [PR #21, `phase/0-foundation` → `dev`](https://github.com/toannnnq1424/life-bridge/pull/21).
+  GitHub reports no base conflict, but currently registers zero checks. The PR
+  must not merge until the initial hosted-CI bootstrap gate in `KI-012` is
+  resolved and required validation is visible.
 
 ## Issue catalog
 

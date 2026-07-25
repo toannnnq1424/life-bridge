@@ -39,5 +39,7 @@ Product/runtime release notes will be introduced when executable behavior exists
 - Audited every issue title, label set, and milestone against the repository
   plan.
 - Opened PR #21 from `phase/0-foundation` to `dev`; it is not merged.
+- GitHub reports no base conflict but zero checks; recorded `KI-012` and kept
+  the PR unmerged instead of bypassing the first-workflow bootstrap gate.
 - Preserved Stitch issue #3 as blocked and kept DATA-S1 issue #4 separate from
   P1-S1 issue #5.

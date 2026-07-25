@@ -272,8 +272,8 @@ review without starting product code.
 ### Validation performed
 
 - GitHub label count: 19 total, including the 10 planned project labels.
-- GitHub milestone count: 7; distribution is P0 `1/1 closed`, P1–P6 `0/3
-closed`.
+- GitHub milestone count: 7; P0 has one of one issue closed and P1–P6 each
+  have zero of three issues closed.
 - GitHub issue audit: 19/19 title, label, and milestone mappings passed.
 - PR base/head: `dev` ← `phase/0-foundation`; GitHub reported no conflict.
 - Changed-file Prettier check, Phase 0 docs validator, secret validator, and
@@ -283,19 +283,26 @@ closed`.
   reinstall or system-policy change. The pnpm launcher emitted an engine
   warning from its bundled Node 24 runtime; host `node.exe` remains the required
   v22.22.3.
+- After push, PR #21 contains two commits and GitHub reports no base conflict,
+  but it registers zero checks. Repository settings allow Actions and `ci.yml`
+  exists on the phase/dev history; default `main` still has no registered
+  workflow. This is `KI-012`, not permission to bypass CI.
 
 ### Validation intentionally deferred
 
-- PR/CI merge acceptance until this publication record is committed and pushed.
+- GitHub-hosted CI and merge acceptance until `KI-012` has an approved safe
+  first-workflow promotion path and a visible required check.
 - Live Stitch canary until issue #3 external credential conditions pass.
 - Product/browser/database/deployment validation until their accepted slices.
 
 ### Known issues
 
-- `KI-001`–`KI-004` remain external/environment gates.
+- `KI-001`–`KI-004` remain external/environment gates; `KI-012` blocks merge.
 - The user-owned `STITCH_MCP_CANARY.md` edit remains unstaged and unchanged.
 
 ### Exact next step
 
-After PR #21 review, open exactly one dedicated conversation for P1-S1 issue #5
-or the separate DATA-S1 issue #4 on `init/research`. Do not combine their scope.
+Do not merge PR #21 until `KI-012` is resolved and hosted CI is visible. After
+the reviewed exact commit is integrated, open exactly one dedicated
+conversation for P1-S1 issue #5 or the separate DATA-S1 issue #4 on
+`init/research`. Do not combine their scope.
