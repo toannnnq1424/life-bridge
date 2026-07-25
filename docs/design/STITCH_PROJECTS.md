@@ -21,9 +21,13 @@ The rejected package `@_davideast/stitch-mcp@0.9.0` was not approved for install
 Operational controls:
 
 ```text
-docs/orchestration/STITCH_MCP_OPERATIONS.md
+docs/orchestration/STITCH_CODEX_APP_OPERATIONS.md
+docs/orchestration/reports/STITCH_CODEX_APP_CANARY.md
 docs/orchestration/reports/STITCH_MCP_SECURITY_REVIEW.md
 ```
+
+`docs/orchestration/STITCH_MCP_OPERATIONS.md` is retained only as a historical
+VS Code/Cline record and is not an active path.
 
 ## Purpose and source precedence
 
@@ -49,8 +53,8 @@ Accessibility, security, privacy, localization, authorization, consent, service 
 - Redact remote project and screen references when they could expose a private workstream.
 - Never place credentials in Git, MCP configuration, reports, screenshots, prompts, handoffs, terminal arguments, or imported artifacts.
 - Do not automate OAuth, browser login, MFA, API enablement, IAM changes, `gcloud` installation, credential entry, or MCP trust prompts.
-- Keep Cline `autoApprove: []`.
-- Keep the Cline `stitch` server disabled outside an approved session.
+- Keep Codex App Stitch disabled outside an approved design session.
+- Keep the default MCP approval mode at `prompt`; wildcard approval is prohibited.
 - Every write, delete, export, build, browser, bulk-download, or cost-bearing operation requires explicit approval.
 
 ## Activation gate
@@ -59,11 +63,11 @@ Before creating or modifying a Stitch project:
 
 1. Confirm the disclosed key was revoked and its usage reviewed.
 2. Confirm a restricted replacement exists in a dedicated non-production project.
-3. Enter the replacement only through VS Code password input or an approved Cline environment/session-secret mechanism.
-4. Review and accept VS Code trust for this workspace only.
-5. Enable Cline only for the canary; retain `autoApprove: []`.
+3. Supply the replacement only to the Codex App process through an approved Windows runtime-secret mechanism.
+4. Trust only this repository's `.codex/config.toml` layer.
+5. Enable Stitch only for the approved Codex App canary; retain approval mode `prompt`.
 6. Review live tool/resource names, descriptions, complete schemas, side effects, data egress, returned artifacts, and cost behavior.
-7. Pass the VS Code and Cline tooling canary.
+7. Pass the Codex App tooling canary.
 8. Approve project purpose, owner, access boundary, synthetic dataset, retention, and deletion authority.
 9. Obtain explicit approval for the exact write tool call.
 
@@ -75,9 +79,9 @@ Start with the fewest projects that preserve access isolation, review clarity, a
 
 No project is currently approved or registered.
 
-| Local reference | Redacted remote reference | Scope | Environment | Owner | Data class | Status | Created | Last verified | Retention |
-|---|---|---|---|---|---|---|---|---|---|
-| None | None | None | Non-production only | `TBD` | Synthetic only | Not created | N/A | N/A | Pending approval |
+| Local reference | Redacted remote reference | Scope | Environment         | Owner | Data class     | Status      | Created | Last verified | Retention        |
+| --------------- | ------------------------- | ----- | ------------------- | ----- | -------------- | ----------- | ------- | ------------- | ---------------- |
+| None            | None                      | None  | Non-production only | `TBD` | Synthetic only | Not created | N/A     | N/A           | Pending approval |
 
 Allowed status values:
 
@@ -140,9 +144,9 @@ Project creation remains blocked while any field affecting identity, access, dat
 docs/design/reviews/SCREEN_HANDOFF_TEMPLATE.md
 ```
 
-| Screen ID | Local project reference | Redacted screen reference | Design version | Artifact path | Handoff | Design status | Accessibility status | Last reviewed |
-|---|---|---|---|---|---|---|---|---|
-| `LB-001`–`LB-035` | None | None | None | None | Pending | Not generated | Not reviewed | N/A |
+| Screen ID         | Local project reference | Redacted screen reference | Design version | Artifact path | Handoff | Design status | Accessibility status | Last reviewed |
+| ----------------- | ----------------------- | ------------------------- | -------------- | ------------- | ------- | ------------- | -------------------- | ------------- |
+| `LB-001`–`LB-035` | None                    | None                      | None           | None          | Pending | Not generated | Not reviewed         | N/A           |
 
 Allowed design status values:
 
@@ -231,7 +235,7 @@ Before every Stitch MCP call, record:
 
 ```text
 Date/time:
-Client: VS Code | Cline
+Client: Codex App on Windows
 Tool:
 Description:
 Complete schema reviewed:
@@ -249,14 +253,14 @@ Redacted evidence:
 
 Initial policy:
 
-| Tool class | Policy |
-|---|---|
-| Tool/resource discovery | Canary only; explicit approval |
-| Read-only metadata | Explicit approval until schema review and successful canary |
-| Screen, image, HTML, or code retrieval | Explicit approval; external import review required |
-| Create, update, archive, or delete | Explicit approval every call |
-| Build site or prototype | Explicit approval every call; prototype branch and path only |
-| Browser, OAuth, or credential operation | User-operated approval only |
+| Tool class                              | Policy                                                       |
+| --------------------------------------- | ------------------------------------------------------------ |
+| Tool/resource discovery                 | Canary only; explicit approval                               |
+| Read-only metadata                      | Explicit approval until schema review and successful canary  |
+| Screen, image, HTML, or code retrieval  | Explicit approval; external import review required           |
+| Create, update, archive, or delete      | Explicit approval every call                                 |
+| Build site or prototype                 | Explicit approval every call; prototype branch and path only |
+| Browser, OAuth, or credential operation | User-operated approval only                                  |
 
 Wildcard auto-approval is prohibited.
 
@@ -355,7 +359,7 @@ Deletion tools never receive auto-approval. Do not claim deletion or credential 
 Product requirements
 → UX flows
 → low-fidelity structure
-→ approved Stitch generation or local wireframes
+→ approved Stitch generation
 → design review
 → accessibility review
 → privacy/security review
@@ -369,18 +373,20 @@ Product requirements
 
 - Revocation of the disclosed API key is not user-confirmed.
 - No approved replacement credential has been entered.
-- VS Code workspace trust is not approved.
-- Cline Stitch remains disabled.
+- The repository-scoped Codex configuration has not been activated in a fresh Codex App task.
+- Codex App Stitch remains disabled.
 - Live tool/resource schemas have not been inspected.
 - No read-only canary has run.
-- Application architecture and service contracts remain `TBD`.
+- Foundation architecture and shared contract policy are defined; executable
+  `P1-S1` service contracts are planned but not implemented or frozen.
 
-Stitch failure does not block delivery:
+The Stitch gate blocks production UI implementation. It does not block non-UI
+contract work or local handoff preparation that is clearly marked unapproved:
 
 ```text
 Design documents
 → local wireframes
 → project design system
-→ manual component specification
-→ frontend implementation after architecture approval
+→ draft component specification
+→ await Stitch activation, generation, review, and frozen handoff
 ```

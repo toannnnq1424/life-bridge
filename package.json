@@ -1,0 +1,40 @@
+{
+  "name": "lifebridge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LifeBridge Windows-first microservice workspace",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22.0.0 <23",
+    "pnpm": "11.9.0"
+  },
+  "scripts": {
+    "bootstrap": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/bootstrap.ps1",
+    "doctor": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/doctor.ps1",
+    "format": "prettier --write package.json pnpm-workspace.yaml tsconfig.json tsconfig.build.json eslint.config.mjs prettier.config.mjs \"tools/quality/**/*.ts\" \".ai-orchestrator/**/*.md\" \"data/**/*.md\" \"docs/*.md\" \"docs/research/**/*.md\" docs/design/ACCESSIBILITY_REQUIREMENTS.md docs/design/STITCH_PROJECTS.md docs/orchestration/STITCH_CODEX_APP_OPERATIONS.md docs/orchestration/WINDOWS_ENVIRONMENT.md docs/orchestration/reports/STITCH_CODEX_APP_CANARY.md .github/pull_request_template.md README.md CODEX.md AGENTS.md CONTRIBUTING.md",
+    "format:check": "prettier --check package.json pnpm-workspace.yaml tsconfig.json tsconfig.build.json eslint.config.mjs prettier.config.mjs \"tools/quality/**/*.ts\" \".ai-orchestrator/**/*.md\" \"data/**/*.md\" \"docs/*.md\" \"docs/research/**/*.md\" docs/design/ACCESSIBILITY_REQUIREMENTS.md docs/design/STITCH_PROJECTS.md docs/orchestration/STITCH_CODEX_APP_OPERATIONS.md docs/orchestration/WINDOWS_ENVIRONMENT.md docs/orchestration/reports/STITCH_CODEX_APP_CANARY.md .github/pull_request_template.md README.md CODEX.md AGENTS.md CONTRIBUTING.md",
+    "lint": "eslint eslint.config.mjs \"tools/quality/**/*.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:unit": "vitest run tools/quality",
+    "test:integration": "tsx tools/quality/src/phase0.ts all",
+    "validate:docs": "tsx tools/quality/src/phase0.ts docs",
+    "validate:config": "tsx tools/quality/src/phase0.ts config",
+    "validate:secrets": "tsx tools/quality/src/phase0.ts secrets",
+    "validate:phase0": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/validate-phase0.ps1",
+    "build": "tsc --noEmit -p tsconfig.build.json",
+    "security:deps": "pnpm audit --audit-level high"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.1",
+    "eslint": "10.7.0",
+    "prettier": "3.9.6",
+    "smol-toml": "1.7.0",
+    "tsx": "4.23.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.65.0",
+    "vitest": "4.1.10"
+  }
+}

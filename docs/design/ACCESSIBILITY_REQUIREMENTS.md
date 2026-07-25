@@ -21,18 +21,18 @@ Automated checks detect regressions. They do not replace keyboard, screen-reader
 
 ## Semantic structure
 
-| Requirement | Acceptance evidence |
-|---|---|
-| Document title | Unique, descriptive route title without unnecessary sensitive data |
-| Page heading | One visible `h1`; logical heading hierarchy |
-| Skip link | First keyboard destination; visibly focuses and moves to main content |
-| Landmarks | Meaningful, named `header`, `nav`, `main`, complementary, search, and footer regions only where applicable |
-| Native HTML | Buttons, links, fields, lists, tables, details, dialogs, and status elements use native semantics first |
-| Accessible names | Every control, region, field, icon action, image, and disclosure has a concise purpose-accurate name |
-| Relationships | Labels, hints, units, errors, descriptions, groups, headings, and table headers are programmatically associated |
-| Programmatic state | Current, selected, expanded, invalid, required, disabled, busy, progress, sort, and status state exposed |
-| Language | Document language and language changes identified; abbreviations explained where needed |
-| Custom controls | Role, name, value, state, keyboard model, focus behavior, and assistive-technology evidence documented |
+| Requirement        | Acceptance evidence                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Document title     | Unique, descriptive route title without unnecessary sensitive data                                              |
+| Page heading       | One visible `h1`; logical heading hierarchy                                                                     |
+| Skip link          | First keyboard destination; visibly focuses and moves to main content                                           |
+| Landmarks          | Meaningful, named `header`, `nav`, `main`, complementary, search, and footer regions only where applicable      |
+| Native HTML        | Buttons, links, fields, lists, tables, details, dialogs, and status elements use native semantics first         |
+| Accessible names   | Every control, region, field, icon action, image, and disclosure has a concise purpose-accurate name            |
+| Relationships      | Labels, hints, units, errors, descriptions, groups, headings, and table headers are programmatically associated |
+| Programmatic state | Current, selected, expanded, invalid, required, disabled, busy, progress, sort, and status state exposed        |
+| Language           | Document language and language changes identified; abbreviations explained where needed                         |
+| Custom controls    | Role, name, value, state, keyboard model, focus behavior, and assistive-technology evidence documented          |
 
 Requirements:
 
@@ -105,22 +105,22 @@ Requirements:
 
 ## Visual presentation
 
-| Area | Minimum requirement |
-|---|---|
-| Normal text contrast | 4.5:1 |
-| Large text contrast | 3:1 |
-| Meaningful UI boundaries and graphics | 3:1 against adjacent colors where WCAG applies |
-| Focus contrast | 3:1 against adjacent colors; remains visible in forced colors |
-| Critical dense care information | Target 7:1 where practical |
-| Text size | Base at least `1rem`; relative units; no critical text rendered only as an image |
-| Resize | 200% zoom without loss of content or functionality |
-| Reflow | 400% reflow without page-level two-dimensional scrolling, except deliberate data regions with an equivalent view |
-| Text spacing | No clipping, overlap, hiding, or lost controls with WCAG text-spacing overrides |
-| Target size | At least 24 × 24 CSS px or qualifying spacing; target 44 × 44 CSS px for common, primary, and safety-critical controls |
-| Orientation | Portrait and landscape supported unless a documented essential exception exists |
-| Forced colors | Controls, boundaries, state, selection, and focus remain perceivable |
-| Motion | Honor `prefers-reduced-motion`; no required meaning through motion alone |
-| Flashing | No seizure-risk flashing patterns |
+| Area                                  | Minimum requirement                                                                                                    |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Normal text contrast                  | 4.5:1                                                                                                                  |
+| Large text contrast                   | 3:1                                                                                                                    |
+| Meaningful UI boundaries and graphics | 3:1 against adjacent colors where WCAG applies                                                                         |
+| Focus contrast                        | 3:1 against adjacent colors; remains visible in forced colors                                                          |
+| Critical dense care information       | Target 7:1 where practical                                                                                             |
+| Text size                             | Base at least `1rem`; relative units; no critical text rendered only as an image                                       |
+| Resize                                | 200% zoom without loss of content or functionality                                                                     |
+| Reflow                                | 400% reflow without page-level two-dimensional scrolling, except deliberate data regions with an equivalent view       |
+| Text spacing                          | No clipping, overlap, hiding, or lost controls with WCAG text-spacing overrides                                        |
+| Target size                           | At least 24 × 24 CSS px or qualifying spacing; target 44 × 44 CSS px for common, primary, and safety-critical controls |
+| Orientation                           | Portrait and landscape supported unless a documented essential exception exists                                        |
+| Forced colors                         | Controls, boundaries, state, selection, and focus remain perceivable                                                   |
+| Motion                                | Honor `prefers-reduced-motion`; no required meaning through motion alone                                               |
+| Flashing                              | No seizure-risk flashing patterns                                                                                      |
 
 Additional requirements:
 
@@ -229,30 +229,29 @@ Requirements:
 
 ## State acceptance criteria
 
-| State | Accessibility acceptance |
-|---|---|
-| Loading | Scope named; meaningful delay announced; decorative skeletons hidden |
-| Empty | Heading, cause, and permitted next action available in reading and focus order |
-| Error | Persistent recovery text; relevant announcement; safe input retained; no implementation or protected-data leakage |
-| Permission denied | Understandable boundary and safe destination; no protected-resource disclosure |
-| Offline | Connectivity, freshness, blocked or queued work, last sync, retry, and conflict behavior exposed |
-| Stale | Source freshness and limitations exposed without claiming current data |
-| Queued | Pending persistence explicit; no success announcement |
-| Conflict | Compared values and resolution controls understandable without color or spatial relation alone |
-| Success | Confirmed result announced without unnecessary focus movement |
-| Emergency | Explicit context and configured guidance available without color, motion, audio, diagnosis, or dispatch claims |
+| State             | Accessibility acceptance                                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Loading           | Scope named; meaningful delay announced; decorative skeletons hidden                                              |
+| Empty             | Heading, cause, and permitted next action available in reading and focus order                                    |
+| Error             | Persistent recovery text; relevant announcement; safe input retained; no implementation or protected-data leakage |
+| Permission denied | Understandable boundary and safe destination; no protected-resource disclosure                                    |
+| Offline           | Connectivity, freshness, blocked or queued work, last sync, retry, and conflict behavior exposed                  |
+| Stale             | Source freshness and limitations exposed without claiming current data                                            |
+| Queued            | Pending persistence explicit; no success announcement                                                             |
+| Conflict          | Compared values and resolution controls understandable without color or spatial relation alone                    |
+| Success           | Confirmed result announced without unnecessary focus movement                                                     |
+| Emergency         | Explicit context and configured guidance available without color, motion, audio, diagnosis, or dispatch claims    |
 
 ## Screen-reader test matrix
 
 Record OS, browser, assistive technology, versions, route, state, result, defect, and retest evidence.
 
-| Platform | Screen reader | Browser |
-|---|---|---|
-| Windows | NVDA | Current supported Chrome or Firefox |
-| Windows | Narrator | Current supported Edge |
-| macOS, when in delivery scope | VoiceOver | Current supported Safari |
-| iOS, when in delivery scope | VoiceOver | Safari |
-| Android, when in delivery scope | TalkBack | Chrome |
+| Platform                        | Screen reader | Browser                             |
+| ------------------------------- | ------------- | ----------------------------------- |
+| Windows                         | NVDA          | Current supported Chrome or Firefox |
+| Windows                         | Narrator      | Current supported Edge              |
+| iOS, when in delivery scope     | VoiceOver     | Safari                              |
+| Android, when in delivery scope | TalkBack      | Chrome                              |
 
 Unsupported rows require an explicit product decision. They must not be silently omitted.
 

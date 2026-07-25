@@ -1,5 +1,10 @@
 # Stitch MCP Operations
 
+> Historical record: this runbook describes the earlier VS Code/Cline
+> integration and is retained for audit evidence. It is not an active delivery
+> path. The Windows + Codex App runbook is
+> `docs/orchestration/STITCH_CODEX_APP_OPERATIONS.md`.
+
 ## Trạng thái
 
 - Package local `@_davideast/stitch-mcp@0.9.0`: **NO-GO**. Không cài đặt hoặc thực thi.

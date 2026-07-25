@@ -1,19 +1,4 @@
 {
-  "servers": {
-    "stitch": {
-      "type": "http",
-      "url": "https://stitch.googleapis.com/mcp",
-      "headers": {
-        "X-Goog-Api-Key": "${input:stitch-api-key}"
-      }
-    }
-  },
-  "inputs": [
-    {
-      "type": "promptString",
-      "id": "stitch-api-key",
-      "description": "Google Stitch API key for the non-production LifeBridge design project",
-      "password": true
-    }
-  ]
+  "servers": {},
+  "inputs": []
 }

@@ -1,0 +1,265 @@
+# LifeBridge Product Specification
+
+## Document status
+
+- Baseline: `PS-2026-07-25`
+- Status: Approved Phase 0 product baseline
+- Product phase: Foundation
+- First product slice: `P1-S1`
+- Source of roadmap truth: `docs/IMPLEMENTATION_PLAN.md`
+- Screen backlog: `docs/design/SCREEN_INVENTORY.md`
+
+This document defines what LifeBridge is intended to achieve. It does not claim that planned behavior is implemented. Planned versus actual delivery is tracked in the implementation plan and session log.
+
+## 1. Product statement
+
+LifeBridge is a privacy-aware family-care coordination platform. It helps a care recipient and their trusted household collaborators make work visible, assign responsibility, confirm completion, communicate important changes, and understand what still needs attention.
+
+LifeBridge prioritizes:
+
+1. care-recipient dignity and agency;
+2. clear accountability;
+3. minimum-necessary data access;
+4. truthful, confirmed state;
+5. accessible use under time and cognitive pressure;
+6. a deterministic demonstration that does not require private credentials.
+
+LifeBridge is a coordination product, not a clinical decision system.
+
+## 2. Problem and evidence posture
+
+Care work can be distributed across relatives, paid caregivers, volunteers, and organizations. When responsibility and current state are unclear, work may be missed, duplicated, or handed off without shared context.
+
+During Phase 0, this problem statement is a product hypothesis supported by reviewed public background sources. No numerical impact claim may be added to product copy, README, demo, or submission until it is linked to a source registered in `docs/research/DATA_SOURCE_REGISTER.md`.
+
+Research policy:
+
+- evidence/reference window: 2016–2026;
+- priority: 2021–2026 publications or reference years;
+- older sources: only still-current standards or necessary baselines with a rationale;
+- required metadata: publisher, geography, year, retrieval date, URL, terms, use, limitations, sensitivity, freshness, and fixture/background class;
+- fixtures: synthetic or safely de-identified only; never copied raw microdata or PII.
+
+Research informs terminology, accessibility, scenarios, and prioritization. It must not be used to infer medical needs or rank a person's health risk.
+
+## 3. Users and authority
+
+| Role                     | Product need                                                           | Authority boundary                                                |
+| ------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Care recipient           | See plans and work, express preferences, request help, control sharing | Owns consent choices unless a documented legal authority applies  |
+| Household organizer      | Establish a household, invite collaborators, coordinate work           | Cannot bypass care-recipient consent or read unrelated households |
+| Family caregiver         | Create, accept, complete, and hand off permitted work                  | Limited to household and data scopes granted to the role          |
+| Household member         | See and act on assigned or shared tasks                                | Cannot access protected care/document fields without permission   |
+| Volunteer                | Receive the minimum information needed for an approved request         | No general household or clinical record access                    |
+| Organization coordinator | Coordinate approved referrals and volunteer capacity                   | Organization and consent scope only                               |
+| Moderator                | Review community safety reports                                        | Moderation case scope only                                        |
+| Administrator            | Operate policy and access controls                                     | Least privilege; privileged actions are auditable                 |
+
+Phase 1 uses deterministic synthetic identities and one seeded household to prove coordination behavior. Fixture identity is a local demo mechanism, not production authentication and must not be exposed as a public deployment.
+
+## 4. Core product principles
+
+### Dignity and consent
+
+- Describe people as participants with preferences and authority, not passive records.
+- Explain what will be shared, with whom, and why before consent-sensitive actions.
+- Do not reveal whether a protected resource exists to an unauthorized actor.
+
+### Accountable state
+
+- Every task exposes status, owner, due context, and next allowed action.
+- “Saved”, “completed”, and “notified” appear only after the corresponding service confirms durable state.
+- A toast is never the sole location of important information.
+
+### Safety without medical claims
+
+- Make configured emergency information prominent and readable.
+- Never diagnose, recommend dosage/treatment, assess clinical urgency, or imply automated dispatch.
+- Direct users to locally appropriate professional/emergency channels through configured, reviewed content.
+
+### Accessible and resilient interaction
+
+- Keyboard and screen-reader paths are first-class.
+- Urgency never relies on color alone.
+- Loading, empty, denied, conflict, offline, partial-failure, and recovery states are explicit.
+- Mobile retains all critical capability; larger layouts improve context and density.
+
+## 5. MVP baseline — `P1-S1`
+
+### User-visible outcome
+
+Within a deterministic synthetic household, an authorized caregiver can create a care task, assign it to a household member, see it on the task board/dashboard, complete it, and see a persistent notification and updated dashboard state.
+
+### End-to-end flow
+
+1. The caregiver opens the family dashboard or task board.
+2. The caregiver enters a title, optional safe description, due date/time with time zone, priority, and assignee.
+3. The UI validates input and submits one idempotent create command.
+4. The gateway authenticates the synthetic fixture actor and forwards an authorized command.
+5. Care Coordination stores the task and audit metadata in its own datastore.
+6. Dashboard/task board reads the confirmed task.
+7. The assignee completes the task with an idempotent state transition.
+8. Care Coordination commits completion and an outbox event atomically.
+9. The outbox dispatcher sends a versioned event to Notification.
+10. Notification deduplicates the event, stores a notification in its own datastore, and returns a durable acknowledgement.
+11. Dashboard and notification center show the confirmed result. Delayed notification delivery is presented separately from task completion.
+
+### Functional requirements
+
+| ID        | Requirement                                                                                                                        |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `MVP-001` | An authorized household actor can create a task with title, due context, priority, and one eligible assignee                       |
+| `MVP-002` | Validation rejects blank/oversized input, invalid due values, and ineligible assignees without losing valid input                  |
+| `MVP-003` | Task creation is idempotent and does not create duplicates after retry                                                             |
+| `MVP-004` | Dashboard and task board show confirmed task status, owner, due context, priority, and next action                                 |
+| `MVP-005` | Only an authorized actor can complete an open task; repeated completion is safe and produces no duplicate notification             |
+| `MVP-006` | Completion and its outbox record are atomic                                                                                        |
+| `MVP-007` | Notification consumes a versioned event idempotently and stores a persistent in-app item                                           |
+| `MVP-008` | UI distinguishes task completion from pending/failed notification delivery                                                         |
+| `MVP-009` | Create, assign, complete, denied, conflict, and delivery-failure actions produce structured, non-sensitive audit/log evidence      |
+| `MVP-010` | Loading, first-use empty, validation, denied, not-found, concurrent conflict, partial service failure, and retry states are usable |
+| `MVP-011` | The complete path is keyboard operable, screen-reader labeled, responsive from 320 CSS px, and does not rely on color alone        |
+| `MVP-012` | Fixture mode is deterministic and contains no real person, care, medical, contact, or location data                                |
+
+### Task lifecycle
+
+```text
+OPEN -> COMPLETED
+  |        |
+  |        +-> repeat completion returns the same confirmed result
+  +-> update conflict returns current version and a safe recovery action
+```
+
+Cancellation, recurrence, multi-assignee work, attachments, and automatic escalation are deferred. A future lifecycle change requires a versioned contract and an accepted roadmap/ADR record.
+
+### Acceptance criteria
+
+`P1-S1` passes only when:
+
+- one documented command starts the required local applications/services and deterministic fixture state;
+- a synthetic authorized caregiver creates and assigns a task through the UI;
+- the assignee completes the task through the UI;
+- persisted task state survives a process restart;
+- exactly one notification exists after duplicate/retried completion;
+- dashboard/task board reflect confirmed state without claiming delivery that has not happened;
+- unauthorized, validation, missing-resource, concurrent-update, notification-unavailable, and recovery behavior are tested;
+- API/event payloads validate against versioned schemas;
+- affected lint/type checks, unit, contract, integration, browser smoke, and production builds pass;
+- approved Stitch references and handoffs exist for `LB-011`, `LB-013`, `LB-014`, and the applicable `LB-019` state;
+- relevant product, API, data, architecture, design, known-issue, repository-map, and session documents are current;
+- no secret, PII, real care record, raw external microdata, or meaningless placeholder is tracked.
+
+## 6. Information model for the MVP
+
+Conceptual entities:
+
+| Entity           | Essential fields                                                                                                                        | Owner                                                 |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Household        | stable ID, display label, status                                                                                                        | Identity/Consent context; fixture-owned in Phase 1    |
+| Household member | stable ID, household ID, display label, role, active state                                                                              | Identity/Consent context; fixture-owned in Phase 1    |
+| Care task        | task ID, household ID, title, safe description, assignee ID, creator ID, due timestamp/time zone, priority, status, version, timestamps | Care Coordination                                     |
+| Outbox event     | event ID, aggregate/version, event type/version, safe payload, attempt state, timestamps                                                | Care Coordination                                     |
+| Notification     | notification ID, recipient ID, source event ID, category, safe message key/parameters, read state, timestamps                           | Notification                                          |
+| Audit evidence   | correlation ID, actor ID, action, target type/ID, result, timestamp, redacted context                                                   | Emitting service; consolidated read model is deferred |
+
+Detailed schemas belong in `docs/DATA_MODEL.md`; API and event contracts belong in `docs/API_CONTRACTS.md`.
+
+## 7. Quality and non-functional requirements
+
+### Privacy and security
+
+- Deny by default outside the current household/role/consent scope.
+- Use opaque identifiers and minimize data in logs/events.
+- Validate input at every trust boundary.
+- Protect internal service routes; fixture identity is local demo only.
+- Audit permission-, consent-, assignment-, completion-, and privileged actions.
+- No secrets in Git, screenshots, Stitch prompts, logs, fixtures, or browser artifacts.
+
+### Reliability
+
+- Mutation endpoints accept idempotency keys.
+- Versioned updates reject stale writes with a recoverable conflict.
+- Cross-service effects use durable outbox/inbox semantics.
+- A notification outage does not roll back a durably completed task; its delivery state remains truthful and retryable.
+
+### Performance targets
+
+Until measured with representative synthetic fixtures, targets are engineering budgets rather than claims:
+
+- common local read/write interactions should provide visible feedback immediately;
+- dashboard must tolerate partial notification failure without hiding task data;
+- service calls, lineage, retries, and payload sizes must be bounded;
+- budgets and observed results must be recorded at the relevant phase gate.
+
+### Accessibility and localization
+
+- Target WCAG 2.2 AA.
+- Support keyboard, screen reader, zoom/reflow, reduced motion, forced colors/high contrast, touch, and long localized strings.
+- User-facing strings use localization keys; Vietnamese and English are initial language targets.
+- Domain terminology aligns with `docs/research/DOMAIN_GLOSSARY.vi-en.md`.
+
+### Observability
+
+- Propagate a correlation ID across gateway, service, outbox, and notification work.
+- Structured logs record identifiers and result categories, not sensitive content.
+- Health endpoints distinguish liveness and dependency readiness.
+- Metrics cover command result, outbox age/retries, notification processing, and API error categories.
+
+## 8. Backlog and staged scope
+
+The 35-screen inventory is a governed backlog:
+
+| Product stage | Primary screen groups                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| Phase 1       | Dashboard, task board, task detail, relevant notification and global state patterns              |
+| Phase 2       | Public access, authentication, onboarding, household, profile, consent, privacy, audit, settings |
+| Phase 3       | Timeline, calendar, appointment, care plan                                                       |
+| Phase 4       | Medication reminders, emergency contacts/plan, document vault                                    |
+| Phase 5       | Help request, community directory, volunteer matching, organization, moderation                  |
+| Phase 6       | Offline/conflict hardening and release-wide reusable state/accessibility validation              |
+
+This grouping is a plan, not an implementation claim. Each screen is implemented only through its approved slice and handoff. Reordering, splitting, removing, or adding a screen follows the change-control process.
+
+## 9. Explicit non-goals for the initial MVP
+
+- clinical diagnosis, treatment, dosage advice, or health-risk scoring;
+- automatic emergency dispatch or surveillance;
+- production medical-record integration;
+- billing, insurance claims, or payments;
+- generalized workflow builders;
+- multi-tenancy beyond explicitly modeled household/organization scope;
+- native mobile applications;
+- real-time collaborative editing;
+- arbitrary plugin marketplaces;
+- multiple LLM providers or autonomous care decisions;
+- full implementation of the 35-screen backlog;
+- provisioning a separate physical database server or storage engine per service
+  without evidence; logical service-owned database/schema and credential
+  boundaries remain mandatory.
+
+## 10. Success measures
+
+MVP success is demonstrated by product behavior, not a clinical outcome claim:
+
+- the primary synthetic flow completes without manual database edits;
+- duplicated create/complete requests do not duplicate business state or notification;
+- users can determine who owns a task and whether it is confirmed;
+- failure states preserve valid input and offer a safe recovery;
+- accessibility checks and keyboard flow pass for the implemented screens;
+- fresh Windows setup and deterministic demo are reproducible;
+- no secret/PII/sensitive real data is found by review and scanning.
+
+Later outcome metrics require an ethics/privacy review, a defined collection purpose, retention rules, and an accepted ADR before telemetry is added.
+
+## 11. Product change control
+
+Any change to the MVP, non-goals, roles, safety boundary, screen sequencing, or acceptance criteria must:
+
+1. receive a Change ID;
+2. preserve the planned baseline;
+3. state the proposed/actual behavior and evidence;
+4. assess UX, consent, privacy, security, API, data, tests, delivery, and downstream phase impact;
+5. define validation and follow-up;
+6. update the implementation plan, workstream board, decision log when material, integration log when relevant, and session log.
+
+Chat is not the product record. No future phase may silently redefine what an earlier phase delivered.
