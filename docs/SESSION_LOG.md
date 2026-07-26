@@ -1394,3 +1394,49 @@ untouched and must remain unstaged.
 No next slice is eligible while P3-S1 is pending. Expected orientation is
 P3-S2 only after immutable evidence confirms the shared time representation;
 this task does not begin it.
+
+## 2026-07-27 — P3-S1 hosted promotion and canonical closeout
+
+### Immutable GitHub evidence
+
+Recovery verified the already-staged P3 footprint and the protected canary
+absence before creating feature commit
+`909c64542ccd4f3db6951e737dd83ef393cdf701`. The same existing
+`phase/3-daily-timeline-handoff` branch was pushed without force. Ready PR #51
+targeted `dev`; push run `30216046313` and exact-head pull-request run
+`30216124915` passed all three integrated P1-through-P3 gates.
+
+The merge-method menu explicitly showed `Create a merge commit` selected.
+PR #51 then merged as
+`dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`. Post-merge `dev` push run
+`30216314035` passed static/unit/build/security, P3-S1 PostgreSQL/Chromium
+acceptance and the aggregate required gate. Issue #9 received bilingual
+feature and final acceptance evidence and closed completed.
+
+### Promotion transport deviation
+
+Planned GitHub App operations returned `404` for both repository lookup and PR
+creation, proving the connector lacked private-repository visibility; `gh`
+was also absent. No write outcome was ambiguous and no duplicate PR was
+created. The user-authorized signed-in GitHub browser session was used for the
+ready PR, exact-SHA/run review, checked merge-commit selection and issue
+closeout. This changed only the promotion transport: source, contracts,
+validation, credentials and branch topology were unaffected. Direct PR #51,
+commit and run pages provide the validation. KI-006 remains non-blocking; no
+Change ID is required.
+
+### Canonical handoff
+
+The branch was not deleted. After immutable feature evidence existed, the same
+branch fast-forwarded to `origin/dev` for one docs-only canonical closeout; no
+new task/branch or second Level C was created. `REPOSITORY_MAP.md` requires no
+closeout edit because this docs-only step changes no structure.
+
+P3-S1 is accepted. KI-001 still blocks deployment; KI-016 retains manual
+NVDA/Narrator, physical-device, text-spacing and 200%/400%
+assistive-technology evidence; KI-019 retains bounded independent
+private-render review before any visual-conformance claim. Actual
+code/contracts/tests make `P3-S2 — Calendar and appointment coordination` the
+exact next slice, beginning only in a fresh task with its own versioned
+appointment/time contract. P3-S2, P3-S3, DATA, P5, deployment and release were
+not started.

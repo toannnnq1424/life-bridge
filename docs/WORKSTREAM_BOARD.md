@@ -2,14 +2,13 @@
 
 ## Board control
 
-- Updated: 2026-07-26
-- Most recently integrated scope: `P2-S3 — Consent, privacy, audit, and
-settings`; accepted and merged at
-  `dev@bca04d1aff000abcedeed939dbfc9d7186cf1966`
-- Active product slice: `P3-S1 — Daily timeline and handoff`; implementation
-  candidate on `phase/3-daily-timeline-handoff`, issue #9
-- Exact next product slice: none until P3-S1 promotion; expected P3-S2 only
-  after immutable acceptance evidence
+- Updated: 2026-07-27
+- Most recently integrated scope: `P3-S1 — Daily timeline and handoff`;
+  accepted and merged at
+  `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`
+- Active product slice: none in this completed task; issue #9 is closed
+- Exact next product slice: `P3-S2 — Calendar and appointment coordination`,
+  only in a fresh task
 - Accepted future direction: `CHG-2026-011`/ADR-019 assigns greenfield
   Community to Spring Boot at P5-S1/#15; this does not start P5 or alter P2
 - Rule: one conversation owns one phase or one slice
@@ -41,7 +40,7 @@ No owner role may mark another row complete without its evidence/handoff. Parall
 | `MCP-DEBT-2026-003` P2-S2 UI gate       | Resolved for promotion; deploy still gated | Frozen handoff, native UI, local Level C, exact-head and post-merge CI passed                                                         | Do not expose locators, import generated source, weaken corrections or claim promotion early | Preserve evidence; deployment remains separately gated                      |
 | P2-S3 private-render visual review      | Controlled; non-blocking for native proof  | Four synthetic references exist once; corrected redacted handoff is Frozen, but independent private-render inspection was unavailable | Do not claim generated visuals as standalone approval or persist locators/source             | Retain KI-019; automated native accessibility/privacy evidence is required  |
 | P3-S1 private-render visual review      | Controlled; non-blocking for native proof  | Four P3 synthetic LB-012/LB-014 references were read back individually; list-based independent pixel inspection remained unavailable  | Do not retry generation, persist locators/source, or claim generated visual conformance      | Retain KI-019; corrected native handoff and automated evidence are required |
-| Branch protection unavailable           | Platform limitation, controlled            | Hosted CI is registered; P1 exact-head and post-merge runs passed while enforcement remains manual                                    | Do not bypass PR/check review, direct-push protected lanes, or claim enforcement             | Reassess plan/visibility and retain manual exact-SHA/check review           |
+| Branch protection unavailable           | Platform limitation, controlled            | Hosted CI is registered; accepted slices through P3-S1 passed exact-head and post-merge runs while enforcement remains manual         | Do not bypass PR/check review, direct-push protected lanes, or claim enforcement             | Reassess plan/visibility and retain manual exact-SHA/check review           |
 
 Gates block only dependent validation/work. They do not authorize broad system repair and do not make unrelated Phase 0 documentation fail.
 
@@ -54,7 +53,7 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 2        | `P2-S1` Account access/onboarding       | Validated/merged                       | PR #44 merge `0cb14e2`; exact-head and post-merge full CI green | Issue #6 closed; fresh-task P2-S2 orientation    |
 | 3        | `P2-S2` Household/invitation/context    | Validated/merged; PR #47 and CI passed | PR #47; exact-head and post-merge `dev` CI green                | Issue #7 closed completed                        |
 | 4        | `P2-S3` Consent/privacy/audit/settings  | Validated/merged; PR #49 and CI passed | PR #49; exact-head and post-merge `dev` CI green                | Issue #8 closed completed                        |
-| 5        | `P3-S1` Timeline/handoff                | Local validation green; PR/CI pending  | P2 trust boundary passed; issue #9 owns the slice               | Exact-head CI, merge/post-merge CI               |
+| 5        | `P3-S1` Timeline/handoff                | Validated/merged; PR #51 and CI passed | Exact head `909c645`; merge `2314ee9`; post-merge CI green      | Issue #9 closed completed                        |
 | 6        | `P3-S2` Calendar/appointment            | Planned                                | P3-S1/time contract                                             | Calendar/agenda flow                             |
 | 7        | `P3-S3` Care-plan review                | Planned                                | P2 consent + P3 time                                            | Versioned care-plan flow                         |
 | 8        | `P4-S1` Medication reminder             | Planned                                | P3 time + Notification reliability                              | Non-clinical reminder flow                       |
@@ -150,7 +149,7 @@ For every new proposal, add a stable `CHG-YYYY-NNN` row before implementation:
 | `CHG-2026-010` | Integrated; hosted validation passed | P2 required account/session/MFA/recovery/preferences and `LB-001`–`LB-007`        | First-party Identity-owned PostgreSQL, opaque sessions, TOTP/recovery, generic responses, Frozen Stitch handoff and native UI | Official research, independent audits and bounded synthetic Stitch evidence | Adds account scope only; no household authorization or later slice    | Level A/B, PostgreSQL, one P2 Level C, exact-head/post-merge CI passed | Start P2-S2 only in a fresh task; retain KI-016 manual evidence                     |
 | `CHG-2026-011` | Accepted; implementation deferred    | Future Community boundary had no required second backend runtime                  | Greenfield Spring Boot Community starts at P5-S1/#15 and extends through P5-S3; existing Node services stay                   | Project-owner polyglot architecture direction                               | P5/P6 contracts, tooling and operations gates; P2/order unchanged     | Docs gates now; official toolchain research at P5; mixed-runtime P6    | Pin JDK/Spring/Maven/wrapper from official evidence before P5 code                  |
 | `CHG-2026-012` | Integrated; hosted validation passed | P2-S3 authority establishment and delegation were undefined                       | Context creator explicitly self-binds as subject; organizer/member role never confers consent authority                       | Least privilege and actual P2-S2 provenance                                 | P2-S3 contract/data/API/UI only; no service/engine/order change       | One Level C, targeted Level B, exact-head and post-merge CI passed     | P3-S1 consumes the accepted governed-read boundary; delegation stays deferred       |
-| `CHG-2026-013` | Accepted; local validation green     | Timeline/handoff lacked fresh-decision, snapshot, no-total and no-backfill detail | Identity decision is request-bound; Care owns sealed chronology and atomic enumerated handoff                                 | Three audits plus official time/accessibility/handoff research              | P3-S1 contracts/data/UI/tests only; no service/engine/order change    | One Level C invocation plus targeted recovery passed; hosted pending   | P3-S2 only after accepted time contract; KI-016/KI-019 remain                       |
+| `CHG-2026-013` | Integrated; hosted validation passed | Timeline/handoff lacked fresh-decision, snapshot, no-total and no-backfill detail | Identity decision is request-bound; Care owns sealed chronology and atomic enumerated handoff                                 | Three audits plus official time/accessibility/handoff research              | P3-S1 contracts/data/UI/tests only; no service/engine/order change    | One Level C plus targeted recovery; exact-head/post-merge CI passed    | P3-S2 fresh task uses the accepted time contract; KI-016/KI-019 remain              |
 
 Mirror accepted changes in `docs/IMPLEMENTATION_PLAN.md`; add an ADR for architecture/product policy, an integration-log entry for contract/promotion impact, and a session-log entry for evidence.
 
@@ -182,9 +181,13 @@ P2-S3 is accepted and merged: exact head `cd7f0a8` passed push run
 passed, and issue #8 closed completed. The initial hosted portability failure
 and non-rewritten recovery remain documented.
 
-P3-S1 is the only active candidate. Its authority, chronology, migration,
-Stitch/native handoff and local validation are complete through one Level C
-invocation plus targeted recovery; exact-head CI, merge/post-merge CI and
-issue #9 closeout remain. No next slice is eligible until those gates pass.
-Expected orientation is P3-S2 only if actual accepted contracts/tests confirm
-it. DATA-S1, P3-S3, P5, deployment and release remain separate and unstarted.
+P3-S1 is accepted and merged. Exact feature head `909c645` passed push run
+`30216046313` and PR run `30216124915`; PR #51 merged as
+`dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`, post-merge run
+`30216314035` passed, and issue #9 closed completed. Its authority, chronology,
+migration, Stitch/native handoff and local validation remain the accepted
+boundary.
+
+Actual code/contracts/tests confirm P3-S2 as the exact next slice, beginning
+only in a fresh task with its own appointment/time contract. DATA-S1, P3-S3,
+P5, deployment and release remain separate and unstarted.

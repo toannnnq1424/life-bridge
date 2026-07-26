@@ -6,15 +6,14 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P3 — Care planning`; P3-S1 candidate in progress
-- Most recently integrated slice: `P2-S3 — Consent, privacy, audit, and
-settings`; validated and merged at
-  `dev@bca04d1aff000abcedeed939dbfc9d7186cf1966`
-- Active product slice: `P3-S1 — Daily timeline and handoff` on
-  `phase/3-daily-timeline-handoff`; issue
-  [#9](https://github.com/toannnnq1424/life-bridge/issues/9)
-- Exact next eligible product slice: none until P3-S1 promotion completes;
-  expected orientation is `P3-S2 — Calendar and appointment coordination`
+- Current phase: `P3 — Care planning`; P3-S1 accepted
+- Most recently integrated slice: `P3-S1 — Daily timeline and handoff`;
+  validated and merged at
+  `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`
+- Active product slice: none in this completed task; issue
+  [#9](https://github.com/toannnnq1424/life-bridge/issues/9) is closed
+- Exact next eligible product slice: `P3-S2 — Calendar and appointment
+coordination`, only in a fresh task
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -22,11 +21,11 @@ settings`; validated and merged at
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
 - Latest integration gate:
-  [PR #49](https://github.com/toannnnq1424/life-bridge/pull/49) accepted exact
-  head `cd7f0a8041241641cfbf47b7ec1fd48f933710e4` after push run
-  `30208540352` and PR run `30208541672` succeeded. Merge commit
-  `bca04d1aff000abcedeed939dbfc9d7186cf1966` is on `dev`, post-merge run
-  `30208723836` succeeded, and issue #8 is closed completed.
+  [PR #51](https://github.com/toannnnq1424/life-bridge/pull/51) accepted exact
+  feature head `909c64542ccd4f3db6951e737dd83ef393cdf701` after push run
+  `30216046313` and PR run `30216124915` succeeded. Merge commit
+  `2314ee99eec61ffa1532fead4e5bda3bc6bbae63` is on `dev`, post-merge run
+  `30216314035` succeeded, and issue #9 is closed completed.
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -532,12 +531,15 @@ Actual P3-S1 candidate:
   no-backfill or no-free-form context. Audits and official-source research
   required these narrower controls. Impact is P3-S1 contract/data/UI/test only;
   no service, engine, phase order or clinical scope changed.
-- Validation: targeted Level A type/lint and 49 unit/contract/boundary tests
-  passed. The exactly-once P3-S1 Level C, exact-head hosted CI, merge commit,
-  post-merge `dev` CI and issue #9 closeout remain pending and must be recorded
-  without rerunning unchanged green evidence.
-- Follow-up: only after acceptance, P3-S2 may reuse the frozen UTC/IANA time
-  representation through its own appointment/calendar contract. This task
+- Validation: the single P3-S1 Level C invocation plus classified targeted
+  recovery passed the complete affected campaign without rerunning unchanged
+  green groups. Exact feature head
+  `909c64542ccd4f3db6951e737dd83ef393cdf701` passed hosted push run
+  `30216046313` and PR run `30216124915`; PR #51 merged as
+  `2314ee99eec61ffa1532fead4e5bda3bc6bbae63`, post-merge `dev` run
+  `30216314035` passed, and issue #9 closed completed.
+- Follow-up: P3-S2 may reuse the accepted UTC/IANA representation only through
+  its own versioned appointment/calendar contract in a fresh task. This task
   does not begin P3-S2, P3-S3, DATA, P5, deployment or release.
 
 ### `P3-S2 — Calendar and appointment coordination`
@@ -1021,7 +1023,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | `CHG-2026-010` | Accepted; implementation in progress | First-party P2 account/session boundary; account scope does not grant household access |
 | `CHG-2026-011` | Accepted; implementation deferred    | Select Spring Boot for greenfield Community at P5; preserve existing Node boundaries   |
 | `CHG-2026-012` | Accepted; local validation passed    | Consent authority is explicit self-establishment, never organizer membership           |
-| `CHG-2026-013` | Accepted; P3-S1 candidate            | Fresh P2 decision plus Care-owned snapshot timeline and atomic structured handoff      |
+| `CHG-2026-013` | Integrated; hosted validation passed | Fresh P2 decision plus Care-owned snapshot timeline and atomic structured handoff      |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -1245,7 +1247,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ## CHG-2026-013 — Freeze P3-S1 chronology and accountable handoff
 
-- State: Accepted; implementation candidate, promotion pending
+- State: Integrated; local and hosted validation passed
 - Raised in phase/slice: `P3-S1`
 - Planned baseline: show a time-zone-explicit daily timeline and preserve task
   ownership/concurrency during handoff, but the plan did not define authority
@@ -1292,11 +1294,14 @@ No row means simultaneous implementation. Design generation/review may prepare a
   provision/reset harness, one focus transition, bounded browser waits and
   VI/EN test selectors. A real no-header path exposed and fixed Gateway
   correlation re-resolution; its contract passes 19/19 and Care now receives
-  the exact Identity-bound value. Exact-head hosted CI, merge commit,
-  post-merge `dev` CI and issue #9 closeout remain required.
-- Follow-up owner and exact phase/slice: after immutable P3-S1 evidence only,
-  a fresh P3-S2 task freezes appointment/calendar semantics against the
-  accepted time representation; it does not reuse P3 authority implicitly.
+  the exact Identity-bound value. Exact feature head
+  `909c64542ccd4f3db6951e737dd83ef393cdf701` then passed push run
+  `30216046313` and PR run `30216124915`; PR #51 merged as
+  `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`, post-merge run
+  `30216314035` passed all three gates, and issue #9 closed completed.
+- Follow-up owner and exact phase/slice: a fresh P3-S2 task freezes
+  appointment/calendar semantics against the accepted time representation; it
+  does not reuse P3 authority implicitly.
 - Related ADR/integration/session entries: ADR-021,
   `docs/security/P3_S1_THREAT_MODEL.md`, `INT-2026-017`, KI-016/KI-019 and the
   P3-S1 session entry.
@@ -1317,17 +1322,17 @@ next slice in the same conversation.
 
 ## Exact next action
 
-P3-S1 is the only active candidate, based exactly on
-`dev@cd58229794e6e8bf562a49879de494515c262db5` and owned by issue #9. Contract,
-data ownership, synthetic Stitch handoff and native implementation are frozen;
-local validation through the single Level C invocation and targeted recovery
-is green. Exact-head hosted CI, merge-commit promotion, post-merge `dev` CI
-and issue closeout still gate acceptance. KI-001 still blocks deployment,
-KI-016 retains manual assistive-technology evidence, and KI-019 retains
-private-render review before a visual-conformance claim.
+P3-S1 is accepted at
+`dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`. Its frozen contracts, Care
+ownership, migration 002/no-backfill, Stitch/native handoff, single Level C
+plus targeted recovery, exact-head runs `30216046313`/`30216124915`, PR #51
+merge, post-merge run `30216314035` and issue #9 closeout are complete.
+KI-001 still blocks deployment, KI-016 retains manual assistive-technology
+evidence, and KI-019 retains private-render review before any
+visual-conformance claim.
 
-There is no eligible next product slice while those gates are pending. If
-actual code/contracts/tests remain green after promotion, the expected exact
-next slice is `P3-S2 — Calendar and appointment coordination`, beginning with
-its own versioned appointment/time contract. P3-S2, P3-S3, DATA-S1, P5,
-deployment and release are not started here.
+Actual code/contracts/tests make `P3-S2 — Calendar and appointment
+coordination` the exact next product slice. Its first action in a fresh task is
+to freeze its own versioned appointment/time contract against the accepted
+P3-S1 UTC/IANA boundary. P3-S2, P3-S3, DATA-S1, P5, deployment and release are
+not started here.
