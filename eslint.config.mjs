@@ -4,12 +4,21 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig([
   {
-    ignores: ["node_modules/**", "coverage/**", ".pnpm-store/**", ".security-review/**"],
+    ignores: [
+      "node_modules/**",
+      "coverage/**",
+      ".pnpm-store/**",
+      ".security-review/**",
+      "**/.next/**",
+      "**/dist/**",
+      "test-results/**",
+      "playwright-report/**",
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["tools/quality/**/*.ts"],
+    files: ["{apps,services,packages,tests,tools}/**/*.{ts,tsx}", "playwright.config.ts"],
     languageOptions: {
       parserOptions: {
         projectService: true,

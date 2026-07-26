@@ -73,7 +73,15 @@ As product packages are added, the phase command must include repository-wide fo
 
 The secret validator is a fast repository hygiene gate, not a substitute for provider-side key rotation, GitHub secret scanning, incident review, or a release-time history scan with an approved dedicated scanner.
 
-pnpm lifecycle scripts are denied unless explicitly allowlisted. Phase 0 permits only `esbuild`, the MIT-licensed platform binary used transitively by the pinned `tsx`/Vitest toolchain. New build-script packages require a separate review and configuration change; wildcard approval is prohibited.
+pnpm lifecycle scripts are denied unless explicitly allowlisted. The workspace
+permits only `esbuild`, the MIT-licensed platform binary required by the pinned
+tsx/Vitest and service bundle toolchain. Because P1-S1 has no image pipeline,
+Next's optional `sharp` is excluded from resolution and remains explicitly
+lifecycle-denied. A parent-scoped override moves only Next 16.2.11's PostCSS
+edge to advisory-patched 8.5.18. Frozen install, audit, production Next build,
+and real Chromium runtime prove this narrow graph; no advisory ignore or global
+script approval is allowed. New build-script packages require a separate review
+and configuration change; wildcard approval is prohibited.
 
 ## Test placement
 
@@ -89,9 +97,52 @@ Phase 0 harness tests live beside the validator under `tools/quality/src/*.test.
 
 ## CI
 
-The primary workflow is Windows-first and uses Node `22.22.3` plus pnpm `11.9.0`. GitHub Actions are pinned to immutable commit SHAs. CI installs from `pnpm-lock.yaml`, runs the Phase 0 validation sequence, then performs a network-backed dependency advisory audit.
+The primary workflow is Windows-first and uses Node `22.22.3` plus pnpm
+`11.9.0`. GitHub Actions are pinned to immutable commit SHAs. P1 CI checks out
+the literal candidate SHA, installs the frozen lockfile under the narrow
+lifecycle policy, and runs Windows static/unit/build/security plus an Ubuntu
+PostgreSQL/Chromium acceptance job and one aggregate gate.
 
 Docker, GitHub CLI, PowerShell 7, and Python are optional in Phase 0. A future slice may make a tool mandatory only when its acceptance criteria require it and the doctor documentation is updated in the same change.
+
+## P1-S1 Level C contract
+
+The one stable-candidate command is:
+
+```powershell
+pnpm.cmd run validate:p1-s1
+```
+
+It must execute, in one campaign:
+
+1. affected format, lint, and TypeScript checks;
+2. unit and frozen API/event consumer contract tests;
+3. PostgreSQL integration with independently owned Care and Notification
+   databases;
+4. atomic completion/outbox, idempotent create/complete, optimistic conflict,
+   duplicate/redelivered event, self-suppression, outage/retry, crash-after-
+   consumer-commit, restart durability, time-zone, authorization, audit, and
+   log-redaction cases;
+5. affected production builds;
+6. Playwright against the real gateway/service contracts for the complete
+   Lan-create/Minh-complete/Lan-notified flow in both `vi-VN` and `en`;
+7. keyboard/focus, semantic accessibility, 320 px and critical responsive
+   checks;
+8. documentation, configuration, generated-artifact, private Stitch locator,
+   secret, and dependency advisory checks.
+
+Hosted CI checks out the literal pull-request head SHA. A Windows job proves
+the supported static/unit/production-build path; an Ubuntu PostgreSQL
+service-container job proves owned database integration and Chromium browser
+acceptance. The same browser campaign is also run locally on Windows before
+push. One aggregate check depends on both.
+Because branch protection is unavailable, the reviewer manually records that
+local HEAD, remote branch head, PR head, and successful run head are identical.
+
+Manual P1 acceptance evidence records keyboard-only flow, NVDA with Chrome or
+Firefox, Narrator with Edge, 200% zoom, 400% reflow, text spacing, forced
+colors, reduced motion, target size, and measured contrast. An unsupported row
+is a named limitation, never an implicit pass.
 
 ## Failure classification
 

@@ -3,9 +3,9 @@
 ## Board control
 
 - Updated: 2026-07-26
-- Active scope: `P0 — Foundation` (validated/closed)
-- Active branch intent: `phase/0-foundation -> dev`
-- Next product item: `P1-S1 — Accountable care-task loop`
+- Active scope: `P1-S1 — Accountable care-task loop`
+- Active branch intent: `phase/1-accountable-task-loop -> dev`
+- Next product item after acceptance: `P2-S1 — Account access and accessible onboarding`
 - Rule: one conversation owns one phase or one slice
 
 Status on this board is operational intent. Validation evidence belongs in `docs/SESSION_LOG.md`; integration/branch evidence belongs in `docs/INTEGRATION_LOG.md`.
@@ -37,43 +37,43 @@ Gates block only dependent validation/work. They do not authorize broad system r
 
 ## Roadmap queue
 
-| Priority | Item                                    | Status          | Starts only when                          | Completion handoff                           |
-| -------- | --------------------------------------- | --------------- | ----------------------------------------- | -------------------------------------------- |
-| 0        | `P0` Foundation                         | Validated       | Approved plan                             | Validated foundation commit; exact P1 action |
-| 1        | `P1-S1` Accountable care-task loop      | Ready; UI gated | P0 passes; issue #3 before production UI  | E2E demo/tests/docs/commit                   |
-| 2        | `P2-S1` Account access/onboarding       | Planned         | P1 passes; identity threat/contract ready | Auth/accessibility flow                      |
-| 3        | `P2-S2` Household/invitation/context    | Planned         | P2-S1 passes                              | Household authorization flow                 |
-| 4        | `P2-S3` Consent/privacy/audit/settings  | Planned         | P2-S2 passes                              | Consent/revocation/audit flow                |
-| 5        | `P3-S1` Timeline/handoff                | Planned         | P2 trust boundary passes                  | Timeline/handoff flow                        |
-| 6        | `P3-S2` Calendar/appointment            | Planned         | P3-S1/time contract                       | Calendar/agenda flow                         |
-| 7        | `P3-S3` Care-plan review                | Planned         | P2 consent + P3 time                      | Versioned care-plan flow                     |
-| 8        | `P4-S1` Medication reminder             | Planned         | P3 time + Notification reliability        | Non-clinical reminder flow                   |
-| 9        | `P4-S2` Emergency plan                  | Planned         | Consent + offline threat review           | Offline-readable configured plan             |
-| 10       | `P4-S3` Document vault                  | Planned         | Consent/audit + storage ADR               | Synthetic document flow                      |
-| 11       | `P5-S1` Help request/directory          | Planned         | Research + consent + community boundary   | Consented request/search                     |
-| 12       | `P5-S2` Match/organization              | Planned         | P5-S1                                     | Minimum-data match flow                      |
-| 13       | `P5-S3` Moderation                      | Planned         | P5-S2 + policy                            | Auditable resolution flow                    |
-| 14       | `P6-S1` Contract rolling compatibility  | Planned         | P1–P5 service inventory accepted          | Mixed-version primary flow                   |
-| 15       | `P6-S2` Independent artifacts/ownership | Planned         | P6-S1                                     | Independently runnable services              |
-| 16       | `P6-S3` Service auth/failure isolation  | Planned         | P6-S1/S2                                  | Protected, bounded dependency behavior       |
-| 17       | `P7-S1` Owned migrations                | Planned         | P6 gate                                   | Compatible schema upgrade                    |
-| 18       | `P7-S2` Event replay/reconciliation     | Planned         | P7-S1                                     | Recoverable idempotent delivery              |
-| 19       | `P7-S3` Data lifecycle/recovery         | Planned         | P7-S1/S2; P2 consent                      | Restore/retention/deletion evidence          |
-| 20       | `P8-S1` Isolation/consent enforcement   | Planned         | P2; P6/P7                                 | Authorization isolation matrix               |
-| 21       | `P8-S2` Secrets/runtime/supply chain    | Planned         | P8-S1; hosted CI                          | Rotation/SBOM/provenance evidence            |
-| 22       | `P8-S3` Abuse/privacy response          | Planned         | P8-S1/S2                                  | Safeguards and tabletop evidence             |
-| 23       | `P9-S1` Observability/SLO baseline      | Planned         | P6–P8 release journeys                    | Redacted journey telemetry/SLO               |
-| 24       | `P9-S2` Offline/conflict/degradation    | Planned         | P9-S1; frozen journey list                | Truthful reusable failure states             |
-| 25       | `P9-S3` Incident/DR game day            | Planned         | P7-S3; P8-S3; P9-S1/S2                    | Alert/runbook/restore/postmortem             |
-| 26       | `P10-S1` Workload/performance budgets   | Planned         | P9 telemetry                              | Measurable representative baseline           |
-| 27       | `P10-S2` Load/soak/backpressure/scale   | Planned         | P10-S1; P9-S3                             | Correct bounded behavior under load          |
-| 28       | `P10-S3` Capacity/cost guardrails       | Planned         | P10-S2; target platform                   | Capacity and alerted cost envelope           |
-| 29       | `P11-S1` Production deploy/rollback     | Planned         | P6–P10; zero deploy debt                  | Reproducible protected environment           |
-| 30       | `P11-S2` Staged rollout/pilot           | Planned         | P11-S1                                    | Rehearsed canary and rollback                |
-| 31       | `P11-S3` Evidence-backed release        | Planned         | P11-S2; zero release blockers             | Truthful tagged release                      |
-| 32       | `P12-S1` Live operations/postmortem     | Planned         | P11 release                               | Alert-to-resolution ownership                |
-| 33       | `P12-S2` Patch/rotation/restore cadence | Planned         | P12-S1                                    | Exercised maintenance continuity             |
-| 34       | `P12-S3` Feedback/next roadmap          | Planned         | P12-S1/S2; privacy-safe evidence          | Governed successor roadmap                   |
+| Priority | Item                                    | Status            | Starts only when                          | Completion handoff                           |
+| -------- | --------------------------------------- | ----------------- | ----------------------------------------- | -------------------------------------------- |
+| 0        | `P0` Foundation                         | Validated         | Approved plan                             | Validated foundation commit; exact P1 action |
+| 1        | `P1-S1` Accountable care-task loop      | Locally validated | Level C; PostgreSQL 5/5; browser 4/4      | PR/exact-head CI, merge, issue closeout      |
+| 2        | `P2-S1` Account access/onboarding       | Planned           | P1 passes; identity threat/contract ready | Auth/accessibility flow                      |
+| 3        | `P2-S2` Household/invitation/context    | Planned           | P2-S1 passes                              | Household authorization flow                 |
+| 4        | `P2-S3` Consent/privacy/audit/settings  | Planned           | P2-S2 passes                              | Consent/revocation/audit flow                |
+| 5        | `P3-S1` Timeline/handoff                | Planned           | P2 trust boundary passes                  | Timeline/handoff flow                        |
+| 6        | `P3-S2` Calendar/appointment            | Planned           | P3-S1/time contract                       | Calendar/agenda flow                         |
+| 7        | `P3-S3` Care-plan review                | Planned           | P2 consent + P3 time                      | Versioned care-plan flow                     |
+| 8        | `P4-S1` Medication reminder             | Planned           | P3 time + Notification reliability        | Non-clinical reminder flow                   |
+| 9        | `P4-S2` Emergency plan                  | Planned           | Consent + offline threat review           | Offline-readable configured plan             |
+| 10       | `P4-S3` Document vault                  | Planned           | Consent/audit + storage ADR               | Synthetic document flow                      |
+| 11       | `P5-S1` Help request/directory          | Planned           | Research + consent + community boundary   | Consented request/search                     |
+| 12       | `P5-S2` Match/organization              | Planned           | P5-S1                                     | Minimum-data match flow                      |
+| 13       | `P5-S3` Moderation                      | Planned           | P5-S2 + policy                            | Auditable resolution flow                    |
+| 14       | `P6-S1` Contract rolling compatibility  | Planned           | P1–P5 service inventory accepted          | Mixed-version primary flow                   |
+| 15       | `P6-S2` Independent artifacts/ownership | Planned           | P6-S1                                     | Independently runnable services              |
+| 16       | `P6-S3` Service auth/failure isolation  | Planned           | P6-S1/S2                                  | Protected, bounded dependency behavior       |
+| 17       | `P7-S1` Owned migrations                | Planned           | P6 gate                                   | Compatible schema upgrade                    |
+| 18       | `P7-S2` Event replay/reconciliation     | Planned           | P7-S1                                     | Recoverable idempotent delivery              |
+| 19       | `P7-S3` Data lifecycle/recovery         | Planned           | P7-S1/S2; P2 consent                      | Restore/retention/deletion evidence          |
+| 20       | `P8-S1` Isolation/consent enforcement   | Planned           | P2; P6/P7                                 | Authorization isolation matrix               |
+| 21       | `P8-S2` Secrets/runtime/supply chain    | Planned           | P8-S1; hosted CI                          | Rotation/SBOM/provenance evidence            |
+| 22       | `P8-S3` Abuse/privacy response          | Planned           | P8-S1/S2                                  | Safeguards and tabletop evidence             |
+| 23       | `P9-S1` Observability/SLO baseline      | Planned           | P6–P8 release journeys                    | Redacted journey telemetry/SLO               |
+| 24       | `P9-S2` Offline/conflict/degradation    | Planned           | P9-S1; frozen journey list                | Truthful reusable failure states             |
+| 25       | `P9-S3` Incident/DR game day            | Planned           | P7-S3; P8-S3; P9-S1/S2                    | Alert/runbook/restore/postmortem             |
+| 26       | `P10-S1` Workload/performance budgets   | Planned           | P9 telemetry                              | Measurable representative baseline           |
+| 27       | `P10-S2` Load/soak/backpressure/scale   | Planned           | P10-S1; P9-S3                             | Correct bounded behavior under load          |
+| 28       | `P10-S3` Capacity/cost guardrails       | Planned           | P10-S2; target platform                   | Capacity and alerted cost envelope           |
+| 29       | `P11-S1` Production deploy/rollback     | Planned           | P6–P10; zero deploy debt                  | Reproducible protected environment           |
+| 30       | `P11-S2` Staged rollout/pilot           | Planned           | P11-S1                                    | Rehearsed canary and rollback                |
+| 31       | `P11-S3` Evidence-backed release        | Planned           | P11-S2; zero release blockers             | Truthful tagged release                      |
+| 32       | `P12-S1` Live operations/postmortem     | Planned           | P11 release                               | Alert-to-resolution ownership                |
+| 33       | `P12-S2` Patch/rotation/restore cadence | Planned           | P12-S1                                    | Exercised maintenance continuity             |
+| 34       | `P12-S3` Feedback/next roadmap          | Planned           | P12-S1/S2; privacy-safe evidence          | Governed successor roadmap                   |
 
 Only the first eligible item may move to In progress in a new conversation.
 
@@ -126,15 +126,17 @@ Every row leaving In progress must record:
 
 For every new proposal, add a stable `CHG-YYYY-NNN` row before implementation:
 
-| Change ID      | State                              | Planned baseline                                   | Proposed/actual                                                         | Reason/evidence                               | Downstream impact                                                     | Validation                                               | Follow-up                                                                           |
-| -------------- | ---------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `CHG-2026-001` | Implemented                        | Mixed Windows/macOS and legacy delivery tools      | Windows + Codex App only                                                | Project-owner direction and actual host       | All phases use one supported control plane                            | Windows CI/doctor and offline Codex config validation    | Credential and read-only Stitch canary gates                                        |
-| `CHG-2026-002` | Baseline implemented; lane pending | No dedicated research branch                       | Bilingual 2016–2026 register; `init/research → data → dev`              | Project-owner requirement for recent evidence | Provenance/fixture gates apply to data-dependent slices               | Source/license/privacy review; branch promotion evidence | Create branches, then start `research/aggregate-context-fixture` on `init/research` |
-| `CHG-2026-003` | Implemented                        | Compact P0–P6 plan without formal research overlay | Runbook crosswalk, protocol, assumptions, risk catalog, and GitHub plan | Project-owner supplied ultra runbook          | All future phases/slices gain bounded evidence gates; order unchanged | Targeted docs/schema review; 19/19 GitHub metadata audit | Use issue #5 for P1-S1 or separate issue #4 on `init/research`                      |
-| `CHG-2026-004` | Implemented in docs/GitHub         | One overloaded production P6                       | Preserve P0–P5; expand cumulative production proof through P6–P12       | Production microservice requirement           | Adds contract/data/security/SLO/performance/rollout/operations gates  | 21-slice GitHub audit and phase-specific Level D         | Retain exact P1-S1 next action                                                      |
-| `CHG-2026-005` | Accepted; debt open                | External MCP blocker without universal timer       | Required MCP becomes `MCP-DEBT-*` after 180 seconds                     | Project-owner operating rule                  | Dependent work blocked; unrelated safe work continues; P11 blocked    | Safe secret, schema/egress review, synthetic canary      | Close `MCP-DEBT-2026-001` before Stitch UI/P11 deployment                           |
-| `CHG-2026-006` | Bounded design session complete    | Chat-disclosed keys rejected from every call       | One disposable non-production Stitch session in memory only             | Explicit owner authorization                  | P1 design direction exists; freeze and deployment gates remain        | Redacted handoff, secret/history scans, manual review    | Complete P1 corrections/reviews; retire key before deployment                       |
-| `CHG-2026-007` | CI bootstrap implemented           | `main` receives only normal release promotion      | One guarded workflow-only PR #41 registered default-branch CI           | Zero workflows after PR #21 reopen            | No product/release promotion; final PR #21 still requires full CI     | One-file PR, guarded main push, hosted run               | Require green final-head check; never reuse for product code                        |
+| Change ID      | State                                | Planned baseline                                           | Proposed/actual                                                         | Reason/evidence                                            | Downstream impact                                                     | Validation                                               | Follow-up                                                                           |
+| -------------- | ------------------------------------ | ---------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `CHG-2026-001` | Implemented                          | Mixed Windows/macOS and legacy delivery tools              | Windows + Codex App only                                                | Project-owner direction and actual host                    | All phases use one supported control plane                            | Windows CI/doctor and offline Codex config validation    | Credential and read-only Stitch canary gates                                        |
+| `CHG-2026-002` | Baseline implemented; lane pending   | No dedicated research branch                               | Bilingual 2016–2026 register; `init/research → data → dev`              | Project-owner requirement for recent evidence              | Provenance/fixture gates apply to data-dependent slices               | Source/license/privacy review; branch promotion evidence | Create branches, then start `research/aggregate-context-fixture` on `init/research` |
+| `CHG-2026-003` | Implemented                          | Compact P0–P6 plan without formal research overlay         | Runbook crosswalk, protocol, assumptions, risk catalog, and GitHub plan | Project-owner supplied ultra runbook                       | All future phases/slices gain bounded evidence gates; order unchanged | Targeted docs/schema review; 19/19 GitHub metadata audit | Use issue #5 for P1-S1 or separate issue #4 on `init/research`                      |
+| `CHG-2026-004` | Implemented in docs/GitHub           | One overloaded production P6                               | Preserve P0–P5; expand cumulative production proof through P6–P12       | Production microservice requirement                        | Adds contract/data/security/SLO/performance/rollout/operations gates  | 21-slice GitHub audit and phase-specific Level D         | Retain exact P1-S1 next action                                                      |
+| `CHG-2026-005` | Accepted; debt open                  | External MCP blocker without universal timer               | Required MCP becomes `MCP-DEBT-*` after 180 seconds                     | Project-owner operating rule                               | Dependent work blocked; unrelated safe work continues; P11 blocked    | Safe secret, schema/egress review, synthetic canary      | Close `MCP-DEBT-2026-001` before Stitch UI/P11 deployment                           |
+| `CHG-2026-006` | Bounded design session complete      | Chat-disclosed keys rejected from every call               | One disposable non-production Stitch session in memory only             | Explicit owner authorization                               | P1 design direction exists; freeze and deployment gates remain        | Redacted handoff, secret/history scans, manual review    | Complete P1 corrections/reviews; retire key before deployment                       |
+| `CHG-2026-007` | CI bootstrap implemented             | `main` receives only normal release promotion              | One guarded workflow-only PR #41 registered default-branch CI           | Zero workflows after PR #21 reopen                         | No product/release promotion; final PR #21 still requires full CI     | One-file PR, guarded main push, hosted run               | Require green final-head check; never reuse for product code                        |
+| `CHG-2026-008` | Implemented; local validation passed | P1 draft did not fix the one notification trigger/audience | Completion notifies distinct creator; self-completion is suppressed     | Issue #5 accountable cross-user outcome and contract audit | API/event/data/UI/tests; phase order unchanged                        | PostgreSQL 5/5; browser 4/4; Level C passed              | Revisit real audience/preferences only in P2 or a later accepted slice              |
+| `CHG-2026-009` | Implemented; local validation passed | Next build with deny-by-default lifecycle policy           | Exclude unused Sharp; scope PostCSS 8.5.18 override to Next 16.2.11     | Reviewed high advisories and Next registry ranges          | Supply chain/build only; product/API/data/order unchanged             | Audit/build/runtime/browser and Level C passed           | Reopen on image pipeline; retire override on a natively patched Next release        |
 
 Mirror accepted changes in `docs/IMPLEMENTATION_PLAN.md`; add an ADR for architecture/product policy, an integration-log entry for contract/promotion impact, and a session-log entry for evidence.
 

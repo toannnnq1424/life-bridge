@@ -2,8 +2,9 @@
 
 ## Status and principles
 
-This Phase 0 document defines ownership and minimum contracts; it is not a
-deployed schema.
+The `P1-S1-v1` ownership and entity contract is frozen for implementation on
+2026-07-26. PostgreSQL remains the selected engine; the migration and runtime
+evidence are recorded by P1-S1.
 
 - Each service owns its data, migrations, backup/restore contract, and retention
   behavior.
@@ -17,6 +18,8 @@ deployed schema.
 - Audit records are append-only at the application level.
 - Demo fixtures are synthetic and available in `vi-VN` and `en`.
 - LifeBridge stores coordination data, not diagnosis or automated medical advice.
+- `CHG-2026-008` limits the P1 notification outbox to confirmed completion and
+  targets the creator/coordinator when that actor differs from the completer.
 
 ## Bounded contexts
 
@@ -81,9 +84,10 @@ ephemeral cache or coordination. None is approved as a source of truth in Phase 
 | `title`                        | short coordination instruction                    |
 | `description`                  | optional; avoid unnecessary sensitive detail      |
 | `assignee_id`                  | active authorized member                          |
-| `status`                       | open, in_progress, completed                      |
-| `urgency`                      | normal, important, urgent; never color-only in UI |
-| `due_at`                       | timestamp with explicit zone                      |
+| `status`                       | open or completed in P1-S1                        |
+| `priority`                     | normal, important, urgent; never color-only in UI |
+| `due_at`                       | timestamp with zone                               |
+| `due_time_zone`                | validated IANA zone preserving user context       |
 | `version`                      | monotonic optimistic-concurrency value            |
 | `created_by`, `created_at`     | immutable provenance                              |
 | `completed_by`, `completed_at` | present only after completion                     |
@@ -91,17 +95,33 @@ ephemeral cache or coordination. None is approved as a source of truth in Phase 
 Hard deletion is not part of Slice 1. A future retention slice must define
 archive/deletion rules and legal/product approval.
 
+### Command idempotency
+
+Care Coordination owns a command-result record keyed by operation, actor, and
+idempotency key:
+
+| Field                         | Rule                                                        |
+| ----------------------------- | ----------------------------------------------------------- |
+| `operation`, `actor_id`       | authorization and command scope                             |
+| `idempotency_key`             | bounded opaque client key                                   |
+| `request_hash`                | canonical validated request hash; never a raw request body  |
+| `response_status`, `response` | safe confirmed result projection                            |
+| `created_at`, `expires_at`    | explicit lifecycle; P1 keeps records for the fixture window |
+
+The unique key is `(operation, actor_id, idempotency_key)`. The same key and
+hash returns the original result; a different hash is a bounded conflict.
+
 ### Outbox record
 
-| Field                               | Rule                                          |
-| ----------------------------------- | --------------------------------------------- |
-| `event_id`                          | globally unique opaque identifier             |
-| `event_type`, `event_version`       | versioned contract                            |
-| `aggregate_id`, `aggregate_version` | ordering and deduplication                    |
-| `payload`                           | minimum necessary event data                  |
-| `occurred_at`                       | domain event time                             |
-| `published_at`                      | null until confirmed                          |
-| `attempt_count`, `last_error_code`  | bounded retry evidence; no secret/detail dump |
+| Field                               | Rule                                            |
+| ----------------------------------- | ----------------------------------------------- |
+| `event_id`                          | globally unique opaque identifier               |
+| `event_type`, `event_version`       | versioned contract                              |
+| `aggregate_id`, `aggregate_version` | ordering and deduplication                      |
+| `payload`                           | opaque task/household/recipient/actor/time only |
+| `occurred_at`                       | domain event time                               |
+| `published_at`                      | null until confirmed                            |
+| `attempt_count`, `last_error_code`  | bounded retry evidence; no secret/detail dump   |
 
 ### Audit entry
 
@@ -115,6 +135,35 @@ archive/deletion rules and legal/product approval.
 | `result`                        | success or named failure class       |
 | `occurred_at`, `correlation_id` | traceability                         |
 | `metadata`                      | allow-listed redacted fields only    |
+
+### Notification inbox and notification
+
+Notification owns both records in its own database:
+
+| Record       | Essential fields                                                                                      | Uniqueness/meaning                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Inbox result | source event ID, payload hash, event type/version, result, processed time                             | one durable consumer result per source event              |
+| Notification | notification ID, recipient ID, source event ID, message key, bounded task-ID parameter, read, created | one stored item per source event and authorized recipient |
+
+`suppressed_self` is a durable inbox result with no Notification row. Pending,
+retrying, and failed delivery remain Care Coordination outbox truth. Only a
+durable Notification acknowledgement permits the outbox state `delivered`.
+
+## P1 physical ownership
+
+P1 uses one local PostgreSQL server with two independently migrated databases
+and credentials:
+
+```text
+lifebridge_care          <- Care Coordination only
+lifebridge_notification  <- Notification only
+```
+
+Gateway and Web have no database credential. Care never reads or writes the
+Notification database; Notification never reads or writes the Care database.
+The internal versioned HTTP event contract is the only write boundary between
+them. Test/local credentials are generated into ignored process-local state and
+are never committed or printed.
 
 ## Classification
 
@@ -149,9 +198,11 @@ content or translation keys separately.
 - Every fixture derives from a documented transformation and must avoid
   re-identification risk.
 
-## Planned migrations
+## P1 migrations
 
-Migration tooling is selected in the service-scaffolding slice. No production or
-real-data migration is authorized in Phase 0. A migration must be forward-only
-by default, reviewed, tested on disposable data, and accompanied by a rollback
-or compensating plan.
+Each owning service has a forward-only, repeat-safe migration entry point. P1
+tests migrate disposable databases from empty state, restart the owning
+processes without reseeding, and verify task/outbox/inbox/notification
+durability. Rollback for the additive initial schema is replacement of the
+slice-owned disposable local databases; no real-data destructive rollback is
+claimed or authorized.

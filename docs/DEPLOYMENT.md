@@ -2,9 +2,10 @@
 
 ## Current status
 
-No LifeBridge service is implemented or deployed in Phase 0. This document
-defines the intended reproducible path and must not be read as deployment
-evidence.
+P1-S1 provides a production-built local runtime for synthetic acceptance:
+Next.js web, Fastify gateway, Care Coordination, Notification, and one local
+PostgreSQL engine with two owner-isolated databases. This is local/CI evidence,
+not a public or production deployment.
 
 ## Environments
 
@@ -45,20 +46,33 @@ infrastructure is consolidated for cost.
 - Each service exposes liveness, readiness, and build-version endpoints.
 - Logs are structured and follow `docs/SECURITY.md`.
 
-## Planned commands
-
-Canonical commands will be implemented by the relevant slices:
+## P1-S1 local commands
 
 ```powershell
 .\scripts\bootstrap.ps1
 .\scripts\doctor.ps1
-.\scripts\validate-phase0.ps1
-pnpm.cmd run build
-pnpm.cmd run test
+pnpm.cmd run demo:p1
+pnpm.cmd run validate:p1-s1
 ```
 
-Application start, migration, smoke, and deployment commands will be added only
-when the first executable service slice exists. Do not publish invented commands.
+`demo:p1` creates ignored process-local credentials if absent, starts the
+digest-pinned PostgreSQL container, provisions distinct Care and Notification
+owners/databases, builds the four runtime boundaries, and waits until
+interrupted. It retains only its named local database volume.
+`validate:p1-s1` instead uses a PID-scoped Compose project and removes exactly
+its container, network and volume after the campaign.
+
+P1-S1 exposes local health endpoints and binds only to `127.0.0.1`. Fixture
+identity is explicit and startup rejects it in production mode. No cloud
+resource, public endpoint, DNS, production credential, backup policy or
+rollback artifact is created by this slice.
+
+The Next build uses local fonts and no image optimization pipeline. Project
+resolution excludes optional Sharp and `allowBuilds.sharp: false` remains
+enforced; build plus Chromium runtime smoke is the evidence that P1 does not
+require Sharp install/runtime code. The temporary parent-scoped PostCSS patch
+must be reassessed on a Next upgrade. Any later `next/image` or server
+image-processing work must reopen the supply-chain decision before deployment.
 
 ## Promotion
 

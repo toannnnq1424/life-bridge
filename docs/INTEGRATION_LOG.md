@@ -256,3 +256,39 @@ environments are intended to converge. It is not a substitute for Git history.
 - Decision/change references: `CHG-2026-007`, ADR-015, KI-012
 - Follow-up: delete the bootstrap branch after reachability, then require the
   full Windows validation on the final PR #21 commit before merge to `dev`
+
+## INT-2026-011 — Implement P1-S1 contracts, audience, and design handoff
+
+- Date: 2026-07-26
+- Status: Locally validated; hosted CI and merge pending
+- Source: `phase/1-accountable-task-loop` from `dev` at `4b633755`
+- Target: `dev` through a P1-S1 pull request and merge commit
+- Scope: issue #5 create/assign/complete loop, completion outbox, cross-user
+  notification, confirmed dashboard/task/notification state, and VI/EN
+  Stitch-derived UI
+- Contracts/data affected: `P1-S1-v1` public task/dashboard/notification APIs,
+  `care.task.completed.v1`, Care idempotency/audit/outbox ownership,
+  Notification inbox/item ownership, and two owner-isolated PostgreSQL
+  databases
+- Validation: package Level A checks pass; real PostgreSQL integration is 5/5
+  for concurrency/idempotency, cross-user delivery, self-suppression,
+  authorization/conflict, outage/retry, restart and time zone. Dependency audit
+  first exposed high Sharp/PostCSS advisories; `CHG-2026-009` excludes unused
+  Sharp and applies the narrow patched PostCSS edge. Frozen install, zero-high
+  audit, production build/runtime and browser 4/4 then passed. The changed
+  candidate completed Level C with unit 19/19, contract 4/4, PostgreSQL 5/5,
+  browser 4/4, build/static/docs/security gates, and exact cleanup of its
+  Compose resources. Literal exact-head hosted CI remains.
+- Conflicts/risks: Phase 0 draft did not name the one notification trigger or
+  recipient. `CHG-2026-008` selects creator-if-distinct and durable
+  self-suppression. Branch protection remains unavailable, so SHA/check review
+  is manual.
+- Design: six reviewed remote Stitch aliases remain the provenance. Handoff
+  version 1.0 freezes native semantic, localization, responsive, failure-state,
+  privacy, and accessibility corrections without importing generated source or
+  private locators.
+- Decision/change references: `CHG-2026-008`, `CHG-2026-009`, ADR-016,
+  ADR-017, issue #5
+- Follow-up: push the phase branch, open the PR to `dev`, require green
+  exact-head CI, merge with a merge commit, and close issue #5 only after
+  acceptance. Then hand off exact next slice P2-S1.

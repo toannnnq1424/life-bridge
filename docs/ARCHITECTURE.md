@@ -4,8 +4,8 @@
 
 - Architecture baseline: `ARCH-2026-07-25`
 - Status: Accepted Phase 0 target architecture
-- Runtime implementation status: Not yet implemented
-- Current phase: Foundation
+- Runtime implementation status: P1-S1 local candidate implemented; Level C and exact-head CI pending
+- Current phase: P1 — Daily task MVP
 - First implementation slice: `P1-S1`
 - Production-maturity plan: `PLAN-2026-07-26-PRODUCTION` (`P0`–`P12`)
 
@@ -49,18 +49,18 @@ No arrow represents direct access to another service's tables. The BFF composes 
 
 ## 3. Planned versus actual
 
-| Area                   | Planned baseline                                                         | Actual evidence at Phase 0                               |
-| ---------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------- |
-| Workspace              | pnpm TypeScript monorepo                                                 | Foundation tooling/scaffold is being established         |
-| Web                    | Next.js + React, semantic components, localization                       | No production UI implemented                             |
-| Gateway/BFF            | Fastify, external HTTP contract, response composition                    | Not implemented                                          |
-| Domain services        | Independently runnable Fastify processes/modules                         | Not implemented                                          |
-| Contracts              | TypeScript + Zod schemas; OpenAPI for HTTP; versioned event envelope     | Not implemented                                          |
-| Persistence            | PostgreSQL, separately owned database/schema per service                 | Not provisioned                                          |
-| Cross-service delivery | Transactional outbox + versioned internal delivery + inbox/deduplication | Not implemented                                          |
-| Testing                | Vitest unit/contract/integration; Playwright browser smoke               | Foundation commands are being established                |
-| UI design              | Google Stitch MCP reference + reviewed repository handoff                | Design governance exists; product screens are not frozen |
-| Deployment             | Containerized services with health/readiness checks                      | Deferred until deployable slices exist                   |
+| Area                   | Planned baseline                                                         | Actual evidence at Phase 0                            |
+| ---------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Workspace              | pnpm TypeScript monorepo                                                 | P1-S1 apps/services/packages/tests implemented        |
+| Web                    | Next.js + React, semantic components, localization                       | VI/EN routes and Stitch-derived states implemented    |
+| Gateway/BFF            | Fastify, external HTTP contract, response composition                    | Public forwarding and honest degradation implemented  |
+| Domain services        | Independently runnable Fastify processes/modules                         | Care Coordination and Notification boundaries frozen  |
+| Contracts              | TypeScript + Zod schemas; OpenAPI for HTTP; versioned event envelope     | Frozen `P1-S1-v1` executable Zod schemas implemented  |
+| Persistence            | PostgreSQL, separately owned database/schema per service                 | Two local/CI owner databases selected; migrations due |
+| Cross-service delivery | Transactional outbox + versioned internal delivery + inbox/deduplication | Completion outbox/HTTP retry/inbox implemented        |
+| Testing                | Vitest unit/contract/integration; Playwright browser smoke               | P1 Level C command and exact-head CI specified        |
+| UI design              | Google Stitch MCP reference + reviewed repository handoff                | P1-S1 handoff frozen after native correction mapping  |
+| Deployment             | Containerized services with health/readiness checks                      | Deferred until deployable slices exist                |
 
 Any divergence requires a Change ID and, when architectural, an ADR.
 
@@ -185,13 +185,13 @@ sequenceDiagram
     User->>Web: Create and assign task
     Web->>Gateway: POST task + idempotency key
     Gateway->>Care: Validated command + actor/correlation
-    Care->>CareDB: Commit task
+    Care->>CareDB: Commit task + create audit
     Care-->>Gateway: Confirmed task/version
     Gateway-->>Web: Created task
     User->>Web: Complete task
     Web->>Gateway: Complete task + expected version
     Gateway->>Care: Authorized idempotent command
-    Care->>CareDB: Atomic completion + outbox event
+    Care->>CareDB: Atomic completion + audit + one outbox
     Care-->>Web: Confirmed completion; delivery pending
     Dispatch->>CareDB: Read/claim owned outbox
     Dispatch->>Notify: Deliver versioned event
@@ -205,6 +205,20 @@ sequenceDiagram
 ```
 
 The dispatcher belongs to Care Coordination and reads only its owned outbox. It calls an internal Notification contract. Notification never polls or joins the coordination database.
+
+`CHG-2026-008` freezes the accountable audience. The primary fixture has Lan
+create/coordinate and Minh receive/complete. Completion targets Lan rather than
+notifying the actor who just completed the work. Care resolves the event
+disposition to `deliver` or `suppress_self`; Notification durably deduplicates
+both and stores no self-notification. Create/assignment produces no P1
+notification.
+
+Care owns pending, retry, and terminal-failure delivery intent. Notification
+owns inbox results and stored notification rows. The BFF may compose both
+sources but cannot turn an outbox record into a fake Notification row. If
+Notification commits and Care crashes before acknowledgement, event-ID
+deduplication makes redelivery safe and the durable notification wins over the
+stale Care projection.
 
 An external broker may replace the initial transport later without changing domain event meaning. That change requires load/reliability evidence, an ADR, migration/rollback, and updated validation.
 
@@ -332,7 +346,10 @@ product flow
 
 Generated markup and scripts are never copied directly. Approved concepts are normalized into semantic components, tokens, localization keys, responsive rules, and tests.
 
-For `P1-S1`, implementation cannot start until handoffs cover Dashboard (`LB-011`), Task Board (`LB-013`), Task Detail (`LB-014`), the applicable Notification state (`LB-019`), and reusable state patterns used by the flow.
+For `P1-S1`, the frozen handoff covers Dashboard (`LB-011`), Task Board
+(`LB-013`), Task Detail (`LB-014`), the applicable Notification state
+(`LB-019`), and reusable state patterns. The implementation must trace routes
+and tests to those aliases and record any accessible divergence.
 
 ## 12. Observability and safe operations
 
