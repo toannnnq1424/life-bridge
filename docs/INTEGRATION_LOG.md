@@ -551,10 +551,12 @@ failures, not product failures.
   the accepted P2 governed-read boundary. No P3, DATA, P5, deployment or
   release work starts here.
 
-## INT-2026-017 — P3-S1 daily timeline and accountable handoff candidate
+## INT-2026-017 — P3-S1 daily timeline and accountable handoff
 
 - Date: 2026-07-26
-- Status: Local validation complete; hosted promotion pending
+- Promotion date: 2026-07-27
+- Status: Integrated; exact-head and post-merge hosted validation passed;
+  issue #9 closed
 - Source: `phase/3-daily-timeline-handoff` from verified
   `dev@cd58229794e6e8bf562a49879de494515c262db5`
 - Owning work: GitHub issue #9 (`GH-008`)
@@ -603,10 +605,22 @@ failures, not product failures.
   runtime logs and exact cleanup passed. Recovery corrected clean-host owner
   provisioning/reset, focus and VI/EN selectors, and a real Gateway
   correlation re-resolution defect; the no-header boundary passes 19/19.
-  Exact-head CI, PR merge commit, post-merge `dev` CI and bilingual issue #9
-  closeout remain pending and are not claimed early.
+  Exact feature head `909c64542ccd4f3db6951e737dd83ef393cdf701`
+  passed push run `30216046313` and PR run `30216124915`. PR #51 merged through
+  a merge commit as `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`;
+  post-merge run `30216314035` passed all three gates and bilingual issue #9
+  closeout was posted before the issue closed completed.
+- Promotion transport deviation: planned GitHub App PR/issue/check operations
+  could not see the private repository and returned `404`; `gh` was absent.
+  The already-authorized signed-in GitHub browser session created ready PR
+  #51, verified exact SHA/run state, merged with the checked merge-commit
+  method and closed issue #9. Impact was transport-only: no source, contract,
+  validation, credential or branch-topology change. Direct PR/run/commit/issue
+  evidence validates the fallback; KI-006 retains the optional-tool limitation
+  and no Change ID is required.
 - Decision/change references: issue #9, `CHG-2026-013`, ADR-021,
   `docs/security/P3_S1_THREAT_MODEL.md`, KI-001/KI-016/KI-019
-- Follow-up: no next slice is eligible until immutable P3-S1 acceptance.
-  Expected orientation is P3-S2 only if actual code/contracts/tests confirm
-  it. P3-S2, P3-S3, DATA, P5, deployment and release are not started.
+- Follow-up: actual code/contracts/tests confirm P3-S2 as exact next. A fresh
+  task must freeze its own appointment/calendar semantics against the accepted
+  P3-S1 time contract. P3-S2, P3-S3, DATA, P5, deployment and release are not
+  started here.
