@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
 
 import {
+  CalendarQuerySchema,
+  CancelAppointmentRequestSchema,
+  ChangeAppointmentRequestSchema,
   CoordinationAuthorizationDecisionSchema,
+  CreateAppointmentRequestSchema,
   DailyTimelineQuerySchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
@@ -135,7 +139,7 @@ export function buildGatewayServer(
   });
 
   app.get("/health/live", async () => ({ status: "live" }));
-  app.get("/version", async () => ({ service: "gateway", contract: "P3-S1-v1" }));
+  app.get("/version", async () => ({ service: "gateway", contract: "P3-S2-v1" }));
   app.get("/health/ready", async (_request, reply) => {
     try {
       const care = await fetcher(`${config.careUrl}/health/ready`, {
@@ -640,6 +644,283 @@ export function buildGatewayServer(
 
   app.get<{
     Params: { householdId: string };
+    Querystring: {
+      localDate?: string;
+      displayTimeZone?: string;
+      status?: string;
+    };
+  }>("/api/v1/households/:householdId/calendar", async (request, reply) => {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    const query = CalendarQuerySchema.parse({
+      localDate: request.query.localDate,
+      displayTimeZone: request.query.displayTimeZone,
+      filter: request.query.status ?? "all",
+    });
+    const requestDigest = digestJson({
+      operation: "calendar.read",
+      householdId: request.params.householdId,
+      query,
+    });
+    const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+      correlationId,
+      method: "POST",
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      body: {
+        permission: "coordination.calendar.read",
+        householdId: request.params.householdId,
+        requestDigest,
+      },
+    });
+    if (!decisionResponse) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    if (decisionResponse.status >= 400) {
+      return reply.code(decisionResponse.status).send(decisionResponse.body);
+    }
+    const authorization = decisionData(decisionResponse);
+    if (!authorization) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    try {
+      const response = await dependencyRequest(
+        fetcher,
+        `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/calendar/query`,
+        {
+          method: "POST",
+          actorId: "",
+          correlationId,
+          token: config.careToken,
+          body: { authorization, query },
+        },
+      );
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return dependencyUnavailable(reply, correlationId, logger, "care");
+    }
+  });
+
+  app.get<{ Params: { householdId: string; appointmentId: string } }>(
+    "/api/v1/households/:householdId/appointments/:appointmentId",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      const requestDigest = digestJson({
+        operation: "appointment.read",
+        householdId: request.params.householdId,
+        appointmentId: request.params.appointmentId,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        body: {
+          permission: "coordination.calendar.read",
+          householdId: request.params.householdId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) {
+        return dependencyUnavailable(reply, correlationId, logger, "identity");
+      }
+      if (decisionResponse.status >= 400) {
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      }
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) {
+        return dependencyUnavailable(reply, correlationId, logger, "identity");
+      }
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/appointments/${encodeURIComponent(request.params.appointmentId)}/read`,
+          {
+            method: "POST",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            body: { authorization },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/appointments",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      if (!validBrowserMutation(request.headers)) {
+        return rejectedBrowserMutation(reply, request.headers);
+      }
+      const appointmentRequest = CreateAppointmentRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      const requestDigest = digestJson({
+        operation: "appointment.create",
+        householdId: request.params.householdId,
+        request: appointmentRequest,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+        body: {
+          permission: "coordination.appointment.create",
+          householdId: request.params.householdId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) {
+        return dependencyUnavailable(reply, correlationId, logger, "identity");
+      }
+      if (decisionResponse.status >= 400) {
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      }
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) {
+        return dependencyUnavailable(reply, correlationId, logger, "identity");
+      }
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/appointments`,
+          {
+            method: "POST",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            idempotencyKey,
+            body: { authorization, request: appointmentRequest },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
+  app.patch<{
+    Params: { householdId: string; appointmentId: string };
+    Body: unknown;
+  }>("/api/v1/households/:householdId/appointments/:appointmentId", async (request, reply) => {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    if (!validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    const appointmentRequest = ChangeAppointmentRequestSchema.parse(request.body);
+    const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+    const requestDigest = digestJson({
+      operation: "appointment.change",
+      householdId: request.params.householdId,
+      appointmentId: request.params.appointmentId,
+      request: appointmentRequest,
+    });
+    const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+      correlationId,
+      method: "POST",
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+      body: {
+        permission: "coordination.appointment.change",
+        householdId: request.params.householdId,
+        appointmentId: request.params.appointmentId,
+        requestDigest,
+      },
+    });
+    if (!decisionResponse) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    if (decisionResponse.status >= 400) {
+      return reply.code(decisionResponse.status).send(decisionResponse.body);
+    }
+    const authorization = decisionData(decisionResponse);
+    if (!authorization) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    try {
+      const response = await dependencyRequest(
+        fetcher,
+        `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/appointments/${encodeURIComponent(request.params.appointmentId)}`,
+        {
+          method: "PATCH",
+          actorId: "",
+          correlationId,
+          token: config.careToken,
+          idempotencyKey,
+          body: { authorization, request: appointmentRequest },
+        },
+      );
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return dependencyUnavailable(reply, correlationId, logger, "care");
+    }
+  });
+
+  app.post<{
+    Params: { householdId: string; appointmentId: string };
+    Body: unknown;
+  }>(
+    "/api/v1/households/:householdId/appointments/:appointmentId/cancel",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      if (!validBrowserMutation(request.headers)) {
+        return rejectedBrowserMutation(reply, request.headers);
+      }
+      const appointmentRequest = CancelAppointmentRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      const requestDigest = digestJson({
+        operation: "appointment.cancel",
+        householdId: request.params.householdId,
+        appointmentId: request.params.appointmentId,
+        request: appointmentRequest,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+        body: {
+          permission: "coordination.appointment.cancel",
+          householdId: request.params.householdId,
+          appointmentId: request.params.appointmentId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) {
+        return dependencyUnavailable(reply, correlationId, logger, "identity");
+      }
+      if (decisionResponse.status >= 400) {
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      }
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) {
+        return dependencyUnavailable(reply, correlationId, logger, "identity");
+      }
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/appointments/${encodeURIComponent(request.params.appointmentId)}/cancel`,
+          {
+            method: "POST",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            idempotencyKey,
+            body: { authorization, request: appointmentRequest },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
+  app.get<{
+    Params: { householdId: string };
     Querystring: Record<string, string | undefined>;
   }>("/api/v1/households/:householdId/timeline", async (request, reply) => {
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
@@ -802,18 +1083,24 @@ export function buildGatewayServer(
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
     const idempotencyRequired = error instanceof IdempotencyKeyRequiredError;
     const validation = error instanceof Error && error.name === "ZodError";
+    const appointmentValidation =
+      validation && (request.url.includes("/appointments") || request.url.includes("/calendar"));
     return reply.code(idempotencyRequired || validation ? 400 : 503).send({
       error: {
         code: idempotencyRequired
           ? "IDEMPOTENCY_KEY_REQUIRED"
-          : validation
-            ? "TASK_VALIDATION_FAILED"
-            : "SERVICE_UNAVAILABLE",
+          : appointmentValidation
+            ? "APPOINTMENT_VALIDATION_FAILED"
+            : validation
+              ? "TASK_VALIDATION_FAILED"
+              : "SERVICE_UNAVAILABLE",
         messageKey: idempotencyRequired
           ? "errors.idempotency.required"
-          : validation
-            ? "errors.task.validation"
-            : "errors.service.unavailable",
+          : appointmentValidation
+            ? "appointment.validation"
+            : validation
+              ? "errors.task.validation"
+              : "errors.service.unavailable",
         retryable: !idempotencyRequired && !validation,
         correlationId,
       },

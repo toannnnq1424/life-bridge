@@ -197,3 +197,74 @@ compliance. Production legal review, retention/deletion policy and manual
 assistive-technology evidence remain later gates. Another official source would
 not change the time, authority, privacy, accessibility or test decision, so the
 micro-cycle stopped.
+
+## 2026-07-27 — P3-S2 calendar and appointment micro-cycle
+
+Result: `PASS WITH ASSUMPTIONS`; retrieved 2026-07-27. This was one bounded
+2021–2026 official-source review after the accepted P3-S1 UTC/IANA boundary.
+It introduced no dataset, fixture, clinical claim, diagnosis, treatment,
+medication, contact, location or real appointment data.
+
+Questions:
+
+1. Which local/UTC/zone facts prevent silent DST reinterpretation?
+2. Which finite recurrence and occurrence-change boundary is safe for v1?
+3. What calendar keyboard pattern is necessary when an equivalent agenda
+   remains the complete path?
+4. Which reminder-intent fields are minimum necessary outside Care
+   Coordination?
+
+Sources and findings:
+
+- IETF/RFC Editor, global, April 2024,
+  [RFC 9557](https://www.rfc-editor.org/rfc/rfc9557.html), Standards Track:
+  offset and named time zone are distinct and inconsistency can be critical.
+  P3-S2 therefore returns canonical UTC, source local time, numeric offset and
+  validated IANA zone as separate facts.
+- PostgreSQL Global Development Group, global, PostgreSQL 18 current official
+  documentation,
+  [Date/Time Types](https://www.postgresql.org/docs/18/datatype-datetime.html)
+  and
+  [Invalid or Ambiguous Timestamps](https://www.postgresql.org/docs/18/datetime-invalid-input.html),
+  PostgreSQL licence: PostgreSQL stores `timestamptz` as UTC and otherwise
+  resolves DST gaps/overlaps by database rules. LifeBridge must not make that
+  implicit choice for appointment commands; gaps are rejected and overlaps
+  use an explicit earlier/later policy.
+- Google Calendar API, global current official product documentation,
+  [Recurring events](https://developers.google.com/workspace/calendar/api/guides/recurringevents)
+  and
+  [Calendars and events](https://developers.google.com/workspace/calendar/api/concepts/events-calendars),
+  Google Developers Site Terms: recurring events have concrete instances and
+  exceptions; changing “this and following” splits a series and can reset later
+  exceptions. This is benchmark evidence only. P3-S2 materializes a finite
+  weekly series and supports change/cancel for one named occurrence only.
+- W3C WAI, global, page updated August 2025,
+  [Date Picker Dialog Example](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/)
+  and [Grid Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/grid/), W3C
+  document licence: a calendar grid requires managed keyboard focus and
+  explicit selection; APG examples are informative and require real
+  assistive-technology testing. The native P3-S2 agenda remains complete and
+  the visual calendar is an enhancement, never the only path.
+- OWASP Foundation, global current living guidance,
+  [Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html),
+  CC BY-SA 4.0: sensitive personal data and payloads should be removed,
+  masked or pseudonymized. Notification receives only opaque appointment and
+  recipient references, structured disposition/message key and UTC trigger/
+  start facts—never title, notes, location, attendee, recurrence rule or
+  idempotency material.
+
+Kết luận / Conclusion: `P3-S2-v1` uses structured appointment kind/logistics,
+canonical UTC plus source local/IANA/offset facts, half-open interval conflicts,
+finite weekly recurrence with an explicit occurrence count and maximum, and
+occurrence-only change/cancel. Confirmed cancellation remains visible. Reminder
+intent is a separate durable structured fact and is not a delivery claim. The
+agenda contains every authorized critical fact and remains keyboard complete at
+every width.
+
+The technical sources are global and do not establish Viet Nam legal
+compliance or product usability. KI-016 retains manual assistive-technology
+evidence; KI-019 retains independent private-render review. Re-check on a
+series-wide mutation request, external calendar synchronization, arbitrary
+reminder audience/channel, tzdb/runtime change, public pilot or accessibility
+claim. Another source would not change the v1 time, recurrence, privacy or
+accessibility decision, so the micro-cycle stopped.

@@ -6,14 +6,14 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P3 — Care planning`; P3-S1 accepted
+- Current phase: `P3 — Care planning`; P3-S2 in progress
 - Most recently integrated slice: `P3-S1 — Daily timeline and handoff`;
   validated and merged at
   `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`
-- Active product slice: none in this completed task; issue
-  [#9](https://github.com/toannnnq1424/life-bridge/issues/9) is closed
-- Exact next eligible product slice: `P3-S2 — Calendar and appointment
-coordination`, only in a fresh task
+- Active product slice: `P3-S2 — Calendar and appointment coordination`;
+  canonical issue
+  [#10](https://github.com/toannnnq1424/life-bridge/issues/10) verified open
+- Exact next eligible product slice: none until P3-S2 is accepted
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -556,6 +556,40 @@ Acceptance:
 
 Dependencies: `P3-S1`; shared versioned time contract.
 
+Actual contract freeze, 2026-07-27:
+
+- three independent audits and one bounded RFC 9557/PostgreSQL/Google Calendar/
+  W3C/OWASP official-source cycle converged on `P3-S2-v1`;
+- Identity issues fresh action/request-digest decisions for calendar read and
+  appointment create/change/cancel. The accepted P2
+  `household_coordination` basic-label grant maps only to this structured
+  appointment contract; organizer/member/caregiver role remains insufficient;
+- Care owns structured kind/logistics, canonical UTC plus source local/IANA/
+  numeric-offset facts, finite weekly occurrence materialization, half-open
+  conflict serialization, optimistic/idempotent occurrence-only change/cancel,
+  cancellation history, audit and outbox;
+- recurrence is `none` or 2–12 weekly occurrences at a 1–4 week interval.
+  DST gaps fail, overlaps use an explicit earlier/later policy, and no infinite
+  RRULE, “this and following”, implicit series split or external sync exists;
+- Notification receives only a versioned structured schedule/cancel reminder
+  intent with opaque appointment/recipient references, UTC trigger/start and
+  fixed message key. It receives no logistics, local time, zone, recurrence,
+  conflict, reason, free text or idempotency material and makes no delivery
+  claim;
+- LB-015/LB-016 require four bounded synthetic Stitch references, independent
+  review, a Frozen redacted correction map and native semantic implementation.
+  The agenda is the complete keyboard path at every width; KI-019 prevents a
+  private-pixel visual-conformance claim if independent review remains
+  unavailable;
+- planned-versus-actual deviation `CHG-2026-014` narrows previously unspecified
+  authority, DST, recurrence, mutation-scope, conflict and reminder semantics
+  without adding a service, engine, phase or clinical scope.
+
+Planned validation: focused Level A/B during implementation, then exactly one
+`pnpm.cmd run validate:p3-s2` Level C campaign. Hosted exact-head, ready PR,
+merge commit, post-merge `dev` CI and issue #10 closeout remain required before
+acceptance.
+
 ### `P3-S3 — Care-plan review`
 
 Outcome: authorized participants create/version a care plan with goals, preferences, responsibilities, and review date without clinical recommendations.
@@ -1024,6 +1058,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | `CHG-2026-011` | Accepted; implementation deferred    | Select Spring Boot for greenfield Community at P5; preserve existing Node boundaries   |
 | `CHG-2026-012` | Accepted; local validation passed    | Consent authority is explicit self-establishment, never organizer membership           |
 | `CHG-2026-013` | Integrated; hosted validation passed | Fresh P2 decision plus Care-owned snapshot timeline and atomic structured handoff      |
+| `CHG-2026-014` | Accepted; implementation in progress | Finite Care-owned appointment occurrences and minimum Notification reminder intent     |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -1306,6 +1341,64 @@ No row means simultaneous implementation. Design generation/review may prepare a
   `docs/security/P3_S1_THREAT_MODEL.md`, `INT-2026-017`, KI-016/KI-019 and the
   P3-S1 session entry.
 
+## CHG-2026-014 — Freeze finite governed appointment occurrences
+
+- State: Candidate complete; local Level C plus targeted continuation passed;
+  hosted promotion pending
+- Raised in phase/slice: `P3-S2`
+- Planned baseline: an authorized member creates/updates an appointment and
+  sees the confirmed result in an accessible calendar and equivalent agenda.
+  Time zone, recurrence boundary, change/cancellation, reminder intent and
+  conflicts were required but action authority, DST disambiguation,
+  recurrence shape, mutation scope, conflict serialization and reminder
+  payload were unspecified.
+- Proposed/actual implementation: Identity issues fresh action-specific
+  calendar/appointment decisions using the accepted P2 governed boundary.
+  Care materializes 1–12 structured appointment occurrences with canonical UTC
+  plus source local/IANA/offset facts, rejects DST gaps, uses explicit
+  earlier/later overlap policy, serializes half-open conflicts, and supports
+  optimistic/idempotent occurrence-only change/cancel with retained history.
+  Notification receives only a versioned structured reminder schedule/cancel
+  intent and makes no delivery claim.
+- Reason/evidence: the three independent audits and bounded RFC 9557,
+  PostgreSQL, Google Calendar, W3C APG and OWASP micro-cycle found that implicit
+  database DST resolution, unbounded recurrence, hidden “this and following”
+  series splits, membership-derived authority and free-form reminder payloads
+  would make state or disclosure untruthful.
+- Impact:
+  - Product/UI: native VI/EN LB-015/LB-016 with one lossless calendar/agenda
+    projection, explicit source/display time facts, finite recurrence and
+    occurrence-only consequence, retained cancellation and durable-success-only
+    change/cancel/reminder-intent copy.
+  - API/events: `P3-S2-v1` action decisions, calendar/detail read, strict
+    create/change/cancel commands, conflict/recovery errors and
+    `care.appointment.reminder_intent.v1`.
+  - Data/migration: additive Care migration 003 and Notification migration 002;
+    no backfill, shared table, cross-service SQL, credential, service or engine.
+  - Privacy/security: structured kind/logistics only; no title, address, URL,
+    attendee, note, clinical content or arbitrary reminder audience/channel.
+    Reminder event and operational telemetry are minimum and allow-listed.
+  - Tests/operations: deterministic IANA/DST/recurrence/order, conflict/race/
+    idempotency/atomicity, migration rollback/reapply/no-backfill,
+    provider-consumer, real outbox/Notification, VI/EN browser/a11y/offline/
+    recovery, log/secret/build and exact cleanup.
+  - Phase order/schedule: unchanged. P3-S3, DATA-S1, P4/P5, deployment and
+    release remain separate.
+- Validation actual/required: focused Level A/B and exactly one local P3-S2
+  Level C invocation completed. The desktop shell detached its output, so
+  classified targeted continuation retained every green gate and fixed one
+  migration-reapply compatibility defect, browser locator defects and two
+  recovery-state UI defects. Static, PostgreSQL, migration, build, mocked/real
+  browser, privacy-log and cleanup evidence is green. Exact-head hosted CI,
+  ready PR, merge commit, post-merge `dev` CI and canonical issue closeout
+  remain required.
+- Follow-up owner and exact phase/slice: after P3-S2 acceptance, a fresh P3-S3
+  task freezes versioned care-plan review. Series-wide calendar mutation,
+  external synchronization and reminder delivery require later accepted scope.
+- Related ADR/integration/session entries: ADR-022,
+  `docs/security/P3_S2_THREAT_MODEL.md`, future P3-S2 integration/session
+  entries, KI-016 and KI-019.
+
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
 until this phase closes. It contains no raw dataset or product fixture. All
@@ -1331,8 +1424,11 @@ KI-001 still blocks deployment, KI-016 retains manual assistive-technology
 evidence, and KI-019 retains private-render review before any
 visual-conformance claim.
 
-Actual code/contracts/tests make `P3-S2 — Calendar and appointment
-coordination` the exact next product slice. Its first action in a fresh task is
-to freeze its own versioned appointment/time contract against the accepted
-P3-S1 UTC/IANA boundary. P3-S2, P3-S3, DATA-S1, P5, deployment and release are
-not started here.
+P3-S2 is the active and only product slice. `P3-S2-v1`, ADR-022,
+`CHG-2026-014`, the P3-S2 threat model, research record and Frozen corrected
+LB-015/LB-016 Stitch handoff are implemented in native semantics. The retained
+single Level C campaign evidence is green and all task-owned resources were
+removed. Exact next is feature commit, push, ready PR to `dev`, exact-head
+hosted CI, merge commit, post-merge `dev` CI, issue #10 closeout and a
+docs-only canonical-memory PR if required. No next slice is eligible. P3-S3,
+DATA-S1, P4/P5, deployment and release remain unstarted.

@@ -1440,3 +1440,77 @@ code/contracts/tests make `P3-S2 — Calendar and appointment coordination` the
 exact next slice, beginning only in a fresh task with its own versioned
 appointment/time contract. P3-S2, P3-S3, DATA, P5, deployment and release were
 not started.
+
+## 2026-07-27 — P3-S2 candidate implementation and local acceptance
+
+The task independently verified local `HEAD` and live `origin/dev` at accepted
+`83bfe45006241d160db7359eb61fafc4286de58b`, created only
+`phase/3-calendar-appointment`, and used the signed-in read-only GitHub browser
+to confirm canonical open issue #10 without creating a duplicate. Three
+independent read-only agents audited contract/data/authority/time,
+Stitch/privacy/accessibility and test/CI/operations before implementation.
+
+One bounded 2021–2026 official research cycle used RFC 9557, PostgreSQL
+date/time behavior, Google Calendar recurrence guidance, W3C APG date-grid
+guidance and OWASP logging guidance. `P3-S2-v1`, ADR-022,
+`CHG-2026-014`, the data/architecture/threat records and exact P2/P3-S1
+authority/time reuse boundary were frozen before production code.
+
+Four synthetic Stitch references were generated once and directly read back
+once: LB-015 desktop/mobile and LB-016 desktop/mobile. Private identifiers,
+locators, signed URLs, screenshots and generated source were not persisted.
+The independent post-generation reviewer returned not independently visually
+approvable because private pixels were unavailable. The Frozen corrected
+handoff therefore rejects generated source and retains KI-019 without a visual
+conformance claim.
+
+Native implementation now includes:
+
+- action-specific Identity decisions and Gateway composition for calendar
+  read and appointment create/change/cancel;
+- Care-owned finite concrete occurrences, deterministic IANA/DST resolution,
+  half-open serialized conflicts, occurrence-only optimistic/idempotent
+  mutation, cancelled history, transition/audit/outbox atomicity and migration
+  003;
+- minimum Notification schedule/cancel reminder-intent receipt and migration
+  002, without free-form content or a delivery claim;
+- native VI/EN LB-015/LB-016 routes, complete semantic agenda, calendar
+  enhancement, review/confirmation, offline blocking, stale/conflict/
+  uncertain/cancelled recovery, visible focus, reflow, forced-colour and
+  reduced-motion behavior;
+- first-class P3-S2 contract, PostgreSQL, migration, mocked/real Playwright,
+  build, CI and PID-scoped validation entry points.
+
+The single `pnpm.cmd run validate:p3-s2` invocation was detached by the desktop
+shell after launch; it created and then exactly cleaned its PID-scoped
+PostgreSQL resources, but its gate output was unavailable. No second full
+Level C was invoked. Visible targeted continuation ran each unproven gate,
+preserved green groups and classified failures:
+
+- four format scopes, lint/type, unit 55 passed with 19 environment skips,
+  contracts 19/19, docs/config/secrets, dependency audit and all production
+  builds passed;
+- P1 PostgreSQL 6/6 passed;
+- the first P3-S1 continuation found migration 002 could not reapply after the
+  new non-null coverage column; migration 003 now gives that column the same
+  server-time default, preserving legacy reapply;
+- P3-S1 Identity/Care PostgreSQL 14/14, P3-S2 Care/Notification PostgreSQL 5/5
+  and both rollback/reapply/no-backfill scripts passed;
+- retained P3-S2 browser evidence is mocked 6/6 and real 1/1. Targeted fixes
+  removed ambiguous locators, avoided offline navigation, suppressed a
+  duplicate generic panel during dedicated conflict recovery and allowed a
+  fresh cancellation review after current-state recovery;
+- cumulative P3-S1 mocked 6/6 and P2 mocked 18/18 passed; privacy-safe runtime
+  log scan, `git diff --check`, and exact container/network/volume/process/log/
+  browser-artifact cleanup passed.
+
+The protected user-owned
+`docs/orchestration/reports/STITCH_MCP_CANARY.md` remains untouched. KI-001
+still blocks deployment. KI-016 retains manual NVDA/Narrator, physical-device,
+text-spacing and full assistive-technology zoom evidence. KI-019 retains a
+bounded private-pixel review before any visual-conformance claim.
+
+Feature commit, push, ready PR to `dev`, exact-head hosted CI, merge commit,
+post-merge `dev` CI, bilingual issue #10 closeout and any required docs-only
+canonical-memory PR remain pending and are not claimed. No next slice is
+eligible. P3-S3, DATA-S1, P4/P5, deployment and release remain unstarted.

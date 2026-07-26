@@ -3,10 +3,27 @@ import { readFile } from "node:fs/promises";
 import { Pool } from "pg";
 
 export async function migrateNotificationDatabase(connectionString: string): Promise<void> {
-  const sql = await readFile(new URL("../migrations/001_initial.sql", import.meta.url), "utf8");
+  const migrations = await Promise.all([
+    readFile(new URL("../migrations/001_initial.sql", import.meta.url), "utf8"),
+    readFile(new URL("../migrations/002_appointment_reminder_intent.sql", import.meta.url), "utf8"),
+  ]);
   const pool = new Pool({ connectionString, max: 1 });
   try {
-    await pool.query(sql);
+    const client = await pool.connect();
+    try {
+      for (const sql of migrations) {
+        try {
+          await client.query("BEGIN");
+          await client.query(sql);
+          await client.query("COMMIT");
+        } catch (error) {
+          await client.query("ROLLBACK");
+          throw error;
+        }
+      }
+    } finally {
+      client.release();
+    }
   } finally {
     await pool.end();
   }

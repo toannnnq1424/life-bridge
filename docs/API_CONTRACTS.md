@@ -635,3 +635,196 @@ Stable P3-S1 errors are `COORDINATION_RESOURCE_NOT_FOUND`,
 `IDEMPOTENCY_CONFLICT`, `IDENTITY_SERVICE_UNAVAILABLE` and
 `SERVICE_UNAVAILABLE`. Generic inaccessible/absent states share the same
 resource response and expose no membership, recipient, actor, event or count.
+
+## P3-S2 frozen calendar, appointment and reminder-intent API
+
+State: **Frozen for P3-S2 implementation** on 2026-07-27. Version:
+`P3-S2-v1`. This contract consumes the accepted P3-S1 UTC/IANA/local-day
+representation through explicit schemas. It does not infer appointment
+authority from a role, route, prior decision, event or browser state.
+
+Identity issues a fresh request-digest/correlation-bound decision for exactly
+one of:
+
+```text
+coordination.calendar.read
+coordination.appointment.create
+coordination.appointment.change
+coordination.appointment.cancel
+```
+
+The established subject may act directly. A collaborator requires active
+same-household membership, a current `household_coordination` grant containing
+`recipient_context.basic_label`, and the subject's current
+`coordinationActivityVisibility=household_only`. This explicit P3-S2 mapping
+authorizes only the structured facts below. Organizer/member/caregiver status
+never substitutes for consent. Gateway composes and propagates the normalized
+intent; Care verifies the fresh decision, household, recipient context,
+permission, correlation and request digest again.
+
+All mutation routes require the accepted session, synchronizer CSRF token,
+exact Origin/Fetch Metadata checks and `Idempotency-Key`. Same key plus the
+same complete canonical intent replays the original durable response for 24
+hours. Reuse with any changed route, operation, scope, version, schedule,
+logistics or reminder value returns `IDEMPOTENCY_CONFLICT`.
+
+### Time and recurrence contract
+
+Commands use:
+
+```text
+localStart: YYYY-MM-DDTHH:mm
+sourceTimeZone: validated IANA name
+sourceUtcOffset: ±HH:MM
+durationMinutes: 15..480
+ambiguousTimePolicy: earlier|later
+recurrence:
+  { frequency: none }
+  OR
+  { frequency: weekly, intervalWeeks: 1..4, occurrenceCount: 2..12 }
+```
+
+Care resolves every concrete occurrence. A nonexistent spring-forward local
+time is rejected. An overlap uses the explicit earlier/later policy; the
+submitted offset must match the resolved first occurrence. Weekly recurrence
+preserves source local wall time and IANA zone while each materialized
+occurrence stores its confirmed UTC instant and numeric offset. There is no
+infinite rule, `UNTIL`, arbitrary RRULE, “this and following”, implicit
+series split or external-calendar synchronization in v1.
+
+Every UTC instant returned or placed in an event is canonical millisecond
+`Z`. Conflict intervals are half-open: existing and candidate appointments
+overlap only when `existing.start < candidate.end` and
+`candidate.start < existing.end`; adjacent appointments are allowed.
+
+### Calendar and equivalent agenda read
+
+`GET /api/v1/households/{householdId}/calendar` accepts:
+
+```text
+localDate=YYYY-MM-DD
+displayTimeZone=<validated IANA name>
+status=all|scheduled|cancelled
+```
+
+The response contains the selected local date, validated display zone,
+inclusive `dayStartUtc`, exclusive `dayEndUtc`, exact filter, `snapshotAt` and
+at most 100 appointments overlapping that day. A denser day returns an
+explicit unavailable/density error rather than truncating or fabricating an
+empty result. Items are ordered by `(startsAtUtc, appointmentId)` and expose:
+
+- structured appointment kind and logistics mode only;
+- status `scheduled|cancelled`, last change `created|changed|cancelled` and
+  optimistic version;
+- canonical UTC start/end, source local start, source numeric offset and source
+  IANA zone;
+- recurrence frequency, interval, occurrence number/count, inclusive final
+  local date and the fixed `occurrence_only` change/cancel boundary;
+- reminder intent `not_requested|recorded|cancelled`, enumerated lead time and
+  the explicit statement that delivery is not claimed;
+- created/last-confirmed server instants.
+
+The authorized calendar and semantic agenda consume the same item projection.
+There are no titles, descriptions, addresses, URLs, attendees, notes, totals,
+hidden counts or browser-selected authority. Cancelled occurrences remain
+visible.
+
+`GET /api/v1/households/{householdId}/appointments/{appointmentId}` returns the
+same confirmed item shape. Missing, denied and cross-scope results share
+`COORDINATION_RESOURCE_NOT_FOUND`.
+
+### Create, change and cancel
+
+`POST /api/v1/households/{householdId}/appointments` accepts:
+
+```json
+{
+  "operation": "create_appointment",
+  "appointmentKind": "household_coordination",
+  "logisticsMode": "unspecified",
+  "schedule": {
+    "localStart": "2026-11-01T09:00",
+    "sourceTimeZone": "America/New_York",
+    "sourceUtcOffset": "-05:00",
+    "durationMinutes": 60,
+    "ambiguousTimePolicy": "later",
+    "recurrence": {
+      "frequency": "weekly",
+      "intervalWeeks": 1,
+      "occurrenceCount": 4
+    }
+  },
+  "reminder": {
+    "leadMinutes": 60
+  }
+}
+```
+
+`PATCH /api/v1/households/{householdId}/appointments/{appointmentId}` accepts a
+complete occurrence replacement with:
+
+```text
+operation=change_appointment
+scope=occurrence
+expectedVersion=<positive integer>
+appointmentKind
+logisticsMode
+schedule without recurrence
+reminder.leadMinutes=null|15|60|1440
+```
+
+The original series definition and other occurrences do not change.
+
+`POST /api/v1/households/{householdId}/appointments/{appointmentId}/cancel`
+accepts:
+
+```text
+operation=cancel_appointment
+scope=occurrence
+expectedVersion=<positive integer>
+reasonCode=no_longer_needed|schedule_changed|duplicate|other_coordination
+```
+
+Cancellation is durable history, never deletion. A cancelled occurrence cannot
+be changed or cancelled again. Create/change conflict checks serialize per
+recipient context and reject the first deterministic conflicting interval,
+ordered by `(startsAtUtc, appointmentId)`, without disclosing another
+appointment's details.
+
+One Care-owned PostgreSQL transaction writes the appointment/occurrences,
+immutable transition, privacy-minimized audit, digest-only idempotency response
+and any required reminder-intent outbox row. The UI confirms only the returned
+durable result. A transport/5xx after mutation is uncertain: do not mint a new
+key or retry blindly; read confirmed current state first.
+
+### Notification-facing reminder intent
+
+`care.appointment.reminder_intent.v1` is the only P3-S2 event delivered to
+Notification. Each event represents one concrete appointment occurrence and
+contains:
+
+```text
+event/aggregate version, occurredAt, correlation and causation
+appointmentId
+disposition=schedule|cancel
+recipientId
+remindAtUtc and startsAtUtc only for schedule
+messageKey=notifications.appointment.reminder
+```
+
+It never contains household/recipient labels, appointment kind/logistics,
+local time, zone, recurrence, conflict, cancellation reason, title, note,
+address, URL, attendee, cursor, idempotency material or free text.
+Notification stores/upserts one structured reminder intent per appointment and
+returns `scheduled|cancelled|duplicate`; this is durable receipt, not a claim
+that a notification was sent. A Notification outage never rolls back a
+confirmed Care appointment.
+
+Stable P3-S2 errors are `APPOINTMENT_VALIDATION_FAILED`,
+`APPOINTMENT_LOCAL_TIME_INVALID`, `APPOINTMENT_RECURRENCE_INVALID`,
+`CALENDAR_RANGE_TOO_DENSE`, `COORDINATION_RESOURCE_NOT_FOUND`,
+`APPOINTMENT_VERSION_CONFLICT`, `APPOINTMENT_STATE_CONFLICT`,
+`APPOINTMENT_TIME_CONFLICT`, `IDEMPOTENCY_KEY_REQUIRED`,
+`IDEMPOTENCY_CONFLICT`, `IDENTITY_SERVICE_UNAVAILABLE`,
+`APPOINTMENT_RESULT_UNKNOWN`, `SERVICE_UNAVAILABLE` and
+`INTERNAL_CONTRACT_INVALID`.

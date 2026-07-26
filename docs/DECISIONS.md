@@ -508,6 +508,50 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   accepted integration is claimed. KI-001/KI-016/KI-019 remain explicit. P3-S2
   must begin in a fresh task only after this evidence is immutable.
 
+## ADR-022 — Materialize finite governed appointment occurrences in Care
+
+- Status: Accepted for P3-S2 implementation
+- Date: 2026-07-27
+- Change ID: `CHG-2026-014`
+- Context: P3-S2 must create/change/cancel appointments and expose a truthful
+  calendar/agenda across IANA/DST boundaries without treating membership,
+  Gateway state, implicit database DST resolution, an arbitrary recurrence
+  rule or Notification as appointment authority.
+- Decision: extend the existing Care Coordination boundary and owned
+  PostgreSQL. Identity issues one fresh action/request-digest decision using
+  the accepted P2 subject/grant/privacy boundary; Gateway composes only. Care
+  materializes 1–12 finite concrete occurrences with canonical UTC plus source
+  local/IANA/offset facts, serializes half-open conflict checks, and supports
+  optimistic/idempotent occurrence-only change/cancel. Appointment,
+  transition, audit, outbox and replay evidence commit atomically.
+  Notification receives only `care.appointment.reminder_intent.v1` with opaque
+  appointment/recipient references, schedule/cancel disposition, UTC trigger/
+  start and a fixed message key.
+- Alternatives considered: organizer/member-as-authority; browser/Gateway time
+  resolution; PostgreSQL's implicit DST gap/overlap choice; offset-only time;
+  infinite or arbitrary RRULE; dynamic recurrence expansion; “this and
+  following” series split; silent conflict overwrite; destructive cancellation;
+  free-form title/location/note; browser-selected reminder audience; shared
+  tables; a new calendar service, broker or persistence engine.
+- Consequences: P3-S2 logistics are structured enums and v1 series definition
+  is immutable after creation. Series-wide mutation, external calendar sync
+  and actual reminder delivery are deferred. Confirmed occurrences do not move
+  silently after runtime tzdb changes; cancelled occurrences remain visible.
+  Notification can schedule/cancel minimum intent without reading Care data.
+- Planned baseline: P3-S2 required explicit time zone, recurrence boundary,
+  change/cancellation, reminder intent, conflicts, equivalent agenda,
+  stale-write/denied/unavailable and deterministic time tests, but did not
+  freeze action permissions, DST disambiguation, finite recurrence shape,
+  mutation scope, conflict locking or reminder payload.
+- Actual implementation/evidence: `P3-S2-v1`, Care migration 003, Notification
+  migration 002, LB-015/LB-016 handoff/native UI and the P3-S2 threat/test
+  evidence implement the narrower boundary without a new service, engine,
+  cross-service SQL or clinical scope.
+- Validation and follow-up: focused Level A/B, exactly one local P3-S2 Level C
+  plus classified targeted continuation if needed, exact-head hosted CI,
+  merge-commit promotion, post-merge `dev` CI and issue #10 closeout. KI-001,
+  KI-016 and KI-019 remain. P3-S3 begins only in a fresh task.
+
 ## Decision-change template
 
 ```md

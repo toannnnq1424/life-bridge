@@ -35,9 +35,11 @@ export class OutboxDispatcher {
       this.logger.emit({
         level: "info",
         eventName:
-          acknowledgement.result === "suppressed_self"
-            ? "task.notification.suppressed_self"
-            : "task.notification.delivered",
+          claimed.event.eventType === "care.appointment.reminder_intent.v1"
+            ? "appointment.reminder_intent.acknowledged"
+            : acknowledgement.result === "suppressed_self"
+              ? "task.notification.suppressed_self"
+              : "task.notification.delivered",
         operation: "outbox.dispatch",
         result: "success",
         correlationId: claimed.event.correlationId,

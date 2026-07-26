@@ -428,6 +428,227 @@ h1 {
   }
 }
 
+/* P3-S2 calendar and appointments: native implementation from the Frozen handoff. */
+.appointment-app {
+  min-height: 100vh;
+  color: #15332b;
+  background: #f4fbf8;
+}
+
+.appointment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid #8aa39a;
+  background: #e8f3ed;
+}
+
+.appointment-header label,
+.appointment-controls label,
+.appointment-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.appointment-header select,
+.appointment-controls input,
+.appointment-controls select,
+.appointment-form input,
+.appointment-form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem 0.75rem;
+  border: 2px solid #627a71;
+  border-radius: 8px;
+  color: #15332b;
+  background: #fff;
+}
+
+.appointment-main {
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) 0 5rem;
+}
+
+.appointment-main > p {
+  max-width: 72ch;
+}
+
+.appointment-app :focus-visible {
+  outline: 4px solid #b54708;
+  outline-offset: 3px;
+}
+
+.appointment-controls {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1.3fr) repeat(3, minmax(11rem, 1fr));
+  align-items: end;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.appointment-state,
+.calendar-boundary,
+.calendar-enhancement,
+.appointment-card,
+.appointment-agenda > li {
+  overflow-wrap: anywhere;
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 2px solid #8aa39a;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.appointment-state.warning {
+  border-color: #9a5b00;
+  background: #fff8e8;
+}
+
+.appointment-state.danger,
+.appointment-card.danger {
+  border-color: #a12828;
+  background: #fff2f0;
+}
+
+.calendar-boundary dl,
+.appointment-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 0.75rem 1rem;
+  margin: 0;
+}
+
+.calendar-boundary dt,
+.appointment-facts dt {
+  color: #40574f;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.calendar-boundary dd,
+.appointment-facts dd {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+}
+
+.calendar-enhancement [role="grid"] {
+  display: inline-grid;
+  min-width: min(100%, 18rem);
+}
+
+.calendar-enhancement [role="gridcell"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.appointment-agenda {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.appointment-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.appointment-form fieldset,
+.appointment-form > p,
+.appointment-form > button {
+  grid-column: 1 / -1;
+}
+
+.appointment-form fieldset label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-inline-end: 1rem;
+}
+
+.appointment-form fieldset input {
+  width: auto;
+  min-height: auto;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.danger-button {
+  border-color: #8c1d18;
+  color: #fff;
+  background: #8c1d18;
+}
+
+@media (max-width: 56rem) {
+  .appointment-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 30rem) {
+  .appointment-header,
+  .date-actions,
+  .action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .appointment-main {
+    width: min(100% - 1rem, 72rem);
+  }
+
+  .appointment-controls,
+  .appointment-form {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-form > * {
+    grid-column: 1;
+  }
+
+  .date-actions button,
+  .action-row button,
+  .appointment-form button,
+  .danger-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appointment-app *,
+  .appointment-app *::before,
+  .appointment-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .appointment-header,
+  .appointment-state,
+  .calendar-boundary,
+  .calendar-enhancement,
+  .appointment-card,
+  .appointment-agenda > li {
+    border: 2px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+}
+
 .privacy-main {
   width: min(72rem, calc(100% - 2rem));
   margin: 0 auto;

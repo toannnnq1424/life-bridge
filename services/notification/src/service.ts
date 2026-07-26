@@ -11,7 +11,7 @@ import type { Pool, QueryResultRow } from "pg";
 
 interface InboxRow extends QueryResultRow {
   payload_hash: string;
-  result: "stored" | "suppressed_self";
+  result: "stored" | "suppressed_self" | "reminder_scheduled" | "reminder_cancelled";
   notification_id: string | null;
   processed_at: Date;
 }
@@ -65,7 +65,7 @@ export class NotificationService {
 
   public async isReady(): Promise<boolean> {
     try {
-      await this.pool.query("SELECT 1");
+      await this.pool.query("SELECT 1 FROM appointment_reminder_intents LIMIT 0");
       return true;
     } catch {
       return false;
@@ -93,15 +93,74 @@ export class NotificationService {
           throw new EventIdReusedError();
         }
         await client.query("COMMIT");
+        const duplicateResult =
+          inbox.result === "stored"
+            ? "duplicate"
+            : inbox.result === "suppressed_self"
+              ? "suppressed_self"
+              : "duplicate";
         return {
           eventId: event.eventId,
-          result: inbox.result === "stored" ? "duplicate" : "suppressed_self",
+          result: duplicateResult,
           notificationId: inbox.notification_id,
           processedAt: inbox.processed_at.toISOString(),
         };
       }
 
       const processedAt = this.now();
+      if (event.eventType === "care.appointment.reminder_intent.v1") {
+        const result =
+          event.payload.intent === "schedule" ? "reminder_scheduled" : "reminder_cancelled";
+        await client.query(
+          `INSERT INTO notification_inbox (
+            source_event_id, payload_hash, event_type, event_version,
+            result, notification_id, processed_at
+          ) VALUES ($1,$2,$3,$4,$5,NULL,$6)`,
+          [event.eventId, hash, event.eventType, event.eventVersion, result, processedAt],
+        );
+        await client.query(
+          `INSERT INTO appointment_reminder_intents (
+            appointment_id, source_event_id, recipient_id, intent_state,
+            remind_at_utc, starts_at_utc, message_key, processed_at
+          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+          ON CONFLICT (appointment_id)
+          DO UPDATE SET
+            source_event_id = EXCLUDED.source_event_id,
+            recipient_id = EXCLUDED.recipient_id,
+            intent_state = EXCLUDED.intent_state,
+            remind_at_utc = EXCLUDED.remind_at_utc,
+            starts_at_utc = EXCLUDED.starts_at_utc,
+            message_key = EXCLUDED.message_key,
+            processed_at = EXCLUDED.processed_at`,
+          [
+            event.aggregateId,
+            event.eventId,
+            event.payload.recipientId,
+            event.payload.intent === "schedule" ? "scheduled" : "cancelled",
+            event.payload.intent === "schedule" ? event.payload.remindAtUtc : null,
+            event.payload.intent === "schedule" ? event.payload.startsAtUtc : null,
+            event.payload.messageKey,
+            processedAt,
+          ],
+        );
+        await client.query("COMMIT");
+        this.logger.emit({
+          level: "info",
+          eventName: "appointment.reminder_intent.received",
+          operation: "event.consume",
+          result: "success",
+          correlationId: event.correlationId,
+          eventType: event.eventType,
+          eventVersion: event.eventVersion,
+        });
+        return {
+          eventId: event.eventId,
+          result,
+          notificationId: null,
+          processedAt: processedAt.toISOString(),
+        };
+      }
+
       if (
         event.eventType === "care.task.completed.v1" &&
         event.payload.notificationDisposition === "suppress_self"
@@ -200,7 +259,9 @@ export class NotificationService {
     return result.rows.map(projectNotification);
   }
 
-  public async countRows(table: "notification_inbox" | "notifications"): Promise<number> {
+  public async countRows(
+    table: "notification_inbox" | "notifications" | "appointment_reminder_intents",
+  ): Promise<number> {
     const result = await this.pool.query<{ count: string }>(
       `SELECT COUNT(*) AS count FROM ${table}`,
     );

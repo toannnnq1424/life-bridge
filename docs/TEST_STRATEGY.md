@@ -43,6 +43,23 @@ At the end of a slice, run:
 
 Every slice must exercise its success path, relevant denied/invalid input, dependency failure, and truthful error presentation.
 
+For `P3-S2`, exactly one coherent Level C campaign uses:
+
+```powershell
+pnpm.cmd run validate:p3-s2
+```
+
+The campaign covers canonical UTC ordering, IANA/DST gap and overlap
+resolution, finite weekly recurrence, half-open conflicts and adjacency,
+recipient-scoped serialization, digest-only idempotency, optimistic
+stale/state recovery, cancelled history, provider/consumer contracts,
+Care/Notification PostgreSQL ownership, atomic audit/outbox evidence,
+migration rollback/reapply/no-backfill, minimum reminder intent, VI/EN native
+UI, keyboard/focus/axe/reflow, mocked and real browser paths, production build,
+secret/log scans and PID-scoped cleanup. A failed gate is classified and
+continued only with the affected target; unchanged green gates are not
+rerun.
+
 ### Level D — Phase or release validation
 
 Run once at the end of a phase, before merge, release, or submission:
