@@ -4,9 +4,9 @@
 
 - Architecture baseline: `ARCH-2026-07-25`
 - Status: Accepted Phase 0 target architecture
-- Runtime implementation status: P1-S1 local candidate implemented; Level C and exact-head CI pending
-- Current phase: P1 — Daily task MVP
-- First implementation slice: `P1-S1`
+- Runtime implementation status: P2-S1 backend candidate; production UI blocked
+- Current phase: P2 — Trust and household
+- Active implementation slice: `P2-S1`
 - Production-maturity plan: `PLAN-2026-07-26-PRODUCTION` (`P0`–`P12`)
 
 “Planned” below describes the approved target. “Actual” records repository/runtime evidence. Update both when implementation differs; do not rewrite the plan retroactively.
@@ -18,7 +18,7 @@
 3. Keep task completion durable even when notification delivery is delayed.
 4. Run a deterministic synthetic demo without private credentials.
 5. Support Windows bootstrap, test, build, and fresh-worktree reproduction.
-6. Keep microservice boundaries practical for a small team/hackathon while remaining independently runnable and deployable.
+6. Keep polyglot microservice boundaries practical for a small team while remaining independently runnable and deployable.
 7. Make accessibility, privacy, auditability, and truthful state part of each contract.
 8. Avoid operational complexity unless an access pattern proves it is needed.
 
@@ -51,11 +51,11 @@ No arrow represents direct access to another service's tables. The BFF composes 
 
 | Area                   | Planned baseline                                                         | Actual evidence at Phase 0                            |
 | ---------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
-| Workspace              | pnpm TypeScript monorepo                                                 | P1-S1 apps/services/packages/tests implemented        |
+| Workspace              | Polyglot microservice repository; runtime tooling is boundary-owned      | Node.js/pnpm services exist; no Java files/toolchain  |
 | Web                    | Next.js + React, semantic components, localization                       | VI/EN routes and Stitch-derived states implemented    |
 | Gateway/BFF            | Fastify, external HTTP contract, response composition                    | Public forwarding and honest degradation implemented  |
-| Domain services        | Independently runnable Fastify processes/modules                         | Care Coordination and Notification boundaries frozen  |
-| Contracts              | TypeScript + Zod schemas; OpenAPI for HTTP; versioned event envelope     | Frozen `P1-S1-v1` executable Zod schemas implemented  |
+| Domain services        | Independently runnable, boundary-owned runtime artifacts                 | Node Gateway, Identity, Care and Notification exist   |
+| Contracts              | Language-neutral OpenAPI/JSON Schema; versioned event envelope           | Executable TypeScript/Zod P1/P2 schemas exist         |
 | Persistence            | PostgreSQL, separately owned database/schema per service                 | Two local/CI owner databases selected; migrations due |
 | Cross-service delivery | Transactional outbox + versioned internal delivery + inbox/deduplication | Completion outbox/HTTP retry/inbox implemented        |
 | Testing                | Vitest unit/contract/integration; Playwright browser smoke               | P1 Level C command and exact-head CI specified        |
@@ -63,6 +63,27 @@ No arrow represents direct access to another service's tables. The BFF composes 
 | Deployment             | Containerized services with health/readiness checks                      | Deferred until deployable slices exist                |
 
 Any divergence requires a Change ID and, when architectural, an ADR.
+
+### Accepted future polyglot direction
+
+`CHG-2026-011`/ADR-019 accepts Community as the first Spring Boot bounded
+service beginning only at P5-S1/issue #15 and extending through P5-S2/P5-S3.
+Gateway, Identity & Consent, Care Coordination, and Notification are not
+rewrite candidates for satisfying this requirement.
+
+Community will own its PostgreSQL database, role, migrations, transactional
+outbox, and audit. Node Gateway communicates with it only through versioned
+language-neutral OpenAPI/JSON Schema contracts with provider/consumer tests.
+Identity & Consent remains the authority; Community receives only authorized
+minimum context and never another service's database credential or business
+implementation.
+
+P5 starts directory search on Community-owned PostgreSQL. Elasticsearch,
+Redis, a broker, object storage, or another engine requires a later accepted
+ADR backed by measured access-pattern evidence. The P5 research gate must use
+official sources to pin the exact supported JDK distribution/version, Spring
+Boot version, Maven plugins, repository-owned Windows wrapper (prefer
+`mvnw.cmd`), and checksums. None exists in the repository today.
 
 ## 4. Repository topology
 
@@ -165,6 +186,12 @@ Responsibilities, deferred to Phase 5:
 
 It receives only minimum-necessary consented data. It does not expose general household records.
 
+Planned runtime: the repository's first Spring Boot service, introduced
+greenfield at P5-S1 and extended rather than duplicated in P5-S2/P5-S3. Its
+runtime, wrapper, build, dependency and container pins remain undecided until
+the official-source P5 research gate; this statement does not claim Java files
+or a toolchain already exist.
+
 ### Audit/read models
 
 Each service first records its own security/business audit evidence. A consolidated audit-history read model may be added in Phase 2 through versioned events. It is read-only with respect to source domains and cannot become the authority for permissions or task state.
@@ -227,7 +254,8 @@ An external broker may replace the initial transport later without changing doma
 ### HTTP
 
 - Validate at gateway and service boundaries.
-- Publish versioned OpenAPI contracts from schemas.
+- Publish versioned language-neutral OpenAPI/JSON Schema contracts and run
+  provider/consumer compatibility tests across Node and Spring boundaries.
 - Use opaque IDs, explicit timestamps/time zones, and bounded strings/lists.
 - Require an idempotency key for create and state-transition commands.
 - Require an expected entity version for concurrent updates.
@@ -384,16 +412,16 @@ Docker availability is an environment concern. The doctor reports daemon/config 
 
 Production architecture is accumulated and evidenced in stages:
 
-| Phase | Architecture proof                                                                                                         |
-| ----- | -------------------------------------------------------------------------------------------------------------------------- |
-| P1–P5 | Each product slice owns authorization, data, events, errors, telemetry, accessibility, and rollback applicable to its path |
-| P6    | Versioned rolling compatibility, independently runnable artifacts, service identity, and dependency isolation              |
-| P7    | Owner-scoped migrations, replay/reconciliation, backup/restore, retention/deletion, and polyglot exit plans                |
-| P8    | Household isolation, consent enforcement, secret/encryption boundaries, artifact provenance, and abuse/privacy response    |
-| P9    | Redacted end-to-end telemetry, SLO/error budget, actionable alerts, truthful degradation, incident and DR rehearsal        |
-| P10   | Representative workload budgets, backpressure, bounded resources, scale correctness, capacity, and cost                    |
-| P11   | Immutable deployment, protected environments, staged rollout, rollback, pilot, and released artifact evidence              |
-| P12   | Operational ownership, patch/rotation/restore cadence, post-incident learning, and governed successor architecture         |
+| Phase | Architecture proof                                                                                                                                                                 |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1–P5 | Each product slice owns authorization, data, events, errors, telemetry, accessibility, and rollback applicable to its path                                                         |
+| P6    | Mixed Node/Spring version compatibility, independent artifacts/upgrades, dependency isolation, health/readiness, observability, SBOM/supply-chain, container and rollback evidence |
+| P7    | Owner-scoped migrations, replay/reconciliation, backup/restore, retention/deletion, and polyglot exit plans                                                                        |
+| P8    | Household isolation, consent enforcement, secret/encryption boundaries, artifact provenance, and abuse/privacy response                                                            |
+| P9    | Redacted end-to-end telemetry, SLO/error budget, actionable alerts, truthful degradation, incident and DR rehearsal                                                                |
+| P10   | Representative workload budgets, backpressure, bounded resources, scale correctness, capacity, and cost                                                                            |
+| P11   | Immutable deployment, protected environments, staged rollout, rollback, pilot, and released artifact evidence                                                                      |
+| P12   | Operational ownership, patch/rotation/restore cadence, post-incident learning, and governed successor architecture                                                                 |
 
 Later proof phases do not excuse an earlier slice from an applicable control.
 No end-to-end demo is itself evidence that the system is production-ready.

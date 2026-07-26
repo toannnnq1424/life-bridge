@@ -537,9 +537,23 @@ Acceptance:
 - visibility and consent are explained before submission;
 - public directory uses reviewed provenance and minimum data;
 - location denial, no result, duplicate request, unavailable matching, and safe recovery work;
+- the greenfield Community boundary is implemented as the repository's first
+  Spring Boot service, with its own PostgreSQL role/database/migrations,
+  transactional outbox, and audit;
+- Node Gateway ↔ Community uses versioned language-neutral OpenAPI/JSON Schema
+  with provider/consumer tests; Identity & Consent remains authoritative and
+  only minimum authorized context crosses the boundary;
+- the P5 research gate verifies and pins an officially supported JDK
+  distribution/version, Spring Boot version, Maven plugins, checksums and a
+  repository-owned Windows wrapper (prefer `mvnw.cmd`); no version is assumed
+  by this plan;
+- PostgreSQL search is the initial implementation; Elasticsearch, Redis,
+  broker or object storage requires a later accepted ADR with measured
+  access-pattern evidence;
 - security/privacy/integration/browser tests pass.
 
-Dependencies: P2 consent; research source review; community service boundary.
+Dependencies: P2 consent; research source review; ADR-019 Community boundary;
+P5 official toolchain/supply-chain research gate.
 
 ### `P5-S2 — Volunteer match and organization coordination`
 
@@ -552,6 +566,8 @@ Acceptance:
 - eligibility/permission, approval/revocation, assignment, capacity and status are explicit;
 - unrelated household fields are inaccessible;
 - concurrent/revoked match and audit behavior are tested;
+- matching extends the same Spring Community service and owned store rather
+  than creating a second runtime or cross-service persistence path;
 - organization-scoped contract/integration/browser/security checks pass.
 
 Dependencies: `P5-S1`; P2 roles/audit.
@@ -567,6 +583,8 @@ Acceptance:
 - least-privilege queue/detail access and safe destructive confirmation;
 - decision reason, actor, time, result, retention and redaction are auditable;
 - denied access never reveals case existence/details;
+- moderation extends the same Spring Community boundary and preserves its
+  owner-scoped audit/outbox/data contract;
 - integration/browser/security tests pass.
 
 Dependencies: `P5-S2`; moderation policy and retention decision.
@@ -582,7 +600,9 @@ Acceptance:
 
 - current and previous supported API/event versions pass provider/consumer tests;
 - breaking changes fail CI and deprecation/migration policy is explicit;
-- the primary flow passes during a mixed-version rolling upgrade.
+- the primary flow passes during a mixed Node/Spring version rolling upgrade;
+- Gateway/Community compatibility is proven from language-neutral contracts,
+  not shared generated business code.
 
 ### `P6-S2 — Independently runnable service artifacts and ownership`
 
@@ -594,7 +614,9 @@ Acceptance:
 - every deployable has an owned build/start/config/health contract and artifact;
 - one service can be upgraded independently;
 - no cross-service business import, table access, credential, or shared ownership
-  exists; architecture fitness checks enforce the boundary.
+  exists; architecture fitness checks enforce the boundary;
+- Node and Spring dependencies, SBOMs, supply-chain policy and containers are
+  isolated per artifact.
 
 ### `P6-S3 — Authenticated service communication and dependency isolation`
 
@@ -606,7 +628,9 @@ Acceptance:
 - service identity and transport protection are documented and tested;
 - timeouts, retry, idempotency, rate, circuit/bulkhead, and payload bounds apply;
 - Notification or Community failure produces truthful degradation without
-  corrupting the care-task source of truth.
+  corrupting the care-task source of truth;
+- health/readiness, redacted observability and rollback are validated across
+  the mixed-runtime topology.
 
 Phase gate: independent artifacts, mixed-version flow, architecture fitness,
 authenticated calls, and dependency-failure tests pass.
@@ -903,6 +927,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | `CHG-2026-008` | Integrated; hosted validation passed | Freeze one useful completion-to-creator notification and suppress self-notification    |
 | `CHG-2026-009` | Integrated; hosted validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge      |
 | `CHG-2026-010` | Accepted; implementation in progress | First-party P2 account/session boundary; account scope does not grant household access |
+| `CHG-2026-011` | Accepted; implementation deferred    | Select Spring Boot for greenfield Community at P5; preserve existing Node boundaries   |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -1017,6 +1042,50 @@ No row means simultaneous implementation. Design generation/review may prepare a
   `MCP-DEBT-2026-002` inside P2-S1. P2-S2 starts only after P2-S1 acceptance.
 - Related ADR/integration/session entries: ADR-018,
   `docs/security/P2_S1_THREAT_MODEL.md`, and the P2-S1 session entry.
+
+## CHG-2026-011 — Select the greenfield Spring Community boundary
+
+- State: Accepted architecture direction; implementation deferred to P5-S1
+- Raised in phase/slice: governance-only amendment during `P2-S1`
+- Planned baseline: Community was a future independently deployable service,
+  while the repository operating baseline described a practical TypeScript
+  monorepo and did not require a second backend runtime.
+- Proposed/actual implementation: LifeBridge is a polyglot microservice system.
+  The first Spring Boot service is the greenfield Community boundary beginning
+  at P5-S1/issue #15 and extended through P5-S2/P5-S3. Existing Gateway,
+  Identity & Consent, Care Coordination and Notification remain Node services;
+  no rewrite is authorized. No Java source, wrapper or toolchain is added now.
+- Reason/evidence: the project owner requires at least one bounded Spring Boot
+  backend. Community is future, cohesive and independently owned, so it proves
+  cross-runtime contracts without destabilizing accepted P1/P2 boundaries.
+- Impact:
+  - Product/UI: P2 scope/order and `MCP-DEBT-2026-002` are unchanged; no P5
+    behavior or screen begins in this task.
+  - API/events: Node Gateway ↔ Spring Community uses versioned
+    language-neutral OpenAPI/JSON Schema plus provider/consumer tests.
+    Identity & Consent remains authority and supplies minimum authorized
+    context only.
+  - Data/migration: Community owns one PostgreSQL role/database/migrations,
+    outbox and audit; no cross-service SQL, credential or business import.
+    PostgreSQL search is first; another engine/broker/storage needs evidence
+    and a later accepted ADR.
+  - Privacy/security: Community cannot read general household or Identity
+    stores; contract fixtures and logs remain minimum-data and synthetic.
+  - Tests/operations: the P5 research gate must verify official supported JDK,
+    Spring Boot, Maven plugin and checksum sources, then pin a repository-owned
+    Windows wrapper, preferably `mvnw.cmd`. P6 must prove mixed-version
+    compatibility, independent artifact/upgrade, dependency isolation,
+    health/readiness, observability, SBOM/supply-chain, container and rollback.
+  - Phase order/schedule: unchanged; P5 and P6 remain planned behind P2–P4.
+- Validation required: changed-document format/config/docs/secrets/diff now;
+  official dependency/toolchain research and provider/consumer/build/container
+  evidence only when P5-S1 begins; cumulative mixed-runtime proof in P6.
+- Follow-up owner and exact phase/slice: P5-S1 owner updates existing issue #15,
+  runs the official-source research gate, freezes exact toolchain and contract
+  pins, then implements Community. P5-S2/P5-S3 extend it; P6 owns platform-wide
+  compatibility and operations proof.
+- Related ADR/integration/session entries: ADR-019, `INT-2026-013`, issue #15,
+  and the P2-S1 governance amendment session entry.
 
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist

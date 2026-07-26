@@ -376,6 +376,50 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   waits for seven Frozen handoffs and production frontend/browser coverage.
   P2-S2 remains exact next only after P2-S1 is fully accepted.
 
+## ADR-019 — Introduce Spring Boot at the greenfield Community boundary
+
+- Status: Accepted architecture direction; implementation deferred to P5-S1
+- Date: 2026-07-26
+- Change ID: `CHG-2026-011`
+- Context: LifeBridge must demonstrate a bounded Spring Boot backend without
+  rewriting accepted Node.js Gateway, Identity & Consent, Care Coordination or
+  Notification services merely for language diversity. Community begins later
+  at P5 and already has cohesive directory, request, matching and moderation
+  ownership.
+- Decision: Treat LifeBridge as a polyglot microservice system. Implement the
+  greenfield Community service in Spring Boot beginning at P5-S1/issue #15 and
+  extend the same boundary through P5-S2/P5-S3. Community owns its PostgreSQL
+  database/role/migrations, transactional outbox and audit. Node Gateway and
+  Spring Community integrate only through versioned language-neutral
+  OpenAPI/JSON Schema contracts with provider/consumer tests. Identity &
+  Consent remains the authority; only authorized minimum context enters
+  Community. Start search on PostgreSQL. Require a later ADR and measured
+  access-pattern evidence before Elasticsearch, Redis, a broker, object
+  storage or another engine.
+- Alternatives considered: rewrite an accepted Node service in Java; create an
+  artificial Spring facade; split Community across Node and Spring; share
+  schemas, credentials or SQL; select an additional engine before evidence;
+  guess current JDK/Spring/Maven versions during P2.
+- Consequences: Community provides a real bounded cross-runtime proof without
+  destabilizing P1/P2. Its P5 research gate must verify official sources and
+  pin the supported JDK distribution/version, Spring Boot version, Maven
+  plugins, checksums and repository-owned Windows wrapper, preferably
+  `mvnw.cmd`. No Java file, toolchain or implementation exists yet. P6 must
+  validate mixed-version compatibility, independent artifact/upgrade,
+  dependency isolation, health/readiness, observability, SBOM/supply-chain,
+  container and rollback across Node and Spring.
+- Planned baseline: Community was a later service in a practical TypeScript
+  monorepo; P5 product order and P6 platform proof were already planned.
+- Actual implementation/evidence: governance documents and existing issue #15
+  record the accepted direction only. P2 scope/order and
+  `MCP-DEBT-2026-002` remain unchanged; P5 and Java implementation have not
+  started.
+- Validation and follow-up: run changed-doc format/config/docs/secrets/diff and
+  exact-head hosted CI for this governance amendment. At P5-S1, run the
+  official-source toolchain research gate before creating `mvnw.cmd`, Java
+  sources, pins or containers; extend the boundary through P5-S3 and execute
+  the cumulative mixed-runtime proof in P6.
+
 ## Decision-change template
 
 ```md

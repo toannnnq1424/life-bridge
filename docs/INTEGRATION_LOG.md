@@ -356,3 +356,30 @@ environments are intended to converge. It is not a substitute for Git history.
   review, freeze the redacted `LB-001`–`LB-007` handoff, then implement the UI
   and run exactly one `pnpm.cmd run validate:p2-s1`. Do not start P2-S2 or
   DATA-S1.
+
+## INT-2026-013 — Accept the future Node/Spring Community contract boundary
+
+- Date: 2026-07-26
+- Status: Accepted governance direction; implementation deferred
+- Source: project-owner change request recorded on the active P2-S1 branch
+- Target: P5-S1/issue #15 for implementation; P6 for cumulative proof
+- Scope: Community becomes the first Spring Boot service at P5-S1 and remains
+  the same bounded service through P5-S2/P5-S3; no current Node service rewrite
+- Contracts/data affected: planned Node Gateway ↔ Spring Community versioned
+  OpenAPI/JSON Schema with provider/consumer tests; Community-owned PostgreSQL
+  role/database/migrations/outbox/audit; Identity & Consent remains authority
+  and supplies only minimum authorized context
+- Validation: documentation format/config/docs/secrets/diff and exact-head
+  hosted CI now. Official JDK/Spring Boot/Maven/plugin/checksum and
+  repository-owned Windows wrapper research is deferred to the P5 gate and
+  must precede Java files. P6 must validate mixed-version compatibility,
+  independent artifact/upgrade, dependency isolation, health/readiness,
+  observability, SBOM/supply-chain, containers and rollback.
+- Conflicts/risks: no Java source, wrapper, toolchain or container exists yet.
+  PostgreSQL search is the accepted start; Elasticsearch, Redis, broker, object
+  storage or a new engine requires measured evidence and a later ADR. P2
+  scope/order and `MCP-DEBT-2026-002` remain unchanged.
+- Decision/change references: `CHG-2026-011`, ADR-019, issue #15
+- Follow-up: do not start P5 here. When P5-S1 is eligible, run its
+  official-source research gate, pin the exact supported toolchain/wrapper and
+  freeze the language-neutral provider/consumer contract before code.

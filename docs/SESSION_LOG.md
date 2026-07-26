@@ -717,3 +717,45 @@ egress/security/accessibility/privacy, and freeze a redacted handoff for
 `pnpm.cmd run validate:p2-s1`. P2-S2 (`LB-008`–`LB-010` household,
 invitation and care-recipient context) begins only after full P2-S1 acceptance;
 do not start it here.
+
+## 2026-07-26 — P2-S1 governance amendment for the future Spring boundary
+
+### Accepted direction and planned versus actual
+
+- `CHG-2026-011`/ADR-019 accepts LifeBridge as a polyglot microservice system
+  and selects greenfield Community as the first Spring Boot service beginning
+  at P5-S1/issue #15, then extending through P5-S2/P5-S3.
+- Planned baseline: Community was a future independently deployable service
+  inside a TypeScript-oriented monorepo; no second backend language was
+  required. Actual in this change is documentation/governance only. Gateway,
+  Identity & Consent, Care Coordination and Notification remain Node services;
+  no Java source, Maven wrapper, JDK, dependency, image or runtime was added.
+- Community will own its PostgreSQL database/role/migrations/outbox/audit.
+  Gateway integration is versioned language-neutral OpenAPI/JSON Schema with
+  provider/consumer tests. Identity & Consent remains authority and Community
+  receives minimum authorized context only. PostgreSQL search is first; later
+  engines require measured access-pattern evidence and another accepted ADR.
+- The P5 research gate, not this P2 task, must verify official supported JDK
+  distribution/version, Spring Boot version, Maven plugins/checksums and a
+  repository-owned Windows wrapper, preferably `mvnw.cmd`. P6 owns
+  mixed-version, independent artifact/upgrade, dependency isolation,
+  health/readiness, observability, SBOM/supply-chain, container and rollback
+  proof.
+
+### Scope and next action
+
+This amendment does not implement P5, start P2-S2, alter P2 ordering or weaken
+`MCP-DEBT-2026-002`. P2-S1 remains backend-only in draft PR #44 and production
+UI/full Level C/merge/issue #6 closure remain blocked until the valid Stitch
+reference and frozen `LB-001`–`LB-007` handoff exist. The exact next action
+therefore remains the P2 Stitch gate. Existing issue #15 received the accepted
+Spring boundary and research/ownership/P6 gates and remains open/planned; no
+duplicate issue was created. `docs/REPOSITORY_MAP.md` is unchanged because this
+governance amendment creates no directory, file, command or implemented
+dependency to map.
+
+Changed-document Prettier, config, docs, secrets and `git diff --check` gates
+pass. No application, workflow, dependency, lockfile or test input changed, so
+no Level C, browser or Java build is run or claimed. The coherent docs commit
+must refresh exact-head hosted CI on draft PR #44; the PR remains non-mergeable
+as complete work while the Stitch blocker is open.
