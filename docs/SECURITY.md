@@ -184,3 +184,9 @@ The selected libraries are `@node-rs/argon2` and `otpauth`, pinned exactly and
 reviewed through the lockfile/lifecycle/dependency gate. TOTP is not
 phishing-resistant and the project makes no NIST AAL or compliance claim.
 Production UI is separately blocked by `MCP-DEBT-2026-002`.
+
+The P2 native account UI uses no generated Stitch source and persists no
+password, factor, recovery or challenge value in browser storage/history.
+Its dedicated Playwright project disables trace, screenshots and video.
+Account onboarding remains `account` scope and cannot authorize household
+resources. Final acceptance requires the full P2 Level C and exact-head CI.

@@ -16,7 +16,7 @@
     "format": "prettier --write package.json pnpm-workspace.yaml tsconfig.json tsconfig.build.json eslint.config.mjs prettier.config.mjs playwright.config.ts \"{apps,services,packages,tests,tools}/**/*.{ts,tsx,js,mjs,json,css}\" \".ai-orchestrator/**/*.md\" \"data/**/*.md\" \"docs/**/*.md\" \"infra/**/*.{yml,yaml}\" \".github/**/*.{md,yml,yaml}\" README.md CODEX.md AGENTS.md CONTRIBUTING.md",
     "format:check": "prettier --check package.json pnpm-workspace.yaml tsconfig.json tsconfig.build.json eslint.config.mjs prettier.config.mjs playwright.config.ts \"{apps,services,packages,tests,tools}/**/*.{ts,tsx,js,mjs,json,css}\" \".ai-orchestrator/**/*.md\" \"data/**/*.md\" \"docs/**/*.md\" \"infra/**/*.{yml,yaml}\" \".github/**/*.{md,yml,yaml}\" README.md CODEX.md AGENTS.md CONTRIBUTING.md",
     "format:p1:check": "prettier --check package.json pnpm-workspace.yaml tsconfig.json tsconfig.build.json eslint.config.mjs playwright.config.ts \"{apps,services,packages,tests}/**/*.{ts,tsx,json,css}\" \"tools/quality/src/p1-*.ts\" \"infra/**/*.{yml,yaml}\" \".github/**/*.{md,yml,yaml}\" README.md docs/API_CONTRACTS.md docs/ARCHITECTURE.md docs/DATA_MODEL.md docs/DECISIONS.md docs/DEMO_SCRIPT.md docs/DEPLOYMENT.md docs/IMPLEMENTATION_PLAN.md docs/INTEGRATION_LOG.md docs/KNOWN_ISSUES.md docs/PRODUCT_SPEC.md docs/REPOSITORY_MAP.md docs/SECURITY.md docs/TEST_STRATEGY.md docs/WORKSTREAM_BOARD.md docs/design/reviews/P1_S1_STITCH_HANDOFF.md",
-    "format:p2:backend:check": "prettier --check package.json AGENTS.md apps/gateway/package.json apps/gateway/src/main.ts apps/gateway/src/server.ts apps/gateway/src/server.test.ts \"services/identity-consent/**/*.{ts,json}\" packages/config/src/index.ts packages/config/src/index.test.ts packages/contracts/src/index.ts packages/contracts/src/index.test.ts \"tools/quality/src/p2-*.ts\" .github/workflows/ci.yml docs/API_CONTRACTS.md docs/ARCHITECTURE.md docs/DATA_MODEL.md docs/DECISIONS.md docs/DEPLOYMENT.md docs/IMPLEMENTATION_PLAN.md docs/INTEGRATION_LOG.md docs/KNOWN_ISSUES.md docs/PRODUCT_SPEC.md docs/REPOSITORY_MAP.md docs/SECURITY.md docs/SESSION_LOG.md docs/TEST_STRATEGY.md docs/WORKSTREAM_BOARD.md docs/design/DESIGN_IMPLEMENTATION_MAP.md docs/design/SCREEN_INVENTORY.md docs/design/reviews/P2_S1_LOCAL_WIREFRAME.md docs/security/P2_S1_THREAT_MODEL.md",
+    "format:p2:backend:check": "prettier --check package.json AGENTS.md apps/gateway/package.json apps/gateway/src/main.ts apps/gateway/src/server.ts apps/gateway/src/server.test.ts \"apps/web/**/*.{ts,tsx,css}\" \"services/identity-consent/**/*.{ts,json}\" packages/config/src/index.ts packages/config/src/index.test.ts packages/contracts/src/index.ts packages/contracts/src/index.test.ts \"tools/quality/src/p2-*.ts\" playwright.p2.config.ts tests/browser/p2-s1.spec.ts .github/workflows/ci.yml docs/API_CONTRACTS.md docs/ARCHITECTURE.md docs/DATA_MODEL.md docs/DECISIONS.md docs/DEPLOYMENT.md docs/IMPLEMENTATION_PLAN.md docs/INTEGRATION_LOG.md docs/KNOWN_ISSUES.md docs/PRODUCT_SPEC.md docs/REPOSITORY_MAP.md docs/SECURITY.md docs/SESSION_LOG.md docs/TEST_STRATEGY.md docs/WORKSTREAM_BOARD.md docs/design/DESIGN_IMPLEMENTATION_MAP.md docs/design/SCREEN_INVENTORY.md docs/design/reviews/P2_S1_LOCAL_WIREFRAME.md docs/design/reviews/P2_S1_STITCH_HANDOFF.md docs/security/P2_S1_THREAT_MODEL.md",
     "lint": "eslint eslint.config.mjs \"{apps,services,packages,tests,tools}/**/*.{ts,tsx}\" playwright.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:unit": "vitest run tools/quality packages/config packages/observability services apps",
@@ -24,6 +24,7 @@
     "test:p1:integration": "vitest run tests/integration",
     "test:p2:identity-integration": "vitest run services/identity-consent/src/service.integration.test.ts",
     "test:p1:browser": "playwright test",
+    "test:p2:browser": "playwright test --config playwright.p2.config.ts",
     "test:p1:browser:runtime": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-p1-browser.ps1",
     "test:integration": "tsx tools/quality/src/phase0.ts all",
     "validate:docs": "tsx tools/quality/src/phase0.ts docs",
@@ -33,6 +34,7 @@
     "build": "pnpm -r --if-present run build",
     "demo:p1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/start-p1.ps1",
     "validate:p1-s1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/validate-p1-s1.ps1",
+    "validate:p2-s1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/validate-p2-s1.ps1",
     "security:deps": "pnpm audit --audit-level high"
   },
   "devDependencies": {

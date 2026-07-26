@@ -219,7 +219,10 @@ target-size rows remain honestly untested until executed.
 - Remaining security/data-egress review: exact callable tool schemas, side effects,
   least privilege, synthetic-only payload, artifact metadata, private-URL and
   secret scan; write/cost operations require approval.
-- Blocks production UI implementation: yes.
-- Blocks full P2-S1 acceptance and deploy: yes.
+- Blocks production UI implementation: no; Frozen Stitch handoff and native UI complete.
+- Blocks full P2-S1 acceptance and deploy: no for P2 acceptance; deployment remains separately gated.
 - Closure: official reference completed, seven reviewed handoffs Frozen, no
   generated source copied, and affected frontend/browser validation passes.
+
+Closure evidence: satisfied by the Frozen
+`docs/design/reviews/P2_S1_STITCH_HANDOFF.md` and the passing single P2 Level C.

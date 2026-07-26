@@ -387,26 +387,24 @@ environments are intended to converge. It is not a substitute for Git history.
 ## INT-2026-014 — Activate the official Stitch namespace for the P2 handoff gate
 
 - Date: 2026-07-26
-- Status: In progress; endpoint/authentication canary passed, Codex App restart
-  and design handoff still pending
+- Status: Local acceptance complete; exact-head CI and PR promotion pending
 - Source: project-owner-authorized local Stitch activation on the existing
   `phase/2-account-access-onboarding` task
 - Target: P2-S1 `LB-001`–`LB-007` design gate only
 - Scope: enable the repository-scoped official Stitch MCP stanza while
   retaining environment-backed authentication, prompt approvals,
   `required = false`, and secret-free tracked configuration
-- Validation: an externally completed read-only direct MCP canary returned HTTP
+- Validation: the read-only direct MCP canary returned HTTP
   200 for initialization and tool discovery, negotiated protocol `2025-06-18`,
   and exposed 15 project/screen/design-system tools without project mutation.
-  Changed config/docs/secrets/diff and exact-head hosted CI remain required for
-  this tracked checkpoint.
-- Conflicts/risks: the active Codex App process cannot dynamically acquire the
-  newly configured MCP namespace. Tool schemas, side effects, data egress,
-  artifacts and approval boundaries therefore have not yet been reviewed
-  inside this task. No secret, private locator, signed URL or remote identifier
-  is recorded here, and the user-owned canary report remains untouched.
+  The task then classified all 15 schemas, reused the single safe-display-name
+  LifeBridge project and completed exactly seven additive synthetic generations.
+  No secret, locator, signed URL or generated source was persisted.
+- Conflicts/risks: Stitch references remain untrusted input. P2 browser
+  artifacts are disabled; manual assistive-technology evidence remains honest.
 - Decision/change references: issue #6, `MCP-DEBT-2026-002`, KI-017
-- Follow-up: restart Codex App, resume this same P2-S1 task, inspect every newly
-  callable Stitch schema, perform only bounded synthetic design operations,
-  freeze the reviewed `LB-001`–`LB-007` handoff, implement production UI and
-  run exactly one P2 Level C. Do not start P2-S2 or P5.
+- Validation: the single `pnpm.cmd run validate:p2-s1` passed P1 regression,
+  Identity PostgreSQL 5/5, aggregate unit 37/37, contracts 6/6, P2 browser 4/4,
+  format/lint/type/build/docs/config/secrets/audit/diff and exact cleanup.
+- Follow-up: obtain exact-head hosted CI and complete promotion/closeout only if
+  green. Do not start P2-S2 or P5.

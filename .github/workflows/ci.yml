@@ -1,4 +1,4 @@
-name: Integrated P1 and P2 backend CI
+name: Integrated P1 and P2 acceptance CI
 
 on:
   pull_request:
@@ -150,64 +150,12 @@ jobs:
           "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
           "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
 
-      - name: Run the P1-S1 Level C campaign with required Identity readiness
+      - name: Run the P2-S1 Level C campaign
         shell: pwsh
-        run: |
-          pnpm exec tsx tools/quality/src/p2-database.ts
-          pnpm --filter @lifebridge/identity-consent build
-          $identityDatabaseUrl = "postgresql://lifebridge_identity:$($env:P2_IDENTITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_identity"
-          $identityToken = [guid]::NewGuid().ToString('N')
-          $identityDataKeyBytes = New-Object byte[] 32
-          $identityRateLimitKeyBytes = New-Object byte[] 32
-          $random = [Security.Cryptography.RandomNumberGenerator]::Create()
-          try {
-            $random.GetBytes($identityDataKeyBytes)
-            $random.GetBytes($identityRateLimitKeyBytes)
-          } finally {
-            $random.Dispose()
-          }
-          $identityDataKey = [Convert]::ToBase64String(
-            $identityDataKeyBytes
-          ).TrimEnd('=').Replace('+', '-').Replace('/', '_')
-          $identityRateLimitKey = [Convert]::ToBase64String(
-            $identityRateLimitKeyBytes
-          ).TrimEnd('=').Replace('+', '-').Replace('/', '_')
-          Write-Output "::add-mask::$identityToken"
-          Write-Output "::add-mask::$identityDataKey"
-          Write-Output "::add-mask::$identityRateLimitKey"
-          $env:APP_ORIGIN = "http://127.0.0.1:3000"
-          $env:GATEWAY_HOST = "127.0.0.1"
-          $env:IDENTITY_DATABASE_URL = $identityDatabaseUrl
-          $env:IDENTITY_DATA_KEY = $identityDataKey
-          $env:IDENTITY_INTERNAL_TOKEN = $identityToken
-          $env:IDENTITY_PORT = "3100"
-          $env:IDENTITY_RATE_LIMIT_KEY = $identityRateLimitKey
-          $env:IDENTITY_URL = "http://127.0.0.1:3100"
-          $identityProcess = Start-Process `
-            -FilePath "node" `
-            -ArgumentList @("services/identity-consent/dist/main.mjs") `
-            -WorkingDirectory $env:GITHUB_WORKSPACE `
-            -RedirectStandardOutput (Join-Path $env:RUNNER_TEMP "identity.out.log") `
-            -RedirectStandardError (Join-Path $env:RUNNER_TEMP "identity.err.log") `
-            -PassThru
-          Remove-Item Env:IDENTITY_DATABASE_URL
-          try {
-            ./scripts/validate-p1-s1.ps1 -UseExistingDatabase -SkipInstall
-          } finally {
-            if (-not $identityProcess.HasExited) {
-              Stop-Process -Id $identityProcess.Id -Force -ErrorAction SilentlyContinue
-            }
-          }
-
-      - name: Run the P2-S1 backend-only PostgreSQL campaign
-        shell: pwsh
-        run: |
-          pnpm exec tsx tools/quality/src/p2-database.ts
-          $env:IDENTITY_DATABASE_URL = "postgresql://lifebridge_identity:$($env:P2_IDENTITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_identity"
-          pnpm run test:p2:identity-integration
+        run: ./scripts/validate-p2-s1.ps1 -UseExistingDatabase -SkipInstall
 
   integrated-gate:
-    name: P1 plus P2 backend required gate
+    name: P1 plus P2 full required gate
     if: always()
     needs:
       - windows-quality

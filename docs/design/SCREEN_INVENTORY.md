@@ -22,11 +22,10 @@ Every screen and state pattern inherits this contract. Exceptions must be docume
 
 A state may be marked not applicable only when the handoff explains why the screen has no corresponding data or operation.
 
-P2-S1 status on 2026-07-26: the permission/API/state requirements for
-`LB-001`–`LB-007` are frozen and a local semantic wireframe exists, but no
-approved Stitch reference or frozen production handoff exists.
-`MCP-DEBT-2026-002` therefore blocks production UI implementation, production
-screen status, browser acceptance and full slice acceptance.
+P2-S1 status on 2026-07-26: requirements, official synthetic Stitch references
+and the redacted `LB-001`–`LB-007` production handoff are Frozen. Native VI/EN
+routes and targeted browser evidence exist. Full production status still
+requires the single P2 Level C and exact-head hosted CI.
 
 ## Screen register
 

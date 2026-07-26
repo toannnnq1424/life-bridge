@@ -231,8 +231,9 @@ raw authentication artifacts are never uploaded. Hosted CI retains literal
 head checkout, Node 22, Windows static/unit/build/security, Ubuntu PostgreSQL +
 Chromium, and one P2 aggregate gate.
 
-Until `MCP-DEBT-2026-002` closes, production browser coverage, the full Level C
-campaign, merge-as-complete and issue #6 closure are deferred, not passed.
+The Frozen handoff and artifact-disabled P2 browser project now satisfy the
+preconditions to run the single Level C. Merge-as-complete and issue #6 closure
+remain deferred until that command and exact-head hosted CI pass.
 
 An MCP becoming callable does not satisfy a test gate by itself. Close required
 MCP debt only after secret handling, least-privilege/data-egress and complete

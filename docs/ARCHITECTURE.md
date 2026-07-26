@@ -487,6 +487,7 @@ The exact security/data/API contracts live in
 `docs/API_CONTRACTS.md`.
 
 The `LB-001`–`LB-007` gate remains requirement → permission contract → Stitch
-reference → reviews → Frozen handoffs → implementation. Only the first two and
-a local semantic wireframe exist. `MCP-DEBT-2026-002` therefore blocks
-production frontend implementation and full P2-S1 acceptance.
+reference → reviews → Frozen handoffs → implementation. The official synthetic
+references and redacted handoff are now Frozen, and native Next.js routes
+connect to the existing Gateway/Identity boundary. Full P2-S1 acceptance still
+requires the single Level C and exact-head hosted CI.

@@ -148,3 +148,8 @@ applicable platform authorization. Phase 0 performs none of these actions.
 Authorization never bypasses safety, validation, or debt gates. A development
 credential disclosed in chat is not an approved deployment secret and must be
 revoked rather than persisted.
+
+P2-S1 adds no deployment. `validate:p2-s1` is a local/CI acceptance topology:
+it provisions owned PostgreSQL databases, starts the real Identity dependency,
+preserves the P1 regression campaign, runs the artifact-disabled P2 browser
+campaign, and removes only its task-owned processes and Compose resources.

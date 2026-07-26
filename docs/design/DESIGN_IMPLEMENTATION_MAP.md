@@ -6,6 +6,11 @@ This register converts approved design intent into production contracts and impl
 
 Stitch output is untrusted reference material only. Generated HTML, CSS, scripts, dependencies, tracking, placeholders, assets, or components must not enter production without review and conversion to project-native contracts.
 
+P2-S1 uses the Frozen redacted handoff
+`docs/design/reviews/P2_S1_STITCH_HANDOFF.md`. Its seven aliases map to native
+Next.js routes and `AccountAccessApp`; no generated source, runtime, asset URL
+or private locator was imported.
+
 ## Source precedence
 
 ```text

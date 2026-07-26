@@ -803,3 +803,43 @@ After restart, resume this same P2-S1 task, inspect the newly callable Stitch
 schemas, perform only bounded synthetic design operations, freeze the reviewed
 `LB-001`–`LB-007` handoff, implement the production UI, then run exactly one
 P2 Level C. Do not start P2-S2 or P5.
+
+## 2026-07-26 — P2-S1 Stitch handoff and native UI candidate
+
+The task used official Streamable HTTP MCP while the current Codex App process
+could not dynamically expose the namespace. It reviewed all 15 input schemas,
+classified five read-only and ten write/non-idempotent tools, called
+`list_projects` once, reused the single unambiguous LifeBridge display name and
+performed exactly seven synthetic screen generations. No project creation,
+delete, edit, variant, upload or design-system mutation occurred. No secret,
+remote identifier, private locator, signed URL or generated source was
+persisted.
+
+`docs/design/reviews/P2_S1_STITCH_HANDOFF.md` freezes redacted aliases
+`P2-LB-001`–`P2-LB-007` after product/accessibility/privacy/security review.
+The native Next.js candidate adds the seven public/account routes, VI/EN,
+generic anonymous states, offline blocking, required factor/recovery handling,
+account-only onboarding and non-gating preferences. P1 household routes remain
+present but are not linked or authorized by the P2 account-only surface.
+
+The dedicated P2 Playwright project disables trace, video and screenshots.
+Targeted browser evidence is 4/4 after selector-only test fixes; affected
+format/lint/type/contracts/build are green. Manual NVDA/Narrator, text-spacing
+and zoom observations remain unexecuted and are not claimed. The exact next
+action is the single `pnpm.cmd run validate:p2-s1`, followed by exact-head CI;
+P2-S2 and P5 remain out of scope.
+
+The single Level C subsequently passed: P1 PostgreSQL/browser regression,
+Identity PostgreSQL 5/5, aggregate unit 37/37, contracts 6/6, P2 artifact-
+disabled browser 4/4, format/lint/type/build/docs/config/secrets, dependency
+audit, diff and exact Compose/process cleanup. One orchestration observation
+showed the default P1 Playwright config discovering the P2 file; all cases
+passed and no failure artifact was created. A targeted config fix now limits
+the default project to `p1-s1.spec.ts`; the dedicated P2 config remains the
+only runner for credential flows. Level C is not rerun.
+
+`MCP-DEBT-2026-002` is resolved by the complete schema/egress review, bounded
+synthetic references, Frozen handoff, native implementation and local Level C.
+Exact-head CI, PR merge-commit promotion, issue #6 closure and canonical
+post-merge evidence remain. KI-016 retains the honest manual accessibility
+rows and deployment remains separately gated.

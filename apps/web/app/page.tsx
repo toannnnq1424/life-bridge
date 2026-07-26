@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { AccountAccessApp } from "../src/AccountAccessApp";
 
 export default function Home() {
-  redirect("/households/hh_minh_an");
+  return <AccountAccessApp initialScreen="landing" />;
 }
