@@ -843,3 +843,19 @@ synthetic references, Frozen handoff, native implementation and local Level C.
 Exact-head CI, PR merge-commit promotion, issue #6 closure and canonical
 post-merge evidence remain. KI-016 retains the honest manual accessibility
 rows and deployment remains separately gated.
+
+### Final promotion evidence
+
+- Candidate: `969e6e97a2f554f68c4328843103bcefe12a3a26`.
+- Exact-head hosted CI: pull-request run `30191477589` and push run
+  `30191476390`, both Success with Windows, PostgreSQL/Chromium and full
+  aggregate gates.
+- Promotion: PR #44 was marked Ready only after checks passed and merged into
+  `dev` using merge commit `0cb14e2aa3f27f9b82c8204a6b40fccbd445ac79`.
+- Post-merge: `dev` run `30191620201` passed the same three gates.
+- GitHub issue #6 is closed with acceptance evidence. No deployment occurred.
+
+P2-S1 is complete. The exact next slice is P2-S2 household creation,
+invitation and care-recipient context (`LB-008`–`LB-010`) in a fresh task from
+integrated `dev`. It must freeze household membership/authorization and
+anti-enumeration contracts before code. This task does not start P2-S2 or P5.
