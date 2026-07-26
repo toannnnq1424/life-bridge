@@ -7,10 +7,11 @@
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
 - Current phase: `P2 — Trust and household`
-- Most recently integrated slice: `P2-S1 — Account access and accessible
-onboarding`; validated and merged at `dev@e20ecdbe`
-- Next eligible product slice: `P2-S2 — Household, invitation, and
-care-recipient context`, only in a fresh task
+- Most recently integrated slice: `P2-S2 — Household, invitation, and
+care-recipient context`; validated and merged at
+  `dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`
+- Next eligible product slice: `P2-S3 — Consent, privacy, audit, and settings`,
+  only in a fresh controller-dispatched task after this canonical closeout
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -55,7 +56,7 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 | ------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | ------------- |
 | `P0` Foundation                       | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated     |
 | `P1` Daily task MVP                   | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; frozen P1 handoff                 | Validated     |
-| `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Planned       |
+| `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | In progress   |
 | `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned       |
 | `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned       |
 | `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned       |
@@ -429,7 +430,10 @@ the cumulative P1/P2-S1 regression, affected static/unit/contracts, real
 PostgreSQL integration, production build/runtime, artifact-disabled
 browser/accessibility/security paths, docs/config/secrets/diff checks and exact
 task-owned cleanup. Exact-head hosted CI, merge-commit promotion and post-merge
-`dev` CI remain; P2-S3 remains unstarted.
+`dev` CI passed at fix head `af6a75f4fcf54a70b2185a903f4bcb330e837b31`
+in runs `30202003327` and `30202004747`. PR #47 merged as
+`dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`; post-merge run
+`30202144955` passed and issue #7 closed completed. P2-S3 remains unstarted.
 
 ### `P2-S3 — Consent, privacy, audit, and settings`
 
@@ -1122,13 +1126,16 @@ next slice in the same conversation.
 
 ## Exact next action
 
-P2-S1 promotion is complete: PR #44 merged as `0cb14e2`, its exact-head and
-post-merge hosted runs passed, issue #6 is closed, and PR #45 merged the
-canonical closeout as `dev@e20ecdbe`. The final post-merge run `30191971782`
-passed. `MCP-DEBT-2026-002`/KI-017 is resolved; KI-016 keeps manual
-assistive-technology evidence honestly deferred before pilot/release.
+P2-S2 promotion is complete: fix head
+`af6a75f4fcf54a70b2185a903f4bcb330e837b31` passed exact-head runs
+`30202003327` and `30202004747`, PR #47 merged as
+`dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`, post-merge run
+`30202144955` passed, and issue #7 is closed completed.
+`MCP-DEBT-2026-003`/KI-018 is resolved for promotion. KI-001 still blocks
+deployment and KI-016 retains manual assistive-technology evidence before
+pilot/release.
 
-The exact next action is a fresh P2-S2 task from integrated `dev`: freeze the
-household creation, invitation lifecycle, care-recipient context,
-authorization/consent and anti-enumeration contracts for `LB-008`–`LB-010`
-before implementation. DATA-S1 and P5 remain separate and unstarted.
+The exact next action, only in a fresh controller-dispatched P2-S3 task, is to
+freeze versioned consent grant/narrow/revoke and audit-history read contracts
+for `LB-028`–`LB-031`, explicitly separating care-recipient consent from
+organizer membership. DATA-S1, P3 and P5 remain separate and unstarted.
