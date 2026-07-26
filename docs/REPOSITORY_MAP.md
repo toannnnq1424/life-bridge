@@ -1,10 +1,11 @@
 # Repository Map
 
 Verified: 2026-07-26
-Active slice: `P2-S1 — Account access and accessible onboarding` (full
-candidate pending Level C and exact-head CI)
+Integrated slice: `P2-S1 — Account access and accessible onboarding`
+(`dev@e20ecdbe`; Level C, exact-head and post-merge CI passed)
 
-This map reflects the integrated P1 tree plus the P2-S1 backend candidate. It excludes generated and
+This map reflects the integrated P1 and P2-S1 tree. The exact next fresh task is
+P2-S2 household authorization/consent. It excludes generated and
 local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
@@ -72,8 +73,8 @@ empty Notification success when that dependency is unavailable.
 | `docs/KNOWN_ISSUES.md`                                 | Controlled limitations and follow-up triggers                   |
 | `docs/WORKSTREAM_BOARD.md` / `docs/INTEGRATION_LOG.md` | Slice and promotion state                                       |
 
-P2-S1 adds ADR-018, `docs/security/P2_S1_THREAT_MODEL.md`, the preparatory local
-wireframe and Frozen `docs/design/reviews/P2_S1_STITCH_HANDOFF.md`. Native
+P2-S1 adds ADR-018, `docs/security/P2_S1_THREAT_MODEL.md`, the historical local
+wireframe input and Frozen `docs/design/reviews/P2_S1_STITCH_HANDOFF.md`. Native
 routes `/`, `/login`, `/register`, `/mfa`, `/recover`, `/onboarding` and
 `/onboarding/accessibility` live in `apps/web`; generated Stitch source is not
 present.

@@ -224,9 +224,10 @@ capability; P2-S2 owns those later permissions.
 
 Public sign-in/recovery behavior must not disclose whether an account exists.
 Denied, locked, expired and offline states remain explicit without exposing
-credential or account facts. This outcome is not accepted until the reviewed
-Stitch handoff and accessible production `LB-001`–`LB-007` UI exist;
-`MCP-DEBT-2026-002` currently blocks that part of the slice.
+credential or account facts. The reviewed Stitch handoff, accessible production
+`LB-001`–`LB-007` UI, Level C and hosted promotion evidence passed;
+`MCP-DEBT-2026-002`/KI-017 is resolved. Manual assistive-technology evidence
+remains deferred under KI-016 before pilot/release.
 
 ## 8. Backlog and staged scope
 

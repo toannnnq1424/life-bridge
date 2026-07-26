@@ -7,10 +7,10 @@
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
 - Current phase: `P2 — Trust and household`
-- Current scope: `P2-S1 — Account access and accessible onboarding` in progress
-  on `phase/2-account-access-onboarding`; backend/contracts only while the P2
-  Stitch gate is blocked
-- Active product slice: `P2-S1 — Account access and accessible onboarding`
+- Most recently integrated slice: `P2-S1 — Account access and accessible
+onboarding`; validated and merged at `dev@e20ecdbe`
+- Next eligible product slice: `P2-S2 — Household, invitation, and
+care-recipient context`, only in a fresh task
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -328,11 +328,12 @@ Explicitly deferred: recurrence, cancellation, attachments, real authentication,
 
 Outcome: a user can register/sign in, complete the required factor/recovery path, choose language/accessibility preferences, and enter an authorized session without account enumeration.
 
-Status: **In progress; production UI and full acceptance blocked**.
+Status: **Validated and merged into `dev`**.
 `CHG-2026-010`/ADR-018 freezes a first-party Identity & Consent backend and an
-account-scoped session that grants no household access. `MCP-DEBT-2026-002`
-blocks `LB-001`–`LB-007` production implementation and the eventual full Level
-C campaign.
+account-scoped session that grants no household access. The Frozen Stitch
+handoff, `LB-001`–`LB-007` production UI, full Level C and hosted promotion
+evidence passed; `MCP-DEBT-2026-002`/KI-017 is resolved. KI-016 retains the
+manual assistive-technology evidence deferred before pilot/release.
 
 Screens: `LB-001`–`LB-007`.
 
@@ -1004,7 +1005,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ## CHG-2026-010 — Freeze the P2-S1 first-party account boundary
 
-- State: Accepted; backend implementation in progress; production UI blocked
+- State: Integrated; full slice validation and hosted promotion passed
 - Raised in phase/slice: `P2-S1`
 - Planned baseline: replace P1 fixture identity with registration, required
   factor/recovery, preferences, and an authorized session. Provider, identifier,
@@ -1023,7 +1024,8 @@ No row means simultaneous implementation. Design generation/review may prepare a
   trust/residency/cost/exit decision.
 - Impact:
   - Product/UI: required TOTP and recovery-code acknowledgement; total-loss
-    automated recovery is unavailable; P2 UI remains blocked by Stitch debt.
+    automated recovery is unavailable; Frozen Stitch handoff and native UI
+    passed review.
   - API/events: new `P2-S1-v1` account/challenge/session/preferences contracts;
     no cross-service event or household authorization is added.
   - Data/migration: one Identity-owned PostgreSQL database and additive initial
@@ -1031,15 +1033,15 @@ No row means simultaneous implementation. Design generation/review may prepare a
   - Privacy/security: server-side opaque cookies, CSRF/origin controls,
     Argon2id, encrypted TOTP seed, digest-only tokens/codes, generic responses,
     atomic rate/race handling, safe audit/logging.
-  - Tests/operations: package Level A/B now; one full P2 Level C and hosted
-    exact-head aggregate gate after design/UI unblock.
+  - Tests/operations: package Level A/B, one full P2 Level C, exact-head and
+    post-merge aggregate gates passed.
   - Phase order/schedule: unchanged; P2-S2/DATA-S1/deployment remain deferred.
-- Validation required: frozen contract/unit/PostgreSQL/gateway/supply-chain
-  evidence now; later seven Frozen handoffs, browser/accessibility, one complete
-  Level C, exact-head hosted CI, reviewed PR merge, post-merge CI and issue #6
-  closure.
-- Follow-up owner and exact phase/slice: Project Owner/Design Lead resolve
-  `MCP-DEBT-2026-002` inside P2-S1. P2-S2 starts only after P2-S1 acceptance.
+- Validation: frozen contract/unit/PostgreSQL/gateway/supply-chain evidence,
+  seven Frozen handoffs, browser/accessibility, one complete Level C,
+  exact-head hosted CI, reviewed PR merge, post-merge CI and issue #6 closure
+  passed. Manual assistive-technology evidence remains KI-016.
+- Follow-up owner and exact phase/slice: begin P2-S2 household authorization
+  and consent only in a fresh task from integrated `dev`.
 - Related ADR/integration/session entries: ADR-018,
   `docs/security/P2_S1_THREAT_MODEL.md`, and the P2-S1 session entry.
 
@@ -1103,21 +1105,13 @@ next slice in the same conversation.
 
 ## Exact next action
 
-P1-S1 promotion is complete: PR #42 merged into `dev`, both exact-head and
-post-merge hosted runs passed, and issue #5 is closed. The docs-only closeout
-did not rerun Level C because no runtime, test, workflow, dependency, or
-lockfile input changed.
+P2-S1 promotion is complete: PR #44 merged as `0cb14e2`, its exact-head and
+post-merge hosted runs passed, issue #6 is closed, and PR #45 merged the
+canonical closeout as `dev@e20ecdbe`. The final post-merge run `30191971782`
+passed. `MCP-DEBT-2026-002`/KI-017 is resolved; KI-016 keeps manual
+assistive-technology evidence honestly deferred before pilot/release.
 
-P2-S1 is active on `phase/2-account-access-onboarding` from `dev@a3e9fc2`.
-ADR-018 and the account/session/recovery/preferences contracts are frozen; the
-backend candidate has focused Level A/B and PostgreSQL evidence. The required
-Stitch MCP reference and frozen handoff for `LB-001`–`LB-007` do not exist, so
-production UI, browser acceptance, the one Level C campaign, merge-as-complete
-and issue #6 closure remain blocked by `MCP-DEBT-2026-002`.
-
-The exact next action is still inside P2-S1: Project Owner + Design Lead restore
-the approved Stitch MCP/secret path, complete the synthetic-only schema/data-
-egress/security/accessibility review, and freeze a redacted handoff. Only then
-may the P2-S1 production UI and `pnpm.cmd run validate:p2-s1` proceed. P2-S2
-(`LB-008`–`LB-010` household/invitation/context) and DATA-S1 remain separate and
-unstarted.
+The exact next action is a fresh P2-S2 task from integrated `dev`: freeze the
+household creation, invitation lifecycle, care-recipient context,
+authorization/consent and anti-enumeration contracts for `LB-008`–`LB-010`
+before implementation. DATA-S1 and P5 remain separate and unstarted.
