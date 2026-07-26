@@ -412,10 +412,10 @@ environments are intended to converge. It is not a substitute for Git history.
 - Follow-up: start P2-S2 only in a fresh task from integrated `dev`; P5 remains
   planned and was not started here.
 
-## INT-2026-015 — P2-S2 stable candidate and Stitch UI resolution
+## INT-2026-015 — P2-S2 integration and Stitch UI resolution
 
 - Date: 2026-07-26
-- Status: Stable candidate; not promoted
+- Status: Validated, merged and closed
 - Source: `phase/2-household-authorization` from verified
   `dev@7e260c0315bb08a4f07b37c7604d416d999cb3e9`
 - Scope: Identity-owned household/membership/invitation/minimum-context
@@ -429,12 +429,22 @@ environments are intended to converge. It is not a substitute for Git history.
   PostgreSQL 7/7, P1 browser 4/4, real-plus-mocked P2-S2 browser 7/7, P2-S1
   browser 4/4, production build, docs/config/secrets/dependency/diff checks and
   exact task-owned cleanup.
-- Gate: the local design and acceptance portions of `MCP-DEBT-2026-003` are
-  resolved; exact-head CI, merge-commit and post-merge `dev` CI remain
-- Promotion: PR #47 is open to `dev`. Initial candidate `d74faf2` had one
-  pull-request-run LB-008 locale race while the parallel push run passed; a
-  targeted no-refetch fix is pending a new exact-head hosted run. No merge has
-  occurred and issue #7 remains open.
+- Gate: local design/acceptance and hosted promotion portions of
+  `MCP-DEBT-2026-003` are resolved. Deployment remains separately blocked by
+  KI-001 and manual assistive-technology evidence remains KI-016.
+- Promotion: initial candidate `d74faf2` exposed one pull-request-run LB-008
+  locale race while the parallel push run passed. Targeted fix head
+  `af6a75f4fcf54a70b2185a903f4bcb330e837b31` then passed exact-head runs
+  `30202003327` and `30202004747`. PR #47 merged to `dev` as
+  `82a8c833ec15e01dacecbcde7285d5a63a307bbd`; post-merge run
+  `30202144955` passed. Issue #7 closed completed with canonical closeout
+  evidence at
+  https://github.com/toannnnq1424/life-bridge/issues/7#issuecomment-5083484971.
+- Follow-up: P2-S3 is the exact next product slice only after this docs-only
+  canonical closeout and controller dispatch. Its first action is to freeze
+  versioned consent grant/narrow/revoke and audit-history read contracts for
+  LB-028–LB-031, explicitly separating care-recipient consent from organizer
+  membership. No P2-S3 work started here.
 
 ### User-authorized Stitch approval policy
 

@@ -1079,3 +1079,37 @@ action is to freeze versioned consent grant/narrow/revoke and audit-history
 read contracts for `LB-028`–`LB-031`, explicitly separating care-recipient
 consent from organizer membership. This task does not design or implement
 P2-S3.
+
+## 2026-07-26 — P2-S2 docs-only canonical closeout
+
+### Planned versus actual
+
+Controller verification found the accepted P2-S2 product/code/CI state had not
+yet been reconciled into canonical repository memory. This follow-up changes
+only persistent state documents. It does not edit product code or UI, call
+Stitch, rerun the single local Level C, deploy, or begin P2-S3.
+
+The original exact-head defect remains preserved in history: candidate
+`d74faf2` exposed the LB-008 locale bootstrap race. Targeted fix head
+`af6a75f4fcf54a70b2185a903f4bcb330e837b31` passed hosted push and
+pull-request runs `30202003327` and `30202004747`. PR #47 merged to `dev` as
+`82a8c833ec15e01dacecbcde7285d5a63a307bbd`; post-merge `dev` run
+`30202144955` passed. Issue #7 closed completed, with canonical closeout
+evidence recorded at
+https://github.com/toannnnq1424/life-bridge/issues/7#issuecomment-5083484971.
+Accordingly, `MCP-DEBT-2026-003`/KI-018 is resolved for promotion.
+
+### Residual gates and exact next orientation
+
+No deployment occurred. KI-001 remains the deployment gate. KI-016 retains the
+unexecuted manual NVDA/Narrator, physical touch target, text-spacing and
+200%/400% assistive-technology evidence before any pilot/release claim. The
+Frozen redacted handoff and bounded 600-second Stitch policy remain unchanged.
+The user-owned `docs/orchestration/reports/STITCH_MCP_CANARY.md` remains
+untouched and unstaged.
+
+P2-S3 is now the exact next product slice, but only the controller may dispatch
+it in a fresh task after this canonical closeout merges. Its first action is to
+freeze versioned consent grant/narrow/revoke and audit-history read contracts
+for `LB-028`–`LB-031`, explicitly separating care-recipient consent from
+organizer membership. DATA-S1, P3 and P5 remain separate and unstarted.

@@ -3,12 +3,12 @@
 ## Board control
 
 - Updated: 2026-07-26
-- Most recently integrated scope: `P2-S1 — Account access and accessible
-onboarding`; accepted and merged at `dev@e20ecdbe`
-- Active product slice: `P2-S2 — Household, invitation, and care-recipient context`
-- Stable candidate is in progress on `phase/2-household-authorization`;
-  the redacted Stitch handoff, native UI and one local Level C campaign pass;
-  exact-head PR and post-merge `dev` CI remain
+- Most recently integrated scope: `P2-S2 — Household, invitation, and
+care-recipient context`; accepted and merged at
+  `dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`
+- Active product slice: none in this docs-only canonical closeout
+- Exact next product slice: `P2-S3 — Consent, privacy, audit, and settings`;
+  controller dispatch is required and no P2-S3 work starts here
 - Accepted future direction: `CHG-2026-011`/ADR-019 assigns greenfield
   Community to Spring Boot at P5-S1/#15; this does not start P5 or alter P2
 - Rule: one conversation owns one phase or one slice
@@ -37,7 +37,7 @@ No owner role may mark another row complete without its evidence/handoff. Parall
 | PowerShell blocks package `*.ps1` shims | Environment policy, mitigated              | Use `npm.cmd`, `npx.cmd`, `pnpm.cmd`                                                                                   | Do not change machine-wide Execution Policy                                                  | Canonical commands succeed through `.cmd`                                  |
 | `MCP-DEBT-2026-001` deployment gate     | Security/integration debt                  | P1 handoff v1.0 is Frozen; credential retirement/usage review remains unconfirmed                                      | Do not reuse/log/persist the credential or claim deployment-ready                            | Confirm provider retirement/usage review before deployment                 |
 | `MCP-DEBT-2026-002` P2 acceptance gate  | Resolved                                   | Official schemas, seven synthetic references, Frozen handoff, native UI, full Level C, exact-head/post-merge CI passed | Do not copy generated source or weaken artifact controls                                     | Preserve evidence; deployment remains separately gated                     |
-| `MCP-DEBT-2026-003` P2-S2 UI gate       | Local acceptance passed; promotion pending | Three synthetic references, independent Frozen handoff, native UI and one cumulative local Level C now pass            | Do not expose locators, import generated source, weaken corrections or claim promotion early | Pass exact-head CI, merge commit and post-merge `dev` CI                   |
+| `MCP-DEBT-2026-003` P2-S2 UI gate       | Resolved for promotion; deploy still gated | Frozen handoff, native UI, local Level C, exact-head and post-merge CI passed                                          | Do not expose locators, import generated source, weaken corrections or claim promotion early | Preserve evidence; deployment remains separately gated                     |
 | Branch protection unavailable           | Platform limitation, controlled            | Hosted CI is registered; P1 exact-head and post-merge runs passed while enforcement remains manual                     | Do not bypass PR/check review, direct-push protected lanes, or claim enforcement             | Reassess plan/visibility and retain manual exact-SHA/check review          |
 
 Gates block only dependent validation/work. They do not authorize broad system repair and do not make unrelated Phase 0 documentation fail.
@@ -49,8 +49,8 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 0        | `P0` Foundation                         | Validated                              | Approved plan                                                   | Validated foundation commit; exact P1 action     |
 | 1        | `P1-S1` Accountable care-task loop      | Validated/merged                       | PR #42; exact-head and post-merge CI                            | Issue #5 closed completed                        |
 | 2        | `P2-S1` Account access/onboarding       | Validated/merged                       | PR #44 merge `0cb14e2`; exact-head and post-merge full CI green | Issue #6 closed; fresh-task P2-S2 orientation    |
-| 3        | `P2-S2` Household/invitation/context    | Stable candidate; local Level C passed | Exact-head PR and post-merge `dev` CI                           | Household authorization flow                     |
-| 4        | `P2-S3` Consent/privacy/audit/settings  | Planned                                | P2-S2 passes                                                    | Consent/revocation/audit flow                    |
+| 3        | `P2-S2` Household/invitation/context    | Validated/merged; PR #47 and CI passed | PR #47; exact-head and post-merge `dev` CI green                | Issue #7 closed completed                        |
+| 4        | `P2-S3` Consent/privacy/audit/settings  | Planned; exact next                    | Controller dispatch from integrated P2-S2 `dev`                 | Consent/revocation/audit flow                    |
 | 5        | `P3-S1` Timeline/handoff                | Planned                                | P2 trust boundary passes                                        | Timeline/handoff flow                            |
 | 6        | `P3-S2` Calendar/appointment            | Planned                                | P3-S1/time contract                                             | Calendar/agenda flow                             |
 | 7        | `P3-S3` Care-plan review                | Planned                                | P2 consent + P3 time                                            | Versioned care-plan flow                         |
@@ -162,6 +162,16 @@ the single Level C and hosted promotion gates passed, issue #6 is closed, and
 `MCP-DEBT-2026-002`/KI-017 is resolved. KI-016 retains manual
 assistive-technology evidence before pilot/release.
 
-The exact next action is a fresh P2-S2 task from integrated `dev` for household
-creation, invitation lifecycle, care-recipient context and authorization/consent
-contracts. DATA-S1 and P5 remain separate and unstarted.
+P2-S2 is accepted and merged: fix head
+`af6a75f4fcf54a70b2185a903f4bcb330e837b31` passed exact-head runs
+`30202003327` and `30202004747`, PR #47 merged as
+`dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`, post-merge run
+`30202144955` passed, issue #7 closed completed, and
+`MCP-DEBT-2026-003`/KI-018 is resolved for promotion. KI-001 still blocks
+deployment and KI-016 retains manual assistive-technology evidence before
+pilot/release.
+
+The exact next action, only after controller dispatch in a fresh P2-S3 task, is
+to freeze versioned consent grant/narrow/revoke and audit-history read
+contracts for `LB-028`–`LB-031`, explicitly separating care-recipient consent
+from organizer membership. DATA-S1, P3 and P5 remain separate and unstarted.
