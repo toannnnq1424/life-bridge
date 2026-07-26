@@ -81,6 +81,8 @@ requires adjacent tests and phase-level secret scanning.
 P1 local PostgreSQL passwords are generated into ignored local state, passed by
 process environment, and never printed. Committed Compose/workflow files contain
 no reusable credential. CI databases are disposable and isolated to the run.
+GitHub workflow-generated owner passwords are masked before they are exported
+to later steps; synthetic/transient scope is not an exception to log hygiene.
 
 ## Dependency and supply-chain policy
 

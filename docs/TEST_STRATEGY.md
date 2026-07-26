@@ -103,6 +103,12 @@ the literal candidate SHA, installs the frozen lockfile under the narrow
 lifecycle policy, and runs Windows static/unit/build/security plus an Ubuntu
 PostgreSQL/Chromium acceptance job and one aggregate gate.
 
+Cross-platform repository validators select `git.exe` only on Windows and
+`git` on Unix, tolerate empty/Buffer child-process output, and have a targeted
+regression for that boundary. CI-generated disposable database passwords are
+masked before export to `GITHUB_ENV`; synthetic scope does not permit plaintext
+credential-shaped values in hosted logs.
+
 Docker, GitHub CLI, PowerShell 7, and Python are optional in Phase 0. A future slice may make a tool mandatory only when its acceptance criteria require it and the doctor documentation is updated in the same change.
 
 ## P1-S1 Level C contract

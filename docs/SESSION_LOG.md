@@ -531,9 +531,21 @@ safety, Stitch provenance, privacy, accessibility, and PR-only promotion.
 
 ### Promotion status at this checkpoint
 
-- Local Level C: passed.
-- Commit/push/PR/exact-head hosted CI/merge/issue #5 closeout: pending the final
-  intended-diff and hygiene review immediately following this record.
+- Local Level C: passed. Commit `699776c` was pushed and PR #42 opened to
+  `dev` at that exact head.
+- The initial hosted push run `30182938417` checked out the exact SHA and then
+  failed in `validate:secrets`: the Phase 0 helper hard-coded `git.exe`, so
+  Linux returned an absent process/output and the diagnostic attempted
+  `.trim()` on `undefined`. The same review found generated disposable database
+  passwords were not explicitly masked before `GITHUB_ENV`; the job-owned
+  database/container was destroyed, but CI must not print even synthetic
+  transient credentials.
+- Classified CI portability/privacy harness defect. The targeted fix selects
+  `git.exe` only on Windows and `git` elsewhere, safely decodes nullable/Buffer
+  process output, adds a 10th validator regression, and emits GitHub add-mask
+  commands before exporting generated passwords. Targeted format, validator
+  10/10, secret, configuration, and diff checks pass. A new exact-head hosted
+  run, merge, and issue #5 closeout remain.
 - User-owned `docs/orchestration/reports/STITCH_MCP_CANARY.md`: preserved and
   excluded from the P1 footprint.
 

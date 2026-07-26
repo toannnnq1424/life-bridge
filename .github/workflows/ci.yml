@@ -131,9 +131,13 @@ jobs:
       - name: Prepare isolated database credentials
         shell: pwsh
         run: |
+          $carePassword = [guid]::NewGuid().ToString('N')
+          $notificationPassword = [guid]::NewGuid().ToString('N')
+          Write-Output "::add-mask::$carePassword"
+          Write-Output "::add-mask::$notificationPassword"
           "P1_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
-          "P1_CARE_DATABASE_PASSWORD=$([guid]::NewGuid().ToString('N'))" >> $env:GITHUB_ENV
-          "P1_NOTIFICATION_DATABASE_PASSWORD=$([guid]::NewGuid().ToString('N'))" >> $env:GITHUB_ENV
+          "P1_CARE_DATABASE_PASSWORD=$carePassword" >> $env:GITHUB_ENV
+          "P1_NOTIFICATION_DATABASE_PASSWORD=$notificationPassword" >> $env:GITHUB_ENV
 
       - name: Align database URLs with generated owner credentials
         shell: pwsh

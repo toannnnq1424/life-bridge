@@ -278,7 +278,11 @@ environments are intended to converge. It is not a substitute for Git history.
   audit, production build/runtime and browser 4/4 then passed. The changed
   candidate completed Level C with unit 19/19, contract 4/4, PostgreSQL 5/5,
   browser 4/4, build/static/docs/security gates, and exact cleanup of its
-  Compose resources. Literal exact-head hosted CI remains.
+  Compose resources. Initial hosted push run `30182938417` then exposed a
+  Linux-only `git.exe` secret-validator defect and missing explicit masks for
+  disposable database passwords. The targeted portable process-output test is
+  10/10 and secrets/config/diff checks pass after adding pre-export masks.
+  Literal new-head hosted CI remains.
 - Conflicts/risks: Phase 0 draft did not name the one notification trigger or
   recipient. `CHG-2026-008` selects creator-if-distinct and durable
   self-suppression. Branch protection remains unavailable, so SHA/check review
