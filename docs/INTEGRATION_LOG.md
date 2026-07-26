@@ -260,9 +260,11 @@ environments are intended to converge. It is not a substitute for Git history.
 ## INT-2026-011 — Implement P1-S1 contracts, audience, and design handoff
 
 - Date: 2026-07-26
-- Status: Locally validated; hosted CI and merge pending
-- Source: `phase/1-accountable-task-loop` from `dev` at `4b633755`
-- Target: `dev` through a P1-S1 pull request and merge commit
+- Status: Integrated and accepted
+- Source: `phase/1-accountable-task-loop` from `dev@4b633755`; accepted final
+  head `6ec1be362ce3512a8eba8b312cbe129f866d0aae`
+- Target: `dev`; merged through PR #42 as
+  `cea4f83fe7c0ff79a560e6bc14853a2f7f725133`
 - Scope: issue #5 create/assign/complete loop, completion outbox, cross-user
   notification, confirmed dashboard/task/notification state, and VI/EN
   Stitch-derived UI
@@ -285,7 +287,11 @@ environments are intended to converge. It is not a substitute for Git history.
   The next PR run passed those gates and audit, then found Ubuntu lacks the
   external `rg` used only by the no-image assertion. That assertion now uses
   native PowerShell enumeration/search; parser and targeted reproducer pass.
-  Literal new-head hosted CI remains.
+  Final feature head `6ec1be362ce3512a8eba8b312cbe129f866d0aae`
+  passed exact-head PR run `30183168519`. PR #42 merged to `dev` as merge
+  commit `cea4f83fe7c0ff79a560e6bc14853a2f7f725133`, whose parents preserve the
+  `4b633755` base and `6ec1be3` feature convergence. Post-merge `dev` run
+  `30183280672` passed and issue #5 was closed completed.
 - Conflicts/risks: Phase 0 draft did not name the one notification trigger or
   recipient. `CHG-2026-008` selects creator-if-distinct and durable
   self-suppression. Branch protection remains unavailable, so SHA/check review
@@ -296,6 +302,7 @@ environments are intended to converge. It is not a substitute for Git history.
   private locators.
 - Decision/change references: `CHG-2026-008`, `CHG-2026-009`, ADR-016,
   ADR-017, issue #5
-- Follow-up: push the phase branch, open the PR to `dev`, require green
-  exact-head CI, merge with a merge commit, and close issue #5 only after
-  acceptance. Then hand off exact next slice P2-S1.
+- Follow-up: P1 promotion is complete. Start only a fresh task from current
+  integrated `dev` for P2-S1; freeze real identity/session/household access,
+  recovery, language, and accessibility-preference contracts before code.
+  DATA-S1 remains separate and neither next scope starts in this closeout.

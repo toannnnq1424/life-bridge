@@ -6,21 +6,20 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P1 — Daily task MVP`
-- Current scope: `P1-S1 — Accountable care-task loop` only
+- Current phase: `P1 — Daily task MVP` accepted and integrated
+- Current scope: no active product implementation; P1-S1 is closed and P2-S1
+  has not started
 - Next product slice after P1-S1: `P2-S1 — Account access and accessible onboarding`
 - GitHub execution:
-  [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
-  production UI gate
-  [#3](https://github.com/toannnnq1424/life-bridge/issues/3); separate
+  completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
+  P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
+  separate
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
-- Integration gate:
-  guarded workflow bootstrap
-  [PR #41](https://github.com/toannnnq1424/life-bridge/pull/41) registered
-  hosted CI on default `main`; require the full green check on the final commit
-  in [PR #21](https://github.com/toannnnq1424/life-bridge/pull/21) before merge
-  or P1 implementation
+- Integration gate: [PR #42](https://github.com/toannnnq1424/life-bridge/pull/42)
+  accepted exact feature head `6ec1be3` after hosted run `30183168519`
+  succeeded. Merge commit `cea4f83` is on `dev`, post-merge run `30183280672`
+  succeeded, and issue #5 is closed completed.
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -51,21 +50,21 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 
 ## Roadmap summary
 
-| Phase                                 | Objective                                                                      | Planned slices                                 | Dependencies                               | Actual status   |
-| ------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | --------------- |
-| `P0` Foundation                       | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated       |
-| `P1` Daily task MVP                   | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; issue #3 before production UI     | Ready; UI gated |
-| `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Planned         |
-| `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned         |
-| `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned         |
-| `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned         |
-| `P6` Microservice platform            | Prove independent runtime ownership, versioned compatibility, and isolation    | `P6-S1`–`P6-S3`                                | Accepted P1–P5 service boundaries          | Planned         |
-| `P7` Data and event reliability       | Prove migrations, event recovery, backup/restore, retention, and deletion      | `P7-S1`–`P7-S3`                                | P6 contracts and service ownership         | Planned         |
-| `P8` Security and privacy hardening   | Prove isolation, privacy lifecycle, abuse controls, secrets, and supply chain  | `P8-S1`–`P8-S3`                                | P2 trust; P6/P7 boundaries                 | Planned         |
-| `P9` SLO, resilience, incident and DR | Prove redacted observability, SLOs, degradation, incident response, and DR     | `P9-S1`–`P9-S3`                                | Accepted release journeys                  | Planned         |
-| `P10` Performance, capacity, and cost | Prove budgets, scale, backpressure, soak/spike behavior, and cost guardrails   | `P10-S1`–`P10-S3`                              | P9 telemetry and workload model            | Planned         |
-| `P11` Production rollout and release  | Reproduce production, stage rollout, pilot safely, rollback, and release       | `P11-S1`–`P11-S3`                              | P6–P10 gates; zero deploy-blocking debt    | Planned         |
-| `P12` Post-launch operations          | Operate, patch, recover, learn, and govern the next production roadmap         | `P12-S1`–`P12-S3`                              | Accepted P11 release                       | Planned         |
+| Phase                                 | Objective                                                                      | Planned slices                                 | Dependencies                               | Actual status |
+| ------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | ------------- |
+| `P0` Foundation                       | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated     |
+| `P1` Daily task MVP                   | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; frozen P1 handoff                 | Validated     |
+| `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Planned       |
+| `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned       |
+| `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned       |
+| `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned       |
+| `P6` Microservice platform            | Prove independent runtime ownership, versioned compatibility, and isolation    | `P6-S1`–`P6-S3`                                | Accepted P1–P5 service boundaries          | Planned       |
+| `P7` Data and event reliability       | Prove migrations, event recovery, backup/restore, retention, and deletion      | `P7-S1`–`P7-S3`                                | P6 contracts and service ownership         | Planned       |
+| `P8` Security and privacy hardening   | Prove isolation, privacy lifecycle, abuse controls, secrets, and supply chain  | `P8-S1`–`P8-S3`                                | P2 trust; P6/P7 boundaries                 | Planned       |
+| `P9` SLO, resilience, incident and DR | Prove redacted observability, SLOs, degradation, incident response, and DR     | `P9-S1`–`P9-S3`                                | Accepted release journeys                  | Planned       |
+| `P10` Performance, capacity, and cost | Prove budgets, scale, backpressure, soak/spike behavior, and cost guardrails   | `P10-S1`–`P10-S3`                              | P9 telemetry and workload model            | Planned       |
+| `P11` Production rollout and release  | Reproduce production, stage rollout, pilot safely, rollback, and release       | `P11-S1`–`P11-S3`                              | P6–P10 gates; zero deploy-blocking debt    | Planned       |
+| `P12` Post-launch operations          | Operate, patch, recover, learn, and govern the next production roadmap         | `P12-S1`–`P12-S3`                              | Accepted P11 release                       | Planned       |
 
 Future phases are planning commitments only. `CHG-2026-004` preserves validated
 P0 and the exact P1–P5 product order, and splits the former overloaded P6 into
@@ -155,10 +154,11 @@ Also inspect Git status/diff, run the configured secret scan, and exercise docum
 
 User-visible outcome: in one synthetic household, an authorized caregiver creates and assigns a care task, the assignee completes it, a persistent notification is produced exactly once, and dashboard/task board show confirmed state.
 
-Status: **Locally validated; promotion pending** on
-`phase/1-accountable-task-loop` from integrated `dev` commit `4b633755`.
-Targeted checks and the final Level C campaign pass; coherent commit/push,
-pull-request exact-head hosted CI, merge commit, and issue closeout remain.
+Status: **Validated and integrated**. PR #42 accepted exact feature head
+`6ec1be362ce3512a8eba8b312cbe129f866d0aae` after hosted run `30183168519`
+succeeded. Merge commit `cea4f83fe7c0ff79a560e6bc14853a2f7f725133`
+is on `dev`, post-merge run `30183280672` succeeded, and issue #5 is closed
+completed.
 
 ### P1-S1 research micro-cycle
 
@@ -844,14 +844,14 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | `CHG-2026-003` | Partially superseded                 | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded      |
 | `CHG-2026-004` | Implemented in docs/GitHub           | Preserves P0–P5 and expands production maturity through P6–P12                       |
 | `CHG-2026-005` | Accepted; debt gate active           | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt      |
-| `CHG-2026-006` | Bounded design session complete      | Authorizes one disposable non-production Stitch session; handoff remains not frozen  |
+| `CHG-2026-006` | Bounded design session complete      | P1 handoff v1.0 is Frozen; credential retirement remains a deployment gate           |
 | `CHG-2026-007` | CI bootstrap implemented             | One guarded workflow-only PR registered hosted CI on default `main`                  |
-| `CHG-2026-008` | Implemented; local validation passed | Freeze one useful completion-to-creator notification and suppress self-notification  |
-| `CHG-2026-009` | Implemented; local validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge    |
+| `CHG-2026-008` | Integrated; hosted validation passed | Freeze one useful completion-to-creator notification and suppress self-notification  |
+| `CHG-2026-009` | Integrated; hosted validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge    |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
-- State: Implemented; local validation passed
+- State: Integrated; hosted validation passed
 - Raised in phase/slice: `P1-S1`
 - Planned baseline: the Phase 0 draft listed created, assigned, and completed
   task events without fixing which event produced the one MVP notification or
@@ -888,7 +888,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ## CHG-2026-009 — Keep the P1 web supply chain patched without an image pipeline
 
-- State: Implemented; local validation passed
+- State: Integrated; hosted validation passed
 - Raised in phase/slice: `P1-S1`
 - Planned baseline: Next production build with lifecycle scripts denied by
   default; only a proven required package may be allowlisted.
@@ -938,13 +938,15 @@ next slice in the same conversation.
 
 ## Exact next action
 
-Finish only the remaining P1-S1 promotion gates: coherent commit/push, pull
-request to `dev`, exact-head hosted CI, merge commit, and issue #5 closeout. Do
-not start another slice inside this task.
+P1-S1 promotion is complete: PR #42 merged into `dev`, both exact-head and
+post-merge hosted runs passed, and issue #5 is closed. The docs-only closeout
+did not rerun Level C because no runtime, test, workflow, dependency, or
+lockfile input changed.
 
-After that merge, the exact next product slice is
-`P2-S1 — Account access and accessible onboarding`. Its first action is a fresh
-research/contract task on integrated `dev` that replaces fixture identity with
-real account, authorization and recovery boundaries before any UI code. DATA-S1
+The exact next product slice is `P2-S1 — Account access and accessible
+onboarding`. Start it only in a fresh task from current integrated `dev`. Its
+first action is a bounded research/contract freeze that replaces fixture
+identity with real account, session, household authorization, recovery,
+language, and accessibility-preference boundaries before UI code. DATA-S1
 issue #4 remains a separate `init/research` lane and must not be combined with
-P2-S1.
+P2-S1. Do not start either scope in this P1 closeout.

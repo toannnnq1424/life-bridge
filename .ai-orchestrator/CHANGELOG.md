@@ -58,3 +58,23 @@ Product/runtime release notes will be introduced when executable behavior exists
   evidence.
 - Kept PR #21 open pending the final Phase 0 Level D campaign and a visible
   hosted-CI result.
+
+## 2026-07-26 — P1-S1 integrated and accepted
+
+- Delivered `P1-S1-v1`: authorized create/assign/complete, the distinct
+  creator notification with durable self-suppression, confirmed dashboard/task
+  state, VI/EN UI, and owner-isolated Care/Notification persistence.
+- Preserved the `CHG-2026-008` audience decision and `CHG-2026-009`
+  supply-chain decision without adding DATA-S1, a broker, a second persistence
+  engine, an image pipeline, or a later product slice.
+- Retained failure evidence from hosted run `30182938417` and the following PR
+  run: the Linux `git.exe`/masking defect and Ubuntu `rg` dependency were fixed
+  before acceptance.
+- Accepted exact feature head `6ec1be362ce3512a8eba8b312cbe129f866d0aae`
+  through PR #42 after exact-head run `30183168519` succeeded; merge commit
+  `cea4f83fe7c0ff79a560e6bc14853a2f7f725133` and post-merge `dev` run
+  `30183280672` also succeeded. Issue #5 is closed completed.
+- Made no deployment or manual screen-reader/forced-colors/zoom conformance
+  claim. `KI-001`, `KI-014`, `KI-015`, and `KI-016` remain the explicit gates.
+- Handed off `P2-S1 — Account access and accessible onboarding` as the exact
+  next product slice; it has not started.
