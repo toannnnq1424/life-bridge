@@ -1,35 +1,52 @@
 # Project State
 
 - Project: LifeBridge
-- Repository root: `C:\Users\Admin\LifeBridge`
-- Remote branch intent: `phase/0-foundation`; managed task worktree is detached
+- Repository: `https://github.com/toannnnq1424/life-bridge`
 - Active platform: Windows
 - Control plane: Codex ChatGPT desktop app
-- Current phase: Phase 0 — Foundation (local closeout accepted; integration in
-  progress)
-- Current milestone: Phase 0 local acceptance complete; final-head hosted check
-  pending
-- Completed: repository/safety inventory; documentation; Windows tooling; CI;
-  data governance; disabled Codex App Stitch contract; local promotion branches;
-  clean fresh-worktree bootstrap/validation; research-driven runbook overlay;
-  13 project labels, 13 P0–P12 milestones, 38 governed issues, 21 P6–P12
-  slice mappings, and standing P11 gate #40
-- In progress: exact-candidate commit/push and review of
-  `phase/0-foundation` → `dev` in GitHub PR #21
-- Blocked: PR #21 cannot merge until the final pushed head passes hosted CI;
-  P1 production UI remains blocked on a Frozen handoff
-- Next actions: commit/push the exact P0 candidate, require the hosted check,
-  merge PR #21 only when green, then hand off P1-S1 issue #5 from `dev`
+- Current phase: `P1-S1 — Accountable care-task loop` accepted and integrated;
+  no P2 work has started
+- Current milestone: P1 product acceptance complete on `dev`
+- Completed: P0 foundation and governance; frozen Stitch-derived P1 handoff
+  v1.0; `P1-S1-v1` task/event/API contracts; create, assign, complete,
+  cross-user notify, confirmed dashboard/task-board state, VI/EN UI,
+  owner-isolated PostgreSQL persistence, retry/concurrency/degraded behavior,
+  and exact-head hosted validation
+- Integrated evidence: feature commits `699776c`, `b931bf3`, and `6ec1be3`;
+  PR #42; exact-head run `30183168519` success; merge commit
+  `cea4f83fe7c0ff79a560e6bc14853a2f7f725133`; post-merge `dev` run
+  `30183280672` success; issue #5 closed completed
+- In progress: no product slice. P2-S1 is the next eligible scope but has not
+  started.
+- Blocked: no P1 product acceptance blocker. Deployment remains gated by
+  `KI-001`; branch enforcement remains manual under `KI-014`; `KI-015` must
+  reopen for an image pipeline or supported dependency upgrade; `KI-016`
+  retains manual accessibility evidence before pilot/release claims
+- Next action: start one fresh task from current `dev` for
+  `P2-S1 — Account access and accessible onboarding`; freeze
+  real identity, session, household authorization, recovery, language, and
+  accessibility-preference contracts before code. Do not combine DATA-S1.
 - Known risks: see `docs/KNOWN_ISSUES.md`
-- Last verified baseline: coherent `phase/0-foundation` commit; exact hash is the
-  Git source of truth
-- Last test result: exactly one final clean-candidate Phase 0 Level D campaign
-  passed, including Windows doctor, format, lint, typecheck, 9/9 unit tests,
-  integration, build, and dependency audit
-- Docker status: current host-capable task reaches client/server 27.5.1; prior
-  sandbox named-pipe warning remains classified as context isolation
-- Stitch status: official canary and bounded P1 review set passed under
-  `CHG-2026-006`; handoff is Design review—not Frozen; committed config disabled
+- Last verified product baseline:
+  `dev@cea4f83fe7c0ff79a560e6bc14853a2f7f725133`
+- Last local slice result: one final P1 Level C campaign passed with unit
+  19/19, contracts 4/4, PostgreSQL 5/5, browser 4/4, builds, static/docs/security
+  gates, and zero-high dependency audit. It was not rerun for this docs-only
+  closeout because runtime inputs are unchanged.
+- Hosted result: PR exact-head run `30183168519` and post-merge `dev` run
+  `30183280672` passed. Earlier hosted portability/privacy failures remain
+  recorded in `docs/SESSION_LOG.md` and `docs/INTEGRATION_LOG.md`.
+- Docker status: P1 validation used task-scoped PostgreSQL Compose resources
+  and removed them exactly; no deployment or Docker daemon/global change was
+  made
+- Stitch status: P1 handoff v1.0 is Frozen and traces six reviewed aliases;
+  P1 implementation made no Stitch call and committed no private locator,
+  signed URL, generated source, or credential
+- Accessibility status: automated axe, keyboard/focus, contrast, locale, and
+  320 px evidence passed; no manual NVDA/Narrator, forced-colors, or 200%/400%
+  claim
+- Deployment status: not deployed; public/pilot/release gates remain future
+  P11 work
 - External execution routers: not used
 - Tailscale: not in scope
 

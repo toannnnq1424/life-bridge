@@ -567,3 +567,42 @@ safety, Stitch provenance, privacy, accessibility, and PR-only promotion.
 accessible onboarding`; first freeze real identity, session, household
   authorization, recovery, language, and accessibility-preference contracts.
   DATA-S1 remains a separate `init/research` lane. Do not start either here.
+
+## 2026-07-26 — P1-S1 promotion closeout
+
+### Objective and accepted result
+
+Close the canonical promotion record without changing P1 runtime inputs or
+starting P2. Exact feature head
+`6ec1be362ce3512a8eba8b312cbe129f866d0aae` passed PR #42 exact-head hosted
+run `30183168519`. PR #42 merged into `dev` as
+`cea4f83fe7c0ff79a560e6bc14853a2f7f725133`; post-merge `dev` run
+`30183280672` also passed. Issue #5 is closed completed.
+
+### Planned versus actual and retained evidence
+
+- Planned P1 behavior, ownership, contract/design decisions, and validation
+  remain as recorded above. No DATA-S1, broker, extra database, image pipeline,
+  deployment, or later-slice behavior was added.
+- The final hosted candidate contains feature commit `699776c`, portable
+  CI/privacy fix `b931bf3`, and no-`rg` portability fix `6ec1be3`. The earlier
+  `30182938417` `git.exe`/masking failure and the following Ubuntu `rg` failure
+  remain retained as failure/fix evidence; acceptance did not erase them.
+- This closeout changed only canonical state documents. Level C was not rerun
+  because application, dependency, lockfile, workflow, and test inputs are
+  unchanged. Targeted documentation format/config/secret/diff checks were the
+  local closeout gate; the docs PR retained the exact-head hosted CI gate.
+- P1 made no Stitch call during implementation, no deployment, and no manual
+  NVDA/Narrator, forced-colors, or 200%/400% accessibility claim.
+
+### Remaining gates and exact next slice
+
+- `KI-001` remains the credential retirement/usage-review deployment gate;
+  `KI-014` keeps branch enforcement manual; `KI-015` must reopen for any image
+  pipeline or supported dependency-upgrade path; `KI-016` retains the manual
+  accessibility rows required before pilot/release claims.
+- After this docs-only PR is merged, the exact next product slice is
+  `P2-S1 — Account access and accessible onboarding` in one fresh task from
+  current `dev`. First freeze real identity, session, household authorization,
+  recovery, language, and accessibility-preference contracts before code.
+  DATA-S1 remains a separate `init/research` lane. Neither scope starts here.
