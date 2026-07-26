@@ -8,10 +8,11 @@ const rawInvitationToken = "T".repeat(43);
 
 interface SyntheticApi {
   mutations: string[];
+  sessionReads: number;
 }
 
 async function syntheticHouseholdApi(page: Page): Promise<SyntheticApi> {
-  const api = { mutations: [] as string[] };
+  const api = { mutations: [] as string[], sessionReads: 0 };
   let invitationVersion = 1;
   let context: Record<string, unknown> | null = null;
   await page.route("**/api/v1/**", async (route) => {
@@ -20,6 +21,7 @@ async function syntheticHouseholdApi(page: Page): Promise<SyntheticApi> {
     const path = url.pathname;
     if (request.method() !== "GET") api.mutations.push(`${request.method()} ${path}`);
     if (path === "/api/v1/account/session") {
+      api.sessionReads += 1;
       return json(route, 200, {
         authorizationScope: "account",
         onboardingState: "complete",
@@ -129,7 +131,7 @@ async function syntheticHouseholdApi(page: Page): Promise<SyntheticApi> {
 test("LB-008 creates one household with keyboard, reflow, locale and axe coverage", async ({
   page,
 }) => {
-  await syntheticHouseholdApi(page);
+  const api = await syntheticHouseholdApi(page);
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/households/new");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Tạo hộ gia đình");
@@ -147,6 +149,7 @@ test("LB-008 creates one household with keyboard, reflow, locale and axe coverag
   );
   await page.locator(".account-header select").selectOption("en");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create a household");
+  expect(api.sessionReads).toBe(1);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

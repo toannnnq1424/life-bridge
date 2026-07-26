@@ -1049,6 +1049,23 @@ subagent usage quota was exhausted. Their completed original authority,
 design and acceptance audits remain reconciled; this external re-audit
 limitation is not represented as new evidence.
 
+### Exact-head CI defect classification
+
+PR #47 opened from candidate `d74faf2`. Its push workflow passed the full
+Windows, PostgreSQL/Chromium and integrated gate. The parallel pull-request
+workflow exposed one deterministic locale race in LB-008: the session bootstrap
+effect depended on translated error copy, so selecting English started another
+session read whose stored Vietnamese preference could overwrite the user's
+selection. This was classified as a UI lifecycle defect, not PostgreSQL,
+Stitch, GitHub or runner infrastructure.
+
+The targeted fix makes session bootstrap run once and adds browser evidence
+that locale selection performs no second session read. Affected
+format/lint/type, i18n unit 2/2, production web build and mocked P2-S2 browser
+6/6 pass; the real-runtime spec is intentionally skipped for this UI-only Level
+B. The full Level C is not rerun. PR exact-head CI must rerun on the fix commit
+before merge.
+
 ### Gate and exact next orientation
 
 Local P2-S2 acceptance is green. Exact-head hosted CI, merge-commit promotion,

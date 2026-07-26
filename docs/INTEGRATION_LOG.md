@@ -431,7 +431,10 @@ environments are intended to converge. It is not a substitute for Git history.
   exact task-owned cleanup.
 - Gate: the local design and acceptance portions of `MCP-DEBT-2026-003` are
   resolved; exact-head CI, merge-commit and post-merge `dev` CI remain
-- Promotion: no commit/push/PR/merge and issue #7 remains open
+- Promotion: PR #47 is open to `dev`. Initial candidate `d74faf2` had one
+  pull-request-run LB-008 locale race while the parallel push run passed; a
+  targeted no-refetch fix is pending a new exact-head hosted run. No merge has
+  occurred and issue #7 remains open.
 
 ### User-authorized Stitch approval policy
 

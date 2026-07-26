@@ -111,7 +111,7 @@ export function HouseholdAccessApp({
         setSession(projection);
         setLocale(projection.preferences.locale);
       } catch {
-        if (active) setError(t.signInRequired);
+        if (active) setError(householdCopy["vi-VN"].signInRequired);
       } finally {
         if (active) setLoading(false);
       }
@@ -119,7 +119,7 @@ export function HouseholdAccessApp({
     return () => {
       active = false;
     };
-  }, [t.signInRequired]);
+  }, []);
 
   useEffect(() => {
     if (
