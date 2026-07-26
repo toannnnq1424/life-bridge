@@ -516,3 +516,35 @@ in this slice that grants collaborator membership; organizer status originates
 only from atomic household creation. Recipient context remains orientation
 metadata, not a clinical record, legal authority or consent grant. Granular
 consent remains P2-S3 and is not inferred from organizer membership.
+
+## 19. P2-S3 consent authority and redacted history
+
+P2-S3 extends the same Identity & Consent boundary and PostgreSQL datastore.
+It adds no service, engine, cross-service SQL, shared writer, credential
+coupling, or generated Stitch source.
+
+```text
+authenticated account + CSRF
+  -> Gateway (origin/fetch-metadata, strips actor headers)
+      -> Identity & Consent
+          -> explicit subject authority
+          -> versioned current consent grants
+          -> immutable transitions + transactional outbox
+          -> governed recipient-context authorization
+          -> atomic privacy preferences
+          -> redacted read-only audit history
+```
+
+An organizer can create household orientation context but does not thereby
+become its care-recipient subject. Self-binding requires an explicit command
+and creator provenance; legacy unproven contexts cannot be claimed or
+backfilled. Once bound, every non-subject recipient-context read is evaluated
+against the current Identity-owned consent grant at decision time. Outbox
+events provide integration evidence but are never the authorization source.
+
+The audit model is a privacy projection, not a raw log viewer. It is
+subject-authorized, bounded, cursor-paginated, redacted, and exposes no totals.
+Operational telemetry remains independently allow-listed and contains no
+business values. Additive migration `003` is compatible with the `002`
+runtime; application rollback leaves the new schema dormant and recovery is
+roll-forward rather than destructive table removal.

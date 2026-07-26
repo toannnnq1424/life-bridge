@@ -449,3 +449,127 @@ describe("gateway identity boundary", () => {
     await app.close();
   });
 });
+
+describe("P2-S3 consent gateway boundary", () => {
+  it("forwards only session, CSRF, correlation and idempotency evidence for consent", async () => {
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      expect(String(input)).toBe(
+        "http://identity.test/internal/v1/households/household_synthetic/consent/grants",
+      );
+      const headers = new Headers(init?.headers);
+      expect(headers.get("x-session-token")).toBe("synthetic_session");
+      expect(headers.get("x-csrf-token")).toBe("c".repeat(43));
+      expect(headers.get("idempotency-key")).toBe("consent-grant-0001");
+      expect(headers.get("x-correlation-id")).toBe("corr_consent_gateway");
+      expect(headers.get("x-actor-id")).toBeNull();
+      expect(headers.get("x-fixture-actor-id")).toBeNull();
+      return new Response(
+        JSON.stringify({
+          data: {
+            grantId: "grant_synthetic",
+            subjectId: "subject_synthetic",
+            recipientRef: "member_reference",
+            recipientDisplayKey: "consent.recipient.household_member",
+            purpose: "household_coordination",
+            scopes: ["recipient_context.basic_label"],
+            state: "active",
+            effectiveAt: "2026-07-26T12:00:00.000Z",
+            revokedEffectiveAt: null,
+            displayTimeZone: "Asia/Bangkok",
+            version: 1,
+          },
+          meta: { correlationId: "corr_consent_gateway" },
+        }),
+        { status: 201, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer(config, fetcher);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/households/household_synthetic/consent/grants",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        origin: config.publicOrigin,
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": "c".repeat(43),
+        "idempotency-key": "consent-grant-0001",
+        "x-correlation-id": "corr_consent_gateway",
+        "x-fixture-actor-id": "member_lan",
+        "x-actor-id": "forged_actor",
+      },
+      payload: {
+        action: "grant",
+        recipientRef: "member_reference",
+        purpose: "household_coordination",
+        scopes: ["recipient_context.basic_label"],
+        effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+        expectedSubjectVersion: 1,
+      },
+    });
+
+    expect(response.statusCode).toBe(201);
+    await app.close();
+  });
+
+  it("keeps audit GET read-only and forwards no mutation evidence", async () => {
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      expect(String(input)).toContain("/internal/v1/households/household_synthetic/audit?");
+      expect(String(input)).toContain("displayTimeZone=Asia%2FBangkok");
+      expect(init?.method ?? "GET").toBe("GET");
+      const headers = new Headers(init?.headers);
+      expect(headers.get("x-session-token")).toBe("synthetic_session");
+      expect(headers.get("x-csrf-token")).toBeNull();
+      expect(headers.get("idempotency-key")).toBeNull();
+      expect(headers.get("x-actor-id")).toBeNull();
+      return new Response(
+        JSON.stringify({
+          data: { items: [], nextCursor: null },
+          meta: { correlationId: "corr_audit_gateway" },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer(config, fetcher);
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/audit?limit=20&displayTimeZone=Asia%2FBangkok",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_audit_gateway",
+        "x-fixture-actor-id": "member_lan",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.json().data).toEqual({ items: [], nextCursor: null });
+    await app.close();
+  });
+
+  it("rejects a consent command without idempotency before calling Identity", async () => {
+    let called = false;
+    const fetcher = (async () => {
+      called = true;
+      return new Response(null, { status: 500 });
+    }) as unknown as typeof fetch;
+    const app = buildGatewayServer(config, fetcher);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/households/household_synthetic/consent/grants",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        origin: config.publicOrigin,
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": "c".repeat(43),
+      },
+      payload: {},
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error.code).toBe("IDEMPOTENCY_KEY_REQUIRED");
+    expect(called).toBe(false);
+    await app.close();
+  });
+});

@@ -205,3 +205,26 @@ IDs may be used for authorization audit correlation; invitee login/contact
 identifiers, raw or digested tokens, recipient labels and care content are
 prohibited. Success logs emit only after commit. Denied/conflict evidence uses
 a protected placeholder and never confirms resource existence.
+
+## P2-S3 consent, privacy, and audit control
+
+The frozen control is `docs/security/P2_S3_THREAT_MODEL.md`. Organizer
+membership is never consent authority. Only an explicit verified self-binding
+for a context created by the same account can establish the subject; legacy
+unproven contexts are not claimable or backfilled.
+
+Grant, narrow and revoke are immediate, versioned, idempotent and serialized.
+Narrow accepts a non-empty strict subset only. Revocation denies new governed
+access at or after its UTC commit boundary while retaining redacted historical
+evidence. Every governed read re-evaluates the current Identity-owned grant;
+events and caches are not authorization sources.
+
+Audit history is GET-only, subject-authorized, bounded, encrypted-cursor
+paginated and redacted, with no totals or hidden-row oracle. Privacy settings
+save atomically. Offline mutations are blocked without queue or reconnect
+submission. Export/deletion/regulatory automation remain explicit non-goals.
+
+Operational logs, metrics and spans are allow-listed separately from audit
+evidence and exclude identifiers, labels, scopes, setting values, effective
+times, idempotency material, cursors, counts, payloads, headers and raw errors.
+Identity readiness fails when the P2-S3 schema marker is absent.

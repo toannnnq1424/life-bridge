@@ -263,6 +263,58 @@ Hosted CI must check out the literal PR head and run
 `scripts/validate-p2-s2.ps1 -UseExistingDatabase -SkipInstall` before a merge
 commit. The resulting `dev` merge SHA must pass the same hosted workflow.
 
+## P2-S3 validation contract
+
+The stable-candidate command is invoked exactly once:
+
+```powershell
+pnpm.cmd run validate:p2-s3
+```
+
+It includes only the affected cumulative slice evidence:
+
+1. P1, P2-S1 and P2-S2 regression plus affected format, lint, type, unit and
+   `P2-S3-v1` contract checks;
+2. real Identity-owned PostgreSQL migration 003 upgrade/reapply, readiness,
+   subject establishment, no-organizer-authority, no-backfill, race,
+   idempotency, stale/conflict, strict narrowing and revoke-boundary behavior;
+3. governed exact-scope reads before and after narrow/revoke, redacted
+   subject-scoped audit pagination without totals, sealed cursor isolation,
+   atomic privacy saves and privacy-safe outbox/log/metric/trace evidence;
+4. production build and built web → Gateway → Identity → PostgreSQL real
+   runtime, followed by mocked denial/conflict/unavailable/offline/no-queue,
+   partial-failure recovery and success paths for LB-028–LB-031;
+5. keyboard-only review/cancel, safe successor focus and announcements, axe,
+   visible focus, 320 px reflow, 44 px targets, reduced-motion/forced-color CSS
+   and no sensitive browser storage or test artifacts;
+6. docs/config/secrets/dependency/private-locator/generated-junk/diff checks,
+   runtime sensitive-value scan and exact PID/Compose/process/log cleanup.
+
+Browser traces, screenshots and video remain disabled. Synthetic fixtures use
+server UTC instants and validated IANA zones; they never contain a real care
+record, consent value, credential, private Stitch locator or generated source.
+Hosted CI checks out the literal head and runs
+`scripts/validate-p2-s3.ps1 -UseExistingDatabase -SkipInstall`; the merge
+commit on `dev` must pass the same aggregate workflow.
+
+The 2026-07-26 local command was invoked once. P1 browser 4/4, affected unit
+54/54, contracts 12/12, Identity PostgreSQL 9/9, transactional migration
+rollback/reapply, production build, real-plus-mocked P2-S3 browser 8/8 and
+P2-S2 browser 6/6 passed. The final P2-S1 group found a strict-locator
+ambiguity and then a stale pre-factor status behind it. Targeted Level B
+cleared that stale state, added a failed-preference/no-false-success assertion,
+rebuilt the web app and passed P2-S1 browser 5/5. No second Level C invocation
+or unchanged successful phase rerun occurred. The runtime log scan now runs
+before later regression groups and nested P1 logs are included in exact
+cleanup; exact-head hosted CI must prove that coherent ordering from scratch.
+
+If the one campaign exposes a defect, classify it before editing and use the
+smallest Level B proof for changed inputs rather than blindly replaying the
+entire campaign. Manual NVDA/Narrator, physical-device/touch observation,
+text-spacing and 200%/400% assistive-technology sessions remain KI-016.
+Independent inspection of the private generated renders remains KI-019 and is
+not replaced by claiming automated native tests prove visual parity.
+
 An MCP becoming callable does not satisfy a test gate by itself. Close required
 MCP debt only after secret handling, least-privilege/data-egress and complete
 tool-schema review, one synthetic canary, and the affected slice validation are

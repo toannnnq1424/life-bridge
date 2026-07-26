@@ -428,3 +428,96 @@ whether a verified account exists. Pending uniqueness is keyed by a keyed
 invitee-dimension digest for both real and decoy invitations. A terminal token
 may replay its result only inside its original expiry window; after that it is
 indistinguishable from an inaccessible token.
+
+## P2-S3 frozen consent, privacy, and audit API
+
+All routes require the opaque account session. Mutations additionally require
+CSRF, browser-origin checks and JSON. Grant/narrow/revoke commands require
+`Idempotency-Key`; subject establishment is create-once/replay-safe under its
+household lock, and privacy replacement is optimistic-versioned and atomic.
+The browser supplies no internal actor identifier.
+
+| Route                                                          | Contract                                                                                                                  |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/households/{id}/consent/subject`                 | explicitly bind the current account to a recipient context it created; never infer from organizer membership              |
+| `GET /api/v1/households/{id}/consent`                          | subject-scoped overview with pseudonymous eligible recipients and current grants                                          |
+| `POST /api/v1/households/{id}/consent/grants`                  | create one immediate, purpose-bound, versioned grant                                                                      |
+| `POST /api/v1/households/{id}/consent/grants/{grantId}/narrow` | replace scopes with a non-empty strict subset                                                                             |
+| `POST /api/v1/households/{id}/consent/grants/{grantId}/revoke` | end all new governed access at the server commit boundary                                                                 |
+| `GET /api/v1/households/{id}/audit`                            | subject-scoped, redacted, bounded, read-only keyset history; no totals                                                    |
+| `GET\|PATCH /api/v1/account/privacy`                           | read or atomically replace the three versioned privacy preferences                                                        |
+| `GET /api/v1/households/{id}/recipient-context`                | legacy minimum projection before subject binding; after binding, the subject alone sees the complete minimum projection   |
+| `GET /api/v1/households/{id}/recipient-context/scopes/{scope}` | fresh subject/grant decision for exactly one governed minimum field; collaborators receive only an actively granted scope |
+
+The command review facts and mutation input are the same strict projection:
+
+```json
+{
+  "action": "grant",
+  "recipientRef": "member_pseudonymous",
+  "purpose": "household_coordination",
+  "scopes": ["recipient_context.basic_label"],
+  "effectiveTime": {
+    "mode": "immediate",
+    "displayTimeZone": "Asia/Bangkok"
+  },
+  "expectedSubjectVersion": 1
+}
+```
+
+`narrow` and `revoke` also require `expectedGrantVersion`. `narrow` accepts a
+non-empty strict subset only. The server returns the actual UTC
+`effectiveAt`; no client-selected backdate or scheduled time is accepted.
+Commands serialize on one subject version. Same key and canonical intent
+replay the original response; same key with changed intent returns
+`IDEMPOTENCY_CONFLICT`. Stale versions return `CONSENT_VERSION_CONFLICT` with
+recovery action `reload_current`.
+
+Versioned transition events are
+`identity.consent.granted.v1|narrowed.v1|revoked.v1`. They contain opaque IDs,
+enumerated action/purpose/scopes, UTC effective time, versions, correlation and
+causation only. They contain no labels, setting values, account identifiers,
+idempotency material, cursors, credentials, or request copy.
+
+The audit result contains `items` and optional `nextCursor`, never a total:
+
+```json
+{
+  "items": [
+    {
+      "eventRef": "audit_opaque",
+      "category": "consent.revoked",
+      "actorAlias": "your_account",
+      "redaction": "protected",
+      "occurredAt": "2026-07-26T12:00:00.000Z",
+      "displayTimeZone": "Asia/Bangkok",
+      "outcome": "confirmed"
+    }
+  ],
+  "nextCursor": null
+}
+```
+
+The encrypted/authenticated cursor is bound to actor, subject, filters, and
+boundary. The page limit is 1–25. Invalid/cross-scope cursors return
+`AUDIT_CURSOR_INVALID`; absent and inaccessible household/subject/grant/audit
+resources share `CONSENT_RESOURCE_NOT_FOUND`.
+
+Privacy preferences are one atomic versioned record:
+
+```json
+{
+  "profileVisibility": "private",
+  "coordinationActivityVisibility": "hidden",
+  "accessAlerts": true,
+  "version": 1,
+  "confirmedAt": "2026-07-26T12:00:00.000Z"
+}
+```
+
+Stable P2-S3 codes are `CONSENT_VALIDATION_FAILED`,
+`CONSENT_AUTHORITY_REQUIRED`, `CONSENT_RESOURCE_NOT_FOUND`,
+`CONSENT_VERSION_CONFLICT`, `CONSENT_SCOPE_BROADENING_REJECTED`,
+`IDEMPOTENCY_CONFLICT`, `AUDIT_CURSOR_INVALID`,
+`PRIVACY_VERSION_CONFLICT`, and `IDENTITY_SERVICE_UNAVAILABLE`. Validation
+errors no longer reuse `AUTHENTICATION_FAILED`.

@@ -4,6 +4,7 @@ import { Pool } from "pg";
 import { hashPassword } from "./crypto.js";
 import { migrateIdentityDatabase } from "./migration.js";
 import { buildIdentityServer } from "./server.js";
+import { ConsentService } from "./consent-service.js";
 import { HouseholdService } from "./household-service.js";
 import { IdentityService } from "./service.js";
 
@@ -24,7 +25,8 @@ const identity = new IdentityService(pool, {
   dummyPasswordHash: await hashPassword(`dummy-${randomDummy()}`),
 });
 const households = new HouseholdService(pool, { rateLimitKey });
-const app = buildIdentityServer(identity, internalToken, households);
+const consent = new ConsentService(pool, { rateLimitKey, cursorKey: dataKey });
+const app = buildIdentityServer(identity, internalToken, households, consent);
 
 const close = async () => {
   await app.close();

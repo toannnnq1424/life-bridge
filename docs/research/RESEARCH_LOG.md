@@ -121,3 +121,37 @@ micro-cycle stopped. Consent authority remains the frozen product contract and
 P2-S3 gate, not an inference from these security sources.
 
 If evidence changes the roadmap, the plan delta must be explicit and dated; do not rewrite history.
+
+## 2026-07-26 — P2-S3 consent/privacy/audit micro-cycle
+
+Result: `PASS WITH ASSUMPTIONS`; retrieved 2026-07-26. This was a bounded
+official/primary-source review and introduced no dataset or fixture.
+
+- EDPB, EU, 2026,
+  [Consent summary](https://www.edpb.europa.eu/system/files/2026-04/edpb-summary-consent_en.pdf):
+  specific affirmative choices must identify purpose/data and withdrawal must
+  be as easy as grant.
+- EUR-Lex, EU, 2016 current regulation,
+  [GDPR Articles 5 and 7](https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng):
+  minimize purpose/data/storage, preserve accountability, and distinguish
+  withdrawal from deletion of prior evidence. It is outside the preferred
+  2021–2026 publication window but retained because it is still-current
+  primary law; no direct-applicability claim is made.
+- OWASP, global current living guidance,
+  [Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
+  and
+  [Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html):
+  deny by default/check every request and separate business audit from
+  allow-listed operational telemetry.
+- W3C, global, 2024,
+  [WCAG 2.2](https://www.w3.org/TR/WCAG22/): keyboard, visible/unobscured
+  focus, reflow, status messages, target size, and review/confirmation apply to
+  the consequential consent/settings flows.
+
+Kết luận / Conclusion: P2-S3 is a repository-specific product control, not a
+legal-compliance engine. It uses granular affirmative scope selection,
+server-side authorization at every governed read, easy narrowing/revocation,
+redacted retained evidence, atomic privacy saves, and accessible review.
+Ninety-day audit retention is an engineering default only. Production legal
+review, processing inventory, jurisdictional retention, export/deletion
+workflow, and manual assistive-technology evidence remain later gates.

@@ -440,8 +440,9 @@ export class HouseholdService {
         const version = (row?.version ?? 0) + 1;
         await client.query(
           `INSERT INTO identity_care_recipient_contexts
-         (recipient_context_id, household_id, display_label, relationship_label, version, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $6)
+         (recipient_context_id, household_id, display_label, relationship_label, version,
+          created_by_account_id, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $7)
          ON CONFLICT (household_id) DO UPDATE SET
            display_label = EXCLUDED.display_label,
            relationship_label = EXCLUDED.relationship_label,
@@ -453,6 +454,7 @@ export class HouseholdService {
             request.displayLabel,
             request.relationshipLabel,
             version,
+            input.accountId,
             now,
           ],
         );
@@ -487,6 +489,13 @@ export class HouseholdService {
     const client = await this.pool.connect();
     try {
       await this.requireMember(client, input.accountId, input.householdId);
+      const subject = await client.query<{ account_id: string }>(
+        `SELECT account_id FROM identity_consent_subjects WHERE household_id = $1`,
+        [input.householdId],
+      );
+      if (subject.rows[0] && subject.rows[0].account_id !== input.accountId) {
+        throw inaccessible();
+      }
       const result = await client.query<{
         recipient_context_id: string;
         household_id: string;

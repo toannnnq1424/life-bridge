@@ -7,10 +7,10 @@ Next.js web, Fastify gateway, Care Coordination, Notification, and one local
 PostgreSQL engine with two owner-isolated databases. This is local/CI evidence,
 not a public or production deployment.
 
-P2-S1 currently adds a production-oriented Identity backend candidate and
-gateway boundary only. Its PostgreSQL migration and focused tests are local/CI
-evidence; no P2 runtime deployment, public endpoint, production credential or
-production UI is claimed. `MCP-DEBT-2026-002` blocks the full slice and every
+P2-S1 and P2-S2 are integrated local/CI evidence. P2-S3 extends the same
+Identity boundary with a stable consent/privacy/audit candidate. None of these
+slices creates a public endpoint, production credential, platform resource or
+deployment. KI-001 and the later P8–P11 gates still block every pilot or
 deployment claim.
 
 ## Environments
@@ -52,7 +52,9 @@ infrastructure is consolidated for cost.
 - Gateway startup rejects fixture identity when runtime is production, the
   bind host is non-loopback, or the configured public origin is non-loopback.
 - Identity requires separate database/internal-service/data-encryption/rate-
-  digest keys. Production gateway cookies use the `__Host-` prefix,
+  digest keys. The existing data-encryption key also authenticates short-lived
+  P2-S3 audit cursors; it is never exposed to the browser or logs. Production
+  gateway cookies use the `__Host-` prefix,
   `HttpOnly`, `Secure`, `SameSite=Strict`, path `/`, and no `Domain`.
 - Each service exposes liveness, readiness, and build-version endpoints.
 - Logs are structured and follow `docs/SECURITY.md`.
@@ -140,6 +142,18 @@ through `test` and `dev`.
 - Event consumers are idempotent and tolerate replay.
 - A failed deployment must not trigger blind cache, volume, or database deletion.
 
+Migration 003 is additive and forward-compatible with the accepted P2-S2
+runtime. It creates no subject/grant backfill and therefore cannot silently
+authorize existing rows. Before any future rollout, snapshot/backup evidence
+and the migration marker must be verified. If application rollout fails before
+P2-S3 writes, roll back the application and leave the unused additive objects
+in place. After any P2-S3 write, do not down-migrate or drop consent/audit
+evidence; roll the application forward or deploy the prior compatible binary
+while preserving tables, then follow an approved data-compensation plan.
+Validation applies 001/002 to synthetic P2-S2 state, applies 003 twice, proves
+preservation/no backfill/readiness, and drops only the disposable test
+database—not production state.
+
 ## External deployment gate
 
 Creating cloud resources, changing DNS, enabling public access, adding
@@ -161,3 +175,13 @@ artifact-disabled household/invitation/context browser paths, and deletes only
 its PID-scoped Compose/process/log resources. Promotion to `dev` is evidence of
 integration only; KI-001, KI-016 and the later P8–P11 security, accessibility,
 rollback and rollout gates still block any pilot or deployment claim.
+
+P2-S3 adds no deployment or public infrastructure. Its local/CI topology
+applies additive Identity migration 003, starts built Identity, Gateway and web
+processes on loopback, runs real grant/narrow/revoke/governed-read/audit and
+atomic-privacy journeys plus mocked failure/accessibility paths, scans logs for
+synthetic sensitive values and removes only its PID-scoped Compose/process/log
+resources. Identity readiness now requires schema marker version 3. Promotion
+to `dev` proves integration only; KI-001, KI-016, KI-019 and the later P8–P11
+security, accessibility, recovery, rollback and rollout gates still block any
+pilot or deployment claim.

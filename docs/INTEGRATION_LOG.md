@@ -491,3 +491,50 @@ smallest missing boundary and passed. One wrapper-only PowerShell parameter
 collision was classified without product edits before the runtime-only resume.
 The host interruption and wrapper collision were environment/orchestration
 failures, not product failures.
+
+## INT-2026-016 — P2-S3 consent, privacy and redacted audit candidate
+
+- Date: 2026-07-26
+- Status: Locally accepted candidate; hosted promotion pending
+- Source: `phase/2-consent-privacy-audit` from verified
+  `dev@22157b10a9cdd479d7bb0a439a74fc18dccfaf67`
+- Scope: `P2-S3-v1` subject establishment, grant/strict-narrow/revoke,
+  governed recipient-context reads, atomic privacy preferences, redacted
+  bounded audit history, migration 003, Gateway routes, native
+  LB-028–LB-031 VI/EN UI and cumulative validation tooling
+- Ownership: Identity & Consent and its PostgreSQL database remain sole owner;
+  no service, engine, cross-service SQL, shared-table write, broker,
+  credential coupling or generated Stitch source was introduced
+- Contract: organizer/member status is not consent authority. Only the
+  eligible context creator may explicitly self-bind as subject; the subject
+  owns consent mutation and audit authority. Exact-scope governed reads are
+  evaluated at a server UTC instant; revoke denies at its effective boundary.
+  Commands are optimistic-versioned, digest-idempotent, row-locked and atomic.
+- Privacy/audit: retained transition and audit rows are redacted, scoped to the
+  subject, bounded to 90 days and keyset-paginated without totals. Sealed
+  cursors bind viewer, subject and filter. Logs/metrics/traces expose only
+  allow-listed operation/result/correlation/duration fields.
+- Design: four synthetic references were created exactly once in the existing
+  project. The Frozen redacted handoff rejects placeholder timestamps,
+  non-IANA `ICT`, offline queueing, hidden totals, missing confirmations and
+  generated source. Independent private-render inspection was unavailable, so
+  KI-019 blocks claims that the generated visuals alone were approved; native
+  automated evidence is mandatory.
+- Validation: the single cumulative command passed P1 browser 4/4, affected
+  unit 54/54, contracts 12/12, Identity PostgreSQL 9/9, transactional
+  migration rollback/reapply, production build, real-plus-mocked P2-S3 browser
+  8/8, P2-S2 browser 6/6, docs/config/secrets/dependency checks and exact
+  Compose/process cleanup. It then stopped on a P2-S1 strict locator after the
+  truthful preference-status correction. Targeted Level B traced and removed
+  a stale pre-factor announcement; affected format/lint, production web build
+  and P2-S1 browser 5/5 passed. No second Level C command was issued. Hosted
+  exact-head CI must run the coherent script from scratch; its runtime
+  sensitive-log scan now runs immediately after P2-S3 browser evidence.
+- Decision/change references: issue #8, `CHG-2026-012`, ADR-020,
+  `docs/security/P2_S3_THREAT_MODEL.md`, KI-019
+- Promotion: one coherent conventional commit, exact-head hosted CI, PR merge
+  commit into `dev`, post-merge `dev` CI and issue #8 closeout remain.
+- Follow-up: after those gates only, P3-S1 is exact next. It begins with an
+  authorized, time-zone-explicit timeline projection and versioned handoff
+  command against the accepted P2 governed-read boundary. No P3, DATA, P5,
+  deployment or release work starts here.

@@ -1,19 +1,26 @@
 import {
+  AuditHistoryQuerySchema,
   CompleteAccountOnboardingSchema,
   CreateHouseholdInvitationRequestSchema,
   CreateHouseholdRequestSchema,
+  ConsentScopeSchema,
+  EstablishConsentSubjectRequestSchema,
   FactorRecoveryConfirmationSchema,
   FactorRecoveryRequestSchema,
+  GrantConsentRequestSchema,
   IdempotencyKeySchema,
   InvitationTokenRequestSchema,
+  NarrowConsentRequestSchema,
   PasswordRecoveryRequestSchema,
   RegistrationFactorRequestSchema,
   RegistrationRecoveryConfirmationSchema,
   RegistrationRequestSchema,
   ResendHouseholdInvitationRequestSchema,
+  RevokeConsentRequestSchema,
   SignInFactorRequestSchema,
   SignInRequestSchema,
   UpdateIdentityPreferencesSchema,
+  UpdatePrivacyPreferencesSchema,
   UpsertCareRecipientContextRequestSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
@@ -21,6 +28,7 @@ import { resolveCorrelationId } from "@lifebridge/observability";
 import Fastify from "fastify";
 
 import { IdentityError } from "./errors.js";
+import type { ConsentService } from "./consent-service.js";
 import type { HouseholdService } from "./household-service.js";
 import type { IdentityService } from "./service.js";
 
@@ -32,6 +40,7 @@ export function buildIdentityServer(
   identity: IdentityService,
   internalToken: string,
   households?: HouseholdService,
+  consent?: ConsentService,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 32 * 1024 });
 
@@ -55,7 +64,7 @@ export function buildIdentityServer(
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "identity_database" }),
   );
-  app.get("/version", async () => ({ service: "identity-consent", contract: "P2-S2-v1" }));
+  app.get("/version", async () => ({ service: "identity-consent", contract: "P2-S3-v1" }));
 
   app.post<{ Body: unknown }>("/internal/v1/account/registrations", async (request, reply) => {
     const correlationId = correlation(request);
@@ -170,6 +179,33 @@ export function buildIdentityServer(
     );
   });
 
+  app.get("/internal/v1/account/privacy", async (request) => {
+    const service = requireConsent(consent);
+    const correlationId = correlation(request);
+    const account = await identity.requireAccountSession(header(request, "x-session-token"));
+    return successEnvelope(
+      await service.getPrivacy({ accountId: account.accountId }),
+      correlationId,
+    );
+  });
+
+  app.patch<{ Body: unknown }>("/internal/v1/account/privacy", async (request) => {
+    const service = requireConsent(consent);
+    const correlationId = correlation(request);
+    const account = await identity.requireAccountSession(
+      header(request, "x-session-token"),
+      header(request, "x-csrf-token"),
+    );
+    return successEnvelope(
+      await service.updatePrivacy({
+        accountId: account.accountId,
+        request: UpdatePrivacyPreferencesSchema.parse(request.body),
+        correlationId,
+      }),
+      correlationId,
+    );
+  });
+
   app.post<{ Body: unknown }>("/internal/v1/account/onboarding/complete", async (request) => {
     const correlationId = correlation(request);
     return successEnvelope(
@@ -219,6 +255,143 @@ export function buildIdentityServer(
         await service.getHousehold({
           accountId: account.accountId,
           householdId: request.params.householdId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/households/:householdId/consent/subject",
+    async (request, reply) => {
+      const service = requireConsent(consent);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(
+        header(request, "x-session-token"),
+        header(request, "x-csrf-token"),
+      );
+      const data = await service.establishSubject({
+        accountId: account.accountId,
+        householdId: request.params.householdId,
+        request: EstablishConsentSubjectRequestSchema.parse(request.body),
+        correlationId,
+      });
+      return reply.code(201).send(successEnvelope(data, correlationId));
+    },
+  );
+
+  app.get<{ Params: { householdId: string } }>(
+    "/internal/v1/households/:householdId/consent",
+    async (request) => {
+      const service = requireConsent(consent);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(header(request, "x-session-token"));
+      return successEnvelope(
+        await service.overview({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/households/:householdId/consent/grants",
+    async (request, reply) => {
+      const service = requireConsent(consent);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(
+        header(request, "x-session-token"),
+        header(request, "x-csrf-token"),
+      );
+      const data = await service.grant({
+        accountId: account.accountId,
+        householdId: request.params.householdId,
+        request: GrantConsentRequestSchema.parse(request.body),
+        idempotencyKey: IdempotencyKeySchema.parse(header(request, "idempotency-key")),
+        correlationId,
+      });
+      return reply.code(201).send(successEnvelope(data, correlationId));
+    },
+  );
+
+  app.post<{ Params: { householdId: string; grantId: string }; Body: unknown }>(
+    "/internal/v1/households/:householdId/consent/grants/:grantId/narrow",
+    async (request) => {
+      const service = requireConsent(consent);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(
+        header(request, "x-session-token"),
+        header(request, "x-csrf-token"),
+      );
+      return successEnvelope(
+        await service.narrow({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+          grantId: request.params.grantId,
+          request: NarrowConsentRequestSchema.parse(request.body),
+          idempotencyKey: IdempotencyKeySchema.parse(header(request, "idempotency-key")),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; grantId: string }; Body: unknown }>(
+    "/internal/v1/households/:householdId/consent/grants/:grantId/revoke",
+    async (request) => {
+      const service = requireConsent(consent);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(
+        header(request, "x-session-token"),
+        header(request, "x-csrf-token"),
+      );
+      return successEnvelope(
+        await service.revoke({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+          grantId: request.params.grantId,
+          request: RevokeConsentRequestSchema.parse(request.body),
+          idempotencyKey: IdempotencyKeySchema.parse(header(request, "idempotency-key")),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.get<{ Params: { householdId: string; scope: string } }>(
+    "/internal/v1/households/:householdId/recipient-context/scopes/:scope",
+    async (request) => {
+      const service = requireConsent(consent);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(header(request, "x-session-token"));
+      return successEnvelope(
+        await service.governedRecipientContext({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+          scope: ConsentScopeSchema.parse(request.params.scope),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.get<{ Params: { householdId: string }; Querystring: unknown }>(
+    "/internal/v1/households/:householdId/audit",
+    async (request) => {
+      const service = requireConsent(consent);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(header(request, "x-session-token"));
+      return successEnvelope(
+        await service.auditHistory({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+          query: AuditHistoryQuerySchema.parse(request.query),
+          correlationId,
         }),
         correlationId,
       );
@@ -360,10 +533,14 @@ export function buildIdentityServer(
         : new IdentityError(
             error instanceof Error && error.name === "ZodError" ? 400 : 503,
             error instanceof Error && error.name === "ZodError"
-              ? "AUTHENTICATION_FAILED"
+              ? isP2S3Route(request.url)
+                ? "CONSENT_VALIDATION_FAILED"
+                : "AUTHENTICATION_FAILED"
               : "IDENTITY_SERVICE_UNAVAILABLE",
             error instanceof Error && error.name === "ZodError"
-              ? "auth.failed"
+              ? isP2S3Route(request.url)
+                ? "consent.validation_failed"
+                : "auth.failed"
               : "identity.unavailable",
             !(error instanceof Error && error.name === "ZodError"),
           );
@@ -378,6 +555,22 @@ export function buildIdentityServer(
   });
 
   return app;
+}
+
+function requireConsent(service: ConsentService | undefined): ConsentService {
+  if (!service) {
+    throw new IdentityError(503, "IDENTITY_SERVICE_UNAVAILABLE", "identity.unavailable", true);
+  }
+  return service;
+}
+
+function isP2S3Route(url: string): boolean {
+  return (
+    url.includes("/consent") ||
+    url.includes("/audit") ||
+    url.includes("/privacy") ||
+    url.includes("/recipient-context/scopes/")
+  );
 }
 
 function requireHouseholds(service: HouseholdService | undefined): HouseholdService {

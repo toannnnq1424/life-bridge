@@ -428,6 +428,210 @@ h1 {
   }
 }
 
+.privacy-main {
+  width: min(72rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 3rem) 0 4rem;
+}
+
+.privacy-main > h1 {
+  max-width: 32ch;
+  margin-top: 0;
+  font-size: clamp(1.8rem, 5vw, 2.7rem);
+  line-height: 1.15;
+}
+
+.offline-banner,
+.authority-note,
+.status-panel,
+.review-panel,
+.privacy-card {
+  overflow-wrap: anywhere;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  background: var(--surface);
+}
+
+.offline-banner {
+  border-color: var(--error);
+  border-radius: 0;
+  background: #fff1f2;
+  color: #681c1c;
+  font-weight: 700;
+  text-align: center;
+}
+
+.authority-note {
+  border-inline-start: 0.5rem solid var(--green);
+  background: var(--mint);
+}
+
+.status-panel {
+  margin-bottom: 1rem;
+}
+
+.review-panel {
+  margin-block: 1.5rem;
+  border-color: var(--focus);
+  background: #fffaf0;
+}
+
+.privacy-card {
+  margin-block: 1rem;
+}
+
+.privacy-card fieldset,
+.privacy-main fieldset {
+  display: grid;
+  gap: 0.5rem;
+  margin-block: 1rem;
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.privacy-main label {
+  display: grid;
+  gap: 0.35rem;
+  margin-block: 0.75rem;
+}
+
+.privacy-main select {
+  width: min(100%, 34rem);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.check-row {
+  grid-template-columns: 2rem minmax(0, 1fr);
+  align-items: center;
+}
+
+.check-row input {
+  width: 1.5rem;
+  min-height: 1.5rem;
+  margin: 0;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+
+.secondary-button {
+  background: var(--surface);
+  color: var(--green-dark);
+}
+
+.danger-button {
+  border-color: #8a2424;
+  background: #8a2424;
+}
+
+.danger-button:hover {
+  background: #681c1c;
+}
+
+.grant-list,
+.audit-list,
+.settings-grid {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.grant-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.privacy-main dl {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.4fr) minmax(0, 1fr);
+  gap: 0.35rem 1rem;
+}
+
+.privacy-main dt {
+  font-weight: 700;
+}
+
+.privacy-main dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.audit-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+
+.settings-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+.settings-grid .privacy-card {
+  margin: 0;
+}
+
+.settings-grid a {
+  display: inline-block;
+  min-height: 44px;
+}
+
+@media (max-width: 30rem) {
+  .privacy-main {
+    width: min(100% - 1rem, 72rem);
+  }
+
+  .privacy-main dl {
+    grid-template-columns: 1fr;
+  }
+
+  .privacy-main dd {
+    margin-bottom: 0.75rem;
+  }
+
+  .privacy-app .app-header,
+  .audit-filters,
+  .privacy-app .action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .privacy-app *,
+  .privacy-app *::before,
+  .privacy-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .offline-banner,
+  .authority-note,
+  .status-panel,
+  .review-panel,
+  .privacy-card,
+  .grant-card {
+    border: 2px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+}
+
 /* P2-S2 household authorization: native implementation from the Frozen Stitch handoff. */
 .household-access-app {
   min-height: 100vh;
@@ -674,7 +878,7 @@ h1 {
 }
 
 .account-app :focus-visible {
-  outline: 4px solid #f0b429;
+  outline: 4px solid #b54708;
   outline-offset: 3px;
 }
 

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { ConsentService } from "./consent-service.js";
 import type { HouseholdService } from "./household-service.js";
 import { buildIdentityServer } from "./server.js";
 import type { IdentityService } from "./service.js";
@@ -172,6 +173,120 @@ describe("identity internal HTTP boundary", () => {
     }
     expect(identity.requireAccountSession).toHaveBeenCalledTimes(cases.length);
     expect(households.respondToInvitation).toHaveBeenCalledTimes(2);
+    await app.close();
+  });
+});
+
+describe("P2-S3 consent internal HTTP boundary", () => {
+  it("binds grant and read-only audit routes to the authenticated account", async () => {
+    const identity = {
+      isReady: vi.fn(async () => true),
+      requireAccountSession: vi.fn(async () => ({ accountId: "account_synthetic" })),
+    } as unknown as IdentityService;
+    const grant = {
+      grantId: "grant_synthetic",
+      subjectId: "subject_synthetic",
+      recipientRef: "member_reference",
+      recipientDisplayKey: "consent.recipient.household_member" as const,
+      purpose: "household_coordination" as const,
+      scopes: ["recipient_context.basic_label" as const],
+      state: "active" as const,
+      effectiveAt: "2026-07-26T12:00:00.000Z",
+      revokedEffectiveAt: null,
+      displayTimeZone: "Asia/Bangkok",
+      version: 1,
+    };
+    const consent = {
+      grant: vi.fn(async () => grant),
+      auditHistory: vi.fn(async () => ({ items: [], nextCursor: null })),
+    } as unknown as ConsentService;
+    const app = buildIdentityServer(identity, "internal-token-value-123456789", undefined, consent);
+    const headers = {
+      "x-internal-service-token": "internal-token-value-123456789",
+      "x-session-token": "s".repeat(43),
+      "x-csrf-token": "c".repeat(43),
+      "x-correlation-id": "corr_p2_s3_routes",
+      "idempotency-key": "consent-grant-route-0001",
+    };
+
+    const grantResponse = await app.inject({
+      method: "POST",
+      url: "/internal/v1/households/household_synthetic/consent/grants",
+      headers,
+      payload: {
+        action: "grant",
+        recipientRef: "member_reference",
+        purpose: "household_coordination",
+        scopes: ["recipient_context.basic_label"],
+        effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+        expectedSubjectVersion: 1,
+      },
+    });
+    const auditResponse = await app.inject({
+      method: "GET",
+      url: "/internal/v1/households/household_synthetic/audit?limit=20&displayTimeZone=Asia%2FBangkok",
+      headers: {
+        "x-internal-service-token": headers["x-internal-service-token"],
+        "x-session-token": headers["x-session-token"],
+        "x-correlation-id": headers["x-correlation-id"],
+      },
+    });
+
+    expect(grantResponse.statusCode).toBe(201);
+    expect(grantResponse.headers["cache-control"]).toBe("no-store");
+    expect(consent.grant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        accountId: "account_synthetic",
+        householdId: "household_synthetic",
+        idempotencyKey: "consent-grant-route-0001",
+      }),
+    );
+    expect(auditResponse.statusCode).toBe(200);
+    expect(consent.auditHistory).toHaveBeenCalledTimes(1);
+    expect(consent.grant).toHaveBeenCalledTimes(1);
+    await app.close();
+  });
+
+  it("returns a consent validation error instead of an authentication error", async () => {
+    const identity = {
+      isReady: vi.fn(async () => true),
+      requireAccountSession: vi.fn(async () => ({ accountId: "account_synthetic" })),
+    } as unknown as IdentityService;
+    const consent = { grant: vi.fn() } as unknown as ConsentService;
+    const app = buildIdentityServer(identity, "internal-token-value-123456789", undefined, consent);
+    const response = await app.inject({
+      method: "POST",
+      url: "/internal/v1/households/household_synthetic/consent/grants",
+      headers: {
+        "x-internal-service-token": "internal-token-value-123456789",
+        "x-session-token": "s".repeat(43),
+        "x-csrf-token": "c".repeat(43),
+        "x-correlation-id": "corr_p2_s3_invalid",
+        "idempotency-key": "consent-grant-route-0002",
+      },
+      payload: {
+        action: "grant",
+        scopes: [],
+        effectiveTime: { mode: "immediate", displayTimeZone: "ICT" },
+        expectedSubjectVersion: 1,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error.code).toBe("CONSENT_VALIDATION_FAILED");
+    expect(consent.grant).not.toHaveBeenCalled();
+
+    const governedResponse = await app.inject({
+      method: "GET",
+      url: "/internal/v1/households/household_synthetic/recipient-context/scopes/not-a-scope",
+      headers: {
+        "x-internal-service-token": "internal-token-value-123456789",
+        "x-session-token": "s".repeat(43),
+        "x-correlation-id": "corr_p2_s3_invalid_scope",
+      },
+    });
+    expect(governedResponse.statusCode).toBe(400);
+    expect(governedResponse.json().error.code).toBe("CONSENT_VALIDATION_FAILED");
     await app.close();
   });
 });

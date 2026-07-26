@@ -6,7 +6,7 @@ test.describe.configure({ mode: "serial" });
 const challenge = "A".repeat(43);
 const csrf = "C".repeat(43);
 
-async function syntheticIdentity(page: Page) {
+async function syntheticIdentity(page: Page, options: { failPreferences?: boolean } = {}) {
   await page.route("**/api/v1/account/**", async (route) => {
     const url = new URL(route.request().url());
     const path = url.pathname;
@@ -66,6 +66,21 @@ async function syntheticIdentity(page: Page) {
         },
       };
     } else if (path.endsWith("/preferences")) {
+      if (options.failPreferences) {
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({
+            error: {
+              code: "IDENTITY_SERVICE_UNAVAILABLE",
+              messageKey: "identity.unavailable",
+              retryable: true,
+              correlationId: "corr_p2_preferences_failed",
+            },
+          }),
+        });
+        return;
+      }
       data = {
         authorizationScope: "account",
         onboardingState: "complete",
@@ -151,8 +166,23 @@ test("sign-in factor reaches account-only onboarding and preferences in VI and E
   await page.getByLabel("Contrast").selectOption("more");
   await page.getByLabel("Motion").selectOption("reduce");
   await page.getByRole("button", { name: "Save and continue" }).click();
-  await expect(page.getByText(/Household access has not been granted/)).toBeVisible();
+  await expect(page.locator(".sr-status")).toHaveText(/Household access has not been granted/);
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});
+
+test("failed accessibility preferences never announce account-ready success", async ({ page }) => {
+  await syntheticIdentity(page, { failPreferences: true });
+  await page.goto("/login");
+  await page.getByLabel("Tên đăng nhập").fill("synthetic.user");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("correct horse battery");
+  await page.getByRole("button", { name: "Tiếp tục" }).click();
+  await page.getByLabel("Mã xác thực 6 chữ số").fill("123456");
+  await page.getByRole("button", { name: "Xác minh" }).click();
+  await page.getByRole("button", { name: "Tiếp tục" }).click();
+  await page.locator(".account-header select").selectOption("en");
+  await page.getByRole("button", { name: "Save and continue" }).click();
+  await expect(page.locator(".error-summary")).toContainText("request could not be completed");
+  await expect(page.locator(".sr-status")).toBeEmpty();
 });
 
 test("anonymous failure is generic and offline mutation is blocked without reconnect submit", async ({

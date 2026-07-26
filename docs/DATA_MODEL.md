@@ -261,3 +261,34 @@ version one.
 Recipient context is limited to safe display and relationship-neutral labels
 and cannot store clinical, medication, emergency, inferred-need or legal-
 authority content. Consent grant/revoke/history remains P2-S3.
+
+## P2-S3 Identity-owned consent, privacy, and audit data
+
+Migration `003_consent_privacy_audit.sql` is additive. Identity & Consent is
+the only writer.
+
+| Table                          | Essential invariant                                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `identity_consent_subjects`    | unique account, household and recipient-context self-binding; aggregate version serializes all consent commands |
+| `identity_consent_grants`      | one current grant per subject/member/purpose; non-empty scopes; active or revoked state; optimistic version     |
+| `identity_consent_transitions` | immutable grant/narrow/revoke evidence with opaque IDs, enumerated values and UTC effective time                |
+| `identity_consent_idempotency` | 24-hour canonical request digest and original safe response; unique per subject/operation/key digest            |
+| `identity_consent_outbox`      | versioned transition event written atomically with the command; not an authorization source                     |
+| `identity_consent_audit`       | redacted consent/access/privacy evidence ordered by `(occurred_at, audit_id)`; no sensitive payload             |
+| `identity_privacy_preferences` | one atomic three-value record per account with optimistic version and confirmed UTC time                        |
+| `identity_schema_state`        | current schema marker used by latest-schema readiness                                                           |
+
+`identity_recipient_contexts.created_by_account_id` records creator provenance
+for new rows without backfilling legacy context ownership. The browser uses a
+keyed subject-bound pseudonymous member reference so it is not linkable across
+consent subjects; the internal grantee account ID never appears in the public
+projection or command.
+
+Current grants and subject bindings remain while their owning product record
+exists. Transition evidence remains for the product-record lifetime.
+The redacted audit projection exposes at most 90 days; idempotency facts are
+replayable for 24 hours; unpublished outbox rows remain until delivered or
+reconciled. Physical scheduled purge, legal hold, account deletion and erasure
+proof remain P7-S3/P8 work. These are engineering defaults subject to a later
+processing inventory and legal review, not compliance claims. Revocation
+changes current authorization and preserves required historical evidence.
