@@ -89,6 +89,7 @@ async function identityRequest(
     sourceKey: string;
     sessionToken?: string;
     csrfToken?: string;
+    idempotencyKey?: string;
     body?: unknown;
   },
 ): Promise<DependencyResponse> {
@@ -101,6 +102,7 @@ async function identityRequest(
       "x-rate-limit-source": input.sourceKey,
       ...(input.sessionToken ? { "x-session-token": input.sessionToken } : {}),
       ...(input.csrfToken ? { "x-csrf-token": input.csrfToken } : {}),
+      ...(input.idempotencyKey ? { "idempotency-key": input.idempotencyKey } : {}),
     },
     ...(input.body === undefined ? {} : { body: JSON.stringify(input.body) }),
     signal: AbortSignal.timeout(2_500),
@@ -132,11 +134,13 @@ export function buildGatewayServer(
       if (!care.ok) {
         return reply.code(503).send({ status: "not_ready", dependency: "care" });
       }
-      const identity = await fetcher(`${config.identityUrl}/health/ready`, {
-        signal: AbortSignal.timeout(1_000),
-      });
-      if (!identity.ok) {
-        return reply.code(503).send({ status: "not_ready", dependency: "identity" });
+      if (!config.fixtureEnabled) {
+        const identity = await fetcher(`${config.identityUrl}/health/ready`, {
+          signal: AbortSignal.timeout(1_000),
+        });
+        if (!identity.ok) {
+          return reply.code(503).send({ status: "not_ready", dependency: "identity" });
+        }
       }
       let notification = "available";
       try {
@@ -385,6 +389,121 @@ export function buildGatewayServer(
     return reply.code(response.status).send(response.body);
   });
 
+  app.post<{ Body: unknown }>("/api/v1/households", async (request, reply) => {
+    if (!validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    return forwardIdentity(request, reply, "/internal/v1/households", {
+      method: "POST",
+      body: request.body,
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+      idempotencyKey: requiredIdempotencyKey(request.headers["idempotency-key"]),
+    });
+  });
+
+  app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId",
+    async (request, reply) =>
+      forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}`,
+        { ...sessionOption(request.cookies[config.sessionCookieName]) },
+      ),
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/invitations",
+    async (request, reply) => {
+      if (!validBrowserMutation(request.headers)) {
+        return rejectedBrowserMutation(reply, request.headers);
+      }
+      return forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/invitations`,
+        {
+          method: "POST",
+          body: request.body,
+          ...sessionOption(request.cookies[config.sessionCookieName]),
+          csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+          idempotencyKey: requiredIdempotencyKey(request.headers["idempotency-key"]),
+        },
+      );
+    },
+  );
+
+  for (const action of ["accept", "decline"] as const) {
+    app.post<{ Body: unknown }>(`/api/v1/invitations/${action}`, async (request, reply) => {
+      if (!validBrowserMutation(request.headers)) {
+        return rejectedBrowserMutation(reply, request.headers);
+      }
+      return forwardIdentity(request, reply, `/internal/v1/invitations/${action}`, {
+        method: "POST",
+        body: request.body,
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+      });
+    });
+  }
+
+  for (const action of ["resend", "revoke"] as const) {
+    app.post<{
+      Params: { householdId: string; invitationId: string };
+      Body: unknown;
+    }>(
+      `/api/v1/households/:householdId/invitations/:invitationId/${action}`,
+      async (request, reply) => {
+        if (!validBrowserMutation(request.headers)) {
+          return rejectedBrowserMutation(reply, request.headers);
+        }
+        return forwardIdentity(
+          request,
+          reply,
+          `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/invitations/${encodeURIComponent(request.params.invitationId)}/${action}`,
+          {
+            method: "POST",
+            body: request.body,
+            ...sessionOption(request.cookies[config.sessionCookieName]),
+            csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+          },
+        );
+      },
+    );
+  }
+
+  app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/recipient-context",
+    async (request, reply) =>
+      forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/recipient-context`,
+        { ...sessionOption(request.cookies[config.sessionCookieName]) },
+      ),
+  );
+
+  app.put<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/recipient-context",
+    async (request, reply) => {
+      if (!validBrowserMutation(request.headers)) {
+        return rejectedBrowserMutation(reply, request.headers);
+      }
+      return forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/recipient-context`,
+        {
+          method: "PUT",
+          body: request.body,
+          ...sessionOption(request.cookies[config.sessionCookieName]),
+          csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+        },
+      );
+    },
+  );
+
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
     const idempotencyRequired = error instanceof IdempotencyKeyRequiredError;
@@ -440,6 +559,7 @@ export function buildGatewayServer(
       method?: string;
       sessionToken?: string;
       csrfToken?: string;
+      idempotencyKey?: string;
       body?: unknown;
     } = {},
   ): Promise<DependencyResponse | null> {
@@ -452,6 +572,7 @@ export function buildGatewayServer(
         ...(options.method ? { method: options.method } : {}),
         ...(options.sessionToken ? { sessionToken: options.sessionToken } : {}),
         ...(options.csrfToken ? { csrfToken: options.csrfToken } : {}),
+        ...(options.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : {}),
         ...(options.body === undefined ? {} : { body: options.body }),
       });
     } catch {
@@ -467,6 +588,7 @@ export function buildGatewayServer(
       method?: string;
       sessionToken?: string;
       csrfToken?: string;
+      idempotencyKey?: string;
       body?: unknown;
     } = {},
   ) {

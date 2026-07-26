@@ -101,13 +101,191 @@ describe("gateway dashboard degradation", () => {
   });
 });
 
+describe("P2-S2 household gateway boundary", () => {
+  it("forwards only cookie session, CSRF and idempotency evidence to Identity", async () => {
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      expect(String(input)).toBe("http://identity.test/internal/v1/households");
+      const headers = new Headers(init?.headers);
+      expect(headers.get("x-session-token")).toBe("synthetic_session");
+      expect(headers.get("x-csrf-token")).toBe("c".repeat(43));
+      expect(headers.get("idempotency-key")).toBe("household-create-0001");
+      expect(headers.get("x-actor-id")).toBeNull();
+      return new Response(
+        JSON.stringify({
+          data: {
+            householdId: "household_synthetic",
+            displayLabel: "Synthetic household",
+            role: "organizer",
+            capabilities: ["household.view"],
+            version: 1,
+          },
+          meta: { correlationId: "corr_household_gateway" },
+        }),
+        { status: 201, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer(config, fetcher);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/households",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        origin: config.publicOrigin,
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": "c".repeat(43),
+        "idempotency-key": "household-create-0001",
+        "x-fixture-actor-id": "member_lan",
+        "x-correlation-id": "corr_household_gateway",
+      },
+      payload: { displayLabel: "Synthetic household" },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.json().data.role).toBe("organizer");
+    await app.close();
+  });
+
+  it("rejects cross-site household mutation before calling Identity", async () => {
+    let called = false;
+    const app = buildGatewayServer(config, (async () => {
+      called = true;
+      return new Response(null, { status: 500 });
+    }) as unknown as typeof fetch);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/households",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        origin: "https://attacker.invalid",
+        "sec-fetch-site": "cross-site",
+        "x-csrf-token": "c".repeat(43),
+        "idempotency-key": "household-create-0002",
+      },
+      payload: { displayLabel: "Synthetic household" },
+    });
+    expect(response.statusCode).toBe(403);
+    expect(called).toBe(false);
+    await app.close();
+  });
+
+  it("forwards the complete P2-S2 route surface without actor or token leakage", async () => {
+    const seen: Array<{ url: string; headers: Headers; body: string | null }> = [];
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      seen.push({
+        url: String(input),
+        headers: new Headers(init?.headers),
+        body: typeof init?.body === "string" ? init.body : null,
+      });
+      return new Response(
+        JSON.stringify({ data: { state: "pending" }, meta: { correlationId: "corr_surface" } }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer(config, fetcher);
+    const mutationHeaders = {
+      cookie: "lb_session=synthetic_session",
+      origin: config.publicOrigin,
+      "sec-fetch-site": "same-origin",
+      "x-csrf-token": "c".repeat(43),
+      "x-correlation-id": "corr_surface",
+    };
+    const cases = [
+      {
+        method: "GET",
+        url: "/api/v1/households/household_synthetic",
+      },
+      {
+        method: "POST",
+        url: "/api/v1/households/household_synthetic/invitations",
+        headers: { ...mutationHeaders, "idempotency-key": "invite-surface-0001" },
+        payload: { inviteeLoginName: "synthetic.user", role: "member" },
+      },
+      {
+        method: "POST",
+        url: "/api/v1/invitations/accept",
+        headers: mutationHeaders,
+        payload: { invitationToken: "t".repeat(43) },
+      },
+      {
+        method: "POST",
+        url: "/api/v1/invitations/decline",
+        headers: mutationHeaders,
+        payload: { invitationToken: "t".repeat(43) },
+      },
+      {
+        method: "POST",
+        url: "/api/v1/households/household_synthetic/invitations/invitation_synthetic/resend",
+        headers: mutationHeaders,
+        payload: { expectedVersion: 1 },
+      },
+      {
+        method: "POST",
+        url: "/api/v1/households/household_synthetic/invitations/invitation_synthetic/revoke",
+        headers: mutationHeaders,
+        payload: { expectedVersion: 1 },
+      },
+      {
+        method: "GET",
+        url: "/api/v1/households/household_synthetic/recipient-context",
+      },
+      {
+        method: "PUT",
+        url: "/api/v1/households/household_synthetic/recipient-context",
+        headers: mutationHeaders,
+        payload: {
+          displayLabel: "Synthetic recipient",
+          relationshipLabel: "Family member",
+          expectedVersion: 0,
+        },
+      },
+    ] as const;
+    for (const entry of cases) {
+      const response = await app.inject({
+        method: entry.method,
+        url: entry.url,
+        headers: {
+          cookie: "lb_session=synthetic_session",
+          "x-correlation-id": "corr_surface",
+          ...("headers" in entry ? entry.headers : {}),
+        },
+        ...("payload" in entry ? { payload: entry.payload } : {}),
+      });
+      expect(response.statusCode, `${entry.method} ${entry.url}`).toBe(200);
+    }
+    expect(seen).toHaveLength(cases.length);
+    for (const forwarded of seen) {
+      expect(forwarded.headers.get("x-session-token")).toBe("synthetic_session");
+      expect(forwarded.headers.get("x-actor-id")).toBeNull();
+      expect(forwarded.headers.get("x-fixture-actor-id")).toBeNull();
+    }
+    expect(JSON.stringify(seen)).not.toContain("lb_session");
+    await app.close();
+  });
+});
+
 describe("gateway identity boundary", () => {
+  it("keeps the safe P1 fixture runtime ready without an Identity process", async () => {
+    const seen: string[] = [];
+    const fetcher = (async (input: string | URL | Request) => {
+      seen.push(String(input));
+      return new Response(null, { status: 200 });
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: true }, fetcher);
+
+    const response = await app.inject({ method: "GET", url: "/health/ready" });
+
+    expect(response.statusCode).toBe(200);
+    expect(seen).not.toContain("http://identity.test/health/ready");
+    await app.close();
+  });
+
   it("fails readiness truthfully when required Identity is unavailable", async () => {
     const fetcher = (async (input: string | URL | Request) =>
       new Response(null, {
         status: String(input).includes("identity.test") ? 503 : 200,
       })) as typeof fetch;
-    const app = buildGatewayServer(config, fetcher);
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
 
     const response = await app.inject({ method: "GET", url: "/health/ready" });
 

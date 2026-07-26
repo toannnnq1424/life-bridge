@@ -411,3 +411,70 @@ environments are intended to converge. It is not a substitute for Git history.
   post-merge run `30191620201` passed and issue #6 closed.
 - Follow-up: start P2-S2 only in a fresh task from integrated `dev`; P5 remains
   planned and was not started here.
+
+## INT-2026-015 — P2-S2 stable candidate and Stitch UI resolution
+
+- Date: 2026-07-26
+- Status: Stable candidate; not promoted
+- Source: `phase/2-household-authorization` from verified
+  `dev@7e260c0315bb08a4f07b37c7604d416d999cb3e9`
+- Scope: Identity-owned household/membership/invitation/minimum-context
+  contracts, PostgreSQL migration, Gateway boundary, audit/logging, Frozen
+  LB-008–LB-010 handoff, native VI/EN UI and cumulative acceptance tooling
+- Ownership: no cross-service SQL/credentials and no new service/engine/ADR
+- Validation: targeted server/contracts/validator 35/35, PostgreSQL lifecycle
+  7/7, mocked browser 6/6, real built web-to-Gateway-to-Identity-to-PostgreSQL
+  browser 1/1, and the single cumulative local Level C campaign pass. Final
+  campaign evidence includes aggregate unit 46/46, contracts 8/8, P2-S2
+  PostgreSQL 7/7, P1 browser 4/4, real-plus-mocked P2-S2 browser 7/7, P2-S1
+  browser 4/4, production build, docs/config/secrets/dependency/diff checks and
+  exact task-owned cleanup.
+- Gate: the local design and acceptance portions of `MCP-DEBT-2026-003` are
+  resolved; exact-head CI, merge-commit and post-merge `dev` CI remain
+- Promotion: no commit/push/PR/merge and issue #7 remains open
+
+### User-authorized Stitch approval policy
+
+The repository-scoped `.codex/config.toml` changes only
+`default_tools_approval_mode` from `prompt` to `approve`, matching the
+controller-level authorization for all Stitch tools in future trusted
+LifeBridge worktrees. No credential, header, endpoint, tool allow/deny list,
+sandbox, network or OS setting changed.
+
+After reset, authenticated project reads passed. The first authorized
+synthetic LB-008 generation then exceeded the 60-second MCP call timeout; ten
+30-second read-only screen reconciliations found no new artifact. The write was
+not retried and LB-009/LB-010 were not issued. `MCP-DEBT-2026-003` now tracks a
+generation-capable MCP timeout/session rather than authentication.
+
+Controller diagnosis confirmed the repository override was the active
+60-second limit. User-authorized project policy now sets only
+`tool_timeout_sec = 600`, and the direct validator freezes that bounded
+generation window. No credential, endpoint, header, allow/deny list,
+sandbox/network or other server changed. The still-loaded runtime was not
+retried; one MCP restart is required before an absence check and any new write.
+
+After that restart, one read-only screen reconciliation confirmed LB-008 was
+absent. Exactly one bounded LB-008 retry and one LB-009/LB-010 generation
+succeeded in the existing project. Independent review rejected generated
+partial-save/offline queueing, account-existence disclosure, membership-removal
+scope, clinical/legal/consent content and generated source. The redacted Frozen
+handoff records aliases only; no credential, locator, remote ID, signed URL or
+generated source is persisted.
+
+Native routes are `/households/new`, `/households/{id}/invitations`,
+`/invitations`, and `/households/{id}/recipient-context`. The runtime path
+proves two verified accounts, bounded invite acceptance and authorized context
+view through the built web, Gateway, Identity and service-owned PostgreSQL.
+
+The single `pnpm.cmd run validate:p2-s2` invocation was interrupted after its
+P1 build by a cumulative fixture-readiness defect: Gateway correctly required
+Identity in normal mode but the safe loopback P1 fixture campaign does not run
+Identity. A targeted Level B made readiness skip that dependency only when the
+existing fixture-safe guard is active and passed Gateway format/lint/type plus
+13/13 unit tests. Per the one-campaign guard, already-green P1 checks were not
+repeated; P1 browser and every remaining P2-S2 phase were resumed at the
+smallest missing boundary and passed. One wrapper-only PowerShell parameter
+collision was classified without product edits before the runtime-only resume.
+The host interruption and wrapper collision were environment/orchestration
+failures, not product failures.

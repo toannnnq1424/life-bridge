@@ -402,3 +402,29 @@ IDENTITY_SERVICE_UNAVAILABLE
 Required audit actions and prohibited telemetry fields are frozen in
 `docs/security/P2_S1_THREAT_MODEL.md`. Identity audit is service-owned business
 evidence; safe logs do not substitute for it.
+
+## P2-S2 frozen household backend API
+
+All routes require the opaque account session. Mutations additionally require
+CSRF and browser-origin checks. Create routes require `Idempotency-Key`.
+
+| Route                                                                    | Contract                                                                           |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `POST /api/v1/households`                                                | create household; creator atomically becomes organizer                             |
+| `GET /api/v1/households/{id}`                                            | active member reads household role/capabilities; inaccessible and absent are equal |
+| `POST /api/v1/households/{id}/invitations`                               | invite one verified account as `caregiver` or `member`; raw token returned once    |
+| `POST /api/v1/invitations/accept\|decline`                               | intended verified account consumes one digest-only token                           |
+| `POST /api/v1/households/{id}/invitations/{invitationId}/resend\|revoke` | organizer-only, version checked and conflict/rate safe                             |
+| `GET\|PUT /api/v1/households/{id}/recipient-context`                     | active member reads; organizer version-upserts minimum context                     |
+
+Stable states are `pending|accepted|declined|expired|revoked`. Bounded errors
+are `HOUSEHOLD_NOT_FOUND`, `HOUSEHOLD_CONFLICT`, `IDEMPOTENCY_CONFLICT`,
+`INVITATION_ACCEPTED|DECLINED|EXPIRED|REVOKED`, and
+`INVITATION_RATE_LIMITED`. Unauthorized, absent and inaccessible resources
+share `404 HOUSEHOLD_NOT_FOUND`. Account scope alone is insufficient.
+Unknown invitee login names receive the same pending projection backed by a
+non-accepting decoy lifecycle; create and organizer management do not reveal
+whether a verified account exists. Pending uniqueness is keyed by a keyed
+invitee-dimension digest for both real and decoy invitations. A terminal token
+may replay its result only inside its original expiry window; after that it is
+indistinguishable from an inaccessible token.

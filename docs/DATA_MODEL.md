@@ -243,3 +243,21 @@ Challenge/session/rate/audit retention and cryptographic parameters are frozen
 in `docs/security/P2_S1_THREAT_MODEL.md`. Migration/restart tests must create
 only the Identity database, reconnect without reseeding, and prove no
 Care/Notification cross-write.
+
+## P2-S2 Identity-owned household data
+
+Migration `002_household_authorization.sql` additively owns households, unique
+account membership, digest-only invitations, request idempotency, minimum
+care-recipient context and redacted audit dimensions. No other service receives
+the Identity database credential or writes these tables.
+
+Invitation tokens are never persisted raw. Invitee dimensions are keyed
+digests, and pending uniqueness uses that same dimension for real and decoy
+rows; persisted idempotency responses exclude tokens. Decoy invitations have
+no account foreign key and are marked internally so public lifecycle responses
+remain non-enumerating while acceptance cannot grant membership. Household-
+scoped serialization prevents two first context writes from both succeeding at
+version one.
+Recipient context is limited to safe display and relationship-neutral labels
+and cannot store clinical, medication, emergency, inferred-need or legal-
+authority content. Consent grant/revoke/history remains P2-S3.

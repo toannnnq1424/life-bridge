@@ -235,6 +235,34 @@ The Frozen handoff and artifact-disabled P2 browser project now satisfy the
 preconditions to run the single Level C. Merge-as-complete and issue #6 closure
 remain deferred until that command and exact-head hosted CI pass.
 
+## P2-S2 validation contract
+
+The one stable-candidate command is:
+
+```powershell
+pnpm.cmd run validate:p2-s2
+```
+
+It cumulatively covers P1/P2-S1 regression; affected format/lint/type, unit and
+contracts; Identity-owned real PostgreSQL invitation lifecycle, decoy
+equivalence, concurrency, idempotency, membership and context conflicts;
+production build; built web → Gateway → Identity → PostgreSQL; artifact-disabled
+LB-008–LB-010 and P2-S1 browser/axe/keyboard/reflow/offline/security paths;
+docs/config/secrets/dependency/diff checks; and PID-scoped resource cleanup.
+
+The 2026-07-26 campaign invoked that command once. After P1 static, unit 38/38,
+contracts 8/8, PostgreSQL 5/5 and build passed, a P1 fixture-readiness
+compatibility defect stopped the command. Targeted Level B passed after the
+fixture-safe correction. Already-green inputs were not rerun; P1 browser 4/4
+and all remaining P2 gates resumed in the same campaign and passed: aggregate
+unit 46/46, contracts 8/8, P2-S2 PostgreSQL 7/7, real-plus-mocked P2-S2 browser
+7/7, P2-S1 browser 4/4, build/security/docs/config/secrets/diff and exact
+cleanup. No second Level C command was issued.
+
+Hosted CI must check out the literal PR head and run
+`scripts/validate-p2-s2.ps1 -UseExistingDatabase -SkipInstall` before a merge
+commit. The resulting `dev` merge SHA must pass the same hosted workflow.
+
 An MCP becoming callable does not satisfy a test gate by itself. Close required
 MCP debt only after secret handling, least-privilege/data-egress and complete
 tool-schema review, one synthetic canary, and the affected slice validation are

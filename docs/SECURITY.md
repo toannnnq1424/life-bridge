@@ -190,3 +190,18 @@ password, factor, recovery or challenge value in browser storage/history.
 Its dedicated Playwright project disables trace, screenshots and video.
 Account onboarding remains `account` scope and cannot authorize household
 resources. Final acceptance requires the full P2 Level C and exact-head CI.
+
+## P2-S2 household authorization control
+
+The frozen backend control is
+`docs/security/P2_S2_THREAT_MODEL.md`. Identity & Consent remains sole
+authority/PostgreSQL owner. Authentication is necessary but never sufficient;
+each resource access evaluates active membership and a server-owned capability.
+Inaccessible and absent resources share one envelope. Invitation secrets are
+CSPRNG, digest-only, expiry-bound, rotated on resend and consumed under row
+lock. Logs/audit exclude invitee/contact identifiers, tokens and recipient content.
+Approved opaque household, invitation, membership and recipient-context target
+IDs may be used for authorization audit correlation; invitee login/contact
+identifiers, raw or digested tokens, recipient labels and care content are
+prohibited. Success logs emit only after commit. Denied/conflict evidence uses
+a protected placeholder and never confirms resource existence.

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CreateHouseholdInvitationRequestSchema,
+  HouseholdInvitationProjectionSchema,
+  UpsertCareRecipientContextRequestSchema,
   CareTaskCompletedEventSchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
@@ -120,6 +123,53 @@ describe("P2-S1-v1 identity contracts", () => {
         motion: "reduce",
         expectedVersion: 1,
         disability: "screen-reader-user",
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("P2-S2-v1 household authorization contracts", () => {
+  it("bounds invitation roles and excludes extra contact or permission input", () => {
+    expect(
+      CreateHouseholdInvitationRequestSchema.parse({
+        inviteeLoginName: "care.user",
+        role: "caregiver",
+      }),
+    ).toEqual({ inviteeLoginName: "care.user", role: "caregiver" });
+    expect(
+      CreateHouseholdInvitationRequestSchema.safeParse({
+        inviteeLoginName: "care.user",
+        role: "organizer",
+      }).success,
+    ).toBe(false);
+    expect(
+      CreateHouseholdInvitationRequestSchema.safeParse({
+        inviteeLoginName: "care.user",
+        role: "member",
+        medicalNotes: "not permitted",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("freezes all invitation lifecycle states and minimum recipient context", () => {
+    for (const state of ["pending", "accepted", "declined", "expired", "revoked"]) {
+      expect(
+        HouseholdInvitationProjectionSchema.safeParse({
+          invitationId: "invitation_synthetic",
+          householdId: "household_synthetic",
+          role: "member",
+          state,
+          expiresAt: "2026-07-28T00:00:00.000Z",
+          version: 1,
+        }).success,
+      ).toBe(true);
+    }
+    expect(
+      UpsertCareRecipientContextRequestSchema.safeParse({
+        displayLabel: "NgÆ°á»i nháº­n chÄƒm sÃ³c",
+        relationshipLabel: "NgÆ°á»i thÃ¢n",
+        expectedVersion: 0,
+        diagnosis: "not permitted",
       }).success,
     ).toBe(false);
   });

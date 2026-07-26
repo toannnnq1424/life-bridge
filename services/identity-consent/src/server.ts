@@ -1,27 +1,38 @@
 import {
   CompleteAccountOnboardingSchema,
+  CreateHouseholdInvitationRequestSchema,
+  CreateHouseholdRequestSchema,
   FactorRecoveryConfirmationSchema,
   FactorRecoveryRequestSchema,
+  IdempotencyKeySchema,
+  InvitationTokenRequestSchema,
   PasswordRecoveryRequestSchema,
   RegistrationFactorRequestSchema,
   RegistrationRecoveryConfirmationSchema,
   RegistrationRequestSchema,
+  ResendHouseholdInvitationRequestSchema,
   SignInFactorRequestSchema,
   SignInRequestSchema,
   UpdateIdentityPreferencesSchema,
+  UpsertCareRecipientContextRequestSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
 import Fastify from "fastify";
 
 import { IdentityError } from "./errors.js";
+import type { HouseholdService } from "./household-service.js";
 import type { IdentityService } from "./service.js";
 
 function header(request: { headers: Record<string, unknown> }, name: string): string {
   return String(request.headers[name] ?? "");
 }
 
-export function buildIdentityServer(identity: IdentityService, internalToken: string) {
+export function buildIdentityServer(
+  identity: IdentityService,
+  internalToken: string,
+  households?: HouseholdService,
+) {
   const app = Fastify({ logger: false, bodyLimit: 32 * 1024 });
 
   app.addHook("onRequest", async (_request, reply) => {
@@ -44,7 +55,7 @@ export function buildIdentityServer(identity: IdentityService, internalToken: st
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "identity_database" }),
   );
-  app.get("/version", async () => ({ service: "identity-consent", contract: "P2-S1-v1" }));
+  app.get("/version", async () => ({ service: "identity-consent", contract: "P2-S2-v1" }));
 
   app.post<{ Body: unknown }>("/internal/v1/account/registrations", async (request, reply) => {
     const correlationId = correlation(request);
@@ -182,6 +193,165 @@ export function buildIdentityServer(identity: IdentityService, internalToken: st
     return successEnvelope({ revoked: true }, correlationId);
   });
 
+  app.post<{ Body: unknown }>("/internal/v1/households", async (request, reply) => {
+    const service = requireHouseholds(households);
+    const correlationId = correlation(request);
+    const account = await identity.requireAccountSession(
+      header(request, "x-session-token"),
+      header(request, "x-csrf-token"),
+    );
+    const data = await service.createHousehold({
+      accountId: account.accountId,
+      request: CreateHouseholdRequestSchema.parse(request.body),
+      idempotencyKey: IdempotencyKeySchema.parse(header(request, "idempotency-key")),
+      correlationId,
+    });
+    return reply.code(201).send(successEnvelope(data, correlationId));
+  });
+
+  app.get<{ Params: { householdId: string } }>(
+    "/internal/v1/households/:householdId",
+    async (request) => {
+      const service = requireHouseholds(households);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(header(request, "x-session-token"));
+      return successEnvelope(
+        await service.getHousehold({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/households/:householdId/invitations",
+    async (request, reply) => {
+      const service = requireHouseholds(households);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(
+        header(request, "x-session-token"),
+        header(request, "x-csrf-token"),
+      );
+      const data = await service.createInvitation({
+        accountId: account.accountId,
+        householdId: request.params.householdId,
+        request: CreateHouseholdInvitationRequestSchema.parse(request.body),
+        idempotencyKey: IdempotencyKeySchema.parse(header(request, "idempotency-key")),
+        correlationId,
+      });
+      return reply.code(201).send(successEnvelope(data, correlationId));
+    },
+  );
+
+  for (const decision of ["accepted", "declined"] as const) {
+    app.post<{ Body: unknown }>(
+      `/internal/v1/invitations/${decision === "accepted" ? "accept" : "decline"}`,
+      async (request) => {
+        const service = requireHouseholds(households);
+        const correlationId = correlation(request);
+        const account = await identity.requireAccountSession(
+          header(request, "x-session-token"),
+          header(request, "x-csrf-token"),
+        );
+        const body = InvitationTokenRequestSchema.parse(request.body);
+        return successEnvelope(
+          await service.respondToInvitation({
+            accountId: account.accountId,
+            invitationToken: body.invitationToken,
+            decision,
+            correlationId,
+          }),
+          correlationId,
+        );
+      },
+    );
+  }
+
+  app.post<{
+    Params: { householdId: string; invitationId: string };
+    Body: unknown;
+  }>("/internal/v1/households/:householdId/invitations/:invitationId/resend", async (request) => {
+    const service = requireHouseholds(households);
+    const correlationId = correlation(request);
+    const account = await identity.requireAccountSession(
+      header(request, "x-session-token"),
+      header(request, "x-csrf-token"),
+    );
+    const body = ResendHouseholdInvitationRequestSchema.parse(request.body);
+    return successEnvelope(
+      await service.resendInvitation({
+        accountId: account.accountId,
+        householdId: request.params.householdId,
+        invitationId: request.params.invitationId,
+        expectedVersion: body.expectedVersion,
+        correlationId,
+      }),
+      correlationId,
+    );
+  });
+
+  app.post<{
+    Params: { householdId: string; invitationId: string };
+    Body: unknown;
+  }>("/internal/v1/households/:householdId/invitations/:invitationId/revoke", async (request) => {
+    const service = requireHouseholds(households);
+    const correlationId = correlation(request);
+    const account = await identity.requireAccountSession(
+      header(request, "x-session-token"),
+      header(request, "x-csrf-token"),
+    );
+    const body = ResendHouseholdInvitationRequestSchema.parse(request.body);
+    return successEnvelope(
+      await service.revokeInvitation({
+        accountId: account.accountId,
+        householdId: request.params.householdId,
+        invitationId: request.params.invitationId,
+        expectedVersion: body.expectedVersion,
+        correlationId,
+      }),
+      correlationId,
+    );
+  });
+
+  app.put<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/households/:householdId/recipient-context",
+    async (request) => {
+      const service = requireHouseholds(households);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(
+        header(request, "x-session-token"),
+        header(request, "x-csrf-token"),
+      );
+      return successEnvelope(
+        await service.upsertRecipientContext({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+          request: UpsertCareRecipientContextRequestSchema.parse(request.body),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.get<{ Params: { householdId: string } }>(
+    "/internal/v1/households/:householdId/recipient-context",
+    async (request) => {
+      const service = requireHouseholds(households);
+      const correlationId = correlation(request);
+      const account = await identity.requireAccountSession(header(request, "x-session-token"));
+      return successEnvelope(
+        await service.getRecipientContext({
+          accountId: account.accountId,
+          householdId: request.params.householdId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = correlation(request);
     const identityError =
@@ -208,6 +378,13 @@ export function buildIdentityServer(identity: IdentityService, internalToken: st
   });
 
   return app;
+}
+
+function requireHouseholds(service: HouseholdService | undefined): HouseholdService {
+  if (!service) {
+    throw new IdentityError(503, "IDENTITY_SERVICE_UNAVAILABLE", "identity.unavailable", true);
+  }
+  return service;
 }
 
 function correlation(request: { headers: Record<string, unknown> }): string {

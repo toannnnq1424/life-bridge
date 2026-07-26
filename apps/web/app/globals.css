@@ -428,6 +428,79 @@ h1 {
   }
 }
 
+/* P2-S2 household authorization: native implementation from the Frozen Stitch handoff. */
+.household-access-app {
+  min-height: 100vh;
+  color: #131e1b;
+  background: #f0fcf7;
+}
+
+.household-access-app .account-shell {
+  width: min(100% - 2rem, 48rem);
+}
+
+.household-access-app .account-card {
+  border-color: #6f7976;
+  box-shadow: 0 0.75rem 2rem rgb(19 30 27 / 8%);
+}
+
+.household-access-app .account-card button,
+.household-access-app .primary-action {
+  border-color: #005247;
+  background: #005247;
+}
+
+.household-access-app .account-card .secondary-action {
+  border-color: #1f6392;
+  color: #164e76;
+  background: #fff;
+}
+
+.confirmed-panel {
+  border-inline-start: 0.45rem solid #005247;
+}
+
+.context-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+}
+
+.context-list div {
+  padding-block-end: 0.75rem;
+  border-block-end: 1px solid #bec9c5;
+}
+
+.context-list dt {
+  color: #3f4946;
+}
+
+.context-list dd {
+  margin: 0.25rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 30rem) {
+  .household-access-app .account-shell {
+    width: min(100% - 1.25rem, 48rem);
+  }
+
+  .household-access-app .account-card button,
+  .household-access-app .primary-action,
+  .household-access-app .secondary-action {
+    width: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .confirmed-panel,
+  .context-list div {
+    border-color: CanvasText;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

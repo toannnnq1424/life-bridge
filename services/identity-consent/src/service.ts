@@ -167,6 +167,24 @@ export class IdentityService {
     }
   }
 
+  public async requireAccountSession(
+    sessionToken: string,
+    csrfToken?: string,
+  ): Promise<{ accountId: string }> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const session = await this.requireSession(client, sessionToken, csrfToken);
+      await client.query("COMMIT");
+      return { accountId: session.account_id };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   public async register(input: {
     request: RegistrationRequest;
     correlationId: string;
