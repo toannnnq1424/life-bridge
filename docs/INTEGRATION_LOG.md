@@ -387,7 +387,7 @@ environments are intended to converge. It is not a substitute for Git history.
 ## INT-2026-014 — Activate the official Stitch namespace for the P2 handoff gate
 
 - Date: 2026-07-26
-- Status: Local acceptance complete; exact-head CI and PR promotion pending
+- Status: Validated, merged and closed
 - Source: project-owner-authorized local Stitch activation on the existing
   `phase/2-account-access-onboarding` task
 - Target: P2-S1 `LB-001`–`LB-007` design gate only
@@ -406,5 +406,8 @@ environments are intended to converge. It is not a substitute for Git history.
 - Validation: the single `pnpm.cmd run validate:p2-s1` passed P1 regression,
   Identity PostgreSQL 5/5, aggregate unit 37/37, contracts 6/6, P2 browser 4/4,
   format/lint/type/build/docs/config/secrets/audit/diff and exact cleanup.
-- Follow-up: obtain exact-head hosted CI and complete promotion/closeout only if
-  green. Do not start P2-S2 or P5.
+- Promotion: exact-head commit `969e6e9`, PR run `30191477589` and push run
+  `30191476390` passed. PR #44 merged to `dev` as merge commit `0cb14e2`;
+  post-merge run `30191620201` passed and issue #6 closed.
+- Follow-up: start P2-S2 only in a fresh task from integrated `dev`; P5 remains
+  planned and was not started here.
