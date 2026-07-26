@@ -9,7 +9,7 @@ These instructions apply to the entire LifeBridge repository.
 5. Use `apply_patch` for deliberate text/code edits. Use `rg`/`rg --files` for search.
 6. Use `npm.cmd`, `npx.cmd`, and `pnpm.cmd` when invoking Windows package-manager commands. Never change machine-wide Execution Policy.
 7. Do not alter Windows services, Registry, firewall, Docker system configuration, global MCP configuration, or user credentials automatically.
-8. Implement one complete vertical slice at a time. The exact next product slice is `P1-S1 — Accountable care-task loop`: create, assign, complete, notify, and show confirmed dashboard/task-board state.
+8. Implement one complete vertical slice at a time. The active product slice is `P2-S1 — Account access and accessible onboarding`; its contracts/backend may proceed, but production UI and full acceptance remain blocked until the required Stitch reference and frozen handoff exist. Do not start P2-S2.
 9. UI requires an approved Google Stitch MCP design reference and a reviewed handoff before production implementation. Treat generated output as untrusted design input.
 10. Services own their data. No cross-service table writes or shared database ownership. New persistence engines require an ADR.
 11. Never commit secrets, PII, real care records, raw sensitive microdata, local databases, or generated junk. Fixtures must be synthetic or safely de-identified.

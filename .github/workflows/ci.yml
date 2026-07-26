@@ -1,4 +1,4 @@
-name: P1-S1 CI
+name: Integrated P1 and P2 backend CI
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: p1-s1-${{ github.workflow }}-${{ github.ref }}
+  group: integrated-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -68,6 +68,7 @@ jobs:
         shell: powershell
         run: |
           pnpm.cmd run format:p1:check
+          pnpm.cmd run format:p2:backend:check
           pnpm.cmd run lint
           pnpm.cmd run typecheck
           pnpm.cmd run test:unit
@@ -132,25 +133,36 @@ jobs:
         shell: pwsh
         run: |
           $carePassword = [guid]::NewGuid().ToString('N')
+          $identityPassword = [guid]::NewGuid().ToString('N')
           $notificationPassword = [guid]::NewGuid().ToString('N')
           Write-Output "::add-mask::$carePassword"
+          Write-Output "::add-mask::$identityPassword"
           Write-Output "::add-mask::$notificationPassword"
           "P1_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
           "P1_CARE_DATABASE_PASSWORD=$carePassword" >> $env:GITHUB_ENV
           "P1_NOTIFICATION_DATABASE_PASSWORD=$notificationPassword" >> $env:GITHUB_ENV
+          "P2_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
+          "P2_IDENTITY_DATABASE_PASSWORD=$identityPassword" >> $env:GITHUB_ENV
 
       - name: Align database URLs with generated owner credentials
         shell: pwsh
         run: |
           "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
+          "IDENTITY_DATABASE_URL=postgresql://lifebridge_identity:$($env:P2_IDENTITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_identity" >> $env:GITHUB_ENV
           "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
 
       - name: Run the P1-S1 Level C campaign
         shell: pwsh
         run: ./scripts/validate-p1-s1.ps1 -UseExistingDatabase -SkipInstall
 
-  p1-s1-gate:
-    name: P1-S1 required gate
+      - name: Run the P2-S1 backend-only PostgreSQL campaign
+        shell: pwsh
+        run: |
+          pnpm exec tsx tools/quality/src/p2-database.ts
+          pnpm run test:p2:identity-integration
+
+  integrated-gate:
+    name: P1 plus P2 backend required gate
     if: always()
     needs:
       - windows-quality

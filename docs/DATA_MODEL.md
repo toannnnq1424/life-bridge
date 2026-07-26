@@ -206,3 +206,40 @@ processes without reseeding, and verify task/outbox/inbox/notification
 durability. Rollback for the additive initial schema is replacement of the
 slice-owned disposable local databases; no real-data destructive rollback is
 claimed or authorized.
+
+## P2-S1 Identity ownership
+
+`CHG-2026-010` adds one independently owned PostgreSQL database on the existing
+engine:
+
+```text
+lifebridge_identity <- Identity & Consent only
+```
+
+Gateway, Care Coordination and Notification receive no Identity database
+credential. Identity never writes Care or Notification tables. P2-S1 adds no
+broker, cache, external identity datastore, cross-service foreign key, or new
+persistence engine.
+
+The additive initial Identity migration owns:
+
+| Table                     | Essential fields / invariant                                                                                          |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `identity_accounts`       | opaque account ID, unique normalized login name, Argon2id encoded password, state, authentication version, timestamps |
+| `identity_authenticators` | account-scoped TOTP state, encrypted seed/key version, last accepted time step; one active factor in P2-S1            |
+| `identity_recovery_codes` | account-scoped digest, created/used/revoked timestamps; conditional one-time consumption                              |
+| `identity_challenges`     | digest, purpose, state/decoy flag, attempts, expiry, consumed time; never raw challenge/OTP/code                      |
+| `identity_sessions`       | session/CSRF digests, auth version, idle/absolute expiry, last seen, revocation and session family                    |
+| `identity_rate_limits`    | operation, HMAC-derived dimension, window and count; never raw login name/IP                                          |
+| `identity_preferences`    | locale, text scale, contrast, motion, optimistic version and timestamps                                               |
+| `identity_audit`          | append-only action/result/correlation and nullable opaque account reference; no request payload                       |
+
+Login name is Personal data. Passwords, TOTP seeds/codes, recovery codes,
+challenge/session/CSRF tokens and runtime encryption/rate keys are Secret.
+Preference values are Personal configuration but cannot encode disability,
+diagnosis, raw assistive-technology use or care information.
+
+Challenge/session/rate/audit retention and cryptographic parameters are frozen
+in `docs/security/P2_S1_THREAT_MODEL.md`. Migration/restart tests must create
+only the Identity database, reconnect without reseeding, and prove no
+Care/Notification cross-write.

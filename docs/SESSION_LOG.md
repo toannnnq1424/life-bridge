@@ -606,3 +606,99 @@ run `30183168519`. PR #42 merged into `dev` as
   current `dev`. First freeze real identity, session, household authorization,
   recovery, language, and accessibility-preference contracts before code.
   DATA-S1 remains a separate `init/research` lane. Neither scope starts here.
+
+## 2026-07-26 — P2-S1 backend candidate and blocked UI handoff
+
+### Objective and current result
+
+Execute only issue #6 from integrated `dev@a3e9fc2`: freeze the identity,
+session, MFA, recovery, preferences, accessibility and permission contracts;
+then build the smallest production-oriented account-access path without
+account enumeration. P2-S2, DATA-S1 and deployment remain out of scope.
+
+The first-party Identity & Consent backend candidate is implemented and passes
+focused Level A/B evidence. It owns one database and grants only account scope.
+No production UI was implemented: the required Stitch MCP inventory remained
+empty through the one 180-second gate, so `MCP-DEBT-2026-002`/KI-017 blocks
+`LB-001`–`LB-007`, full P2-S1 acceptance, the single Level C command, merge-as-
+complete, deployment and issue #6 closure.
+
+### Planned versus actual
+
+- Planned: research and three independent audits, freeze ADR/threat/API/data/
+  audit/recovery/preferences/design acceptance, implement account backend plus
+  accessible VI/EN UI, run one stable-candidate Level C, pass exact-head hosted
+  CI, merge by PR and close issue #6.
+- Actual architecture/backend: `CHG-2026-010`/ADR-018 selects a first-party
+  service using the existing PostgreSQL engine. It stores Argon2id password
+  hashes, AEAD-sealed TOTP secrets, digest-only challenges/sessions/recovery
+  codes and service-owned audit. Gateway owns opaque `HttpOnly` cookie
+  serialization, exact-Origin/Fetch-Metadata/CSRF checks and fixture rejection
+  outside loopback/non-production configuration.
+- Actual behavior: registration requires TOTP plus recovery-code
+  acknowledgement; sign-in requires password plus TOTP; password recovery
+  requires TOTP plus one code; factor recovery requires password plus one code
+  and TOTP re-enrollment. Preferences are versioned and non-gating. Onboarding
+  rotates the session but grants no household membership/capability.
+- Actual design: requirements, permission contract and semantic local
+  wireframes exist for `LB-001`–`LB-007`; they are not a Google Stitch reference
+  or production handoff. No Stitch credential, private locator, signed URL,
+  remote ID, generated source, screenshot or sensitive prompt data was used.
+- Roadmap impact: order unchanged. The exact next work remains completion of
+  P2-S1 after its Stitch gate; P2-S2 and DATA-S1 are not started.
+
+### Research and dependency decisions
+
+- Current official NIST SP 800-63B-4, OWASP authentication/session/password/
+  MFA/forgot-password/CSRF guidance, W3C WCAG 2.2 and official dependency docs
+  changed or confirmed the password, replay, session rotation/expiry, generic
+  response, cookie/CSRF, focus/reflow and non-conformance-claim tests.
+- `@node-rs/argon2@2.0.2` uses the frozen Argon2id parameters
+  `m=19456 KiB,t=2,p=1`; `otpauth@9.5.1` supplies maintained TOTP;
+  `@fastify/cookie@11.1.2` supplies the official Fastify cookie boundary.
+  `argon2@0.45.1` was not selected because its install lifecycle was broader.
+- The local host has Node 24.14 while the repository pins Node 22; local results
+  are useful but hosted Node 22 is decisive. The private GitHub issue body was
+  not retrievable; the controller delegation plus local plan/board are the
+  canonical scope authority for this checkpoint.
+
+### Files, contracts and validation
+
+- Runtime: new `services/identity-consent`; gateway Identity proxy/cookie/
+  origin/CSRF boundary; strengthened fixture configuration guard.
+- Contracts/data: P2 Zod schemas, Identity migration, ADR-018, threat model,
+  API/data/architecture/security/test/deployment/design/state updates.
+- Operations: P2 database provision/reset helpers, locked dependency graph and
+  exact-head CI backend-only PostgreSQL step. The existing P1 browser gate is
+  unchanged and no P2 browser/full-Level-C claim is made.
+- Focused results: config 2/2, contracts 6/6, Identity unit/internal 5/5,
+  gateway 9/9 (including required-Identity readiness), aggregate unit 32/32,
+  Identity PostgreSQL 5/5, affected format/lint/type/build, frozen install,
+  docs/config/secrets and zero-high dependency audit passed. The
+  first database run exposed a PostgreSQL `CASE` timestamp inference defect;
+  it was classified as real, fixed with an explicit `timestamptz` cast, and the
+  targeted rerun passed. Account IDs were also removed from safe structured
+  session logs while the owned audit relation remains.
+- The repository-wide format check reported seven pre-existing Phase 0/P1
+  documents outside the P2 footprint, including the user-owned Stitch canary.
+  This was classified as harness scope rather than a P2 defect; none was edited.
+  The frozen `format:p2:backend:check` and existing P1 footprint check pass.
+- PostgreSQL validation used the isolated Compose project
+  `lifebridge-p2-s1-019f9c2a` on loopback port 55433 with synthetic credentials.
+  Cleanup removes exactly that container, network and volume.
+
+### Promotion status, limitations and exact next action
+
+No Level C was run because its frozen contract includes P2 browser/UI evidence.
+No production UI, manual screen-reader, forced-colors, 200%/400% zoom, hosted
+exact-head run, merge, deployment or issue closure is claimed at this
+checkpoint. A draft PR may preserve review/CI evidence but must remain blocked
+and must not be merged as P2-S1 complete.
+
+Project Owner + Design Lead next restore the approved Stitch MCP/secret path,
+perform one bounded synthetic-only reference session, review input schema/data
+egress/security/accessibility/privacy, and freeze a redacted handoff for
+`LB-001`–`LB-007`. Only then implement production UI and run exactly one
+`pnpm.cmd run validate:p2-s1`. P2-S2 (`LB-008`–`LB-010` household,
+invitation and care-recipient context) begins only after full P2-S1 acceptance;
+do not start it here.

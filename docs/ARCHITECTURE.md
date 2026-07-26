@@ -425,3 +425,40 @@ An architecture change requires:
 6. validation, migration, rollback, and follow-up evidence in `docs/SESSION_LOG.md`.
 
 No datastore, broker, auth provider, deployment platform, service split/merge, cross-service contract, or public trust-boundary change is accepted only through conversation.
+
+## 17. P2-S1 Identity & Consent architecture
+
+`CHG-2026-010`/ADR-018 moves Identity & Consent from a planned boundary to an
+owned backend slice. It uses its own `lifebridge_identity` PostgreSQL database
+on the existing engine and exposes versioned internal account/challenge/session
+operations to Gateway. No external IdP, JWT, Redis, broker, email/SMS delivery,
+or additional engine is selected.
+
+```text
+browser
+  -> gateway (cookie, Origin/Fetch Metadata, CSRF, strips actor headers)
+      -> identity-consent (credentials, challenges, sessions, preferences)
+          -> lifebridge_identity PostgreSQL
+
+account session -X-> Care / Notification household data
+                   (membership is not created until P2-S2)
+```
+
+The browser never selects an internal actor. Gateway resolves an opaque account
+from Identity for account routes; household routes remain denied because
+authentication is not membership authorization. P1 fixture headers remain an
+explicit loopback-only compatibility adapter and any public/production
+combination fails configuration.
+
+Opaque pre-authentication challenges and authorized sessions use different
+random tokens and tables. Successful factor, recovery, and onboarding
+transitions rotate/revoke rather than promote a client-supplied identifier.
+Identity owns audit facts atomically with relevant credential/session changes.
+The exact security/data/API contracts live in
+`docs/security/P2_S1_THREAT_MODEL.md`, `docs/DATA_MODEL.md`, and
+`docs/API_CONTRACTS.md`.
+
+The `LB-001`–`LB-007` gate remains requirement → permission contract → Stitch
+reference → reviews → Frozen handoffs → implementation. Only the first two and
+a local semantic wireframe exist. `MCP-DEBT-2026-002` therefore blocks
+production frontend implementation and full P2-S1 acceptance.

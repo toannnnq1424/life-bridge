@@ -306,3 +306,41 @@ environments are intended to converge. It is not a substitute for Git history.
   integrated `dev` for P2-S1; freeze real identity/session/household access,
   recovery, language, and accessibility-preference contracts before code.
   DATA-S1 remains separate and neither next scope starts in this closeout.
+
+## INT-2026-012 — Build the P2-S1 backend candidate behind the Stitch gate
+
+- Date: 2026-07-26
+- Status: In progress; backend candidate validated locally, production UI and
+  promotion blocked
+- Source: `phase/2-account-access-onboarding` from `dev@a3e9fc2`
+- Target: `dev` by PR only; no merge or issue #6 closure is permitted while
+  `MCP-DEBT-2026-002` remains open
+- Scope: first-party registration, password plus required TOTP, saved recovery
+  artifacts, password/factor recovery, opaque server sessions, optional VI/EN
+  and accessibility preferences, account-only onboarding and gateway boundary
+- Contracts/data affected: `P2-S1-v1`, Identity-owned PostgreSQL migration,
+  digest-only session/challenge/recovery storage, encrypted TOTP seed,
+  service-owned audit, gateway cookie/origin/CSRF contract; no Care or
+  Notification database write and no household capability
+- Validation: contract/config/crypto/internal/gateway Level A checks and
+  Identity PostgreSQL Level B are green. The 5/5 database cases cover
+  registration/factor/recovery acknowledgement, response equivalence, atomic
+  rate buckets, one-winner TOTP replay, recovery single-use, password/factor
+  recovery, preference persistence, session rotation/revoke/idle/absolute
+  expiry and audit evidence. CI is extended only with exact-head P2 backend
+  checks; P1 browser acceptance remains unchanged.
+- Conflicts/risks: Stitch MCP inventory was empty at
+  `2026-07-26T02:09:54.193Z` and again after 180 seconds at
+  `2026-07-26T02:13:03.970Z`. No credential, locator, signed URL, remote ID or
+  generated Stitch source was inspected or persisted. Local Node 24.14 is
+  outside the pinned Node 22 range, so hosted Node 22 remains decisive.
+- Design: `docs/design/reviews/P2_S1_LOCAL_WIREFRAME.md` is a semantic local
+  wireframe and frozen backend handoff input only. It is not production UI or
+  a Stitch approval.
+- Decision/change references: issue #6, `CHG-2026-010`, ADR-018,
+  `MCP-DEBT-2026-002`, KI-017
+- Follow-up: restore the approved Stitch MCP/secret path, perform the bounded
+  synthetic reference session plus schema/data-egress/security/accessibility
+  review, freeze the redacted `LB-001`–`LB-007` handoff, then implement the UI
+  and run exactly one `pnpm.cmd run validate:p2-s1`. Do not start P2-S2 or
+  DATA-S1.

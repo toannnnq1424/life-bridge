@@ -196,6 +196,44 @@ Each campaign:
 6. batch fixes by root cause, use targeted retests, then run one final Level D
    validation.
 
+## P2-S1 validation contract
+
+Backend implementation while Stitch is blocked uses only package-scoped Level
+A and targeted Level B. No partial command/result is labeled P2 Level C.
+
+The eventual one stable-candidate command is:
+
+```powershell
+pnpm.cmd run validate:p2-s1
+```
+
+It must run after seven `LB-001`–`LB-007` handoffs are Frozen and include:
+
+1. frozen install, P2 footprint format, affected lint/type/unit/contract/build;
+2. Identity-owned PostgreSQL migration, restart, duplicate/race, rate-limit,
+   TOTP replay, recovery single-use, session rotation/revoke/idle/absolute
+   expiry, preference version/non-gating, audit and no-cross-write integration;
+3. Gateway actor-header stripping, cookie flags, CSRF/origin/Fetch Metadata,
+   fixture public/production rejection and non-disclosing household denial;
+4. real register → factor → recovery-code acknowledgement → sign-in → factor →
+   onboarding/preferences → authorized account browser journeys in VI/EN;
+5. unknown/wrong/locked/disabled/duplicate/invalid/expired/used equivalence,
+   offline blocked behavior and no secret in URL/history/web storage;
+6. password-manager/autocomplete/paste, keyboard/focus, axe on material states,
+   320 px/reflow/long strings/reduced motion/forced-colors automation plus
+   honest manual NVDA/Narrator/zoom/text-spacing rows;
+7. docs/config/secrets/generated junk/private Stitch locator/log redaction,
+   dependency audit, `git diff --check`, and exact task-owned cleanup.
+
+P2 browser runs must disable trace, video and screenshots for credential/TOTP/
+recovery-code flows unless an accepted redaction design proves artifacts safe;
+raw authentication artifacts are never uploaded. Hosted CI retains literal
+head checkout, Node 22, Windows static/unit/build/security, Ubuntu PostgreSQL +
+Chromium, and one P2 aggregate gate.
+
+Until `MCP-DEBT-2026-002` closes, production browser coverage, the full Level C
+campaign, merge-as-complete and issue #6 closure are deferred, not passed.
+
 An MCP becoming callable does not satisfy a test gate by itself. Close required
 MCP debt only after secret handling, least-privilege/data-egress and complete
 tool-schema review, one synthetic canary, and the affected slice validation are

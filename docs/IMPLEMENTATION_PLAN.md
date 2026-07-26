@@ -6,10 +6,11 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P1 — Daily task MVP` accepted and integrated
-- Current scope: no active product implementation; P1-S1 is closed and P2-S1
-  has not started
-- Next product slice after P1-S1: `P2-S1 — Account access and accessible onboarding`
+- Current phase: `P2 — Trust and household`
+- Current scope: `P2-S1 — Account access and accessible onboarding` in progress
+  on `phase/2-account-access-onboarding`; backend/contracts only while the P2
+  Stitch gate is blocked
+- Active product slice: `P2-S1 — Account access and accessible onboarding`
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -327,6 +328,12 @@ Explicitly deferred: recurrence, cancellation, attachments, real authentication,
 
 Outcome: a user can register/sign in, complete the required factor/recovery path, choose language/accessibility preferences, and enter an authorized session without account enumeration.
 
+Status: **In progress; production UI and full acceptance blocked**.
+`CHG-2026-010`/ADR-018 freezes a first-party Identity & Consent backend and an
+account-scoped session that grants no household access. `MCP-DEBT-2026-002`
+blocks `LB-001`–`LB-007` production implementation and the eventual full Level
+C campaign.
+
 Screens: `LB-001`–`LB-007`.
 
 Acceptance:
@@ -340,6 +347,53 @@ Acceptance:
 Dependencies: P1 gateway/config baseline; accepted identity architecture ADR if an external provider is introduced.
 
 Deferred: enterprise SSO and delegated organization administration.
+
+#### P2-S1 research micro-cycle and contract freeze
+
+- Gate: **PASS WITH ASSUMPTIONS** for contracts/backend; **BLOCKED** for
+  production UI.
+- Questions: authenticator/recovery minimum; session/cookie/CSRF/rotation;
+  enumeration/rate limits; credential artifact storage; accessible VI/EN
+  authentication and preferences.
+- Primary/official sources: NIST SP 800-63B-4 (2025), current OWASP
+  Authentication/Forgot Password/Session Management/Password Storage/MFA/CSRF
+  Cheat Sheets, W3C WCAG 2.2 Understanding documents, and official Fastify,
+  Node.js 22, `@node-rs/argon2`, and `otpauth` documentation. Retrieved
+  2026-07-26; details and engineering limitations are recorded in
+  `docs/security/P2_S1_THREAT_MODEL.md`.
+- Findings: require password plus TOTP; issue one-time saved recovery codes;
+  use remaining factor plus one recovery code for recovery; rotate/revoke
+  sessions; keep opaque tokens server-side; require synchronizer CSRF token,
+  exact Origin and Fetch Metadata; keep generic public login/recovery behavior;
+  allow password managers/autofill/paste; never gate access on preferences.
+- Assumptions: a non-email login name and saved recovery codes are acceptable
+  for this bounded slice; total-loss support recovery and phishing-resistant
+  passkeys are not built; no AAL, legal, identity-proofing, or deployment claim.
+- Product boundary: new accounts receive account/onboarding authority only.
+  Role intent in LB-006 is non-authoritative; P2-S2 owns membership.
+- Stitch gate: zero callable tools from `2026-07-26T02:09:54.193Z` through
+  `02:13:03.970Z`; fallback/debt is recorded in
+  `docs/design/reviews/P2_S1_LOCAL_WIREFRAME.md`.
+- Frozen backend footprint: Identity service/migration; contracts, config,
+  observability; gateway session boundary; P2 PostgreSQL integration; database,
+  reset/start/validation/CI helpers; affected persistent docs. Web/browser files
+  enter only after seven handoffs are Frozen.
+- Eventual single Level C: `pnpm.cmd run validate:p2-s1`; it includes static,
+  unit/contract/integration/browser/build/security/accessibility evidence and
+  is not run or claimed while UI is blocked. Backend work uses Level A/B only.
+- Stop rule: further sources would not change the frozen backend decision.
+  Re-check on Stitch activation, authenticator/provider change, public pilot,
+  passkey scope, or changed NIST/OWASP/WCAG guidance.
+
+#### P2-S1 planned versus actual — backend candidate checkpoint
+
+- Planned: implement `LB-001`–`LB-007` and a complete production-oriented
+  register/sign-in/factor/recovery/preferences/session journey.
+- Actual: external Stitch capability is unavailable, so only contracts,
+  security architecture, backend, tests, and truthful local wireframes proceed.
+  Production UI, browser acceptance, full Level C, merge-as-complete, and issue
+  closure remain blocked rather than being relabeled complete.
+- Phase order: unchanged. P2-S2 and DATA-S1 remain outside this task.
 
 ### `P2-S2 — Household, invitation, and care-recipient context`
 
@@ -837,17 +891,18 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ### Current accepted changes
 
-| Change ID      | State                                | Effect on baseline                                                                   |
-| -------------- | ------------------------------------ | ------------------------------------------------------------------------------------ |
-| `CHG-2026-001` | Implemented in Phase 0               | Windows + Codex App replace legacy mixed-platform/tool delivery paths                |
-| `CHG-2026-002` | Baseline implemented; lane due       | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control |
-| `CHG-2026-003` | Partially superseded                 | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded      |
-| `CHG-2026-004` | Implemented in docs/GitHub           | Preserves P0–P5 and expands production maturity through P6–P12                       |
-| `CHG-2026-005` | Accepted; debt gate active           | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt      |
-| `CHG-2026-006` | Bounded design session complete      | P1 handoff v1.0 is Frozen; credential retirement remains a deployment gate           |
-| `CHG-2026-007` | CI bootstrap implemented             | One guarded workflow-only PR registered hosted CI on default `main`                  |
-| `CHG-2026-008` | Integrated; hosted validation passed | Freeze one useful completion-to-creator notification and suppress self-notification  |
-| `CHG-2026-009` | Integrated; hosted validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge    |
+| Change ID      | State                                | Effect on baseline                                                                     |
+| -------------- | ------------------------------------ | -------------------------------------------------------------------------------------- |
+| `CHG-2026-001` | Implemented in Phase 0               | Windows + Codex App replace legacy mixed-platform/tool delivery paths                  |
+| `CHG-2026-002` | Baseline implemented; lane due       | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control   |
+| `CHG-2026-003` | Partially superseded                 | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded        |
+| `CHG-2026-004` | Implemented in docs/GitHub           | Preserves P0–P5 and expands production maturity through P6–P12                         |
+| `CHG-2026-005` | Accepted; debt gate active           | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt        |
+| `CHG-2026-006` | Bounded design session complete      | P1 handoff v1.0 is Frozen; credential retirement remains a deployment gate             |
+| `CHG-2026-007` | CI bootstrap implemented             | One guarded workflow-only PR registered hosted CI on default `main`                    |
+| `CHG-2026-008` | Integrated; hosted validation passed | Freeze one useful completion-to-creator notification and suppress self-notification    |
+| `CHG-2026-009` | Integrated; hosted validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge      |
+| `CHG-2026-010` | Accepted; implementation in progress | First-party P2 account/session boundary; account scope does not grant household access |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -922,6 +977,47 @@ No row means simultaneous implementation. Design generation/review may prepare a
 - Related ADR/integration/session entries: ADR-017, KI-015,
   `INT-2026-011`, and the P1-S1 session entry.
 
+## CHG-2026-010 — Freeze the P2-S1 first-party account boundary
+
+- State: Accepted; backend implementation in progress; production UI blocked
+- Raised in phase/slice: `P2-S1`
+- Planned baseline: replace P1 fixture identity with registration, required
+  factor/recovery, preferences, and an authorized session. Provider, identifier,
+  recovery proof, and whether account authority implied household access were
+  unspecified.
+- Proposed/actual implementation: Identity & Consent owns accounts,
+  password/TOTP/recovery artifacts, sessions, rate limits, preferences, and
+  audit in its own PostgreSQL database. Login uses a non-email login name.
+  Recovery requires one remaining primary factor plus a saved one-time recovery
+  code. Authorized sessions are account-scoped only; P2-S2 owns household
+  membership. No external provider/new engine is added.
+- Reason/evidence: NIST/OWASP/WCAG and the existing service-ownership contract
+  require explicit authenticator lifecycle, replay/race protection,
+  non-enumeration, accessible authentication, and separation of authentication
+  from authorization. Selecting the owned boundary avoids an unfrozen provider
+  trust/residency/cost/exit decision.
+- Impact:
+  - Product/UI: required TOTP and recovery-code acknowledgement; total-loss
+    automated recovery is unavailable; P2 UI remains blocked by Stitch debt.
+  - API/events: new `P2-S1-v1` account/challenge/session/preferences contracts;
+    no cross-service event or household authorization is added.
+  - Data/migration: one Identity-owned PostgreSQL database and additive initial
+    migration; no Care/Notification write.
+  - Privacy/security: server-side opaque cookies, CSRF/origin controls,
+    Argon2id, encrypted TOTP seed, digest-only tokens/codes, generic responses,
+    atomic rate/race handling, safe audit/logging.
+  - Tests/operations: package Level A/B now; one full P2 Level C and hosted
+    exact-head aggregate gate after design/UI unblock.
+  - Phase order/schedule: unchanged; P2-S2/DATA-S1/deployment remain deferred.
+- Validation required: frozen contract/unit/PostgreSQL/gateway/supply-chain
+  evidence now; later seven Frozen handoffs, browser/accessibility, one complete
+  Level C, exact-head hosted CI, reviewed PR merge, post-merge CI and issue #6
+  closure.
+- Follow-up owner and exact phase/slice: Project Owner/Design Lead resolve
+  `MCP-DEBT-2026-002` inside P2-S1. P2-S2 starts only after P2-S1 acceptance.
+- Related ADR/integration/session entries: ADR-018,
+  `docs/security/P2_S1_THREAT_MODEL.md`, and the P2-S1 session entry.
+
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
 until this phase closes. It contains no raw dataset or product fixture. All
@@ -943,10 +1039,16 @@ post-merge hosted runs passed, and issue #5 is closed. The docs-only closeout
 did not rerun Level C because no runtime, test, workflow, dependency, or
 lockfile input changed.
 
-The exact next product slice is `P2-S1 — Account access and accessible
-onboarding`. Start it only in a fresh task from current integrated `dev`. Its
-first action is a bounded research/contract freeze that replaces fixture
-identity with real account, session, household authorization, recovery,
-language, and accessibility-preference boundaries before UI code. DATA-S1
-issue #4 remains a separate `init/research` lane and must not be combined with
-P2-S1. Do not start either scope in this P1 closeout.
+P2-S1 is active on `phase/2-account-access-onboarding` from `dev@a3e9fc2`.
+ADR-018 and the account/session/recovery/preferences contracts are frozen; the
+backend candidate has focused Level A/B and PostgreSQL evidence. The required
+Stitch MCP reference and frozen handoff for `LB-001`–`LB-007` do not exist, so
+production UI, browser acceptance, the one Level C campaign, merge-as-complete
+and issue #6 closure remain blocked by `MCP-DEBT-2026-002`.
+
+The exact next action is still inside P2-S1: Project Owner + Design Lead restore
+the approved Stitch MCP/secret path, complete the synthetic-only schema/data-
+egress/security/accessibility review, and freeze a redacted handoff. Only then
+may the P2-S1 production UI and `pnpm.cmd run validate:p2-s1` proceed. P2-S2
+(`LB-008`–`LB-010` household/invitation/context) and DATA-S1 remain separate and
+unstarted.

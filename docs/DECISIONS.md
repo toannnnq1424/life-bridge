@@ -333,6 +333,49 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 - Validation and follow-up: final P1 Level C plus exact-head hosted CI remain
   required. Reopen KI-015 before any `next/image` or server image processing.
 
+## ADR-018 — Own first-party account sessions without granting household access
+
+- Status: Accepted for P2-S1 contracts/backend; production UI remains blocked
+- Date: 2026-07-26
+- Change ID: `CHG-2026-010`
+- Context: P2-S1 must replace fixture login with registration, required factor,
+  recovery, preferences, and a secure authorized session. The baseline did not
+  choose an external provider, login identifier, recovery proof, session model,
+  or boundary between account access and P2-S2 household membership. Stitch is
+  unavailable for the seven P2 screens after the governed 180-second gate.
+- Decision: Add a first-party Identity & Consent service with an independently
+  owned PostgreSQL database on the existing engine. Use a non-email login name,
+  Argon2id password plus required standards-based TOTP, saved one-time recovery
+  codes, opaque server-side cookie sessions, synchronizer CSRF tokens, exact
+  origin/Fetch Metadata checks, atomic PostgreSQL rate limits, and minimum-data
+  VI/EN/accessibility preferences. Password recovery requires TOTP plus one
+  recovery code; factor recovery requires password plus one recovery code and
+  re-enrollment. No external IdP, email/SMS provider, JWT, Redis, broker, or new
+  persistence engine is introduced. The session is account-scoped and grants
+  no household capability before P2-S2.
+- Alternatives considered: external identity provider; email/SMS recovery;
+  JWT/localStorage sessions; fixture identity as public auth; password-only;
+  recovery questions; automatic recovery after total factor loss; starting
+  production UI without a P2 Stitch reference.
+- Consequences: the service owns credential/session complexity and requires
+  carefully reviewed maintained crypto/TOTP libraries plus Windows/Ubuntu
+  supply-chain evidence. A user who loses all factors and recovery codes cannot
+  self-recover in this slice. TOTP is not phishing-resistant; passkeys remain a
+  later separately accepted option. Local wireframes and backend work may
+  proceed, but `MCP-DEBT-2026-002` blocks production UI, full P2-S1 acceptance,
+  merge as completed work, and deployment.
+- Planned baseline: P2-S1 required real account/session/MFA/recovery and an ADR
+  only if an external provider was selected; P2-S2 separately owned household
+  invitations and roles.
+- Actual implementation/evidence: the frozen contract and threat model are in
+  `docs/security/P2_S1_THREAT_MODEL.md`; local wireframes and MCP debt are in
+  `docs/design/reviews/P2_S1_LOCAL_WIREFRAME.md`. Runtime evidence is due after
+  implementation and no UI/design acceptance is claimed.
+- Validation and follow-up: package-scoped Level A and targeted Level B may run
+  for backend work. The one full `pnpm.cmd run validate:p2-s1` Level C campaign
+  waits for seven Frozen handoffs and production frontend/browser coverage.
+  P2-S2 remains exact next only after P2-S1 is fully accepted.
+
 ## Decision-change template
 
 ```md

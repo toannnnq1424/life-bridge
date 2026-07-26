@@ -161,3 +161,26 @@ Before release:
    `INTEGRATION_LOG`, and `SESSION_LOG` as applicable.
 8. Never rewrite public Git history without explicit authorization and a
    coordinated incident plan.
+
+## P2-S1 identity threat-model control
+
+The frozen account/session/recovery/preferences threat model is
+`docs/security/P2_S1_THREAT_MODEL.md` under `CHG-2026-010`/ADR-018. It requires:
+
+- first-party Identity-owned PostgreSQL and no cross-service table access;
+- Argon2id password storage with documented parameters, encrypted TOTP seed,
+  TOTP replay CAS, digest-only one-time recovery/challenge/session artifacts;
+- generic account/recovery responses and dummy password work for unknown users;
+- atomic account/request-source rate limits using HMAC-derived dimensions;
+- opaque server-side host-only cookie sessions, rotation/revocation, idle and
+  absolute expiry, synchronizer CSRF, exact Origin and Fetch Metadata checks;
+- public actor-header stripping and account-only authorization before P2-S2;
+- no credential mutation offline queue and no secrets in browser storage;
+- allow-listed logs and Identity-owned audit that exclude login names,
+  passwords, OTP/seeds, recovery/session/CSRF/challenge tokens, raw IP,
+  cookies, headers, bodies, database URLs and raw errors.
+
+The selected libraries are `@node-rs/argon2` and `otpauth`, pinned exactly and
+reviewed through the lockfile/lifecycle/dependency gate. TOTP is not
+phishing-resistant and the project makes no NIST AAL or compliance claim.
+Production UI is separately blocked by `MCP-DEBT-2026-002`.
