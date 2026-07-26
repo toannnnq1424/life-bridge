@@ -11,12 +11,17 @@ $startedProcesses = [System.Collections.Generic.List[System.Diagnostics.Process]
 New-Item -ItemType Directory -Force -Path $runtimeDirectory | Out-Null
 if (Test-Path -LiteralPath $runtimeFile) {
   $runtime = Get-Content -LiteralPath $runtimeFile -Raw | ConvertFrom-Json
+  if ($null -eq $runtime.PSObject.Properties["careCursorKey"]) {
+    $runtime | Add-Member -NotePropertyName careCursorKey -NotePropertyValue ([guid]::NewGuid().ToString("N"))
+    $runtime | ConvertTo-Json | Set-Content -LiteralPath $runtimeFile -Encoding UTF8
+  }
 } else {
   $runtime = [ordered]@{
     postgresAdminPassword = [guid]::NewGuid().ToString("N")
     careDatabasePassword = [guid]::NewGuid().ToString("N")
     notificationDatabasePassword = [guid]::NewGuid().ToString("N")
     careToken = [guid]::NewGuid().ToString("N")
+    careCursorKey = [guid]::NewGuid().ToString("N")
     notificationToken = [guid]::NewGuid().ToString("N")
   }
   $runtime | ConvertTo-Json | Set-Content -LiteralPath $runtimeFile -Encoding UTF8
@@ -30,6 +35,7 @@ $env:P1_ADMIN_DATABASE_URL = "postgresql://postgres:$($env:P1_POSTGRES_ADMIN_PAS
 $env:CARE_DATABASE_URL = "postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:55432/lifebridge_care"
 $env:NOTIFICATION_DATABASE_URL = "postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:55432/lifebridge_notification"
 $env:CARE_INTERNAL_TOKEN = $runtime.careToken
+$env:CARE_CURSOR_KEY = $runtime.careCursorKey
 $env:NOTIFICATION_INTERNAL_TOKEN = $runtime.notificationToken
 $env:CARE_URL = "http://127.0.0.1:3101"
 $env:NOTIFICATION_URL = "http://127.0.0.1:3102"

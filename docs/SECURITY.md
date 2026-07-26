@@ -228,3 +228,32 @@ Operational logs, metrics and spans are allow-listed separately from audit
 evidence and exclude identifiers, labels, scopes, setting values, effective
 times, idempotency material, cursors, counts, payloads, headers and raw errors.
 Identity readiness fails when the P2-S3 schema marker is absent.
+
+## P3-S1 coordination authorization control
+
+The frozen control is `docs/security/P3_S1_THREAT_MODEL.md`.
+
+Identity & Consent issues a fresh request-digest-bound decision for exactly
+`coordination.timeline.read` or `coordination.task.handoff`. Active membership
+is necessary but not sufficient: non-subject access requires the current P2
+subject, active household-coordination basic-label grant, and subject privacy
+visibility. Every target is evaluated independently. The decision is neither
+consent nor a reusable authorization cache.
+
+Gateway strips fixture/actor assertions, binds normalized intent, preserves
+session/CSRF/origin evidence, and never fabricates success or an empty Care
+projection. Care verifies the decision and the task's household, recipient,
+assignee, open state and version. Handoff uses row locking, advisory-serialized
+digest idempotency and one transaction for assignment, handoff, timeline,
+audit, outbox and replay evidence.
+
+Timeline cursors are HMAC-sealed and scope/version/snapshot/expiry bound. Pages
+have no totals. Server UTC instants, validated IANA zones, PostgreSQL local-day
+boundaries and `(occurred_at, event_ref)` ordering cover DST, equal timestamps,
+clock skew and keyset continuation deterministically.
+
+No free-form handoff content is accepted. Task titles stay inside the
+authorized Care read projection. Notification carries only an opaque task ID;
+allow-listed telemetry excludes titles, actor references, reason values,
+decisions, cursors, headers, tokens, idempotency material, payloads and raw
+errors. Offline mutation is blocked without queue or reconnect submit.

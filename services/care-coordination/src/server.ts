@@ -1,20 +1,29 @@
 import {
+  CoordinationAuthorizationDecisionSchema,
+  DailyTimelineQuerySchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
+  HandoffTaskRequestSchema,
   IdempotencyKeySchema,
+  IanaTimeZoneSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
 import Fastify from "fastify";
 
 import { CareError } from "./errors.js";
+import type { CoordinationService } from "./coordination-service.js";
 import type { CareService } from "./service.js";
 
 function header(request: { headers: Record<string, unknown> }, name: string): unknown {
   return request.headers[name];
 }
 
-export function buildCareServer(care: CareService, internalToken: string) {
+export function buildCareServer(
+  care: CareService,
+  internalToken: string,
+  coordination?: CoordinationService,
+) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
 
   app.addHook("preHandler", async (request, reply) => {
@@ -31,7 +40,61 @@ export function buildCareServer(care: CareService, internalToken: string) {
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "care_database" }),
   );
-  app.get("/version", async () => ({ service: "care-coordination", contract: "P1-S1-v1" }));
+  app.get("/version", async () => ({ service: "care-coordination", contract: "P3-S1-v1" }));
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/timeline/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireCoordination(coordination).dailyTimeline({
+          householdId: request.params.householdId,
+          query: DailyTimelineQuerySchema.parse(body.query),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; taskId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/tasks/:taskId/handoff/review",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireCoordination(coordination).handoffReview({
+          householdId: request.params.householdId,
+          taskId: request.params.taskId,
+          displayTimeZone: IanaTimeZoneSchema.parse(body.displayTimeZone),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; taskId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/tasks/:taskId/handoffs",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireCoordination(coordination).handoff({
+          householdId: request.params.householdId,
+          taskId: request.params.taskId,
+          request: HandoffTaskRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
 
   app.get<{ Params: { householdId: string } }>(
     "/internal/v1/households/:householdId/members",
@@ -156,4 +219,16 @@ function requiredIdempotencyKey(value: unknown): string {
     throw new CareError(400, "IDEMPOTENCY_KEY_REQUIRED", "errors.idempotency.required", false);
   }
   return IdempotencyKeySchema.parse(value);
+}
+
+function requireCoordination(service: CoordinationService | undefined): CoordinationService {
+  if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
+  return service;
+}
+
+function coordinationBody(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new CareError(400, "HANDOFF_VALIDATION_FAILED", "handoff.validation");
+  }
+  return value as Record<string, unknown>;
 }

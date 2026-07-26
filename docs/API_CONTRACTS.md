@@ -521,3 +521,117 @@ Stable P2-S3 codes are `CONSENT_VALIDATION_FAILED`,
 `IDEMPOTENCY_CONFLICT`, `AUDIT_CURSOR_INVALID`,
 `PRIVACY_VERSION_CONFLICT`, and `IDENTITY_SERVICE_UNAVAILABLE`. Validation
 errors no longer reuse `AUTHENTICATION_FAILED`.
+
+## P3-S1 frozen daily timeline and handoff API
+
+State: **Frozen for P3-S1 implementation** on 2026-07-26. P3 preserves the
+accepted P2 governed-read contract; it does not infer consent from organizer or
+member status and does not change any P2 consent-transition v1 event.
+
+The real authority path is:
+
+```text
+browser session -> Gateway -> Identity fresh coordination decision
+                -> Care Coordination -> Care-owned PostgreSQL
+```
+
+Identity grants `coordination.timeline.read` or
+`coordination.task.handoff` directly to the established subject. A collaborator
+requires active same-household membership, a current
+`household_coordination` grant containing
+`recipient_context.basic_label`, and the subject's
+`coordinationActivityVisibility=household_only`. A handoff target must
+independently satisfy that same boundary or be the subject. Role never
+substitutes for consent or current assignment.
+
+Identity's internal request-bound decision contains only opaque actor/subject/
+grant/household/recipient references, permission, subject/grant/privacy
+versions, decision time, correlation and request digest. Gateway validates and
+forwards it; Gateway never creates authority. Care cross-checks the decision
+against the locked task, household, recipient, current assignee and proposed
+target.
+
+### Daily timeline read
+
+`GET /api/v1/households/{householdId}/timeline` accepts:
+
+```text
+localDate=YYYY-MM-DD
+displayTimeZone=<validated IANA name>
+filter=all|task_created|task_completed|task_handoff
+limit=1..50
+cursor=<optional sealed continuation>
+```
+
+The `P3-S1-v1` response returns the selected local date, validated zone,
+inclusive `dayStartUtc`, exclusive `dayEndUtc`, exact filter, `snapshotAt`,
+coverage start, at most the requested items and a nullable `nextCursor`.
+It never returns a total, hidden count or page number. Items are ordered by
+stored server UTC `occurredAt ASC`, then stable opaque `eventRef ASC`.
+
+The authenticated cursor is bound to actor, household, recipient context,
+date, zone, filter, last key and a hidden maximum timeline sequence. It expires
+after 15 minutes. Continuations exclude later inserts, including
+backward-clock inserts; refresh starts a new snapshot. Invalid, expired,
+cross-scope or stale cursors return `TIMELINE_CURSOR_INVALID`. An unavailable
+Identity or Care dependency is never represented as an authoritative empty
+projection. No historical backfill is performed; dates before
+`coverageStartedAt` are labelled `history_unavailable`.
+
+Only the task title may carry human-entered text in this authorized,
+`Cache-Control: no-store` read model. Descriptions and labels are excluded.
+Title never enters cursor, audit, outbox, notification, log, metric or trace.
+
+### Accountable task handoff
+
+`GET /api/v1/households/{householdId}/tasks/{taskId}/handoff` returns the
+current confirmed task/version, current accountable actor reference and a
+bounded list of Identity-authorized target references with safe display keys.
+
+`POST /api/v1/households/{householdId}/tasks/{taskId}/handoffs` requires a
+browser-origin/CSRF check and `Idempotency-Key`:
+
+```json
+{
+  "operation": "handoff",
+  "expectedTaskVersion": 3,
+  "expectedFromActorRef": "actor_current",
+  "toActorRef": "actor_proposed",
+  "reasonCode": "availability_changed",
+  "effectiveTime": {
+    "mode": "immediate",
+    "displayTimeZone": "Asia/Bangkok"
+  }
+}
+```
+
+Reason values are `availability_changed|schedule_conflict|coverage_update|
+other_coordination`; no free-form context exists. Canonical intent includes
+the route household/task, from/to references, expected version, reason and
+effective mode. Same key and same complete intent replays the original durable
+result for 24 hours. Same key with any changed intent returns
+`IDEMPOTENCY_CONFLICT`.
+
+Care locks the task and requires: matching governed decision; matching
+household/recipient; caller equals current assignee and expected from actor;
+distinct authorized target; `open` state; exact task version. It rejects
+cross-household, unauthorized, inactive, self/no-op, stale, completed and any
+future cancelled state without broadening access. Cancellation is not a
+P3-S1 command and the accepted task schema currently has no cancelled producer.
+
+One transaction updates assignee/version and appends immutable handoff/timeline
+evidence, privacy-minimized audit, idempotency result and
+`care.task.handed_off.v1` outbox evidence. The event carries opaque IDs,
+enumerated reason/outcome, aggregate version, server `occurredAt` and
+`effectiveAt`, correlation/causation and notification disposition only. It has
+no task title/description, label, free text, cursor or idempotency material.
+The UI confirms only the returned durable task/handoff state. Notification
+delivery is a separate truthful state.
+
+Stable P3-S1 errors are `COORDINATION_RESOURCE_NOT_FOUND`,
+`COORDINATION_AUTHORITY_REQUIRED`, `TIMELINE_VALIDATION_FAILED`,
+`TIMELINE_CURSOR_INVALID`, `HANDOFF_VALIDATION_FAILED`,
+`HANDOFF_VERSION_CONFLICT`, `HANDOFF_STATE_CONFLICT`,
+`IDEMPOTENCY_CONFLICT`, `IDENTITY_SERVICE_UNAVAILABLE` and
+`SERVICE_UNAVAILABLE`. Generic inaccessible/absent states share the same
+resource response and expose no membership, recipient, actor, event or count.

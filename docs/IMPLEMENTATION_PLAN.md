@@ -6,13 +6,15 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P2 — Trust and household`; integrated
+- Current phase: `P3 — Care planning`; P3-S1 candidate in progress
 - Most recently integrated slice: `P2-S3 — Consent, privacy, audit, and
 settings`; validated and merged at
   `dev@bca04d1aff000abcedeed939dbfc9d7186cf1966`
-- Active product slice: none; P2-S3 is accepted and issue #8 is closed completed
-- Exact next eligible product slice: `P3-S1 — Daily timeline and handoff`; it
-  is orientation only and does not start here
+- Active product slice: `P3-S1 — Daily timeline and handoff` on
+  `phase/3-daily-timeline-handoff`; issue
+  [#9](https://github.com/toannnnq1424/life-bridge/issues/9)
+- Exact next eligible product slice: none until P3-S1 promotion completes;
+  expected orientation is `P3-S2 — Calendar and appointment coordination`
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -59,8 +61,8 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 | ------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------ | ------------- |
 | `P0` Foundation                       | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated     |
 | `P1` Daily task MVP                   | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; frozen P1 handoff                 | Validated     |
-| `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | In progress   |
-| `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Planned       |
+| `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Validated     |
+| `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | In progress   |
 | `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned       |
 | `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned       |
 | `P6` Microservice platform            | Prove independent runtime ownership, versioned compatibility, and isolation    | `P6-S1`–`P6-S3`                                | Accepted P1–P5 service boundaries          | Planned       |
@@ -506,6 +508,37 @@ Acceptance:
 - empty/filter-empty/denied/conflict/error and browser/integration tests pass.
 
 Dependencies: P1 task model; P2 roles/consent.
+
+Actual P3-S1 candidate:
+
+- `P3-S1-v1` freezes a permission-scoped daily projection and a versioned
+  handoff command/event. Identity issues a fresh P2 purpose/request-digest
+  decision; Gateway composes only; Care atomically owns assignment, handoff,
+  timeline, audit, outbox and idempotency evidence.
+- Server UTC, validated IANA zones, explicit local-day `[start, end)`, stable
+  `(occurred_at, event_ref)` ordering, snapshot sequence and sealed keyset
+  cursors cover DST, equal timestamps, backward clocks and continuation
+  without totals.
+- Migration 002 is additive/repeatable with a coverage marker, no historical
+  backfill and no cross-service persistence. Handoff accepts an enumerated
+  reason only; title/free-form content never enters event, audit, outbox,
+  Notification or telemetry payloads.
+- Four synthetic Stitch references were generated exactly once for desktop/
+  mobile LB-012 and the LB-014 handoff extension. The redacted native handoff
+  is Frozen with required corrections. Independent private-render inspection
+  remained unavailable, so KI-019 still blocks a visual-conformance claim.
+- Planned versus actual deviation `CHG-2026-013`: the baseline did not specify
+  fresh decision binding, snapshot sequence, cursor inference controls,
+  no-backfill or no-free-form context. Audits and official-source research
+  required these narrower controls. Impact is P3-S1 contract/data/UI/test only;
+  no service, engine, phase order or clinical scope changed.
+- Validation: targeted Level A type/lint and 49 unit/contract/boundary tests
+  passed. The exactly-once P3-S1 Level C, exact-head hosted CI, merge commit,
+  post-merge `dev` CI and issue #9 closeout remain pending and must be recorded
+  without rerunning unchanged green evidence.
+- Follow-up: only after acceptance, P3-S2 may reuse the frozen UTC/IANA time
+  representation through its own appointment/calendar contract. This task
+  does not begin P3-S2, P3-S3, DATA, P5, deployment or release.
 
 ### `P3-S2 — Calendar and appointment coordination`
 
@@ -988,6 +1021,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | `CHG-2026-010` | Accepted; implementation in progress | First-party P2 account/session boundary; account scope does not grant household access |
 | `CHG-2026-011` | Accepted; implementation deferred    | Select Spring Boot for greenfield Community at P5; preserve existing Node boundaries   |
 | `CHG-2026-012` | Accepted; local validation passed    | Consent authority is explicit self-establishment, never organizer membership           |
+| `CHG-2026-013` | Accepted; P3-S1 candidate            | Fresh P2 decision plus Care-owned snapshot timeline and atomic structured handoff      |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -1209,6 +1243,64 @@ No row means simultaneous implementation. Design generation/review may prepare a
   `docs/security/P2_S3_THREAT_MODEL.md`, `INT-2026-016`, KI-019 and the P2-S3
   session entry.
 
+## CHG-2026-013 — Freeze P3-S1 chronology and accountable handoff
+
+- State: Accepted; implementation candidate, promotion pending
+- Raised in phase/slice: `P3-S1`
+- Planned baseline: show a time-zone-explicit daily timeline and preserve task
+  ownership/concurrency during handoff, but the plan did not define authority
+  decision freshness, local-day/DST boundaries, snapshot pagination,
+  count-inference controls, handoff context shape or pre-P3 history.
+- Proposed/actual implementation: Identity issues a fresh permission- and
+  request-digest-scoped P2 decision; Gateway only composes; Care owns one
+  snapshot/keyset daily projection and one optimistic/idempotent immediate
+  handoff transaction. UTC occurrence plus `event_ref` is public order, IANA
+  local-day bounds are explicit, pages have no totals, history is not
+  backfilled and context is one enumerated reason.
+- Reason/evidence: three independent audits and the bounded RFC 9557,
+  PostgreSQL, WCAG 2.2 and accountable-handoff primary-source cycle converged
+  on server authority/time, minimum disclosure and deterministic recovery.
+- Impact:
+  - Product/UI: native VI/EN LB-012 and LB-014 extension with explicit date,
+    zone, boundary, filter, review, offline/stale/denied/conflict/uncertain
+    states and durable-success-only confirmation.
+  - API/events: `P3-S1-v1` timeline query/projection, authorization decision,
+    handoff review/command/result and `care.task.handed_off.v1`.
+  - Data/migration: additive Care-owned migration 002 adds coverage marker,
+    immutable timeline and accepted handoff evidence with no backfill.
+  - Privacy/security: no free-form handoff content or totals; title stays in
+    authorized read projection; decision/cursor/idempotency/telemetry are
+    bounded and minimized.
+  - Tests/operations: PostgreSQL DST/order/cursor/race/atomicity/migration,
+    provider-consumer, real outbox/Notification runtime, mocked UI/a11y/
+    offline/recovery, logs/secrets/build and exact cleanup.
+  - Phase order/schedule: unchanged. P3-S2 remains blocked until P3-S1 is
+    accepted; P3-S3, DATA-S1, P5, deployment and release remain separate.
+- Validation: Level A type/lint and 49 selected unit/contract/boundary tests
+  passed. The first focused Care PostgreSQL pass completed 12/13 cases,
+  classified an ambiguous timestamp parameter (`42P08`), and the minimal
+  explicit `timestamptz` correction passed targeted handoff concurrency;
+  retained migration rollback/reapply/no-backfill evidence also passed.
+  Mocked browser timeline 3/3 and targeted handoff review/conflict/offline 3/3
+  passed after one semantic-locator narrowing. The single Level C invocation
+  later stopped at its first formatting gate. Without a second invocation,
+  targeted continuation passed lint/type, unit 52/52, contracts 16/16, P1
+  PostgreSQL 6/6, P3 Identity/Care PostgreSQL 14/14, migration rollback/
+  reapply/no-backfill, all builds, P1 browser 4/4, P3 mocked 6/6 plus real
+  runtime 1/1, P2 mocked regressions 18/18, dependency/docs/config/secrets/log
+  checks and exact cleanup. Recovery fixed the format, clean-host database
+  provision/reset harness, one focus transition, bounded browser waits and
+  VI/EN test selectors. A real no-header path exposed and fixed Gateway
+  correlation re-resolution; its contract passes 19/19 and Care now receives
+  the exact Identity-bound value. Exact-head hosted CI, merge commit,
+  post-merge `dev` CI and issue #9 closeout remain required.
+- Follow-up owner and exact phase/slice: after immutable P3-S1 evidence only,
+  a fresh P3-S2 task freezes appointment/calendar semantics against the
+  accepted time representation; it does not reuse P3 authority implicitly.
+- Related ADR/integration/session entries: ADR-021,
+  `docs/security/P3_S1_THREAT_MODEL.md`, `INT-2026-017`, KI-016/KI-019 and the
+  P3-S1 session entry.
+
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
 until this phase closes. It contains no raw dataset or product fixture. All
@@ -1225,18 +1317,17 @@ next slice in the same conversation.
 
 ## Exact next action
 
-P2-S3 promotion is complete: exact head
-`cd7f0a8041241641cfbf47b7ec1fd48f933710e4` passed push run `30208540352`
-and PR run `30208541672`; PR #49 merged as
-`dev@bca04d1aff000abcedeed939dbfc9d7186cf1966`; post-merge run
-`30208723836` passed; and issue #8 is closed completed. The initial hosted
-portability failure and its non-rewritten recovery remain visible in
-CHG-2026-012 and the session/integration evidence. KI-001 still blocks
-deployment, KI-016 retains manual assistive-technology evidence, and KI-019
-retains independent private-render review before any visual-conformance claim.
+P3-S1 is the only active candidate, based exactly on
+`dev@cd58229794e6e8bf562a49879de494515c262db5` and owned by issue #9. Contract,
+data ownership, synthetic Stitch handoff and native implementation are frozen;
+local validation through the single Level C invocation and targeted recovery
+is green. Exact-head hosted CI, merge-commit promotion, post-merge `dev` CI
+and issue closeout still gate acceptance. KI-001 still blocks deployment,
+KI-016 retains manual assistive-technology evidence, and KI-019 retains
+private-render review before a visual-conformance claim.
 
-The exact next product slice is `P3-S1 — Daily timeline and handoff`. Its first
-action is to freeze the authorized,
-time-zone-explicit timeline projection and versioned handoff command against
-the accepted P2 consent boundary. DATA-S1, P5, deployment and release remain
-separate and unstarted.
+There is no eligible next product slice while those gates are pending. If
+actual code/contracts/tests remain green after promotion, the expected exact
+next slice is `P3-S2 — Calendar and appointment coordination`, beginning with
+its own versioned appointment/time contract. P3-S2, P3-S3, DATA-S1, P5,
+deployment and release are not started here.

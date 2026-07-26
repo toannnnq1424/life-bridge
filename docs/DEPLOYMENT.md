@@ -56,6 +56,9 @@ infrastructure is consolidated for cost.
   P2-S3 audit cursors; it is never exposed to the browser or logs. Production
   gateway cookies use the `__Host-` prefix,
   `HttpOnly`, `Secure`, `SameSite=Strict`, path `/`, and no `Domain`.
+- Care requires a separate `CARE_CURSOR_KEY` for P3 HMAC-sealed timeline
+  cursors. It must not reuse the Care internal-service token or enter logs,
+  browser state, checked-in environment files, audit, outbox or telemetry.
 - Each service exposes liveness, readiness, and build-version endpoints.
 - Logs are structured and follow `docs/SECURITY.md`.
 
@@ -185,3 +188,22 @@ resources. Identity readiness now requires schema marker version 3. Promotion
 to `dev` proves integration only; KI-001, KI-016, KI-019 and the later P8–P11
 security, accessibility, recovery, rollback and rollout gates still block any
 pilot or deployment claim.
+
+P3-S1 also adds no deployment or public infrastructure. Care migration 002 is
+applied by the Care process with its own credential and requires readiness
+marker version 2. Validation upgrades synthetic P1 state, forces a transaction
+rollback, reapplies twice, preserves tasks/audit and proves zero historical
+timeline/handoff backfill.
+
+If rollout fails before a P3 write, the prior compatible P1 binary may run
+while additive tables remain dormant; do not drop them. After any P3 handoff,
+preserve assignment, timeline, audit, outbox and idempotency evidence and use a
+roll-forward correction or an approved data-compensation plan. Destructive
+down-migration is not an operational shortcut.
+
+The local/CI topology starts built Notification, Care, Identity, Gateway and
+web processes on loopback, uses separate database owners/credentials, runs
+real and mocked artifact-disabled Chromium journeys, and removes only the
+PID-scoped processes, logs and disposable Compose project/volume it created.
+Promotion to `dev` proves integration only. KI-001, KI-016, KI-019 and P8–P11
+still block pilot, deployment or release claims.

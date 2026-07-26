@@ -917,3 +917,247 @@ h1 {
     box-shadow: none;
   }
 }
+
+/* P3-S1 daily chronology and handoff: native implementation from the Frozen handoff. */
+.coordination-app {
+  min-height: 100vh;
+  color: #15332b;
+  background: #f4fbf8;
+}
+
+.coordination-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid #8aa39a;
+  background: #e8f3ed;
+}
+
+.coordination-header label,
+.timeline-controls label,
+.handoff-card label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.coordination-header select,
+.timeline-controls input,
+.timeline-controls select,
+.handoff-card select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem 0.75rem;
+  border: 2px solid #627a71;
+  border-radius: 8px;
+  color: #15332b;
+  background: #fff;
+}
+
+.coordination-main {
+  width: min(100% - 2rem, 68rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) 0 5rem;
+}
+
+.coordination-main > p {
+  max-width: 72ch;
+  color: #40574f;
+}
+
+.coordination-app :focus-visible {
+  outline: 4px solid #b54708;
+  outline-offset: 3px;
+}
+
+.coordination-state,
+.timeline-scope,
+.handoff-card,
+.timeline-list article {
+  overflow-wrap: anywhere;
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 2px solid #8aa39a;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.coordination-state.warning {
+  border-color: #9a5b00;
+  background: #fff8e8;
+}
+
+.coordination-state.danger {
+  border-color: #a12828;
+  background: #fff2f0;
+}
+
+.coordination-state h2,
+.timeline-list h2,
+.handoff-card h2 {
+  margin-top: 0;
+}
+
+.timeline-controls {
+  display: grid;
+  grid-template-columns: minmax(13rem, 1.3fr) repeat(3, minmax(10rem, 1fr));
+  align-items: end;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.date-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.date-actions button {
+  flex: 1 1 6rem;
+}
+
+.timeline-scope dl,
+.timeline-list dl,
+.handoff-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem 1rem;
+  margin: 0;
+}
+
+.timeline-scope dt,
+.timeline-list dt,
+.handoff-facts dt {
+  color: #40574f;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.timeline-scope dd,
+.timeline-list dd,
+.handoff-facts dd {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+}
+
+.timeline-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-list li {
+  position: relative;
+  padding-inline-start: 1.5rem;
+}
+
+.timeline-list li::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0.35rem;
+  width: 0.25rem;
+  border-radius: 999px;
+  background: #236b5e;
+}
+
+.timeline-time,
+.event-kind {
+  color: #40574f;
+  font-weight: 700;
+}
+
+.load-later {
+  width: min(100%, 24rem);
+}
+
+.handoff-card {
+  max-width: 52rem;
+}
+
+.handoff-card form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.handoff-card .review-panel {
+  margin-top: 1.5rem;
+}
+
+.handoff-card .action-row {
+  align-items: stretch;
+}
+
+.handoff-card .action-row button {
+  min-width: min(100%, 12rem);
+}
+
+@media (max-width: 52rem) {
+  .timeline-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 30rem) {
+  .coordination-header,
+  .date-actions,
+  .handoff-card .action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .coordination-header label {
+    width: 100%;
+  }
+
+  .coordination-main {
+    width: min(100% - 1rem, 68rem);
+  }
+
+  .timeline-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .date-actions button,
+  .handoff-card button,
+  .load-later {
+    width: 100%;
+  }
+
+  .timeline-list li {
+    padding-inline-start: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coordination-app *,
+  .coordination-app *::before,
+  .coordination-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .coordination-header,
+  .coordination-state,
+  .timeline-scope,
+  .handoff-card,
+  .timeline-list article {
+    border: 2px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+
+  .timeline-list li::before {
+    background: CanvasText;
+  }
+}

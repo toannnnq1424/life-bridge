@@ -5,8 +5,13 @@ import {
   AuditHistoryProjectionSchema,
   AuditHistoryQuerySchema,
   ConsentTransitionEventSchema,
+  CoordinationAuthorizationDecisionSchema,
   CreateHouseholdInvitationRequestSchema,
+  DailyTimelineProjectionSchema,
+  DailyTimelineQuerySchema,
   GrantConsentRequestSchema,
+  HandoffResultProjectionSchema,
+  HandoffTaskRequestSchema,
   HouseholdInvitationProjectionSchema,
   NarrowConsentRequestSchema,
   PrivacyPreferencesProjectionSchema,
@@ -14,6 +19,7 @@ import {
   UpdatePrivacyPreferencesSchema,
   UpsertCareRecipientContextRequestSchema,
   CareTaskCompletedEventSchema,
+  CareTaskHandedOffEventSchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
   IanaTimeZoneSchema,
@@ -345,5 +351,164 @@ describe("P2-S3-v1 consent, privacy, and audit contracts", () => {
         },
       }).success,
     ).toBe(true);
+  });
+});
+
+describe("P3-S1-v1 daily timeline and handoff contracts", () => {
+  const actor = {
+    actorRef: "actor_current",
+    displayKey: "coordination.actor.you",
+    subject: false,
+  } as const;
+
+  it("freezes a request-bound permission decision without protected display content", () => {
+    const decision = {
+      decisionId: "decision_timeline_1",
+      permission: "coordination.timeline.read",
+      actor: { ...actor, actorId: "account_current" },
+      householdId: "household_demo",
+      recipientContextId: "recipient_context_demo",
+      subjectId: "subject_demo",
+      subjectVersion: 4,
+      grantId: "grant_demo",
+      grantVersion: 2,
+      privacyVersion: 3,
+      target: null,
+      eligibleTargets: [],
+      decidedAt: "2026-07-26T12:00:00.000Z",
+      correlationId: "corr_timeline_123",
+      requestDigest: "a".repeat(64),
+    };
+    expect(CoordinationAuthorizationDecisionSchema.safeParse(decision).success).toBe(true);
+    expect(
+      CoordinationAuthorizationDecisionSchema.safeParse({
+        ...decision,
+        recipientLabel: "not permitted",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("validates local dates, IANA zones, bounded pages, and projections without totals", () => {
+    expect(
+      DailyTimelineQuerySchema.parse({
+        localDate: "2026-11-01",
+        displayTimeZone: "America/New_York",
+        limit: "50",
+      }),
+    ).toMatchObject({ filter: "all", limit: 50 });
+    expect(
+      DailyTimelineQuerySchema.safeParse({
+        localDate: "2026-02-30",
+        displayTimeZone: "Asia/Bangkok",
+      }).success,
+    ).toBe(false);
+    expect(
+      DailyTimelineQuerySchema.safeParse({
+        localDate: "2026-07-26",
+        displayTimeZone: "ICT",
+      }).success,
+    ).toBe(false);
+
+    const projection = {
+      localDate: "2026-07-26",
+      displayTimeZone: "Asia/Bangkok",
+      dayStartUtc: "2026-07-25T17:00:00.000Z",
+      dayEndUtc: "2026-07-26T17:00:00.000Z",
+      filter: "all",
+      snapshotAt: "2026-07-26T12:00:00.000Z",
+      coverageStartedAt: "2026-07-26T00:00:00.000Z",
+      coverage: "complete",
+      items: [
+        {
+          eventRef: "event_timeline_1",
+          kind: "task_created",
+          taskId: "task_demo_1",
+          taskTitle: "Arrange transport",
+          actor,
+          fromActor: null,
+          toActor: null,
+          reasonCode: null,
+          occurredAt: "2026-07-26T01:00:00.000Z",
+          outcome: "confirmed",
+        },
+      ],
+      nextCursor: null,
+    };
+    expect(DailyTimelineProjectionSchema.safeParse(projection).success).toBe(true);
+    expect(DailyTimelineProjectionSchema.safeParse({ ...projection, total: 1 }).success).toBe(
+      false,
+    );
+  });
+
+  it("rejects free-form or self handoffs and freezes durable result semantics", () => {
+    const request = {
+      operation: "handoff",
+      expectedTaskVersion: 3,
+      expectedFromActorRef: "actor_current",
+      toActorRef: "actor_proposed",
+      reasonCode: "availability_changed",
+      effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+    } as const;
+    expect(HandoffTaskRequestSchema.safeParse(request).success).toBe(true);
+    expect(HandoffTaskRequestSchema.safeParse({ ...request, note: "not permitted" }).success).toBe(
+      false,
+    );
+    expect(
+      HandoffTaskRequestSchema.safeParse({
+        ...request,
+        toActorRef: request.expectedFromActorRef,
+      }).success,
+    ).toBe(false);
+
+    expect(
+      HandoffResultProjectionSchema.safeParse({
+        taskId: "task_demo_1",
+        taskVersion: 4,
+        currentActor: {
+          actorRef: "actor_proposed",
+          displayKey: "coordination.actor.household_member",
+          subject: true,
+        },
+        fromActor: actor,
+        reasonCode: "availability_changed",
+        occurredAt: "2026-07-26T12:00:00.000Z",
+        effectiveAt: "2026-07-26T12:00:00.000Z",
+        eventRef: "event_handoff_1",
+        outcome: "accepted",
+        notificationDelivery: "pending",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("keeps the handoff event versioned and free of task text", () => {
+    const event = {
+      eventId: "event_handoff_1",
+      eventType: "care.task.handed_off.v1",
+      eventVersion: 1,
+      occurredAt: "2026-07-26T12:00:00.000Z",
+      producer: "care-coordination",
+      aggregateId: "task_demo_1",
+      aggregateVersion: 4,
+      correlationId: "corr_handoff_123",
+      causationId: "command_handoff_1",
+      payload: {
+        householdId: "household_demo",
+        recipientContextId: "recipient_context_demo",
+        fromActorId: "account_current",
+        toActorId: "account_target",
+        reasonCode: "availability_changed",
+        outcome: "accepted",
+        effectiveAt: "2026-07-26T12:00:00.000Z",
+        notificationDisposition: "deliver",
+        recipientId: "account_target",
+      },
+    } as const;
+    expect(CareTaskHandedOffEventSchema.safeParse(event).success).toBe(true);
+    expect(
+      CareTaskHandedOffEventSchema.safeParse({
+        ...event,
+        payload: { ...event.payload, taskTitle: "not permitted" },
+      }).success,
+    ).toBe(false);
   });
 });

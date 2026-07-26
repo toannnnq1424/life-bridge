@@ -155,3 +155,45 @@ redacted retained evidence, atomic privacy saves, and accessible review.
 Ninety-day audit retention is an engineering default only. Production legal
 review, processing inventory, jurisdictional retention, export/deletion
 workflow, and manual assistive-technology evidence remain later gates.
+
+## 2026-07-26 — P3-S1 chronology and accountable handoff micro-cycle
+
+Result: `PASS WITH ASSUMPTIONS`; retrieved 2026-07-26. This was one bounded
+2021–2026 official/primary-source review. It introduced no dataset, fixture,
+clinical claim, diagnosis or treatment guidance.
+
+- IETF/RFC Editor, global, April 2024,
+  [RFC 9557](https://www.rfc-editor.org/rfc/rfc9557.html): an instant and its
+  named time zone are distinct facts. This confirms server UTC instants,
+  validated IANA display zones and explicit local-day boundaries.
+- PostgreSQL Global Development Group, global, PostgreSQL 17 current official
+  documentation,
+  [Date/Time Types](https://www.postgresql.org/docs/17/datatype-datetime.html)
+  and
+  [Invalid or Ambiguous Timestamps](https://www.postgresql.org/docs/17/datetime-invalid-input.html):
+  `timestamptz` is stored as UTC while full zone names carry DST rules; local
+  boundary resolution and spring/fall transition behavior must be deterministic.
+- W3C, global, 2024,
+  [WCAG 2.2](https://www.w3.org/TR/WCAG22/): semantic structure, labelled
+  controls, visible and unobscured focus, status messages, reflow and minimum
+  target size apply to chronological navigation and handoff review.
+- AHRQ, United States, current official TeamSTEPPS material,
+  [Handoff tool](https://www.ahrq.gov/teamstepps-program/curriculum/communication/tools/handoff.html):
+  accountable transfer includes information, authority and responsibility and
+  requires recipient awareness. This is used only as non-clinical coordination
+  background for explicit review/confirmation; no medical content or claim is
+  imported.
+
+Kết luận / Conclusion: P3-S1 stores server occurrence/effective instants in UTC,
+keeps the validated IANA display zone and selected local date explicit, tests
+23/24/25-hour days, and orders equal instants with a stable opaque tie-breaker.
+Handoff is a reviewed, versioned, idempotent immediate command with enumerated
+reason only; the UI confirms only durable returned state and never queues an
+offline mutation. Task title may remain only in the authorized no-store read
+projection. It must not enter cursor, audit, outbox, notification or telemetry.
+
+The technical sources are global and do not establish Viet Nam legal
+compliance. Production legal review, retention/deletion policy and manual
+assistive-technology evidence remain later gates. Another official source would
+not change the time, authority, privacy, accessibility or test decision, so the
+micro-cycle stopped.

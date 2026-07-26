@@ -290,3 +290,89 @@ describe("P2-S3 consent internal HTTP boundary", () => {
     await app.close();
   });
 });
+
+describe("P3-S1 coordination authority HTTP boundary", () => {
+  it("requires a fresh session and mutation proof only for a selected handoff target", async () => {
+    const requireAccountSession = vi.fn(async () => ({ accountId: "account_synthetic" }));
+    const identity = {
+      isReady: vi.fn(async () => true),
+      requireAccountSession,
+    } as unknown as IdentityService;
+    const authorizeCoordination = vi.fn(
+      async ({
+        request,
+      }: {
+        request: {
+          permission: "coordination.timeline.read" | "coordination.task.handoff";
+          requestDigest: string;
+        };
+      }) => ({
+        decisionId: "coordination_decision_synthetic",
+        permission: request.permission,
+        actor: {
+          actorId: "account_synthetic",
+          actorRef: "actor_ref_synthetic",
+          displayKey: "coordination.actor.you" as const,
+          subject: true,
+        },
+        householdId: "household_synthetic",
+        recipientContextId: "recipient_synthetic",
+        subjectId: "subject_synthetic",
+        subjectVersion: 1,
+        grantId: null,
+        grantVersion: null,
+        privacyVersion: null,
+        target:
+          request.permission === "coordination.task.handoff"
+            ? {
+                actorId: "account_target",
+                actorRef: "actor_ref_target",
+                displayKey: "coordination.actor.household_member" as const,
+                subject: false,
+              }
+            : null,
+        eligibleTargets: [],
+        decidedAt: "2026-07-26T12:00:00.000Z",
+        correlationId: "corr_p3_authority",
+        requestDigest: request.requestDigest,
+      }),
+    );
+    const consent = { authorizeCoordination } as unknown as ConsentService;
+    const app = buildIdentityServer(identity, "internal-token-value-123456789", undefined, consent);
+    const commonHeaders = {
+      "x-internal-service-token": "internal-token-value-123456789",
+      "x-session-token": "s".repeat(43),
+      "x-correlation-id": "corr_p3_authority",
+    };
+
+    const timeline = await app.inject({
+      method: "POST",
+      url: "/internal/v1/coordination/authorize",
+      headers: commonHeaders,
+      payload: {
+        permission: "coordination.timeline.read",
+        householdId: "household_synthetic",
+        requestDigest: "a".repeat(64),
+      },
+    });
+    const handoff = await app.inject({
+      method: "POST",
+      url: "/internal/v1/coordination/authorize",
+      headers: { ...commonHeaders, "x-csrf-token": "c".repeat(43) },
+      payload: {
+        permission: "coordination.task.handoff",
+        householdId: "household_synthetic",
+        taskId: "task_synthetic",
+        targetActorRef: "actor_ref_target",
+        requestDigest: "b".repeat(64),
+      },
+    });
+
+    expect(timeline.statusCode).toBe(200);
+    expect(handoff.statusCode).toBe(200);
+    expect(requireAccountSession).toHaveBeenNthCalledWith(1, "s".repeat(43));
+    expect(requireAccountSession).toHaveBeenNthCalledWith(2, "s".repeat(43), "c".repeat(43));
+    expect(authorizeCoordination).toHaveBeenCalledTimes(2);
+    await app.close();
+  });
+});

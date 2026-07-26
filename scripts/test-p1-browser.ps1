@@ -21,6 +21,7 @@ $env:P1_ADMIN_DATABASE_URL = "postgresql://postgres:$($env:P1_POSTGRES_ADMIN_PAS
 $env:CARE_DATABASE_URL = "postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:55434/lifebridge_care"
 $env:NOTIFICATION_DATABASE_URL = "postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:55434/lifebridge_notification"
 $env:CARE_INTERNAL_TOKEN = [guid]::NewGuid().ToString("N")
+$env:CARE_CURSOR_KEY = [guid]::NewGuid().ToString("N")
 $env:NOTIFICATION_INTERNAL_TOKEN = [guid]::NewGuid().ToString("N")
 $env:CARE_URL = "http://127.0.0.1:3101"
 $env:NOTIFICATION_URL = "http://127.0.0.1:3102"

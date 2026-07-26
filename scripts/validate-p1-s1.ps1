@@ -101,6 +101,7 @@ try {
   }
 
   $env:CARE_INTERNAL_TOKEN = [guid]::NewGuid().ToString("N")
+  $env:CARE_CURSOR_KEY = [guid]::NewGuid().ToString("N")
   $env:NOTIFICATION_INTERNAL_TOKEN = [guid]::NewGuid().ToString("N")
   $env:CARE_URL = "http://127.0.0.1:3101"
   $env:NOTIFICATION_URL = "http://127.0.0.1:3102"

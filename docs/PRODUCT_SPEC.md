@@ -257,6 +257,26 @@ Phases 6–12 prove those properties across independently deployable boundaries
 and the accepted release workload. Passing an end-to-end demo alone is never a
 production-readiness claim.
 
+### P3-S1 daily coordination outcome
+
+An authorized household participant can review accepted task activity for one
+explicit local date and record an accountable handoff of a currently assigned
+open task. Access is permission-scoped through the accepted P2 consent/privacy
+boundary; organizer/member status alone never grants it.
+
+The timeline makes its IANA display zone, UTC day boundary, current filter,
+snapshot and pre-coverage limitation explicit. It is chronologically stable,
+bounded and exposes no total or hidden count. Handoff review names the task,
+current and proposed safe actor aliases, expected version, enumerated reason
+and server-effective semantics before confirmation. Success appears only from
+durable Care state; notification delivery remains separate.
+
+Denied/not-found, empty day, filter-empty, unavailable, stale continuation,
+conflict, uncertain result/current-state recovery and offline read-only states
+must remain truthful and non-inferential in VI/EN. Offline handoff is blocked
+without queue or reconnect submission. No free-form handoff content, medical
+claim, diagnosis or treatment advice is introduced.
+
 ## 9. Explicit non-goals for the initial MVP
 
 - clinical diagnosis, treatment, dosage advice, or health-risk scoring;

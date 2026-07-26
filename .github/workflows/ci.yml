@@ -1,4 +1,4 @@
-name: Integrated P1 and P2 acceptance CI
+name: Integrated P1 through P3 acceptance CI
 
 on:
   pull_request:
@@ -69,6 +69,7 @@ jobs:
         run: |
           pnpm.cmd run format:p1:check
           pnpm.cmd run format:p2:backend:check
+          pnpm.cmd run format:p3:check
           pnpm.cmd run lint
           pnpm.cmd run typecheck
           pnpm.cmd run test:unit
@@ -82,7 +83,7 @@ jobs:
         run: pnpm.cmd run security:deps
 
   postgres-browser:
-    name: P2-S3 PostgreSQL integration and Chromium acceptance
+    name: P3-S1 PostgreSQL integration and Chromium acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 35
     services:
@@ -150,12 +151,12 @@ jobs:
           "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
           "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
 
-      - name: Run the P2-S3 Level C campaign
+      - name: Run the P3-S1 Level C campaign
         shell: pwsh
-        run: ./scripts/validate-p2-s3.ps1 -UseExistingDatabase -SkipInstall
+        run: ./scripts/validate-p3-s1.ps1 -UseExistingDatabase -SkipInstall
 
   integrated-gate:
-    name: P1 plus P2 full required gate
+    name: P1 through P3 full required gate
     if: always()
     needs:
       - windows-quality

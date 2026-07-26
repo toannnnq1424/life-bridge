@@ -7,7 +7,8 @@ const notification = new Pool({ connectionString: notificationUrl, max: 1 });
 
 try {
   await care.query(
-    "TRUNCATE care_idempotency, care_audit, care_outbox, care_tasks RESTART IDENTITY",
+    `TRUNCATE care_task_handoffs, care_timeline_events, care_idempotency,
+              care_audit, care_outbox, care_tasks RESTART IDENTITY CASCADE`,
   );
   await notification.query("TRUNCATE notifications, notification_inbox RESTART IDENTITY CASCADE");
 } finally {

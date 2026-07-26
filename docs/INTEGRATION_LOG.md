@@ -550,3 +550,63 @@ failures, not product failures.
   time-zone-explicit timeline projection and versioned handoff command against
   the accepted P2 governed-read boundary. No P3, DATA, P5, deployment or
   release work starts here.
+
+## INT-2026-017 — P3-S1 daily timeline and accountable handoff candidate
+
+- Date: 2026-07-26
+- Status: Local validation complete; hosted promotion pending
+- Source: `phase/3-daily-timeline-handoff` from verified
+  `dev@cd58229794e6e8bf562a49879de494515c262db5`
+- Owning work: GitHub issue #9 (`GH-008`)
+- Scope: `P3-S1-v1` fresh coordination authority decision, bounded daily
+  timeline, handoff review/command/result, `care.task.handed_off.v1`, Care
+  migration 002, Gateway/native VI/EN LB-012 and LB-014 extension,
+  Notification consumption and cumulative validation tooling
+- Ownership: Identity & Consent alone evaluates current P2 governed access.
+  Gateway composes without fabrication. Care Coordination alone writes task,
+  handoff, timeline, audit, outbox and idempotency rows in its PostgreSQL
+  database. Notification owns only its inbox/store. No new service, engine,
+  shared table, cross-service SQL or credential coupling exists.
+- Contract: decisions bind permission, household, request digest, correlation,
+  current subject/grant/privacy versions and a short server time. Care also
+  checks recipient, assignee, open state, expected version and target. UTC
+  occurrence plus event reference is stable order; IANA local-day bounds,
+  snapshot sequence and sealed keyset cursor cover DST, clock skew and
+  continuation with no total.
+- Mutation/evidence: handoff accepts one enumerated reason and immediate
+  server-time semantics. Idempotency is digest-only; one transaction updates
+  assignment/version and writes handoff, timeline, audit, outbox and replay
+  response. UI confirms only returned durable state and labels notification
+  separately. Offline mutation is blocked/no-queue; uncertain result requires
+  current-state check.
+- Privacy: task title exists only in the authorized Care read model. It and any
+  free-form content are absent from handoff command/event/audit/outbox/
+  Notification/telemetry. Pages expose no total or hidden count. Migration
+  starts an honest coverage boundary and backfills no history.
+- Design: the existing private LifeBridge project/design system was inspected.
+  Four synthetic desktop/mobile LB-012/LB-014 references were generated once
+  and read back individually; no credential, locator, remote ID, URL or
+  generated source was persisted. The Frozen redacted handoff rejects
+  placeholder times/zones, medical claims, free text, totals, false success
+  and offline queueing. KI-019 retains unavailable independent pixel review.
+- Planned versus actual: `CHG-2026-013` adds fresh decision binding, snapshot
+  chronology, no-total inference controls, explicit no-backfill and structured
+  context that the baseline left open. Reason is convergence of three audits
+  and the bounded official-source research cycle. Impact is P3-S1 only; phase
+  order, runtime boundaries and non-clinical scope are unchanged.
+- Validation: the single `pnpm.cmd run validate:p3-s1` invocation stopped at
+  its first formatting gate. Targeted recovery, without a second Level C,
+  completed affected lint/type, unit 52/52, contracts 16/16, P1 PostgreSQL
+  6/6, P3 Identity/Care PostgreSQL 14/14, migration rollback/reapply/
+  no-backfill, all builds, P1 browser 4/4, P3 mocked 6/6 plus real 1/1, and P2
+  mocked regressions 18/18. Docs/config/secrets/dependencies, privacy-safe
+  runtime logs and exact cleanup passed. Recovery corrected clean-host owner
+  provisioning/reset, focus and VI/EN selectors, and a real Gateway
+  correlation re-resolution defect; the no-header boundary passes 19/19.
+  Exact-head CI, PR merge commit, post-merge `dev` CI and bilingual issue #9
+  closeout remain pending and are not claimed early.
+- Decision/change references: issue #9, `CHG-2026-013`, ADR-021,
+  `docs/security/P3_S1_THREAT_MODEL.md`, KI-001/KI-016/KI-019
+- Follow-up: no next slice is eligible until immutable P3-S1 acceptance.
+  Expected orientation is P3-S2 only if actual code/contracts/tests confirm
+  it. P3-S2, P3-S3, DATA, P5, deployment and release are not started.

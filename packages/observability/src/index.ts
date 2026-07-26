@@ -30,6 +30,7 @@ export type PrivacySafeOperation =
   | "consent.narrow"
   | "consent.revoke"
   | "consent.authorize"
+  | "coordination.authorize"
   | "audit.read"
   | "privacy.update";
 export type TelemetryResult = "success" | "denied" | "conflict" | "failed";

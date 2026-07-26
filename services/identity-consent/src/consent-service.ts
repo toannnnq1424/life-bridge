@@ -6,6 +6,8 @@ import {
   ConsentOverviewProjectionSchema,
   ConsentSubjectProjectionSchema,
   ConsentTransitionEventSchema,
+  CoordinationAuthorizationDecisionSchema,
+  CoordinationAuthorizationRequestSchema,
   EstablishConsentSubjectRequestSchema,
   GovernedRecipientContextProjectionSchema,
   GrantConsentRequestSchema,
@@ -19,6 +21,9 @@ import {
   type ConsentOverviewProjection,
   type ConsentScope,
   type ConsentSubjectProjection,
+  type CoordinationActor,
+  type CoordinationAuthorizationDecision,
+  type CoordinationAuthorizationRequest,
   type EstablishConsentSubjectRequest,
   type GovernedRecipientContextProjection,
   type GrantConsentRequest,
@@ -489,6 +494,166 @@ export class ConsentService {
         if (transactionOpen) {
           await client.query("ROLLBACK");
         }
+        throw error;
+      } finally {
+        client.release();
+      }
+    });
+  }
+
+  public async authorizeCoordination(input: {
+    accountId: string;
+    request: CoordinationAuthorizationRequest;
+    correlationId: string;
+  }): Promise<CoordinationAuthorizationDecision> {
+    const request = CoordinationAuthorizationRequestSchema.parse(input.request);
+    return this.observed("coordination.authorize", input.correlationId, async () => {
+      const client = await this.pool.connect();
+      let transactionOpen = false;
+      try {
+        await client.query("BEGIN");
+        transactionOpen = true;
+        await this.requireActiveMember(client, input.accountId, request.householdId);
+
+        const subjectResult = await client.query<SubjectRow>(
+          `SELECT * FROM identity_consent_subjects
+           WHERE household_id = $1
+           FOR SHARE`,
+          [request.householdId],
+        );
+        const subject = subjectResult.rows[0];
+        if (!subject) throw inaccessible();
+
+        const privacyResult = await client.query<{
+          coordination_activity_visibility: "hidden" | "household_only";
+          version: number;
+        }>(
+          `SELECT coordination_activity_visibility, version
+           FROM identity_privacy_preferences
+           WHERE account_id = $1`,
+          [subject.account_id],
+        );
+        const privacy = privacyResult.rows[0];
+        const decisionTime = this.now();
+
+        const grants = await client.query<{
+          grant_id: string;
+          grantee_account_id: string;
+          version: number;
+        }>(
+          `SELECT grant_id, grantee_account_id, version
+           FROM identity_consent_grants
+           WHERE subject_id = $1
+             AND purpose = 'household_coordination'
+             AND state = 'active'
+             AND effective_at <= $2
+             AND revoked_effective_at IS NULL
+             AND 'recipient_context.basic_label' = ANY(scopes)
+           ORDER BY effective_at DESC, grant_id`,
+          [subject.subject_id, decisionTime],
+        );
+        const grantsByAccount = new Map(grants.rows.map((row) => [row.grantee_account_id, row]));
+        const actorGrant = grantsByAccount.get(input.accountId);
+        const actorIsSubject = subject.account_id === input.accountId;
+        if (
+          !actorIsSubject &&
+          (!actorGrant || privacy?.coordination_activity_visibility !== "household_only")
+        ) {
+          await this.audit(
+            client,
+            subject.subject_id,
+            input.accountId,
+            actorGrant?.grant_id ?? null,
+            "recipient_context.access_denied",
+            "denied",
+            input.correlationId,
+            decisionTime,
+          );
+          await client.query("COMMIT");
+          transactionOpen = false;
+          throw inaccessible();
+        }
+
+        const members = await client.query<{ account_id: string }>(
+          `SELECT account_id
+           FROM identity_household_memberships
+           WHERE household_id = $1 AND status = 'active'
+           ORDER BY account_id`,
+          [request.householdId],
+        );
+        const eligibleAccounts = members.rows
+          .map((row) => row.account_id)
+          .filter(
+            (accountId) =>
+              accountId === subject.account_id ||
+              (privacy?.coordination_activity_visibility === "household_only" &&
+                grantsByAccount.has(accountId)),
+          );
+        const actorFor = (accountId: string): CoordinationActor => ({
+          actorId: accountId,
+          actorRef: this.recipientRef(subject.subject_id, accountId),
+          displayKey:
+            accountId === input.accountId
+              ? "coordination.actor.you"
+              : "coordination.actor.household_member",
+          subject: accountId === subject.account_id,
+        });
+        const actor = actorFor(input.accountId);
+        const eligibleTargets =
+          request.permission === "coordination.task.handoff"
+            ? eligibleAccounts.filter((accountId) => accountId !== input.accountId).map(actorFor)
+            : [];
+        const target = request.targetActorRef
+          ? eligibleTargets.find((candidate) => candidate.actorRef === request.targetActorRef)
+          : null;
+        if (request.targetActorRef && !target) {
+          await this.audit(
+            client,
+            subject.subject_id,
+            input.accountId,
+            actorGrant?.grant_id ?? null,
+            "recipient_context.access_denied",
+            "denied",
+            input.correlationId,
+            decisionTime,
+          );
+          await client.query("COMMIT");
+          transactionOpen = false;
+          throw inaccessible();
+        }
+
+        await this.audit(
+          client,
+          subject.subject_id,
+          input.accountId,
+          actorGrant?.grant_id ?? null,
+          "recipient_context.access_allowed",
+          "allowed",
+          input.correlationId,
+          decisionTime,
+        );
+        const decision = CoordinationAuthorizationDecisionSchema.parse({
+          decisionId: this.id("decision"),
+          permission: request.permission,
+          actor,
+          householdId: request.householdId,
+          recipientContextId: subject.recipient_context_id,
+          subjectId: subject.subject_id,
+          subjectVersion: subject.version,
+          grantId: actorGrant?.grant_id ?? null,
+          grantVersion: actorGrant?.version ?? null,
+          privacyVersion: privacy?.version ?? null,
+          target: target ?? null,
+          eligibleTargets,
+          decidedAt: decisionTime.toISOString(),
+          correlationId: input.correlationId,
+          requestDigest: request.requestDigest,
+        });
+        await client.query("COMMIT");
+        transactionOpen = false;
+        return decision;
+      } catch (error) {
+        if (transactionOpen) await client.query("ROLLBACK");
         throw error;
       } finally {
         client.release();

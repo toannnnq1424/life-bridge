@@ -2,8 +2,9 @@ import { createHash, randomUUID } from "node:crypto";
 
 import {
   CareTaskCompletedEventSchema,
+  CareCoordinationEventSchema,
   CreateTaskRequestSchema,
-  type CareTaskCompletedEvent,
+  type CareCoordinationEvent,
   type CompleteTaskRequest,
   type CreateTaskRequest,
   type Member,
@@ -42,19 +43,19 @@ interface IdempotencyRow extends QueryResultRow {
 
 interface OutboxRow extends QueryResultRow {
   event_id: string;
-  event_type: "care.task.completed.v1";
+  event_type: "care.task.completed.v1" | "care.task.handed_off.v1";
   event_version: 1;
   aggregate_id: string;
   aggregate_version: number;
   correlation_id: string;
   causation_id: string;
-  payload: CareTaskCompletedEvent["payload"];
+  payload: CareCoordinationEvent["payload"];
   occurred_at: Date;
   attempt_count: number;
 }
 
 export interface ClaimedOutboxEvent {
-  event: CareTaskCompletedEvent;
+  event: CareCoordinationEvent;
   attemptCount: number;
 }
 
@@ -70,7 +71,7 @@ const taskSelection = `
       SELECT outbox.status
       FROM care_outbox AS outbox
       WHERE outbox.aggregate_id = task.task_id
-      ORDER BY outbox.occurred_at DESC
+      ORDER BY outbox.occurred_at DESC, outbox.event_id DESC
       LIMIT 1
     ) AS outbox_status
   FROM care_tasks AS task
@@ -147,8 +148,11 @@ export class CareService {
 
   public async isReady(): Promise<boolean> {
     try {
-      await this.pool.query("SELECT 1");
-      return true;
+      const result = await this.pool.query<{ version: number }>(
+        `SELECT version FROM care_schema_state
+         WHERE service = 'care-coordination' AND version >= 2`,
+      );
+      return result.rows.length === 1;
     } catch {
       return false;
     }
@@ -243,6 +247,20 @@ export class CareService {
           task.dueTimeZone,
           task.priority,
           task.createdAt,
+        ],
+      );
+      await client.query(
+        `INSERT INTO care_timeline_events (
+          event_ref, household_id, recipient_context_id, task_id, task_version,
+          event_kind, actor_id, actor_ref, occurred_at, recorded_at
+        ) VALUES ($1,$2,$3,$4,1,'task_created',$5,$5,$6,$6)`,
+        [
+          this.id("timeline"),
+          task.householdId,
+          task.careRecipientId,
+          task.taskId,
+          input.actorId,
+          now,
         ],
       );
       await this.writeAudit(client, {
@@ -439,6 +457,21 @@ export class CareService {
         [row.task_id, nextVersion, input.actorId, now],
       );
       await client.query(
+        `INSERT INTO care_timeline_events (
+          event_ref, household_id, recipient_context_id, task_id, task_version,
+          event_kind, actor_id, actor_ref, occurred_at, recorded_at
+        ) VALUES ($1,$2,$3,$4,$5,'task_completed',$6,$6,$7,$7)`,
+        [
+          event.eventId,
+          row.household_id,
+          row.care_recipient_id,
+          row.task_id,
+          nextVersion,
+          input.actorId,
+          now,
+        ],
+      );
+      await client.query(
         `INSERT INTO care_outbox (
           event_id, event_type, event_version, aggregate_id, aggregate_version,
           correlation_id, causation_id, payload, occurred_at, status, next_attempt_at
@@ -527,7 +560,7 @@ export class CareService {
                 occurred_at, attempt_count
          FROM care_outbox
          WHERE status IN ('pending', 'retrying') AND next_attempt_at <= $1
-         ORDER BY occurred_at
+         ORDER BY occurred_at, event_id
          FOR UPDATE SKIP LOCKED
          LIMIT 1`,
         [this.now()],
@@ -546,7 +579,7 @@ export class CareService {
       );
       await client.query("COMMIT");
       return {
-        event: CareTaskCompletedEventSchema.parse({
+        event: CareCoordinationEventSchema.parse({
           eventId: row.event_id,
           eventType: row.event_type,
           eventVersion: row.event_version,
@@ -597,7 +630,10 @@ export class CareService {
     );
   }
 
-  public async countRows(table: "care_tasks" | "care_outbox" | "care_audit"): Promise<number> {
+  public async countRows(
+    table:
+      "care_tasks" | "care_outbox" | "care_audit" | "care_timeline_events" | "care_task_handoffs",
+  ): Promise<number> {
     const result = await this.pool.query<{ count: string }>(
       `SELECT COUNT(*) AS count FROM ${table}`,
     );
