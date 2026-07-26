@@ -1,13 +1,17 @@
+import { createHash } from "node:crypto";
+
 import { port, requiredSecret, requiredUrl } from "@lifebridge/config";
 import { Pool } from "pg";
 
 import { OutboxDispatcher, httpEventDeliverer } from "./dispatcher.js";
+import { CoordinationService } from "./coordination-service.js";
 import { migrateCareDatabase } from "./migration.js";
 import { buildCareServer } from "./server.js";
 import { CareService } from "./service.js";
 
 const databaseUrl = requiredUrl(process.env.CARE_DATABASE_URL, "CARE_DATABASE_URL");
 const internalToken = requiredSecret(process.env.CARE_INTERNAL_TOKEN, "CARE_INTERNAL_TOKEN");
+const cursorSecret = requiredSecret(process.env.CARE_CURSOR_KEY, "CARE_CURSOR_KEY");
 const notificationToken = requiredSecret(
   process.env.NOTIFICATION_INTERNAL_TOKEN,
   "NOTIFICATION_INTERNAL_TOKEN",
@@ -18,7 +22,10 @@ const servicePort = port(process.env.CARE_PORT, 3101);
 await migrateCareDatabase(databaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
 const care = new CareService(pool);
-const app = buildCareServer(care, internalToken);
+const coordination = new CoordinationService(pool, {
+  cursorKey: createHash("sha256").update(cursorSecret).digest(),
+});
+const app = buildCareServer(care, internalToken, coordination);
 const dispatcher = new OutboxDispatcher(
   care,
   httpEventDeliverer(notificationUrl, notificationToken),

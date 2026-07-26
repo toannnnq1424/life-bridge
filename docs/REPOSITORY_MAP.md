@@ -1,37 +1,37 @@
 # Repository Map
 
 Verified: 2026-07-26
-Integrated base: `P2-S2 — Household, invitation, and care-recipient context`
-(`dev@22157b10a9cdd479d7bb0a439a74fc18dccfaf67`)
-Active slice: `P2-S3 — Consent, privacy, audit, and settings`
-(`phase/2-consent-privacy-audit`; local validation passed, promotion pending)
+Integrated base: `P2-S3 — Consent, privacy, audit, and settings`
+(`dev@cd58229794e6e8bf562a49879de494515c262db5`)
+Active slice: `P3-S1 — Daily timeline and handoff`
+(`phase/3-daily-timeline-handoff`; candidate validation/promotion pending)
 
-This map reflects the integrated P1/P2 tree plus the P2-S3 candidate structure.
-After P2-S3 acceptance, the exact next fresh task is P3-S1 timeline/handoff.
+This map reflects the integrated P1/P2 tree plus the P3-S1 candidate structure.
+P3-S2 is expected next only after P3-S1 acceptance.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
 
 ## Top-level layout
 
-| Path                          | Responsibility                                                                                        | Key entry points                                                      |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `apps/web/`                   | Native Next.js UI from reviewed Stitch handoffs, VI/EN localization, responsive/accessibility states  | `app/`, `src/ConsentPrivacyApp.tsx`, `src/AccountAccessApp.tsx`       |
-| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition | `src/main.ts`, `src/server.ts`                                        |
-| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                      | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts` |
-| `services/care-coordination/` | Task authority, authorization, optimistic concurrency, audit and transactional outbox                 | `src/service.ts`, `src/dispatcher.ts`, `migrations/001_initial.sql`   |
-| `services/notification/`      | Completion-event inbox/deduplication and recipient-scoped notification store                          | `src/service.ts`, `migrations/001_initial.sql`                        |
-| `packages/contracts/`         | Frozen P1 and P2 account/household/consent/privacy/audit schemas                                      | `src/index.ts`                                                        |
-| `packages/config/`            | Required runtime configuration and production fixture guard                                           | `src/index.ts`                                                        |
-| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                  | `src/index.ts`                                                        |
-| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                              | `src/index.ts`                                                        |
-| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                           | `p1-s1.test.ts`                                                       |
-| `tests/browser/`              | P1 runtime plus artifact-disabled P2 VI/EN, keyboard/focus, reflow, axe and security-state acceptance | `p2-s3.spec.ts`, `p2-s3-runtime.spec.ts`                              |
-| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                    | `docker-compose.yml`                                                  |
-| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                        | `start-p1.ps1`, `validate-p2-s2.ps1`, `validate-p2-s3.ps1`            |
-| `tools/quality/`              | Repository validators plus P1/P2 database and migration helpers                                       | `src/p2-database.ts`, `src/p2-reset.ts`, `src/p2-s3-migration.ts`     |
-| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                       | `workflows/ci.yml`                                                    |
-| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory          | documents listed below                                                |
+| Path                          | Responsibility                                                                                           | Key entry points                                                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `apps/web/`                   | Native Next.js UI from reviewed Stitch handoffs, VI/EN localization, responsive/accessibility states     | `app/`, `src/CoordinationApp.tsx`, `src/ConsentPrivacyApp.tsx`                               |
+| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition    | `src/main.ts`, `src/server.ts`                                                               |
+| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                         | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts`                        |
+| `services/care-coordination/` | Task/assignment, daily timeline, handoff, optimistic concurrency, audit and transactional outbox         | `src/coordination-service.ts`, `src/service.ts`, `migrations/002_daily_timeline_handoff.sql` |
+| `services/notification/`      | Completion/handoff event inbox/deduplication and recipient-scoped notification store                     | `src/service.ts`, `migrations/001_initial.sql`                                               |
+| `packages/contracts/`         | Frozen P1, P2 and P3-S1 authority/timeline/handoff/event schemas                                         | `src/index.ts`                                                                               |
+| `packages/config/`            | Required runtime configuration and production fixture guard                                              | `src/index.ts`                                                                               |
+| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                     | `src/index.ts`                                                                               |
+| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                                 | `src/index.ts`                                                                               |
+| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                              | `p1-s1.test.ts`                                                                              |
+| `tests/browser/`              | P1 runtime plus artifact-disabled P2/P3 VI/EN, keyboard/focus, reflow, axe and security-state acceptance | `p3-s1.spec.ts`, `p3-s1-runtime.spec.ts`                                                     |
+| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                       | `docker-compose.yml`                                                                         |
+| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                           | `start-p1.ps1`, `validate-p2-s3.ps1`, `validate-p3-s1.ps1`                                   |
+| `tools/quality/`              | Repository validators plus owned database and migration helpers                                          | `src/p2-database.ts`, `src/p2-s3-migration.ts`, `src/p3-s1-migration.ts`                     |
+| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                          | `workflows/ci.yml`                                                                           |
+| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory             | documents listed below                                                                       |
 
 The existing `.ai-orchestrator/`, `.codex/`, `.vscode/`, `data/`, and
 `docs/research/` boundaries remain governed by the Phase 0 rules. P1-S1 does
@@ -48,7 +48,7 @@ browser
           → services/notification      → owned PostgreSQL database
 
 care-coordination local transaction
-  → task + audit + completion outbox
+  → task/assignment + timeline/handoff + audit + versioned outbox
       → HTTP dispatcher with bounded retry
           → notification inbox/dedup + recipient notification
 ```
@@ -101,6 +101,17 @@ artifacts. `tools/quality/src/p2-s3-migration.ts` proves an upgrade from
 synthetic P2-S2 state, and `scripts/validate-p2-s3.ps1` owns the one cumulative
 candidate campaign and exact task-resource cleanup.
 
+P3-S1 adds Care migration `002_daily_timeline_handoff.sql`,
+`services/care-coordination/src/coordination-service.ts`, Identity's fresh
+coordination decision, Gateway composition routes and
+`apps/web/src/CoordinationApp.tsx` with native timeline/task routes.
+`docs/design/reviews/P3_S1_STITCH_HANDOFF.md` and
+`docs/security/P3_S1_THREAT_MODEL.md` are the redacted design/security
+authority. Artifact-disabled browser coverage lives in
+`tests/browser/p3-s1*.spec.ts`; `tools/quality/src/p3-s1-migration.ts` proves
+rollback/reapply/preservation/no-backfill, and `scripts/validate-p3-s1.ps1`
+owns the one cumulative candidate campaign and exact cleanup.
+
 ## Commands and generated state
 
 | Command                                     | Behavior                                                                                                    |
@@ -117,6 +128,10 @@ candidate campaign and exact task-resource cleanup.
 | `pnpm.cmd run test:p2-s3:migration`         | Disposable P2-S2 → P2-S3 migration/reapply/no-backfill/preservation check                                   |
 | `pnpm.cmd run test:p2-s3:browser`           | LB-028–LB-031 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner    |
 | `pnpm.cmd run validate:p2-s3`               | Single cumulative P2-S3 Level C with regressions, migration/PostgreSQL, built runtime, Chromium and privacy |
+| `pnpm.cmd run test:p3-s1:migration`         | Disposable P1 → P3-S1 Care migration rollback/reapply/no-backfill/preservation check                        |
+| `pnpm.cmd run test:p3-s1:integration`       | Real Identity/Care PostgreSQL authority, chronology, race, idempotency and atomicity evidence               |
+| `pnpm.cmd run test:p3-s1:browser`           | Artifact-disabled LB-012/LB-014 browser campaign; real path enabled by the Level C runner                   |
+| `pnpm.cmd run validate:p3-s1`               | Single cumulative P3-S1 Level C with P1/P2 regressions, owned PostgreSQL, built runtime and privacy/a11y    |
 
 Local credentials and logs live only under ignored `.lifebridge-local/`. The
 validation runner creates a PID-scoped Compose project and removes only that
@@ -136,6 +151,11 @@ databases are ignored.
 - Browser/accessibility: `tests/browser/p1-s1.spec.ts`, `p2-s1.spec.ts` and
   artifact-disabled `p2-s2*.spec.ts` / `p2-s3*.spec.ts`.
 - P2-S3 migration upgrade: `tools/quality/src/p2-s3-migration.ts`.
+- P3-S1 Care/Identity integration:
+  `services/care-coordination/src/coordination-service.integration.test.ts`
+  and `services/identity-consent/src/service.integration.test.ts`.
+- P3-S1 migration upgrade: `tools/quality/src/p3-s1-migration.ts`.
+- P3 browser/accessibility: artifact-disabled `p3-s1*.spec.ts`.
 - CI aggregate gate: `.github/workflows/ci.yml`.
 - Legacy foundation validator: `tools/quality/src/phase0.ts`.
 

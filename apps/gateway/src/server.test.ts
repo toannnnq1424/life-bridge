@@ -573,3 +573,240 @@ describe("P2-S3 consent gateway boundary", () => {
     await app.close();
   });
 });
+
+describe("P3-S1 governed coordination boundary", () => {
+  it("obtains a purpose-scoped timeline decision before calling Care", async () => {
+    const seen: Array<{ url: string; headers: Headers; body: Record<string, unknown> }> = [];
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      seen.push({ url, headers: new Headers(init?.headers), body });
+      if (url.endsWith("/internal/v1/coordination/authorize")) {
+        expect(body).toMatchObject({
+          permission: "coordination.timeline.read",
+          householdId: "household_synthetic",
+        });
+        expect(body.requestDigest).toMatch(/^[a-f0-9]{64}$/);
+        return jsonResponse(coordinationDecision("coordination.timeline.read", body.requestDigest));
+      }
+      expect(url).toBe(
+        "http://care.test/internal/v1/coordination/households/household_synthetic/timeline/query",
+      );
+      expect(body).toMatchObject({
+        query: {
+          localDate: "2026-11-01",
+          displayTimeZone: "America/New_York",
+          filter: "all",
+          limit: 2,
+        },
+        authorization: {
+          permission: "coordination.timeline.read",
+          householdId: "household_synthetic",
+        },
+      });
+      return jsonResponse({
+        localDate: "2026-11-01",
+        displayTimeZone: "America/New_York",
+        dayStartUtc: "2026-11-01T04:00:00.000Z",
+        dayEndUtc: "2026-11-02T05:00:00.000Z",
+        filter: "all",
+        snapshotAt: "2026-11-01T12:00:00.000Z",
+        coverageStartedAt: "2026-07-26T12:00:00.000Z",
+        coverage: "complete",
+        items: [],
+        nextCursor: null,
+      });
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/timeline?localDate=2026-11-01&displayTimeZone=America%2FNew_York&filter=all&limit=2",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-fixture-actor-id": "forged_actor",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(seen).toHaveLength(2);
+    expect(seen[0]?.headers.get("x-session-token")).toBe("synthetic_session");
+    expect(seen[0]?.headers.get("x-actor-id")).toBeNull();
+    expect(seen[0]?.headers.get("x-correlation-id")).toMatch(/^corr_[a-f0-9]{32}$/);
+    expect(seen[1]?.headers.get("x-internal-service-token")).toBe(config.careToken);
+    expect(seen[1]?.headers.get("x-actor-id")).toBe("");
+    expect(seen[1]?.headers.get("x-correlation-id")).toBe(seen[0]?.headers.get("x-correlation-id"));
+    await app.close();
+  });
+
+  it("binds mutation proof and one intent digest through Identity to Care", async () => {
+    const calls: Array<{ url: string; headers: Headers; body: Record<string, unknown> }> = [];
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      calls.push({ url, headers: new Headers(init?.headers), body });
+      if (url.endsWith("/internal/v1/coordination/authorize")) {
+        expect(body).toMatchObject({
+          permission: "coordination.task.handoff",
+          householdId: "household_synthetic",
+          taskId: "task_synthetic",
+          targetActorRef: "actor_ref_target",
+        });
+        return jsonResponse(
+          coordinationDecision("coordination.task.handoff", body.requestDigest, "actor_ref_target"),
+        );
+      }
+      expect(url).toBe(
+        "http://care.test/internal/v1/coordination/households/household_synthetic/tasks/task_synthetic/handoffs",
+      );
+      expect(calls[0]?.headers.get("x-csrf-token")).toBe("c".repeat(43));
+      expect(calls[1]?.headers.get("idempotency-key")).toBe("p3-handoff-0001");
+      expect(body).toMatchObject({
+        authorization: {
+          target: { actorRef: "actor_ref_target" },
+          requestDigest: calls[0]?.body.requestDigest,
+        },
+        request: {
+          operation: "handoff",
+          expectedTaskVersion: 3,
+          expectedFromActorRef: "actor_ref_current",
+          toActorRef: "actor_ref_target",
+          reasonCode: "schedule_conflict",
+          effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+        },
+      });
+      return jsonResponse({
+        taskId: "task_synthetic",
+        taskVersion: 4,
+        currentActor: {
+          actorRef: "actor_ref_target",
+          displayKey: "coordination.actor.household_member",
+          subject: false,
+        },
+        fromActor: {
+          actorRef: "actor_ref_current",
+          displayKey: "coordination.actor.you",
+          subject: true,
+        },
+        reasonCode: "schedule_conflict",
+        occurredAt: "2026-07-26T12:00:00.000Z",
+        effectiveAt: "2026-07-26T12:00:00.000Z",
+        eventRef: "timeline_event_synthetic",
+        outcome: "accepted",
+        notificationDelivery: "pending",
+      });
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/households/household_synthetic/tasks/task_synthetic/handoffs",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        origin: config.publicOrigin,
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": "c".repeat(43),
+        "idempotency-key": "p3-handoff-0001",
+        "x-correlation-id": "corr_p3_handoff",
+      },
+      payload: {
+        operation: "handoff",
+        expectedTaskVersion: 3,
+        expectedFromActorRef: "actor_ref_current",
+        toActorRef: "actor_ref_target",
+        reasonCode: "schedule_conflict",
+        effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().data.outcome).toBe("accepted");
+    expect(calls).toHaveLength(2);
+    await app.close();
+  });
+
+  it("never fabricates an empty timeline when Identity or Care is unavailable", async () => {
+    const identityDown = buildGatewayServer({ ...config, fixtureEnabled: false }, (async () => {
+      throw new Error("identity unavailable");
+    }) as typeof fetch);
+    const identityResponse = await identityDown.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/timeline?localDate=2026-07-26&displayTimeZone=Asia%2FBangkok",
+      headers: { cookie: "lb_session=synthetic_session" },
+    });
+    expect(identityResponse.statusCode).toBe(503);
+    expect(identityResponse.body).not.toContain('"items":[]');
+    await identityDown.close();
+
+    const careDown = buildGatewayServer({ ...config, fixtureEnabled: false }, (async (
+      input: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const url = String(input);
+      if (url.endsWith("/internal/v1/coordination/authorize")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+        return jsonResponse(coordinationDecision("coordination.timeline.read", body.requestDigest));
+      }
+      throw new Error("care unavailable");
+    }) as typeof fetch);
+    const careResponse = await careDown.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/timeline?localDate=2026-07-26&displayTimeZone=Asia%2FBangkok",
+      headers: { cookie: "lb_session=synthetic_session" },
+    });
+    expect(careResponse.statusCode).toBe(503);
+    expect(careResponse.body).not.toContain('"items":[]');
+    await careDown.close();
+  });
+});
+
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify({ data, meta: { correlationId: "corr_p3_contract" } }), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+function coordinationDecision(
+  permission: "coordination.timeline.read" | "coordination.task.handoff",
+  requestDigest: unknown,
+  targetActorRef?: string,
+) {
+  return {
+    decisionId: "coordination_decision_synthetic",
+    permission,
+    actor: {
+      actorId: "account_actor_synthetic",
+      actorRef: "actor_ref_current",
+      displayKey: "coordination.actor.you",
+      subject: true,
+    },
+    householdId: "household_synthetic",
+    recipientContextId: "recipient_synthetic",
+    subjectId: "subject_synthetic",
+    subjectVersion: 2,
+    grantId: null,
+    grantVersion: null,
+    privacyVersion: null,
+    target: targetActorRef
+      ? {
+          actorId: "account_target_synthetic",
+          actorRef: targetActorRef,
+          displayKey: "coordination.actor.household_member",
+          subject: false,
+        }
+      : null,
+    eligibleTargets: [
+      {
+        actorId: "account_target_synthetic",
+        actorRef: "actor_ref_target",
+        displayKey: "coordination.actor.household_member",
+        subject: false,
+      },
+    ],
+    decidedAt: "2026-07-26T12:00:00.000Z",
+    correlationId: "corr_p3_contract",
+    requestDigest,
+  };
+}

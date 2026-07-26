@@ -548,3 +548,45 @@ Operational telemetry remains independently allow-listed and contains no
 business values. Additive migration `003` is compatible with the `002`
 runtime; application rollback leaves the new schema dormant and recovery is
 roll-forward rather than destructive table removal.
+
+## P3-S1 governed timeline and accountable handoff
+
+P3-S1 extends the existing Care Coordination boundary; it does not add a
+service, broker, database, or authority cache.
+
+```text
+browser
+  -> Gateway normalizes the timeline/read or handoff intent
+      -> Identity & Consent issues a fresh purpose-scoped P2 decision
+          -> Gateway relays decision + exact normalized intent
+              -> Care Coordination independently validates task scope/state
+                  -> owned PostgreSQL transaction
+                     task assignee/version
+                     + handoff evidence
+                     + immutable timeline fact
+                     + audit
+                     + outbox
+                     + digest-only idempotency response
+                  -> Notification consumes versioned outbox event idempotently
+```
+
+The browser never selects authority. Identity re-evaluates current membership,
+subject/grant and privacy versions; organizer/member status is insufficient.
+Gateway may compose but never fabricate an authoritative empty timeline or
+successful handoff. Care accepts a decision only when permission, household,
+correlation, request digest, and short server-time window match, then checks
+recipient context, current assignee, open state, version, and eligible target.
+
+The daily projection is a bounded accepted-state read model, not a raw audit
+log. PostgreSQL derives each local-date `[start, end)` boundary from a
+validated IANA zone. UTC occurrence plus `event_ref` is the stable public
+order; an internal identity sequence freezes the snapshot against later
+inserts and backward-clock facts. The HMAC-sealed keyset cursor binds viewer,
+household, recipient, P2 versions, date, zone, filter, limit, snapshot,
+continuation, and expiry. No total or hidden count is exposed.
+
+Handoff occurrence/effective time is server UTC and immediate only after
+commit. Its context is an enumerated reason, never free-form text. A 5xx after
+submission remains uncertain until current task state is re-read; offline mode
+is read-only and never queues mutation. The full control is
+`docs/security/P3_S1_THREAT_MODEL.md`.

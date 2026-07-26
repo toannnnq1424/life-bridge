@@ -467,6 +467,47 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   or subject-transfer model requires a separate accepted policy, proof model,
   threat review and migration.
 
+## ADR-021 — Keep governed timeline and handoff in Care Coordination
+
+- Status: Accepted for P3-S1 candidate; promotion pending
+- Date: 2026-07-26
+- Change ID: `CHG-2026-013`
+- Context: P3-S1 must expose an accountable daily chronology and change task
+  assignment without letting the browser, Gateway, membership role, stale
+  consent event, or another service become authority. Local dates cross DST
+  and concurrent events can share UTC timestamps.
+- Decision: Identity & Consent remains the only P2 governed-access authority
+  and issues a fresh purpose/request-digest-scoped decision. Gateway composes
+  only. Extend the existing Care service and owned PostgreSQL with additive
+  timeline/handoff tables. Care independently validates task scope, assignee,
+  open state and version, and atomically updates assignment plus handoff,
+  timeline, audit, outbox and digest-only replay evidence. Use server UTC,
+  validated IANA display zones, PostgreSQL local-day boundaries, stable
+  `(occurred_at, event_ref)` order, snapshot sequence and sealed keyset
+  cursors without totals. Accept enumerated handoff reason only.
+- Alternatives considered: browser-selected authority; organizer-as-authority;
+  Gateway-generated timeline; events as authorization cache; cross-service
+  SQL; a new timeline service/database; offset-only zones; count pagination;
+  free-form handoff notes; offline mutation queue; historical backfill.
+- Consequences: pre-P3 history is explicitly incomplete rather than invented.
+  A handoff can target only currently governed actors and only the current
+  assignee can initiate it. Notification is truthful but separately delivered.
+  Cursor pages expire and must be reloaded after consent/privacy version
+  change. Later calendar work may reuse the time representation only through a
+  separately frozen P3-S2 contract.
+- Planned baseline: P3-S1 named timeline ordering, time zone, ownership and
+  concurrency but did not freeze decision freshness, snapshot/cursor binding,
+  no-total inference control, no-backfill or structured context.
+- Actual implementation/evidence: `P3-S1-v1` schemas and docs, Care migration
+  002 and coordination service, Identity decision endpoint, Gateway routes,
+  native LB-012/LB-014 extension, handoff event/Notification handling,
+  `docs/security/P3_S1_THREAT_MODEL.md` and artifact-disabled tests implement
+  the decision without a new service, engine or cross-owner persistence.
+- Validation and follow-up: local Level C, exact-head hosted CI, merge-commit
+  promotion, post-merge `dev` CI and issue #9 closeout remain required before
+  accepted integration is claimed. KI-001/KI-016/KI-019 remain explicit. P3-S2
+  must begin in a fresh task only after this evidence is immutable.
+
 ## Decision-change template
 
 ```md

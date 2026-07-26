@@ -4,6 +4,7 @@ import {
   CreateHouseholdInvitationRequestSchema,
   CreateHouseholdRequestSchema,
   ConsentScopeSchema,
+  CoordinationAuthorizationRequestSchema,
   EstablishConsentSubjectRequestSchema,
   FactorRecoveryConfirmationSchema,
   FactorRecoveryRequestSchema,
@@ -380,6 +381,29 @@ export function buildIdentityServer(
     },
   );
 
+  app.post<{ Body: unknown }>("/internal/v1/coordination/authorize", async (request) => {
+    const service = requireConsent(consent);
+    const correlationId = correlation(request);
+    const authorizationRequest = CoordinationAuthorizationRequestSchema.parse(request.body);
+    const requiresMutationProof =
+      authorizationRequest.permission === "coordination.task.handoff" &&
+      Boolean(authorizationRequest.targetActorRef);
+    const account = requiresMutationProof
+      ? await identity.requireAccountSession(
+          header(request, "x-session-token"),
+          header(request, "x-csrf-token"),
+        )
+      : await identity.requireAccountSession(header(request, "x-session-token"));
+    return successEnvelope(
+      await service.authorizeCoordination({
+        accountId: account.accountId,
+        request: authorizationRequest,
+        correlationId,
+      }),
+      correlationId,
+    );
+  });
+
   app.get<{ Params: { householdId: string }; Querystring: unknown }>(
     "/internal/v1/households/:householdId/audit",
     async (request) => {
@@ -569,6 +593,7 @@ function isP2S3Route(url: string): boolean {
     url.includes("/consent") ||
     url.includes("/audit") ||
     url.includes("/privacy") ||
+    url.includes("/coordination/") ||
     url.includes("/recipient-context/scopes/")
   );
 }

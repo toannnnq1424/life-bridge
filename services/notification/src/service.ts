@@ -1,8 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
 
 import {
-  CareTaskCompletedEventSchema,
-  type CareTaskCompletedEvent,
+  CareCoordinationEventSchema,
+  type CareCoordinationEvent,
   type ConsumerAcknowledgement,
   type Notification,
 } from "@lifebridge/contracts";
@@ -21,7 +21,7 @@ interface NotificationRow extends QueryResultRow {
   recipient_id: string;
   source_event_id: string;
   source_task_id: string;
-  message_key: "notifications.task.completed";
+  message_key: "notifications.task.completed" | "notifications.task.handed_off";
   message_params: { taskId: string };
   is_read: boolean;
   created_at: Date;
@@ -34,7 +34,7 @@ export class EventIdReusedError extends Error {
   }
 }
 
-function eventHash(event: CareTaskCompletedEvent): string {
+function eventHash(event: CareCoordinationEvent): string {
   return createHash("sha256").update(JSON.stringify(event)).digest("hex");
 }
 
@@ -73,7 +73,7 @@ export class NotificationService {
   }
 
   public async consume(input: unknown): Promise<ConsumerAcknowledgement> {
-    const event = CareTaskCompletedEventSchema.parse(input);
+    const event = CareCoordinationEventSchema.parse(input);
     const hash = eventHash(event);
     const client = await this.pool.connect();
 
@@ -102,7 +102,10 @@ export class NotificationService {
       }
 
       const processedAt = this.now();
-      if (event.payload.notificationDisposition === "suppress_self") {
+      if (
+        event.eventType === "care.task.completed.v1" &&
+        event.payload.notificationDisposition === "suppress_self"
+      ) {
         await client.query(
           `INSERT INTO notification_inbox (
             source_event_id, payload_hash, event_type, event_version,
@@ -117,9 +120,6 @@ export class NotificationService {
           operation: "event.consume",
           result: "success",
           correlationId: event.correlationId,
-          actorId: event.payload.completedBy,
-          householdId: event.payload.householdId,
-          resourceId: event.aggregateId,
           eventType: event.eventType,
           eventVersion: event.eventVersion,
         });
@@ -132,6 +132,14 @@ export class NotificationService {
       }
 
       const id = this.createNotificationId();
+      if (!("recipientId" in event.payload)) {
+        throw new Error("INVALID_NOTIFICATION_DISPOSITION");
+      }
+      const recipientId = event.payload.recipientId;
+      const messageKey =
+        event.eventType === "care.task.handed_off.v1"
+          ? "notifications.task.handed_off"
+          : "notifications.task.completed";
       await client.query(
         `INSERT INTO notification_inbox (
           source_event_id, payload_hash, event_type, event_version,
@@ -143,12 +151,13 @@ export class NotificationService {
         `INSERT INTO notifications (
           notification_id, recipient_id, source_event_id, source_task_id,
           message_key, message_params, is_read, created_at
-        ) VALUES ($1,$2,$3,$4,'notifications.task.completed',$5,false,$6)`,
+        ) VALUES ($1,$2,$3,$4,$5,$6,false,$7)`,
         [
           id,
-          event.payload.recipientId,
+          recipientId,
           event.eventId,
           event.aggregateId,
+          messageKey,
           JSON.stringify({ taskId: event.aggregateId }),
           processedAt,
         ],
@@ -160,9 +169,6 @@ export class NotificationService {
         operation: "event.consume",
         result: "success",
         correlationId: event.correlationId,
-        actorId: event.payload.recipientId,
-        householdId: event.payload.householdId,
-        resourceId: event.aggregateId,
         eventType: event.eventType,
         eventVersion: event.eventVersion,
       });

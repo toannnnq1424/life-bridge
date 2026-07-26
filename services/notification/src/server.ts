@@ -24,9 +24,12 @@ export function buildNotificationServer(service: NotificationService, internalTo
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "notification_database" }),
   );
-  app.get("/version", async () => ({ service: "notification", contract: "P1-S1-v1" }));
+  app.get("/version", async () => ({ service: "notification", contract: "P3-S1-v1" }));
 
   app.post<{ Body: unknown }>("/internal/v1/events/care-task-completed", async (request) =>
+    service.consume(request.body),
+  );
+  app.post<{ Body: unknown }>("/internal/v1/events/care-coordination", async (request) =>
     service.consume(request.body),
   );
 

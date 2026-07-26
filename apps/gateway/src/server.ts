@@ -1,7 +1,13 @@
+import { createHash } from "node:crypto";
+
 import {
+  CoordinationAuthorizationDecisionSchema,
+  DailyTimelineQuerySchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
+  HandoffTaskRequestSchema,
   IdempotencyKeySchema,
+  IanaTimeZoneSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, SafeLogger } from "@lifebridge/observability";
@@ -129,7 +135,7 @@ export function buildGatewayServer(
   });
 
   app.get("/health/live", async () => ({ status: "live" }));
-  app.get("/version", async () => ({ service: "gateway", contract: "P2-S3-v1" }));
+  app.get("/version", async () => ({ service: "gateway", contract: "P3-S1-v1" }));
   app.get("/health/ready", async (_request, reply) => {
     try {
       const care = await fetcher(`${config.careUrl}/health/ready`, {
@@ -632,6 +638,166 @@ export function buildGatewayServer(
     );
   });
 
+  app.get<{
+    Params: { householdId: string };
+    Querystring: Record<string, string | undefined>;
+  }>("/api/v1/households/:householdId/timeline", async (request, reply) => {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    const query = DailyTimelineQuerySchema.parse(request.query);
+    const requestDigest = digestJson({
+      operation: "timeline.read",
+      householdId: request.params.householdId,
+      query,
+    });
+    const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+      correlationId,
+      method: "POST",
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      body: {
+        permission: "coordination.timeline.read",
+        householdId: request.params.householdId,
+        requestDigest,
+      },
+    });
+    if (!decisionResponse) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    if (decisionResponse.status >= 400) {
+      return reply.code(decisionResponse.status).send(decisionResponse.body);
+    }
+    const authorization = decisionData(decisionResponse);
+    if (!authorization) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    try {
+      const response = await dependencyRequest(
+        fetcher,
+        `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/timeline/query`,
+        {
+          method: "POST",
+          actorId: "",
+          correlationId,
+          token: config.careToken,
+          body: { authorization, query },
+        },
+      );
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return dependencyUnavailable(reply, correlationId, logger, "care");
+    }
+  });
+
+  app.get<{
+    Params: { householdId: string; taskId: string };
+    Querystring: { displayTimeZone?: string };
+  }>("/api/v1/households/:householdId/tasks/:taskId/handoff", async (request, reply) => {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    const displayTimeZone = IanaTimeZoneSchema.parse(
+      request.query.displayTimeZone ?? "Asia/Bangkok",
+    );
+    const requestDigest = digestJson({
+      operation: "handoff.review",
+      householdId: request.params.householdId,
+      taskId: request.params.taskId,
+      displayTimeZone,
+    });
+    const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+      correlationId,
+      method: "POST",
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      body: {
+        permission: "coordination.task.handoff",
+        householdId: request.params.householdId,
+        taskId: request.params.taskId,
+        requestDigest,
+      },
+    });
+    if (!decisionResponse) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    if (decisionResponse.status >= 400) {
+      return reply.code(decisionResponse.status).send(decisionResponse.body);
+    }
+    const authorization = decisionData(decisionResponse);
+    if (!authorization) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    try {
+      const response = await dependencyRequest(
+        fetcher,
+        `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/tasks/${encodeURIComponent(request.params.taskId)}/handoff/review`,
+        {
+          method: "POST",
+          actorId: "",
+          correlationId,
+          token: config.careToken,
+          body: { authorization, displayTimeZone },
+        },
+      );
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return dependencyUnavailable(reply, correlationId, logger, "care");
+    }
+  });
+
+  app.post<{
+    Params: { householdId: string; taskId: string };
+    Body: unknown;
+  }>("/api/v1/households/:householdId/tasks/:taskId/handoffs", async (request, reply) => {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    if (!validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    const handoffRequest = HandoffTaskRequestSchema.parse(request.body);
+    const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+    const requestDigest = digestJson({
+      operation: "task.handoff",
+      householdId: request.params.householdId,
+      taskId: request.params.taskId,
+      request: handoffRequest,
+    });
+    const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+      correlationId,
+      method: "POST",
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+      body: {
+        permission: "coordination.task.handoff",
+        householdId: request.params.householdId,
+        taskId: request.params.taskId,
+        targetActorRef: handoffRequest.toActorRef,
+        requestDigest,
+      },
+    });
+    if (!decisionResponse) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    if (decisionResponse.status >= 400) {
+      return reply.code(decisionResponse.status).send(decisionResponse.body);
+    }
+    const authorization = decisionData(decisionResponse);
+    if (!authorization) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    try {
+      const response = await dependencyRequest(
+        fetcher,
+        `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/tasks/${encodeURIComponent(request.params.taskId)}/handoffs`,
+        {
+          method: "POST",
+          actorId: "",
+          correlationId,
+          token: config.careToken,
+          idempotencyKey,
+          body: { authorization, request: handoffRequest },
+        },
+      );
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return dependencyUnavailable(reply, correlationId, logger, "care");
+    }
+  });
+
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
     const idempotencyRequired = error instanceof IdempotencyKeyRequiredError;
@@ -684,6 +850,7 @@ export function buildGatewayServer(
     },
     internalPath: string,
     options: {
+      correlationId?: string;
       method?: string;
       sessionToken?: string;
       csrfToken?: string;
@@ -691,7 +858,8 @@ export function buildGatewayServer(
       body?: unknown;
     } = {},
   ): Promise<DependencyResponse | null> {
-    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    const correlationId =
+      options.correlationId ?? resolveCorrelationId(request.headers["x-correlation-id"]);
     try {
       return await identityRequest(fetcher, `${config.identityUrl}${internalPath}`, {
         correlationId,
@@ -795,6 +963,20 @@ function requiredIdempotencyKey(value: unknown): string {
     throw new IdempotencyKeyRequiredError();
   }
   return IdempotencyKeySchema.parse(value);
+}
+
+function digestJson(value: unknown): string {
+  return createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex");
+}
+
+function decisionData(response: DependencyResponse) {
+  try {
+    return CoordinationAuthorizationDecisionSchema.parse(
+      (response.body as { data?: unknown } | null)?.data,
+    );
+  } catch {
+    return null;
+  }
 }
 
 function dependencyUnavailable(

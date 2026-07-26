@@ -116,6 +116,7 @@ try {
   $env:IDENTITY_RATE_LIMIT_KEY = New-UrlSafeKey
   $env:IDENTITY_INTERNAL_TOKEN = [guid]::NewGuid().ToString("N")
   $env:CARE_INTERNAL_TOKEN = [guid]::NewGuid().ToString("N")
+  $env:CARE_CURSOR_KEY = [guid]::NewGuid().ToString("N")
   $env:NOTIFICATION_INTERNAL_TOKEN = [guid]::NewGuid().ToString("N")
   $env:IDENTITY_PORT = "3100"
   $env:GATEWAY_PORT = "3001"

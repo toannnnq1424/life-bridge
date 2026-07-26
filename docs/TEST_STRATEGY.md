@@ -319,3 +319,44 @@ An MCP becoming callable does not satisfy a test gate by itself. Close required
 MCP debt only after secret handling, least-privilege/data-egress and complete
 tool-schema review, one synthetic canary, and the affected slice validation are
 recorded. Any open deploy-blocking MCP debt fails P11 release validation.
+
+## P3-S1 validation contract
+
+The stable candidate has exactly one Level C entry point:
+
+```powershell
+pnpm.cmd run validate:p3-s1
+```
+
+The one campaign includes:
+
+1. affected formatting, lint, type, aggregate unit and `P3-S1-v1`
+   provider/consumer contracts;
+2. real Identity and Care PostgreSQL integration for current P2 authorization,
+   DST 23/25-hour boundaries, equal timestamps, backward clock values, sealed
+   cursor tamper/scope/version/expiry, keyset snapshot, concurrency,
+   optimistic conflicts, idempotent replay/changed intent and completed-state
+   rejection;
+3. transactional Care migration 002 rollback, repeat apply, old P1 row
+   preservation, latest-schema readiness and explicit no-backfill proof;
+4. one built runtime journey from native web through Gateway, fresh P2
+   authority, Care-owned PostgreSQL handoff transaction, outbox dispatch and
+   Notification inbox/store, plus cumulative P1 and governed P2 regressions;
+5. LB-012/LB-014 mocked empty/filter-empty/denied/unavailable/stale-cursor,
+   conflict, uncertain-result/current-state recovery, success and offline
+   no-queue paths in VI/EN;
+6. semantic list/time controls, keyboard review and safe focus, live status,
+   axe, 44 px targets, 320 CSS px reflow, long-offset time rendering,
+   reduced-motion/forced-colors CSS and artifact-disabled Playwright;
+7. privacy-safe runtime-log scanning, docs/config/secrets/dependency/diff
+   gates, generated-artifact checks and exact PID/Compose/process/log cleanup.
+
+The runtime uses Node 22, pinned PostgreSQL 17 and production builds. Trace,
+screenshots and video remain off. Local Level C result, any classified targeted
+Level B recovery, exact-head hosted runs and post-merge evidence belong in
+`docs/SESSION_LOG.md`; do not rerun unchanged successful phases.
+
+Manual NVDA/Narrator, physical-device, text-spacing, forced-colors and
+200%/400% assistive-technology sessions remain KI-016. Independent inspection
+of private Stitch renders remains KI-019 and cannot be replaced by automated
+visual-parity claims.

@@ -575,6 +575,114 @@ integration("P2-S1 identity lifecycle", () => {
       accessAlerts: false,
       version: 2,
     });
+    const subjectDecision = await consent.authorizeCoordination({
+      accountId: subjectAccount.projection.accountId,
+      request: {
+        permission: "coordination.timeline.read",
+        householdId: household.householdId,
+        requestDigest: "a".repeat(64),
+      },
+      correlationId: "corr_p3_s1_subject_timeline",
+    });
+    expect(subjectDecision).toMatchObject({
+      permission: "coordination.timeline.read",
+      grantId: null,
+      actor: { subject: true, displayKey: "coordination.actor.you" },
+      eligibleTargets: [],
+    });
+
+    clock.value += 1;
+    const renewed = await consent.grant({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: {
+        ...grantCommand,
+        scopes: ["recipient_context.basic_label"],
+        expectedSubjectVersion: 4,
+      },
+      idempotencyKey: "p3-s1-renewed-grant",
+      correlationId: "corr_p3_s1_renewed_grant",
+    });
+    const memberDecision = await consent.authorizeCoordination({
+      accountId: memberAccount.projection.accountId,
+      request: {
+        permission: "coordination.task.handoff",
+        householdId: household.householdId,
+        taskId: "task_p3_s1",
+        requestDigest: "b".repeat(64),
+      },
+      correlationId: "corr_p3_s1_member_handoff",
+    });
+    expect(memberDecision).toMatchObject({
+      grantId: renewed.grantId,
+      grantVersion: 1,
+      privacyVersion: 2,
+      actor: { subject: false, displayKey: "coordination.actor.you" },
+    });
+    expect(memberDecision.eligibleTargets).toHaveLength(1);
+    expect(memberDecision.eligibleTargets[0]).toMatchObject({
+      subject: true,
+      displayKey: "coordination.actor.household_member",
+    });
+
+    const hiddenPrivacy = await consent.updatePrivacy({
+      accountId: subjectAccount.projection.accountId,
+      request: {
+        profileVisibility: "private",
+        coordinationActivityVisibility: "hidden",
+        accessAlerts: true,
+        expectedVersion: 2,
+        displayTimeZone: "Asia/Bangkok",
+      },
+      correlationId: "corr_p3_s1_activity_hidden",
+    });
+    await expect(
+      consent.authorizeCoordination({
+        accountId: memberAccount.projection.accountId,
+        request: {
+          permission: "coordination.timeline.read",
+          householdId: household.householdId,
+          requestDigest: "c".repeat(64),
+        },
+        correlationId: "corr_p3_s1_hidden_denied",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_RESOURCE_NOT_FOUND" });
+    const restoredPrivacy = await consent.updatePrivacy({
+      accountId: subjectAccount.projection.accountId,
+      request: {
+        profileVisibility: "household_only",
+        coordinationActivityVisibility: "household_only",
+        accessAlerts: false,
+        expectedVersion: hiddenPrivacy.version,
+        displayTimeZone: "Asia/Bangkok",
+      },
+      correlationId: "corr_p3_s1_activity_restored",
+    });
+    clock.value += 1;
+    await consent.revoke({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      grantId: renewed.grantId,
+      request: {
+        action: "revoke",
+        effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+        expectedSubjectVersion: 5,
+        expectedGrantVersion: 1,
+      },
+      idempotencyKey: "p3-s1-renewed-revoke",
+      correlationId: "corr_p3_s1_renewed_revoke",
+    });
+    await expect(
+      consent.authorizeCoordination({
+        accountId: memberAccount.projection.accountId,
+        request: {
+          permission: "coordination.timeline.read",
+          householdId: household.householdId,
+          requestDigest: "d".repeat(64),
+        },
+        correlationId: "corr_p3_s1_revoked_denied",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_RESOURCE_NOT_FOUND" });
     await expect(
       consent.updatePrivacy({
         accountId: subjectAccount.projection.accountId,
@@ -590,12 +698,12 @@ integration("P2-S1 identity lifecycle", () => {
     ).rejects.toMatchObject({ code: "PRIVACY_VERSION_CONFLICT" });
     await expect(
       consent.getPrivacy({ accountId: subjectAccount.projection.accountId }),
-    ).resolves.toEqual(updatedPrivacy);
+    ).resolves.toEqual(restoredPrivacy);
 
     const persistedEvidence = await pool!.query<{ serialized: string }>(
       `SELECT event_json::text AS serialized FROM identity_consent_outbox`,
     );
-    expect(persistedEvidence.rows).toHaveLength(3);
+    expect(persistedEvidence.rows).toHaveLength(5);
     const serialized = persistedEvidence.rows.map((row) => row.serialized).join("\n");
     expect(serialized).not.toContain("Recipient Alpha");
     expect(serialized).not.toContain("Relationship Beta");

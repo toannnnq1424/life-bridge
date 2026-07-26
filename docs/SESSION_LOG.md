@@ -1254,3 +1254,143 @@ handoff command against the accepted P2 governed-read boundary. Manual
 NVDA/Narrator, physical-device/touch, text-spacing and 200%/400%
 assistive-technology evidence remains KI-016; private Stitch render review
 remains KI-019. No later slice begins here.
+
+## 2026-07-26 — P3-S1 daily timeline and handoff candidate
+
+### Checkpoint recovery and bounded scope
+
+The host `systemError` preserved
+`phase/3-daily-timeline-handoff@cd58229794e6e8bf562a49879de494515c262db5`
+with no product commit and no protected canary diff. Recovery reused the same
+task/branch and did not rescan, repeat the three completed audits, retry a
+Stitch write, create a duplicate screen, or begin P3-S2/P3-S3/DATA/P5/
+deployment/release.
+
+The audits converged on one authority chain: browser never selects authority;
+Identity issues a fresh purpose/request-digest-scoped decision; Gateway
+composes only; Care atomically owns assignment, handoff, timeline, audit,
+outbox and replay evidence. They also required sealed keyset chronology,
+no-free-form context, no historical backfill, explicit offline/no-queue and
+generic denial/unavailable behavior.
+
+### Research, contracts and Stitch handoff
+
+One bounded 2021–2026 official/primary cycle covered RFC 9557 time-zone
+representation, PostgreSQL timestamp/DST behavior, WCAG 2.2 chronological
+interfaces and AHRQ accountable handoff concepts. The bilingual conclusions
+and citations are in `docs/research/RESEARCH_LOG.md`; they shape coordination
+requirements only and add no diagnosis or treatment claim.
+
+`P3-S1-v1` freezes the daily projection, fresh Identity decision, handoff
+review/command/result and `care.task.handed_off.v1`. Server UTC, validated
+IANA zones, PostgreSQL local-day boundaries, stable
+`(occurred_at, event_ref)` order, snapshot sequence and HMAC-sealed bounded
+cursors cover DST, equal timestamps, clock skew, invalid/stale cursors and
+continuation without totals. Handoff uses expected version/from actor, target,
+enumerated reason, idempotency and server effective time.
+
+The existing LifeBridge Stitch project and approved design system were read
+before writing. Four synthetic desktop/mobile LB-012 and LB-014 handoff
+references were generated exactly once and individually read back. No
+credential, private locator, remote ID, URL, screenshot or generated source
+entered Git. The redacted handoff is Frozen for corrected native semantics.
+Independent list-surface pixel review remained unavailable; KI-019 prevents a
+generated-visual conformance claim and no write was retried.
+
+### Implementation and ownership
+
+Identity re-evaluates the P2 subject/grant/privacy boundary; organizer/member
+status never implies consent and eligible targets pass the same boundary.
+Gateway binds exact intent and never fabricates an empty timeline or success.
+Care migration 002 adds coverage marker, immutable timeline and accepted
+handoff evidence without backfill. One Care transaction row-locks the task,
+updates assignee/version and writes handoff, timeline, audit, outbox and
+digest-only idempotency response. Notification consumes the versioned event
+idempotently with task ID only.
+
+Native VI/EN LB-012 and LB-014-extension routes expose date, IANA zone,
+UTC boundary, filter, snapshot/coverage, semantic chronology, keyset
+continuation, review/confirmation and truthful empty/filter-empty/denied/
+unavailable/stale/offline/conflict/uncertain/recovery/success states. Offline
+handoff is disabled with no queue or reconnect submission.
+
+### Planned versus actual and validation checkpoint
+
+`CHG-2026-013` records that the baseline left fresh decision binding, snapshot
+pagination, no-total inference controls, no-backfill and context shape open.
+Audits/research required the narrower actual design. Impact is confined to
+P3-S1 contract/data/API/UI/tests; no new service, engine, phase reorder,
+clinical scope or deployment exists.
+
+Targeted Level A is green: root typecheck, affected lint recovery, and 49
+unit/contract/provider-consumer tests passed before the stable campaign.
+
+The first focused Care PostgreSQL pass completed 12/13 cases and classified
+one real SQL typing defect: concurrent handoff idempotency bound the shared
+timestamp parameter without an explicit PostgreSQL type (`42P08`). Casting
+that parameter to `timestamptz` was the only product correction; the targeted
+handoff race then passed, as did the separately retained migration
+rollback/reapply/no-backfill evidence. The full database group was not rerun.
+
+The first mocked browser group passed all three timeline cases, then stopped
+on a strict locator that matched the expected-version value in both summary
+and review. Narrowing the assertion to the semantic review panel was the only
+test correction; targeted handoff review/conflict/offline evidence then passed,
+preserving 6/6 coverage across the classified runs. The exact generated
+Playwright output was inspected and removed. A wrapper attempt that found no
+runtime log directory was orchestration-only and started no test or process;
+the runner now creates its scoped directory before use. None of these targeted
+recoveries invoked Level C.
+
+### Single Level C invocation and targeted recovery
+
+The single `pnpm.cmd run validate:p3-s1` invocation stopped at its first gate
+because `playwright.p3-s1.config.ts` was not yet Prettier-normalized. No
+lint/test/build/runtime command had run. The file was formatted and checked
+directly; Level C was not invoked a second time. Inspection also found that a
+clean host needed explicit P1 database-owner provisioning, and the first
+PostgreSQL continuation exposed that the inherited P1 reset helper did not
+truncate the new Care-owned timeline/handoff FK tables. The runner now calls
+the existing P1 provisioner and reset includes those tables with scoped
+`CASCADE`.
+
+The unchanged and missing campaign phases then passed as targeted continuation:
+
+- affected lint/type, aggregate unit 52/52, contracts 16/16,
+  docs/config/secrets, no-known-vulnerability dependency audit and all
+  production builds;
+- cumulative P1 PostgreSQL 6/6 and P3 Identity/Care PostgreSQL 14/14,
+  migration rollback/reapply/no-backfill, concurrent handoff, sealed
+  chronology and expiry cleanup;
+- P1 production runtime/browser 4/4;
+- P3 mocked timeline/handoff/a11y/offline/recovery 6/6 across retained
+  classified runs, and real web -> Gateway -> Identity -> Care -> owned
+  PostgreSQL -> outbox/Notification 1/1;
+- mocked governed-access regressions: P2-S3 7/7, P2-S2 6/6 and P2-S1 5/5;
+- privacy-safe runtime-log scan, `git diff --check`, and exact removal of every
+  PID-scoped container, network, volume, process, log and browser artifact.
+
+Browser recovery preserved each failure rather than rerunning green groups.
+It fixed one real focus-transition defect, bounded Playwright action/navigation
+waits, corrected VI/EN setup selectors, split FK-ordered E2E cleanup, and
+narrowed one semantic timeline locator. The real path also exposed a Gateway
+correlation defect: when a client omitted the optional header, the route and
+Identity helper generated different IDs, so Care correctly rejected the
+fresh decision. All three P3 routes now resolve once and propagate that value;
+the no-header Gateway contract passes 19/19 and the final real E2E passes in
+four seconds with minimized Notification evidence.
+
+No second full Level C was issued and unchanged successful commands were not
+rerun. Hosted exact-head CI must now execute the corrected coherent runner
+from a clean environment. Exact-head CI, merge commit, post-merge `dev` CI and
+issue #9 closeout remain pending and are not claimed.
+
+KI-001 still blocks deployment. KI-016 retains manual NVDA/Narrator,
+physical-device, text-spacing, forced-colors and 200%/400% assistive-
+technology evidence. KI-019 retains independent private-render inspection.
+The user-owned `docs/orchestration/reports/STITCH_MCP_CANARY.md` remains
+untouched and must remain unstaged.
+
+No next slice is eligible while P3-S1 is pending. Expected orientation is
+P3-S2 only after immutable evidence confirms the shared time representation;
+this task does not begin it.

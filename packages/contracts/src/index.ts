@@ -11,6 +11,18 @@ export const LocaleSchema = z.enum(["vi-VN", "en"]);
 export const IanaTimeZoneSchema = z.string().min(1).max(80).refine(isIanaTimeZone, {
   message: "invalid_time_zone",
 });
+export const LocalDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((value) => {
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(Date.UTC(year!, month! - 1, day));
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month! - 1 &&
+      date.getUTCDate() === day
+    );
+  }, "invalid_local_date");
 export const LoginNameSchema = z
   .string()
   .trim()
@@ -446,6 +458,68 @@ export type GovernedRecipientContextProjection = z.infer<
   typeof GovernedRecipientContextProjectionSchema
 >;
 
+export const CoordinationPermissionSchema = z.enum([
+  "coordination.timeline.read",
+  "coordination.task.handoff",
+]);
+export const CoordinationActorDisplayKeySchema = z.enum([
+  "coordination.actor.you",
+  "coordination.actor.household_member",
+]);
+export const CoordinationActorSchema = z
+  .object({
+    actorId: OpaqueIdSchema,
+    actorRef: OpaqueIdSchema,
+    displayKey: CoordinationActorDisplayKeySchema,
+    subject: z.boolean(),
+  })
+  .strict();
+
+export const CoordinationAuthorizationDecisionSchema = z
+  .object({
+    decisionId: OpaqueIdSchema,
+    permission: CoordinationPermissionSchema,
+    actor: CoordinationActorSchema,
+    householdId: OpaqueIdSchema,
+    recipientContextId: OpaqueIdSchema,
+    subjectId: OpaqueIdSchema,
+    subjectVersion: z.number().int().positive(),
+    grantId: OpaqueIdSchema.nullable(),
+    grantVersion: z.number().int().positive().nullable(),
+    privacyVersion: z.number().int().positive().nullable(),
+    target: CoordinationActorSchema.nullable(),
+    eligibleTargets: z.array(CoordinationActorSchema).max(25),
+    decidedAt: z.iso.datetime({ offset: true }),
+    correlationId: CorrelationIdSchema,
+    requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict();
+
+export const CoordinationAuthorizationRequestSchema = z
+  .object({
+    permission: CoordinationPermissionSchema,
+    householdId: OpaqueIdSchema,
+    taskId: OpaqueIdSchema.optional(),
+    targetActorRef: OpaqueIdSchema.optional(),
+    requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const handoff = value.permission === "coordination.task.handoff";
+    if (handoff !== Boolean(value.taskId)) {
+      context.addIssue({ code: "custom", message: "task_scope_required", path: ["taskId"] });
+    }
+  });
+
+export type CoordinationPermission = z.infer<typeof CoordinationPermissionSchema>;
+export type CoordinationActor = z.infer<typeof CoordinationActorSchema>;
+export type CoordinationAuthorizationDecision = z.infer<
+  typeof CoordinationAuthorizationDecisionSchema
+>;
+export type CoordinationAuthorizationRequest = z.infer<
+  typeof CoordinationAuthorizationRequestSchema
+>;
+
 export const PrioritySchema = z.enum(["normal", "important", "urgent"]);
 export const TaskStatusSchema = z.enum(["open", "completed"]);
 export const NotificationDeliverySchema = z.enum([
@@ -516,6 +590,119 @@ export const TaskProjectionSchema = z
   })
   .strict();
 
+export const TimelineFilterSchema = z.enum([
+  "all",
+  "task_created",
+  "task_completed",
+  "task_handoff",
+]);
+
+export const DailyTimelineQuerySchema = z
+  .object({
+    localDate: LocalDateSchema,
+    displayTimeZone: IanaTimeZoneSchema,
+    filter: TimelineFilterSchema.default("all"),
+    limit: z.coerce.number().int().min(1).max(50).default(25),
+    cursor: z.string().min(20).max(2048).optional(),
+  })
+  .strict();
+
+export const TimelineActorSchema = CoordinationActorSchema.omit({ actorId: true }).strict();
+
+export const DailyTimelineItemSchema = z
+  .object({
+    eventRef: OpaqueIdSchema,
+    kind: z.enum(["task_created", "task_completed", "task_handoff"]),
+    taskId: OpaqueIdSchema,
+    taskTitle: z.string().min(1).max(120),
+    actor: TimelineActorSchema.nullable(),
+    fromActor: TimelineActorSchema.nullable(),
+    toActor: TimelineActorSchema.nullable(),
+    reasonCode: z
+      .enum(["availability_changed", "schedule_conflict", "coverage_update", "other_coordination"])
+      .nullable(),
+    occurredAt: z.iso.datetime({ offset: true }),
+    outcome: z.literal("confirmed"),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const isHandoff = value.kind === "task_handoff";
+    if (
+      isHandoff !== Boolean(value.fromActor && value.toActor && value.reasonCode && !value.actor)
+    ) {
+      context.addIssue({ code: "custom", message: "invalid_timeline_actor_shape" });
+    }
+    if (!isHandoff && (!value.actor || value.fromActor || value.toActor || value.reasonCode)) {
+      context.addIssue({ code: "custom", message: "invalid_timeline_actor_shape" });
+    }
+  });
+
+export const DailyTimelineProjectionSchema = z
+  .object({
+    localDate: LocalDateSchema,
+    displayTimeZone: IanaTimeZoneSchema,
+    dayStartUtc: z.iso.datetime({ offset: true }),
+    dayEndUtc: z.iso.datetime({ offset: true }),
+    filter: TimelineFilterSchema,
+    snapshotAt: z.iso.datetime({ offset: true }),
+    coverageStartedAt: z.iso.datetime({ offset: true }),
+    coverage: z.enum(["complete", "history_unavailable"]),
+    items: z.array(DailyTimelineItemSchema).max(50),
+    nextCursor: z.string().min(20).max(2048).nullable(),
+  })
+  .strict();
+
+export const HandoffReasonCodeSchema = z.enum([
+  "availability_changed",
+  "schedule_conflict",
+  "coverage_update",
+  "other_coordination",
+]);
+
+export const HandoffTaskRequestSchema = z
+  .object({
+    operation: z.literal("handoff"),
+    expectedTaskVersion: z.number().int().positive(),
+    expectedFromActorRef: OpaqueIdSchema,
+    toActorRef: OpaqueIdSchema,
+    reasonCode: HandoffReasonCodeSchema,
+    effectiveTime: ImmediateEffectiveTimeSchema,
+  })
+  .strict()
+  .refine((value) => value.expectedFromActorRef !== value.toActorRef, {
+    message: "handoff_target_must_differ",
+    path: ["toActorRef"],
+  });
+
+export const HandoffReviewProjectionSchema = z
+  .object({
+    taskId: OpaqueIdSchema,
+    taskTitle: z.string().min(1).max(120),
+    taskStatus: TaskStatusSchema,
+    taskVersion: z.number().int().positive(),
+    currentActor: TimelineActorSchema,
+    eligibleTargets: z.array(TimelineActorSchema).max(25),
+    effectiveMode: z.literal("immediate"),
+    displayTimeZone: IanaTimeZoneSchema,
+    serverTime: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const HandoffResultProjectionSchema = z
+  .object({
+    taskId: OpaqueIdSchema,
+    taskVersion: z.number().int().positive(),
+    currentActor: TimelineActorSchema,
+    fromActor: TimelineActorSchema,
+    reasonCode: HandoffReasonCodeSchema,
+    occurredAt: z.iso.datetime({ offset: true }),
+    effectiveAt: z.iso.datetime({ offset: true }),
+    eventRef: OpaqueIdSchema,
+    outcome: z.literal("accepted"),
+    notificationDelivery: z.enum(["pending", "suppressed"]),
+  })
+  .strict();
+
 const EventBaseSchema = z
   .object({
     eventId: OpaqueIdSchema,
@@ -560,13 +747,52 @@ export const CareTaskCompletedEventSchema = EventBaseSchema.extend({
   ]),
 }).strict();
 
+export const CareTaskHandedOffEventSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventType: z.literal("care.task.handed_off.v1"),
+    eventVersion: z.literal(1),
+    occurredAt: z.iso.datetime({ offset: true }),
+    producer: z.literal("care-coordination"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    correlationId: CorrelationIdSchema,
+    causationId: OpaqueIdSchema,
+    payload: z
+      .object({
+        householdId: OpaqueIdSchema,
+        recipientContextId: OpaqueIdSchema,
+        fromActorId: OpaqueIdSchema,
+        toActorId: OpaqueIdSchema,
+        reasonCode: HandoffReasonCodeSchema,
+        outcome: z.literal("accepted"),
+        effectiveAt: z.iso.datetime({ offset: true }),
+        notificationDisposition: z.literal("deliver"),
+        recipientId: OpaqueIdSchema,
+      })
+      .strict()
+      .refine(
+        (value) => value.fromActorId !== value.toActorId && value.recipientId === value.toActorId,
+        {
+          message: "handoff_notification_recipient_invalid",
+          path: ["recipientId"],
+        },
+      ),
+  })
+  .strict();
+
+export const CareCoordinationEventSchema = z.union([
+  CareTaskCompletedEventSchema,
+  CareTaskHandedOffEventSchema,
+]);
+
 export const NotificationSchema = z
   .object({
     notificationId: OpaqueIdSchema,
     recipientId: OpaqueIdSchema,
     sourceEventId: OpaqueIdSchema,
     sourceTaskId: OpaqueIdSchema,
-    messageKey: z.literal("notifications.task.completed"),
+    messageKey: z.enum(["notifications.task.completed", "notifications.task.handed_off"]),
     messageParams: z
       .object({
         taskId: OpaqueIdSchema,
@@ -633,6 +859,13 @@ export const ApiErrorCodeSchema = z.enum([
   "CONSENT_SCOPE_BROADENING_REJECTED",
   "AUDIT_CURSOR_INVALID",
   "PRIVACY_VERSION_CONFLICT",
+  "COORDINATION_RESOURCE_NOT_FOUND",
+  "COORDINATION_AUTHORITY_REQUIRED",
+  "TIMELINE_VALIDATION_FAILED",
+  "TIMELINE_CURSOR_INVALID",
+  "HANDOFF_VALIDATION_FAILED",
+  "HANDOFF_VERSION_CONFLICT",
+  "HANDOFF_STATE_CONFLICT",
 ]);
 
 export const ApiErrorSchema = z
@@ -655,7 +888,17 @@ export type Member = z.infer<typeof MemberSchema>;
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>;
 export type CompleteTaskRequest = z.infer<typeof CompleteTaskRequestSchema>;
 export type TaskProjection = z.infer<typeof TaskProjectionSchema>;
+export type TimelineFilter = z.infer<typeof TimelineFilterSchema>;
+export type DailyTimelineQuery = z.infer<typeof DailyTimelineQuerySchema>;
+export type DailyTimelineItem = z.infer<typeof DailyTimelineItemSchema>;
+export type DailyTimelineProjection = z.infer<typeof DailyTimelineProjectionSchema>;
+export type HandoffReasonCode = z.infer<typeof HandoffReasonCodeSchema>;
+export type HandoffTaskRequest = z.infer<typeof HandoffTaskRequestSchema>;
+export type HandoffReviewProjection = z.infer<typeof HandoffReviewProjectionSchema>;
+export type HandoffResultProjection = z.infer<typeof HandoffResultProjectionSchema>;
 export type CareTaskCompletedEvent = z.infer<typeof CareTaskCompletedEventSchema>;
+export type CareTaskHandedOffEvent = z.infer<typeof CareTaskHandedOffEventSchema>;
+export type CareCoordinationEvent = z.infer<typeof CareCoordinationEventSchema>;
 export type Notification = z.infer<typeof NotificationSchema>;
 export type ConsumerAcknowledgement = z.infer<typeof ConsumerAcknowledgementSchema>;
 export type DashboardProjection = z.infer<typeof DashboardProjectionSchema>;

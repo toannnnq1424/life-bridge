@@ -9,6 +9,7 @@ import { Pool } from "pg";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { OutboxDispatcher } from "../../services/care-coordination/src/dispatcher.js";
+import { CoordinationService } from "../../services/care-coordination/src/coordination-service.js";
 import { CareError } from "../../services/care-coordination/src/errors.js";
 import { migrateCareDatabase } from "../../services/care-coordination/src/migration.js";
 import {
@@ -30,7 +31,8 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await carePool.query(
-    "TRUNCATE care_idempotency, care_audit, care_outbox, care_tasks RESTART IDENTITY",
+    `TRUNCATE care_task_handoffs, care_timeline_events, care_idempotency,
+              care_audit, care_outbox, care_tasks RESTART IDENTITY CASCADE`,
   );
   await notificationPool.query(
     "TRUNCATE notifications, notification_inbox RESTART IDENTITY CASCADE",
@@ -233,6 +235,92 @@ describe("P1-S1 accountable care-task loop", () => {
       await restartedPool.end();
     }
   });
+
+  it("delivers one privacy-minimized handoff notification from durable outbox evidence", async () => {
+    const care = new CareService(carePool, { now: fixedNow });
+    const notification = new NotificationService(notificationPool, fixedNow);
+    const created = await createAssignedTask(care, {
+      idempotencyKey: "idem_create_handoff_notification",
+      title: "Private title sentinel not for notification",
+    });
+    const coordination = new CoordinationService(carePool, {
+      cursorKey: Buffer.alloc(32, 9),
+      now: fixedNow,
+      id: (() => {
+        let id = 0;
+        return (prefix: string) => `${prefix}_notify_${++id}`;
+      })(),
+    });
+    const request: HandoffTaskRequest = {
+      operation: "handoff",
+      expectedTaskVersion: 1,
+      expectedFromActorRef: "actor_ref_assignee",
+      toActorRef: "actor_ref_creator",
+      reasonCode: "coverage_update",
+      effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+    };
+    const requestDigest = createHash("sha256")
+      .update(
+        JSON.stringify({
+          operation: "task.handoff",
+          householdId: FIXTURE_HOUSEHOLD_ID,
+          taskId: created.taskId,
+          request,
+        }),
+      )
+      .digest("hex");
+    const authorization: CoordinationAuthorizationDecision = {
+      decisionId: "decision_notify",
+      permission: "coordination.task.handoff",
+      actor: {
+        actorId: FIXTURE_ASSIGNEE_ID,
+        actorRef: "actor_ref_assignee",
+        displayKey: "coordination.actor.you",
+        subject: false,
+      },
+      householdId: FIXTURE_HOUSEHOLD_ID,
+      recipientContextId: FIXTURE_CARE_RECIPIENT_ID,
+      subjectId: "subject_notify",
+      subjectVersion: 2,
+      grantId: "grant_notify",
+      grantVersion: 1,
+      privacyVersion: 2,
+      target: {
+        actorId: FIXTURE_CREATOR_ID,
+        actorRef: "actor_ref_creator",
+        displayKey: "coordination.actor.household_member",
+        subject: true,
+      },
+      eligibleTargets: [],
+      decidedAt: fixedNow().toISOString(),
+      correlationId: "corr_handoff_notify",
+      requestDigest,
+    };
+    const result = await coordination.handoff({
+      householdId: FIXTURE_HOUSEHOLD_ID,
+      taskId: created.taskId,
+      request,
+      idempotencyKey: "idem_handoff_notification",
+      authorization,
+      correlationId: "corr_handoff_notify",
+    });
+    expect(result.notificationDelivery).toBe("pending");
+
+    let serializedEvent = "";
+    const dispatcher = new OutboxDispatcher(care, async (event) => {
+      serializedEvent = JSON.stringify(event);
+      return notification.consume(event);
+    });
+    expect(await dispatcher.dispatchOnce()).toBe("delivered");
+    const notifications = await notification.list(FIXTURE_CREATOR_ID);
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]).toMatchObject({
+      messageKey: "notifications.task.handed_off",
+      sourceTaskId: created.taskId,
+    });
+    expect(serializedEvent).not.toContain("Private title sentinel");
+    expect(serializedEvent).not.toContain("idem_handoff_notification");
+  });
 });
 
 async function createAssignedTask(
@@ -271,3 +359,6 @@ function required(name: string): string {
   }
   return value;
 }
+import { createHash } from "node:crypto";
+
+import type { CoordinationAuthorizationDecision, HandoffTaskRequest } from "@lifebridge/contracts";

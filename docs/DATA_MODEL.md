@@ -292,3 +292,31 @@ reconciled. Physical scheduled purge, legal hold, account deletion and erasure
 proof remain P7-S3/P8 work. These are engineering defaults subject to a later
 processing inventory and legal review, not compliance claims. Revocation
 changes current authorization and preserves required historical evidence.
+
+## P3-S1 Care-owned timeline and handoff data
+
+Care Coordination migration `002_daily_timeline_handoff.sql` is additive,
+transactional, repeatable, and contains no historical backfill. Care remains
+the sole writer.
+
+| Table                  | Essential invariant                                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `care_schema_state`    | schema version 2 and immutable coverage start for honest pre-P3 history labeling                                               |
+| `care_timeline_events` | immutable accepted facts; unique internal sequence and `(occurred_at, event_ref)` chronology; task/household/recipient scope   |
+| `care_task_handoffs`   | one accepted handoff per task version with from/to actors, enumerated reason, server occurrence/effective time and correlation |
+| `care_tasks`           | existing assignee and optimistic version update atomically with all P3 evidence                                                |
+| `care_audit`           | success evidence with opaque resource identifiers and empty structured metadata                                                |
+| `care_outbox`          | `care.task.handed_off.v1` committed with the task; no title or free-form context                                               |
+| `care_idempotency`     | 24-hour digest-only key and canonical intent hash with original safe response                                                  |
+
+Timeline facts for new P1 create/complete operations are written only after the
+coverage marker exists. Existing tasks and audit rows are preserved without
+invented history. Timeline/task titles remain in the authorized Care read
+model but are never copied into handoff, outbox, audit, Notification, log,
+metric, or trace payloads. Handoff reason is one bounded enum.
+
+Timeline, handoff, audit and delivered outbox evidence currently follow the
+owning product-record lifecycle. Physical retention purge, legal hold,
+account-deletion reconciliation and restore/erasure proof remain P7-S3/P8.
+Handoff idempotency expires after 24 hours. These are engineering defaults,
+not legal-compliance claims.

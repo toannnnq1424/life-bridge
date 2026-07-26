@@ -1,10 +1,10 @@
-import type { CareTaskCompletedEvent, ConsumerAcknowledgement } from "@lifebridge/contracts";
+import type { CareCoordinationEvent, ConsumerAcknowledgement } from "@lifebridge/contracts";
 import { ConsumerAcknowledgementSchema } from "@lifebridge/contracts";
 import { boundedErrorCode, SafeLogger } from "@lifebridge/observability";
 
 import type { CareService } from "./service.js";
 
-export type EventDeliverer = (event: CareTaskCompletedEvent) => Promise<ConsumerAcknowledgement>;
+export type EventDeliverer = (event: CareCoordinationEvent) => Promise<ConsumerAcknowledgement>;
 
 export class OutboxDispatcher {
   private readonly logger: SafeLogger;
@@ -48,10 +48,11 @@ export class OutboxDispatcher {
       });
       return "delivered";
     } catch (error) {
-      const errorCode = boundedErrorCode(
-        error instanceof Error ? error.message : undefined,
-        "NOTIFICATION_DELIVERY_FAILED",
-      );
+      const errorCode =
+        error instanceof Error &&
+        /^NOTIFICATION_HTTP_(?:400|401|403|404|409|429|500|502|503|504)$/.test(error.message)
+          ? boundedErrorCode(error.message, "NOTIFICATION_DELIVERY_FAILED")
+          : "NOTIFICATION_DELIVERY_FAILED";
       await this.care.markOutboxFailed(
         claimed.event.eventId,
         errorCode,
@@ -77,7 +78,7 @@ export class OutboxDispatcher {
 
 export function httpEventDeliverer(notificationUrl: string, serviceToken: string): EventDeliverer {
   return async (event) => {
-    const response = await fetch(`${notificationUrl}/internal/v1/events/care-task-completed`, {
+    const response = await fetch(`${notificationUrl}/internal/v1/events/care-coordination`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
