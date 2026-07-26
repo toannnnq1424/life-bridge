@@ -495,7 +495,7 @@ failures, not product failures.
 ## INT-2026-016 — P2-S3 consent, privacy and redacted audit candidate
 
 - Date: 2026-07-26
-- Status: Hosted portability fix candidate; exact-head rerun pending
+- Status: Integrated; exact-head and post-merge hosted validation passed
 - Source: `phase/2-consent-privacy-audit` from verified
   `dev@22157b10a9cdd479d7bb0a439a74fc18dccfaf67`
 - Scope: `P2-S3-v1` subject establishment, grant/strict-narrow/revoke,
@@ -535,15 +535,18 @@ failures, not product failures.
   empty runtime log as `$null`. The scanner now normalizes null raw content to
   an empty string before prohibited-value matching. This is tooling-only;
   contracts, migrations and runtime behavior are unchanged. Targeted
-  parser/scan checks and replacement exact-head push/PR runs are required
-  before merge. Rewriting the pushed feature commit is prohibited, so the
-  recovery is a second small conventional commit rather than a force-push.
+  parser/scan checks passed, followed by replacement push run `30208540352`
+  and PR run `30208541672`. Rewriting the pushed feature commit was prohibited,
+  so the recovery is a second small conventional commit rather than a
+  force-push.
 - Decision/change references: issue #8, `CHG-2026-012`, ADR-020,
   `docs/security/P2_S3_THREAT_MODEL.md`, KI-019
-- Promotion: feature commit `f0ba524` plus the documented hosted-portability
-  recovery commit, replacement exact-head CI, PR #49 merge commit into `dev`,
-  post-merge `dev` CI and issue #8 closeout remain.
-- Follow-up: after those gates only, P3-S1 is exact next. It begins with an
-  authorized, time-zone-explicit timeline projection and versioned handoff
-  command against the accepted P2 governed-read boundary. No P3, DATA, P5,
-  deployment or release work starts here.
+- Promotion: feature commit `f0ba524` plus portability recovery `cd7f0a8`
+  passed replacement exact-head push/PR runs `30208540352`/`30208541672`.
+  PR #49 merged into `dev` as
+  `bca04d1aff000abcedeed939dbfc9d7186cf1966`; post-merge run `30208723836`
+  passed; issue #8 closed completed with bilingual evidence.
+- Follow-up: P3-S1 is exact next. It begins with an authorized,
+  time-zone-explicit timeline projection and versioned handoff command against
+  the accepted P2 governed-read boundary. No P3, DATA, P5, deployment or
+  release work starts here.

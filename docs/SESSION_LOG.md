@@ -1227,10 +1227,30 @@ commit; the PR must not merge until that replacement head and post-merge
 
 ### Exact next orientation
 
-Only after every P2-S3 acceptance/promotion gate passes, P3-S1 daily timeline
-and handoff is exact next. Its first action is to freeze an authorized,
-time-zone-explicit timeline read projection and a versioned handoff command
-against the accepted P2 governed-read boundary. Manual NVDA/Narrator,
-physical-device/touch, text-spacing and 200%/400% assistive-technology evidence
-remains KI-016; private Stitch render review remains KI-019. No later slice
-begins here.
+Replacement exact-head push run `30208540352` and PR run `30208541672` passed
+on `cd7f0a8041241641cfbf47b7ec1fd48f933710e4`. PR #49 merged with a merge
+commit as `dev@bca04d1aff000abcedeed939dbfc9d7186cf1966`; post-merge run
+`30208723836` passed; and issue #8 closed completed with bilingual evidence.
+The initial run and portability fix remain visible rather than rewritten.
+
+Planned was to record final immutable promotion evidence in the implementation
+commit. Actual evidence did not exist until after the merge and post-merge
+run. Reason is the PR-only promotion order. Impact is documentation only: this
+same-branch closeout changes no contract, migration, runtime, test or phase
+scope. Validation is affected formatting, docs/config/secrets, diff and exact
+hosted CI; follow-up is to merge this docs-only closeout through a merge-commit
+PR without creating another branch.
+
+The first closeout formatting command unexpectedly rewrote seven previously
+clean documentation files, including the protected Stitch canary. A
+pre-command diff had proven that only the five canonical state documents were
+dirty. Those seven formatter-only changes were restored immediately to exact
+`HEAD` content before staging; final diff checks must keep the protected canary
+absent.
+
+P3-S1 daily timeline and handoff is exact next. Its first action is to freeze
+an authorized, time-zone-explicit timeline read projection and a versioned
+handoff command against the accepted P2 governed-read boundary. Manual
+NVDA/Narrator, physical-device/touch, text-spacing and 200%/400%
+assistive-technology evidence remains KI-016; private Stitch render review
+remains KI-019. No later slice begins here.

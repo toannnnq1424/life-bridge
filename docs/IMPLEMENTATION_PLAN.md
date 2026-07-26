@@ -6,25 +6,25 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P2 — Trust and household`
-- Most recently integrated slice: `P2-S2 — Household, invitation, and
-care-recipient context`; validated and merged at
-  `dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`
-- Active product slice: `P2-S3 — Consent, privacy, audit, and settings`;
-  locally accepted candidate on `phase/2-consent-privacy-audit`, with hosted
-  promotion gates pending
-- Next eligible product slice after P2-S3 acceptance: `P3-S1 — Daily timeline
-and handoff`; it is orientation only and does not start here
+- Current phase: `P2 — Trust and household`; integrated
+- Most recently integrated slice: `P2-S3 — Consent, privacy, audit, and
+settings`; validated and merged at
+  `dev@bca04d1aff000abcedeed939dbfc9d7186cf1966`
+- Active product slice: none; P2-S3 is accepted and issue #8 is closed completed
+- Exact next eligible product slice: `P3-S1 — Daily timeline and handoff`; it
+  is orientation only and does not start here
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
   separate
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
-- Integration gate: [PR #42](https://github.com/toannnnq1424/life-bridge/pull/42)
-  accepted exact feature head `6ec1be3` after hosted run `30183168519`
-  succeeded. Merge commit `cea4f83` is on `dev`, post-merge run `30183280672`
-  succeeded, and issue #5 is closed completed.
+- Latest integration gate:
+  [PR #49](https://github.com/toannnnq1424/life-bridge/pull/49) accepted exact
+  head `cd7f0a8041241641cfbf47b7ec1fd48f933710e4` after push run
+  `30208540352` and PR run `30208541672` succeeded. Merge commit
+  `bca04d1aff000abcedeed939dbfc9d7186cf1966` is on `dev`, post-merge run
+  `30208723836` succeeded, and issue #8 is closed completed.
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -1150,7 +1150,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ## CHG-2026-012 — Freeze P2-S3 consent authority and governed-read boundaries
 
-- State: Accepted; recovered local Level C passed, hosted promotion pending
+- State: Integrated; local and hosted validation passed
 - Raised in phase/slice: `P2-S3`
 - Planned baseline: P2-S3 required versioned consent changes and an authorized
   care recipient/account owner, but P2-S2 organizer/member state did not prove
@@ -1189,18 +1189,19 @@ No row means simultaneous implementation. Design generation/review may prepare a
   ambiguity after the truthful preference-status correction. Targeted Level B
   then exposed and fixed the underlying stale pre-factor announcement; affected
   format/lint, production web build and P2-S1 browser 5/5 passed. Already-green
-  inputs were not rerun. Exact-head hosted CI must execute the coherent script
-  from scratch, including the now-earlier runtime log scan, before merge.
+  inputs were not rerun. Replacement exact-head push run `30208540352` and PR
+  run `30208541672` executed the coherent script from scratch, including the
+  now-earlier runtime log scan, and passed.
 - Hosted planned versus actual: planned was one feature commit and an unchanged
   exact-head run. Actual push run `30208198696` passed static/security and
   P2-S3 browser 8/8, then exposed Linux PowerShell returning `$null` for an
   empty raw log. The reason is runner-specific shell behavior unavailable in
   the supported local Windows campaign. Impact is validation tooling only; no
   product contract/data/runtime behavior changed and no merge occurred. The
-  scan now normalizes null raw content to an empty string, requires targeted
-  parser/privacy validation and a replacement exact-head run. A second small
-  conventional commit is necessary because force-push/history rewriting is
-  prohibited.
+  scan now normalizes null raw content to an empty string. Targeted
+  parser/privacy validation and the replacement hosted runs passed. A second
+  small conventional commit was necessary because force-push/history rewriting
+  is prohibited.
 - Follow-up owner and exact phase/slice: P3-S1 freezes authorized timeline
   projection, time-zone ordering and handoff concurrency against the accepted
   P2 consent boundary; it must not invent delegated consent authority.
@@ -1224,22 +1225,18 @@ next slice in the same conversation.
 
 ## Exact next action
 
-P2-S2 promotion is complete: fix head
-`af6a75f4fcf54a70b2185a903f4bcb330e837b31` passed exact-head runs
-`30202003327` and `30202004747`, PR #47 merged as
-`dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`, post-merge run
-`30202144955` passed, and issue #7 is closed completed.
-`MCP-DEBT-2026-003`/KI-018 is resolved for promotion. KI-001 still blocks
-deployment and KI-016 retains manual assistive-technology evidence before
-pilot/release.
+P2-S3 promotion is complete: exact head
+`cd7f0a8041241641cfbf47b7ec1fd48f933710e4` passed push run `30208540352`
+and PR run `30208541672`; PR #49 merged as
+`dev@bca04d1aff000abcedeed939dbfc9d7186cf1966`; post-merge run
+`30208723836` passed; and issue #8 is closed completed. The initial hosted
+portability failure and its non-rewritten recovery remain visible in
+CHG-2026-012 and the session/integration evidence. KI-001 still blocks
+deployment, KI-016 retains manual assistive-technology evidence, and KI-019
+retains independent private-render review before any visual-conformance claim.
 
-P2-S3 has frozen and implemented those contracts on its short-lived phase
-branch. The exactly-once local campaign plus targeted Level B recovery is
-green. Its remaining actions are one coherent commit, exact-head hosted CI,
-merge-commit promotion, post-merge `dev` CI and issue #8 closeout.
-
-Only after those gates pass, the exact next product slice is `P3-S1 — Daily
-timeline and handoff`. Its first action is to freeze the authorized,
+The exact next product slice is `P3-S1 — Daily timeline and handoff`. Its first
+action is to freeze the authorized,
 time-zone-explicit timeline projection and versioned handoff command against
 the accepted P2 consent boundary. DATA-S1, P5, deployment and release remain
 separate and unstarted.
