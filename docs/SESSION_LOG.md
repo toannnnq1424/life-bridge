@@ -545,7 +545,12 @@ safety, Stitch provenance, privacy, accessibility, and PR-only promotion.
   process output, adds a 10th validator regression, and emits GitHub add-mask
   commands before exporting generated passwords. Targeted format, validator
   10/10, secret, configuration, and diff checks pass. A new exact-head hosted
-  run, merge, and issue #5 closeout remain.
+  run reached and passed those corrected gates plus audit, then exposed a second
+  harness portability assumption: the image-pipeline assertion invoked host
+  `rg`, which is absent on Ubuntu. Replace only that assertion with native
+  PowerShell file enumeration and `Select-String`; parser and no-image
+  reproducer pass. A new exact-head hosted run, merge, and issue #5 closeout
+  remain.
 - User-owned `docs/orchestration/reports/STITCH_MCP_CANARY.md`: preserved and
   excluded from the P1 footprint.
 

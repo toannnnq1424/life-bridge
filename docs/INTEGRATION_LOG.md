@@ -282,6 +282,9 @@ environments are intended to converge. It is not a substitute for Git history.
   Linux-only `git.exe` secret-validator defect and missing explicit masks for
   disposable database passwords. The targeted portable process-output test is
   10/10 and secrets/config/diff checks pass after adding pre-export masks.
+  The next PR run passed those gates and audit, then found Ubuntu lacks the
+  external `rg` used only by the no-image assertion. That assertion now uses
+  native PowerShell enumeration/search; parser and targeted reproducer pass.
   Literal new-head hosted CI remains.
 - Conflicts/risks: Phase 0 draft did not name the one notification trigger or
   recipient. `CHG-2026-008` selects creator-if-distinct and durable

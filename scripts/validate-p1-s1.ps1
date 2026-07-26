@@ -128,8 +128,13 @@ try {
   if ($LASTEXITCODE -ne 0 -or $ignoredBuilds -notmatch "(?m)^\s+sharp\s*$") {
     throw "Sharp must remain explicitly denied by the workspace allowBuilds policy."
   }
-  $imagePipelineUsage = rg -n "next/image|sharp" apps/web/app apps/web/src apps/web/next.config.ts
-  if ($LASTEXITCODE -eq 0 -or $imagePipelineUsage) {
+  $imagePipelineFiles = @(
+    Get-ChildItem -LiteralPath "apps/web/app" -Recurse -File
+    Get-ChildItem -LiteralPath "apps/web/src" -Recurse -File
+    Get-Item -LiteralPath "apps/web/next.config.ts"
+  )
+  $imagePipelineUsage = $imagePipelineFiles | Select-String -Pattern "next/image|sharp"
+  if ($imagePipelineUsage) {
     throw "P1-S1 must not introduce a Sharp or next/image pipeline."
   }
 
