@@ -148,7 +148,6 @@ jobs:
         shell: pwsh
         run: |
           "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
-          "IDENTITY_DATABASE_URL=postgresql://lifebridge_identity:$($env:P2_IDENTITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_identity" >> $env:GITHUB_ENV
           "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
 
       - name: Run the P1-S1 Level C campaign
@@ -159,6 +158,7 @@ jobs:
         shell: pwsh
         run: |
           pnpm exec tsx tools/quality/src/p2-database.ts
+          $env:IDENTITY_DATABASE_URL = "postgresql://lifebridge_identity:$($env:P2_IDENTITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_identity"
           pnpm run test:p2:identity-integration
 
   integrated-gate:

@@ -691,9 +691,15 @@ complete, deployment and issue #6 closure.
 
 No Level C was run because its frozen contract includes P2 browser/UI evidence.
 No production UI, manual screen-reader, forced-colors, 200%/400% zoom, hosted
-exact-head run, merge, deployment or issue closure is claimed at this
-checkpoint. A draft PR may preserve review/CI evidence but must remain blocked
-and must not be merged as P2-S1 complete.
+exact-head success, merge, deployment or issue closure is claimed at this
+checkpoint. Draft PR #44 preserves the backend candidate and CI evidence but
+must remain blocked and must not be merged as P2-S1 complete. Its first hosted
+push run `30187900426` failed because CI exported `IDENTITY_DATABASE_URL`
+before provisioning the Identity owner/database, so the earlier P1 Level C
+unit command discovered the P2 integration suite. This was classified as a CI
+ordering/scope defect, not a product failure: the fix keeps the Identity URL
+unset through P1 and injects it only inside the dedicated P2 backend campaign.
+The replacement exact-head hosted run remains required.
 
 Project Owner + Design Lead next restore the approved Stitch MCP/secret path,
 perform one bounded synthetic-only reference session, review input schema/data

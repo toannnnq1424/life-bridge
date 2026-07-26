@@ -310,8 +310,8 @@ environments are intended to converge. It is not a substitute for Git history.
 ## INT-2026-012 — Build the P2-S1 backend candidate behind the Stitch gate
 
 - Date: 2026-07-26
-- Status: In progress; backend candidate validated locally, production UI and
-  promotion blocked
+- Status: In progress; backend candidate validated locally and preserved in
+  draft PR #44, production UI and promotion blocked
 - Source: `phase/2-account-access-onboarding` from `dev@a3e9fc2`
 - Target: `dev` by PR only; no merge or issue #6 closure is permitted while
   `MCP-DEBT-2026-002` remains open
@@ -328,7 +328,12 @@ environments are intended to converge. It is not a substitute for Git history.
   rate buckets, one-winner TOTP replay, recovery single-use, password/factor
   recovery, preference persistence, session rotation/revoke/idle/absolute
   expiry and audit evidence. CI is extended only with exact-head P2 backend
-  checks; P1 browser acceptance remains unchanged.
+  checks; P1 browser acceptance remains unchanged. The first hosted push run
+  `30187900426` failed before the P2 campaign because the workflow exported
+  `IDENTITY_DATABASE_URL` before provisioning and the preceding P1 unit
+  command therefore discovered the P2 integration suite. The classified CI
+  ordering/scope fix localizes that URL to the dedicated P2 campaign; a
+  replacement exact-head run is required.
 - Conflicts/risks: Stitch MCP inventory was empty at
   `2026-07-26T02:09:54.193Z` and again after 180 seconds at
   `2026-07-26T02:13:03.970Z`. No credential, locator, signed URL, remote ID or
