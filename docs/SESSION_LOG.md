@@ -427,3 +427,143 @@ micro-cycle, review/freeze task-event-API contracts, then resolve the Stitch
 correction/localization/accessibility/privacy/security gates before production
 frontend implementation. Do not combine DATA-S1 and do not implement P1 in
 this Phase 0 task.
+
+## 2026-07-26 — P1-S1 accountable care-task loop
+
+### Objective
+
+Deliver only issue #5 from `dev@4b633755`: an authorized synthetic household
+caregiver creates and assigns a task, the assignee completes it, the distinct
+creator receives one durable notification, and VI/EN dashboard/task surfaces
+show confirmed truth. Preserve service data ownership, retry/concurrency
+safety, Stitch provenance, privacy, accessibility, and PR-only promotion.
+
+### Planned versus actual
+
+- Planned: freeze task/event/API/design acceptance, implement the smallest
+  production-oriented web/gateway/Care/Notification/PostgreSQL slice, run
+  grouped Level A checks and one stable-candidate Level C campaign, then promote
+  through a merge-commit PR to `dev`.
+- Actual product/contract: `P1-S1-v1` and `CHG-2026-008`/ADR-016 select the
+  useful cross-user signal that issue #5 left ambiguous. Create/assign emits no
+  notification. Minh's authorized completion atomically records task version,
+  audit fact, and `care.task.completed.v1`; Lan receives one stored item. A
+  creator completing their own task produces one durable `suppress_self` inbox
+  disposition and zero notification rows.
+- Actual boundaries: Next web and Fastify gateway call Care Coordination and
+  Notification. Care and Notification own distinct databases and migrations on
+  one PostgreSQL engine. Transactional outbox plus HTTP dispatch and durable
+  inbox deduplication provide bounded retry without adding a broker or a second
+  persistence engine.
+- Actual design: the native VI/EN UI traces to the six frozen Stitch aliases in
+  handoff v1.0. No generated Stitch source, private locator, signed URL, or
+  remote identifier entered production code or repository memory.
+- Actual supply chain: candidate audit found reviewed high advisories in Next's
+  optional Sharp 0.34.5 and required PostCSS 8.4.31. `CHG-2026-009`/ADR-017
+  excludes unused Sharp while retaining lifecycle denial and scopes patched
+  PostCSS 8.5.18 to `next@16.2.11`. It does not ignore advisories or force Sharp
+  outside Next's supported range. A future image pipeline must reopen KI-015.
+- Actual roadmap: no DATA-S1 or later feature entered the slice. Evidence does
+  not add or reorder a phase; P2-S1 remains next because real account and
+  household authorization replace the explicit local fixture boundary.
+
+### Behavior and safety delivered
+
+- Create validates caregiver role, household/assignee scope, local due time and
+  IANA zone, then stores the UTC instant, original zone, priority, version, and
+  audit fact. The form preserves valid input on validation/offline failure.
+- Complete requires the assigned actor, current version, and idempotency key.
+  Duplicate same-intent retries replay safely; key reuse with different intent
+  fails; concurrent/stale completion produces one winner and an explicit
+  conflict.
+- Completion and outbox append share one Care transaction. A five-second claim
+  lease, retry count, and restart-safe status prevent permanent claim loss.
+  Notification outage never rolls back completion; dashboard exposes
+  pending/failed/degraded truth and recovery rather than fabricating delivery.
+- Notification inbox deduplicates event ID/version and authorizes the opaque
+  household recipient. Event/log payloads omit task title, description, member
+  display names, and care content. Structured logs retain correlation,
+  operation, result, resource/event version, and safe error code.
+- Health/readiness checks verify owned database reachability. Local fixture
+  mode is deterministic and startup rejects it as production identity.
+- UI covers VI/EN, keyboard/focus and skip navigation, validation focus,
+  measured contrast, 320 px reflow, offline preservation, and Notification
+  degraded state. Automated evidence is not a screen-reader/WCAG conformance
+  claim; KI-016 retains the manual pilot/release rows.
+
+### Files and contracts changed
+
+- Runtime: `apps/web`, `apps/gateway`, `services/care-coordination`, and
+  `services/notification`.
+- Shared boundaries: `packages/contracts`, `packages/config`,
+  `packages/observability`, and `packages/test-fixtures`.
+- Persistence/operations: owner-isolated service migrations, digest-pinned
+  PostgreSQL Compose, local start/reset/database helpers, Playwright and P1
+  Level C scripts, scoped pnpm/TypeScript/ESLint config, lockfile, and exact-head
+  CI matrix.
+- Memory: affected product, API, data, architecture, design, security, test,
+  deployment, repository map, decisions, plan, board, integration, known issue,
+  demo/README, and this session record.
+
+### Validation and failure classification
+
+- Grouped Level A and defect checks passed for affected packages and boundaries.
+  Targeted PostgreSQL integration: 5/5. Targeted production runtime/browser:
+  4/4 across VI/EN accountable flow, keyboard/axe/320 px, offline preservation,
+  and degraded Notification truth.
+- First Level C candidate invocation stopped before product tests because the
+  legacy repository-wide format gate included eight unrelated pre-existing
+  Phase 0 files, including the user-owned canary. Classified harness-scope
+  failure. `format:p1:check` now enumerates the frozen slice footprint; none of
+  those unrelated files was edited.
+- Second invocation passed format/lint/type, unit 19/19, contract 4/4, and
+  docs/config/secrets, then stopped at dependency audit on the Sharp/PostCSS
+  advisories. Classified real supply-chain failure. After the graph correction,
+  frozen install, zero-high audit, lifecycle report, no-image-import scan,
+  production build/runtime, and browser 4/4 passed as affected checks.
+- Final changed-candidate Level C command `pnpm.cmd run validate:p1-s1` passed:
+  format, lint, type, unit 19/19, contract 4/4, docs/config/secrets, dependency
+  audit with no known vulnerabilities, PostgreSQL 5/5, all production builds,
+  and Playwright 4/4.
+- Both targeted runtime and final Level C used PID-scoped Compose projects and
+  removed exactly their PostgreSQL container, network, and data volume. No
+  Docker daemon/global configuration or unrelated data was changed.
+
+### Promotion status at this checkpoint
+
+- Local Level C: passed. Commit `699776c` was pushed and PR #42 opened to
+  `dev` at that exact head.
+- The initial hosted push run `30182938417` checked out the exact SHA and then
+  failed in `validate:secrets`: the Phase 0 helper hard-coded `git.exe`, so
+  Linux returned an absent process/output and the diagnostic attempted
+  `.trim()` on `undefined`. The same review found generated disposable database
+  passwords were not explicitly masked before `GITHUB_ENV`; the job-owned
+  database/container was destroyed, but CI must not print even synthetic
+  transient credentials.
+- Classified CI portability/privacy harness defect. The targeted fix selects
+  `git.exe` only on Windows and `git` elsewhere, safely decodes nullable/Buffer
+  process output, adds a 10th validator regression, and emits GitHub add-mask
+  commands before exporting generated passwords. Targeted format, validator
+  10/10, secret, configuration, and diff checks pass. A new exact-head hosted
+  run reached and passed those corrected gates plus audit, then exposed a second
+  harness portability assumption: the image-pipeline assertion invoked host
+  `rg`, which is absent on Ubuntu. Replace only that assertion with native
+  PowerShell file enumeration and `Select-String`; parser and no-image
+  reproducer pass. A new exact-head hosted run, merge, and issue #5 closeout
+  remain.
+- User-owned `docs/orchestration/reports/STITCH_MCP_CANARY.md`: preserved and
+  excluded from the P1 footprint.
+
+### Known limitations and exact next slice
+
+- KI-001 remains a deployment-only credential retirement/usage-review gate;
+  P1 performed no Stitch call. KI-014 keeps branch enforcement manual. KI-015
+  must reopen for any image pipeline or natively patched Next upgrade. KI-016
+  requires manual screen-reader, forced-colors, and 200%/400% evidence before a
+  pilot/release claim. P1 creates no public deployment or external notification
+  channel.
+- Finish only P1 promotion and issue #5 closeout in this task. After the merge,
+  open a fresh task from integrated `dev` for `P2-S1 — Account access and
+accessible onboarding`; first freeze real identity, session, household
+  authorization, recovery, language, and accessibility-preference contracts.
+  DATA-S1 remains a separate `init/research` lane. Do not start either here.

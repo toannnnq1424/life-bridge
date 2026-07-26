@@ -1,10 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
+  decodeProcessOutput,
   findCredentialLiterals,
+  gitExecutable,
   validateCodexStitchConfig,
   validatePackageManifest,
   validateVscodeMcpConfig,
 } from "./validation.js";
+
+describe("portable git process handling", () => {
+  it("selects the platform executable and safely decodes nullable output", () => {
+    expect(gitExecutable("win32")).toBe("git.exe");
+    expect(gitExecutable("linux")).toBe("git");
+    expect(decodeProcessOutput(Buffer.from("tracked\0", "utf8"))).toBe("tracked\0");
+    expect(decodeProcessOutput(undefined)).toBe("");
+  });
+});
 
 describe("findCredentialLiterals", () => {
   it("accepts symbolic and empty secret references", () => {

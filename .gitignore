@@ -17,6 +17,8 @@ dist/
 coverage/
 test-results/
 playwright-report/
+.next/
+*.tsbuildinfo
 
 # Local application secrets and runtime state
 .env
@@ -24,6 +26,7 @@ playwright-report/
 .env.*.local
 !.env.stitch.example
 !.env.example
+.lifebridge-local/
 
 # Local database and generated artifacts
 *.db

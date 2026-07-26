@@ -14,9 +14,9 @@ LifeBridge là công cụ điều phối. Sản phẩm **không** chẩn đoán,
 
 ### Trạng thái dự án
 
-- **Phase 0 — Foundation** đã được kiểm chứng cục bộ và đang ở bước tích hợp/closeout.
+- **Phase 0 — Foundation** đã được tích hợp; `P1-S1` đang triển khai và kiểm chứng trên nhánh `phase/1-accountable-task-loop`.
 - Kế hoạch hiện hành là lộ trình production tích lũy **P0–P12**; đây là kế hoạch, không phải tuyên bố các phase tương lai đã được triển khai.
-- Vertical slice sản phẩm tiếp theo vẫn là chính xác `P1-S1 — Accountable care-task loop`, sau khi các gate CI và Stitch liên quan đạt.
+- Contract và Stitch handoff của `P1-S1 — Accountable care-task loop` đã frozen; slice chỉ được hoàn tất sau Level C và CI exact-head xanh.
 - Chưa có bản sản phẩm dùng cho dữ liệu chăm sóc thật.
 - `docs/design/SCREEN_INVENTORY.md` ghi 35 màn hình/trạng thái như **backlog có kiểm soát**, không phải cam kết triển khai đồng thời.
 - UI chỉ được triển khai sau khi luồng liên quan đã được thiết kế/review qua Google Stitch MCP và có handoff trong Git.
@@ -48,7 +48,7 @@ Vertical slice đầu tiên (`P1-S1`) phải hoàn chỉnh từ đầu đến cu
 - Windows 10/11, PowerShell 5.1 hoặc mới hơn.
 - Codex trong ứng dụng ChatGPT desktop.
 - Node.js 22.x và pnpm 11.9.0.
-- Docker Desktop là tùy chọn cho tích hợp cục bộ; doctor chỉ chẩn đoán, không tự sửa service, Registry, firewall hay cấu hình hệ thống.
+- Docker Desktop là bắt buộc cho demo/validation P1-S1 cục bộ; doctor chỉ chẩn đoán, không tự sửa service, Registry, firewall hay cấu hình hệ thống.
 
 PowerShell trên máy có thể chặn shim `*.ps1`. Dùng executable Windows:
 
@@ -56,6 +56,8 @@ PowerShell trên máy có thể chặn shim `*.ps1`. Dùng executable Windows:
 pnpm.cmd bootstrap
 pnpm.cmd doctor
 pnpm.cmd validate:phase0
+pnpm.cmd run demo:p1
+pnpm.cmd run validate:p1-s1
 ```
 
 Không thay đổi Execution Policy toàn máy. Không chạy với quyền Administrator chỉ để làm bootstrap.
@@ -116,9 +118,9 @@ LifeBridge is a coordination tool. It does **not** diagnose, prescribe, replace 
 
 ### Project status
 
-- **Phase 0 — Foundation** is locally validated and is in integration/closeout.
+- **Phase 0 — Foundation** is integrated; `P1-S1` is being implemented and validated on `phase/1-accountable-task-loop`.
 - The active plan is the cumulative production roadmap **P0–P12**; future phases are plans, not implementation claims.
-- The exact next product slice remains `P1-S1 — Accountable care-task loop` after its CI and Stitch gates pass.
+- The `P1-S1 — Accountable care-task loop` contract and Stitch handoff are frozen; the slice completes only after Level C and exact-head CI pass.
 - It is not ready for real care data.
 - The 35 entries in `docs/design/SCREEN_INVENTORY.md` are a controlled **backlog**, not a promise to build everything at once.
 - UI implementation starts only after the relevant flow is designed/reviewed through Google Stitch MCP and handed off in Git.
@@ -150,7 +152,7 @@ The first MVP slice (`P1-S1`) delivers one complete path:
 - Windows 10/11 with PowerShell 5.1 or later.
 - Codex in the ChatGPT desktop app.
 - Node.js 22.x and pnpm 11.9.0.
-- Docker Desktop is optional for local integration. The doctor reports issues; it never modifies services, Registry, firewall, or system policy.
+- Docker Desktop is required for the local P1-S1 demo/validation. The doctor reports issues; it never modifies services, Registry, firewall, or system policy.
 
 Use Windows executables when PowerShell blocks `*.ps1` shims:
 
@@ -158,6 +160,8 @@ Use Windows executables when PowerShell blocks `*.ps1` shims:
 pnpm.cmd bootstrap
 pnpm.cmd doctor
 pnpm.cmd validate:phase0
+pnpm.cmd run demo:p1
+pnpm.cmd run validate:p1-s1
 ```
 
 Do not change the machine-wide Execution Policy or elevate merely to bootstrap.

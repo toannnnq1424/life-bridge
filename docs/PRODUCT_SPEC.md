@@ -96,12 +96,16 @@ Within a deterministic synthetic household, an authorized caregiver can create a
 2. The caregiver enters a title, optional safe description, due date/time with time zone, priority, and assignee.
 3. The UI validates input and submits one idempotent create command.
 4. The gateway authenticates the synthetic fixture actor and forwards an authorized command.
-5. Care Coordination stores the task and audit metadata in its own datastore.
+5. Care Coordination stores the task and audit metadata in its own datastore;
+   create/assignment emits no P1 notification.
 6. Dashboard/task board reads the confirmed task.
 7. The assignee completes the task with an idempotent state transition.
 8. Care Coordination commits completion and an outbox event atomically.
-9. The outbox dispatcher sends a versioned event to Notification.
-10. Notification deduplicates the event, stores a notification in its own datastore, and returns a durable acknowledgement.
+9. The outbox dispatcher sends a versioned event with the Care-resolved
+   `deliver-to-creator` or `suppress-self` disposition to Notification.
+10. Notification deduplicates the event, stores one item for the distinct
+    creator/coordinator (or durably suppresses self-notification), and returns a
+    durable acknowledgement.
 11. Dashboard and notification center show the confirmed result. Delayed notification delivery is presented separately from task completion.
 
 ### Functional requirements
@@ -140,7 +144,9 @@ Cancellation, recurrence, multi-assignee work, attachments, and automatic escala
 - a synthetic authorized caregiver creates and assigns a task through the UI;
 - the assignee completes the task through the UI;
 - persisted task state survives a process restart;
-- exactly one notification exists after duplicate/retried completion;
+- exactly one creator notification exists after duplicate/retried completion
+  in the primary Lan-creates/Minh-completes flow; a self-completion produces a
+  durable suppression result and zero notification rows;
 - dashboard/task board reflect confirmed state without claiming delivery that has not happened;
 - unauthorized, validation, missing-resource, concurrent-update, notification-unavailable, and recovery behavior are tested;
 - API/event payloads validate against versioned schemas;

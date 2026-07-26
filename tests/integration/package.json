@@ -1,0 +1,14 @@
+{
+  "name": "@lifebridge/p1-integration-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@lifebridge/contracts": "workspace:*",
+    "@lifebridge/test-fixtures": "workspace:*",
+    "pg": "8.22.0"
+  },
+  "devDependencies": {
+    "@types/pg": "8.20.0"
+  }
+}

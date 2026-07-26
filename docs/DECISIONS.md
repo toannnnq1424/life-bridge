@@ -262,6 +262,77 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 - Validation and follow-up: require the final PR #21 head check to pass, then
   merge only to `dev`; never reuse this exception for application content.
 
+## ADR-016 — Completion notifies the accountable creator, not the completer
+
+- Status: Accepted
+- Date: 2026-07-26
+- Change ID: `CHG-2026-008`
+- Context: The Phase 0 draft listed task-created, assigned, and completed events
+  without fixing which one produced issue #5's exactly-one notification or
+  naming a useful recipient. A default completion-to-assignee policy would
+  notify the actor about their own action.
+- Decision: P1 create/assign is one command and produces no notification.
+  Authorized completion atomically appends one `care.task.completed.v1` outbox
+  event. Care Coordination resolves `notify_creator_if_other_actor`: deliver to
+  the creator/coordinator when different from the completer, otherwise emit a
+  `suppress_self` disposition. Notification durably inbox-deduplicates both and
+  creates no row for suppression. The primary deterministic fixture is Lan
+  creator/coordinator and Minh assignee/completer.
+- Alternatives considered: notify the assignee on assignment; notify the
+  assignee on their own completion; broadcast to the household; create
+  notifications for both creation and completion; omit the outbox for
+  self-completion.
+- Consequences: The primary two-actor journey creates one useful persistent
+  cross-user signal and duplicate completion/event delivery remains harmless.
+  A legitimate self-completion creates one task transition, outbox, and durable
+  suppression result but zero notification rows. Care owns pending/retry/failed
+  delivery intent; Notification owns inbox and stored items. P2 must version
+  this policy before real membership, revocation, or preferences replace the
+  immutable fixture.
+- Planned baseline: P1-S1 exactly one persistent notification after the
+  accountable completion loop; recipient unspecified.
+- Actual implementation/evidence: `P1-S1-v1` contracts and data ownership freeze
+  the audience and minimum event payload. Runtime/test evidence is due in the
+  P1-S1 session record.
+- Validation and follow-up: contract, concurrency, duplicate/redelivery,
+  self-suppression, recipient-scope, notification-outage, safe-log, VI/EN
+  browser, and exact-head hosted CI tests. Revisit only in P2 or a separately
+  accepted notification-audience slice.
+
+## ADR-017 — Exclude unused Sharp and narrowly patch Next's PostCSS edge
+
+- Status: Accepted
+- Date: 2026-07-26
+- Change ID: `CHG-2026-009`
+- Context: the P1 candidate dependency audit found reviewed high advisories
+  [GHSA-f88m-g3jw-g9cj](https://github.com/advisories/GHSA-f88m-g3jw-g9cj)
+  in Next 16.2.11's optional Sharp 0.34.5 and
+  [GHSA-r28c-9q8g-f849](https://github.com/advisories/GHSA-r28c-9q8g-f849)
+  in required PostCSS 8.4.31. Sharp is patched only from 0.35.0, outside Next
+  16.2.11/16.2.12's declared `^0.34.5`; PostCSS is fully patched from 8.5.18
+  and has no patched 8.4 line. pnpm's official project settings document both
+  [skipping an optional dependency and parent-scoped overrides](https://pnpm.io/settings).
+- Decision: do not enable or force-upgrade Sharp. Exclude that unused optional
+  dependency with project-local pnpm `ignoredOptionalDependencies` and retain
+  `allowBuilds.sharp: false`. Scope the PostCSS 8.5.18 override to the single
+  `next@16.2.11>postcss` edge. Keep Next 16.2.11 because 16.2.12 declares the
+  same vulnerable edges and is inside the 24-hour release-age quarantine.
+- Alternatives considered: audit-ignore; globally enable scripts; force Sharp
+  0.35 outside Next's range; accept vulnerable optional code; upgrade to the
+  too-new Next patch with no dependency fix; broad PostCSS override.
+- Consequences: the P1 lock/install graph contains no Sharp package and only
+  the Next PostCSS edge changes. Image optimization remains unavailable by
+  design. A later accepted image feature must select a Next-supported patched
+  path; a natively patched Next upgrade should retire the PostCSS override.
+- Planned baseline: production Next build under deny-by-default lifecycle
+  policy with only demonstrably required native build tooling enabled.
+- Actual implementation/evidence: frozen pnpm install passes the supply-chain
+  age policy, dependency audit reports no known vulnerabilities, lifecycle
+  report keeps Sharp denied, no P1 source imports `next/image`/Sharp, production
+  build/runtime passes, and all four Playwright cases pass.
+- Validation and follow-up: final P1 Level C plus exact-head hosted CI remain
+  required. Reopen KI-015 before any `next/image` or server image processing.
+
 ## Decision-change template
 
 ```md

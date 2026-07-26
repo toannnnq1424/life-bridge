@@ -6,9 +6,9 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P0 — Foundation` (validated)
-- Current scope: Phase 0 closeout only
-- Next product slice after Phase 0: `P1-S1 — Accountable care-task loop`
+- Current phase: `P1 — Daily task MVP`
+- Current scope: `P1-S1 — Accountable care-task loop` only
+- Next product slice after P1-S1: `P2-S1 — Account access and accessible onboarding`
 - GitHub execution:
   [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   production UI gate
@@ -155,6 +155,59 @@ Also inspect Git status/diff, run the configured secret scan, and exercise docum
 
 User-visible outcome: in one synthetic household, an authorized caregiver creates and assigns a care task, the assignee completes it, a persistent notification is produced exactly once, and dashboard/task board show confirmed state.
 
+Status: **Locally validated; promotion pending** on
+`phase/1-accountable-task-loop` from integrated `dev` commit `4b633755`.
+Targeted checks and the final Level C campaign pass; coherent commit/push,
+pull-request exact-head hosted CI, merge commit, and issue closeout remain.
+
+### P1-S1 research micro-cycle
+
+- Gate: **PASS WITH ASSUMPTIONS**
+- Timebox: one bounded repository/issue review before contract freeze; no
+  competitor research because it would not change this technical slice.
+- Questions:
+  1. Which confirmed action creates the one useful cross-user notification,
+     and who receives it?
+  2. Which service owns pending, failed, and delivered notification truth?
+  3. What idempotency and optimistic-concurrency results are safe to retry?
+  4. What local-only identity, authorization, time-zone, and persistence
+     boundaries are required?
+  5. Which VI/EN, keyboard, focus, reflow, and failure states must be proven?
+- Sources/evidence: GitHub issue #5; `docs/PRODUCT_SPEC.md`;
+  `docs/API_CONTRACTS.md`; `docs/DATA_MODEL.md`;
+  `docs/design/reviews/P1_S1_STITCH_HANDOFF.md`; registered WCAG 2.2 source
+  `DS-15`; current assumption register and shared risk catalog.
+- Findings:
+  - Issue #5 requires one complete create/assign/complete flow, exactly one
+    persistent notification, confirmed UI state, and the listed duplicate,
+    conflict, permission, outage, stale-read, time-zone, accessibility, and
+    log-redaction risks.
+  - The Phase 0 API draft was ambiguous because create and completion events
+    could both notify without naming a useful recipient.
+  - `CHG-2026-008` freezes the smallest defensible cross-user behavior:
+    completion notifies the task creator/coordinator when that actor differs
+    from the completing assignee. The deterministic primary fixture uses Lan
+    as creator/coordinator and Minh as assignee/completer. A self-completion is
+    suppressed and audited rather than sending a notification to the same
+    actor.
+  - Care Coordination owns completion and outbox delivery intent. Notification
+    owns inbox deduplication and stored notification rows. Dashboard/task
+    surfaces may show Care-owned pending/failed delivery state; the
+    notification center never fabricates an unavailable Notification-owned
+    row.
+  - Production UI needs no new Stitch call: the reviewed aliases and correction
+    list are sufficient once repository-native component, localization,
+    state/focus, responsive, privacy, and security requirements are frozen.
+- Limitations/assumptions: `ASM-001`, `ASM-002`, and `ASM-006` remain
+  unvalidated product/adoption assumptions. P1 proves deterministic technical
+  behavior only and makes no adoption, accessibility-conformance, legal, or
+  clinical claim.
+- Acceptance/test impact: add cross-user audience, self-suppression,
+  source-of-truth, duplicate event, restart, time-zone, VI/EN, keyboard/focus,
+  320 px/reflow, notification-degraded, and log-redaction tests.
+- Re-check trigger: real identity/consent in P2, a Stitch reference change, a
+  public pilot, or any change to the notification audience.
+
 Minimum planned surfaces:
 
 - `LB-011` Family dashboard;
@@ -187,9 +240,86 @@ Acceptance criteria:
 - affected unit, contract, integration, browser, accessibility, lint/type and build checks pass;
 - docs and session handoff are current; one coherent commit is created.
 
+Frozen implementation footprint before code:
+
+- workspace/config/CI: root package scripts and lockfile,
+  `.github/workflows/ci.yml`, local Compose and PowerShell start/migration
+  entry points;
+- shared contracts/technical primitives: `packages/contracts`,
+  `packages/config`, `packages/observability`, and deterministic
+  `packages/test-fixtures`;
+- runtime boundaries: `apps/web`, `apps/gateway`,
+  `services/care-coordination`, and `services/notification`;
+- slice validation: focused package tests, PostgreSQL integration tests, and
+  one Playwright browser flow using real service contracts;
+- persistent memory: affected API/data/architecture/test/security/deployment,
+  design handoff, repository map, implementation/workstream/integration/known
+  issues/session documents.
+
+Planned validation commands:
+
+```powershell
+# Level A after each coherent group; do not rerun unchanged green inputs
+pnpm.cmd --filter <affected-workspace> run format:check
+pnpm.cmd --filter <affected-workspace> run lint
+pnpm.cmd --filter <affected-workspace> run typecheck
+pnpm.cmd --filter <affected-workspace> run test
+
+# Exactly one stable-candidate Level C campaign
+pnpm.cmd run validate:p1-s1
+```
+
+`validate:p1-s1` must cover affected format/lint/type checks, unit and
+API/event contract tests, isolated Coordination/Notification PostgreSQL
+integration, restart durability, outbox/inbox retry and deduplication,
+production builds, VI/EN browser flow, keyboard/focus/accessibility checks,
+documentation/configuration/secret/log-redaction checks, and dependency audit.
+Hosted CI must run the exact PR head and expose an aggregate required result.
+
 Validation checkpoint: Level C slice validation only. Phase-wide release validation remains deferred.
 
+Campaign record: the first candidate invocation stopped at formatting because
+the legacy repository-wide gate included eight unrelated pre-existing Phase 0
+files, including the user-owned canary. This was a harness-scope failure; the
+P1 gate now enumerates only the frozen slice footprint and passes without
+modifying those files. The next invocation reached dependency audit and stopped
+on reviewed Sharp/PostCSS high advisories. After the targeted `CHG-2026-009`
+graph correction and affected install/audit/build/runtime/browser checks passed,
+the changed candidate completed Level C: unit 19/19, contract 4/4, PostgreSQL
+5/5, browser 4/4, builds, lint/type/format, docs/config/secrets, and zero-high
+dependency audit. Test-owned Compose resources were removed.
+
 Explicitly deferred: recurrence, cancellation, attachments, real authentication, push/SMS/email delivery, automatic escalation, offline mutation queue, public deployment.
+
+#### P1-S1 planned versus actual
+
+- Planned boundaries were implemented without expansion: Next.js web, Fastify
+  gateway, Care Coordination, Notification, four small shared packages, two
+  owner-isolated databases on one PostgreSQL engine, transactional outbox,
+  durable inbox/deduplication, and local HTTP dispatch with bounded retry.
+- Planned notification wording was refined by evidence under `CHG-2026-008`:
+  create emits no notification; completion notifies the distinct creator
+  (Lan in the primary fixture); creator self-completion stores one suppression
+  inbox fact and no notification.
+- Planned queue/broker infrastructure was not added. The workload and failure
+  model do not justify it in P1; the durable database outbox remains the source
+  for retry after process restart.
+- Planned production UI traces to the six reviewed Stitch aliases through
+  handoff v1.0. Generated Stitch code and private locators were not imported.
+- Actual dependency review found Next 16.2.11's optional Sharp range cannot
+  reach the advisory-patched Sharp 0.35 line. P1 uses local fonts and no
+  `next/image`/server image pipeline, so `ignoredOptionalDependencies` removes
+  unused Sharp from the install graph while `allowBuilds.sharp: false` remains
+  fail-closed. The PostCSS advisory has no patched 8.4 release; a parent-scoped
+  `next@16.2.11>postcss` override selects 8.5.18. Frozen install, zero-high
+  audit, production build/runtime, and browser 4/4 pass under `CHG-2026-009`.
+  A later image pipeline or Next version that natively carries patched
+  dependencies must reopen `KI-015` and retire the temporary override where
+  possible.
+- New evidence does not add, reorder or expand a P1/P2 slice. It confirms
+  `P2-S1` remains the exact next slice because real identity replaces the
+  explicit local fixture boundary; broader notification audience/preferences
+  remain later governed work.
 
 ## P2 — Trust and household
 
@@ -707,15 +837,90 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ### Current accepted changes
 
-| Change ID      | State                           | Effect on baseline                                                                   |
-| -------------- | ------------------------------- | ------------------------------------------------------------------------------------ |
-| `CHG-2026-001` | Implemented in Phase 0          | Windows + Codex App replace legacy mixed-platform/tool delivery paths                |
-| `CHG-2026-002` | Baseline implemented; lane due  | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control |
-| `CHG-2026-003` | Partially superseded            | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded      |
-| `CHG-2026-004` | Implemented in docs/GitHub      | Preserves P0–P5 and expands production maturity through P6–P12                       |
-| `CHG-2026-005` | Accepted; debt gate active      | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt      |
-| `CHG-2026-006` | Bounded design session complete | Authorizes one disposable non-production Stitch session; handoff remains not frozen  |
-| `CHG-2026-007` | CI bootstrap implemented        | One guarded workflow-only PR registered hosted CI on default `main`                  |
+| Change ID      | State                                | Effect on baseline                                                                   |
+| -------------- | ------------------------------------ | ------------------------------------------------------------------------------------ |
+| `CHG-2026-001` | Implemented in Phase 0               | Windows + Codex App replace legacy mixed-platform/tool delivery paths                |
+| `CHG-2026-002` | Baseline implemented; lane due       | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control |
+| `CHG-2026-003` | Partially superseded                 | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded      |
+| `CHG-2026-004` | Implemented in docs/GitHub           | Preserves P0–P5 and expands production maturity through P6–P12                       |
+| `CHG-2026-005` | Accepted; debt gate active           | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt      |
+| `CHG-2026-006` | Bounded design session complete      | Authorizes one disposable non-production Stitch session; handoff remains not frozen  |
+| `CHG-2026-007` | CI bootstrap implemented             | One guarded workflow-only PR registered hosted CI on default `main`                  |
+| `CHG-2026-008` | Implemented; local validation passed | Freeze one useful completion-to-creator notification and suppress self-notification  |
+| `CHG-2026-009` | Implemented; local validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge    |
+
+## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
+
+- State: Implemented; local validation passed
+- Raised in phase/slice: `P1-S1`
+- Planned baseline: the Phase 0 draft listed created, assigned, and completed
+  task events without fixing which event produced the one MVP notification or
+  naming its recipient.
+- Proposed/actual implementation: create commits task and audit state only.
+  Authorized assignee completion commits one `care.task.completed.v1` outbox
+  event. Notification stores one item for the task creator/coordinator when
+  that recipient differs from the completer. Self-completion is suppressed and
+  audited. Care owns pending/failed delivery intent; Notification owns stored
+  notification rows.
+- Reason and evidence: issue #5 requires exactly one persistent notification
+  and a useful accountable cross-user loop. Sending the assignee a notification
+  for their own completion would add noise without accountable value.
+- Impact:
+  - Product/UI: the creator receives the completion signal; task completion and
+    notification delivery remain separate truths.
+  - API/events: only completion enters the P1 notification outbox; the event
+    carries minimum opaque recipient/actor/task references and versions.
+  - Data/migration: task provenance supplies the creator recipient; inbox and
+    notification uniqueness remain source-event based.
+  - Privacy/security: recipient is authorized within the synthetic household;
+    event/log payloads contain no title, description, name, or care content.
+  - Tests/operations: prove cross-user delivery, self-suppression, duplicate
+    complete/event behavior, unavailable Notification recovery, and ownership
+    of pending/failed/delivered state.
+  - Phase order/schedule: unchanged; no DATA-S1 or P2 scope is introduced.
+- Validation required: contract, unit, PostgreSQL integration, VI/EN browser,
+  log-redaction, and exact-head hosted CI evidence.
+- Follow-up owner and exact phase/slice: P2-S1 replaces fixture identity; any
+  broader notification preference/audience model requires its own later
+  accepted slice/change.
+- Related ADR/integration/session entries: ADR-016,
+  `INT-2026-011`, and the P1-S1 session entry.
+
+## CHG-2026-009 — Keep the P1 web supply chain patched without an image pipeline
+
+- State: Implemented; local validation passed
+- Raised in phase/slice: `P1-S1`
+- Planned baseline: Next production build with lifecycle scripts denied by
+  default; only a proven required package may be allowlisted.
+- Proposed/actual implementation: keep Next 16.2.11, exclude its unused
+  optional `sharp` edge through project-local pnpm
+  `ignoredOptionalDependencies`, retain `allowBuilds.sharp: false`, and apply
+  only `next@16.2.11>postcss: 8.5.18`. Do not audit-ignore either advisory and
+  do not force Sharp 0.35 outside Next's declared range.
+- Reason and evidence: reviewed advisories mark Sharp `<0.35.0` and PostCSS
+  `<=8.5.17` vulnerable. Next 16.2.11 and 16.2.12 both declare Sharp
+  `^0.34.5` and PostCSS 8.4.31; 16.2.12 was also inside the workspace 24-hour
+  release-age quarantine. P1 has no image consumer, while PostCSS is required
+  for the production web build and 8.5.18 is the first complete patch.
+- Impact:
+  - Product/UI: no behavior or visual change; local fonts remain unchanged.
+  - API/events: none.
+  - Data/migration: none.
+  - Privacy/security: vulnerable unused native image code is absent; the CSS
+    build edge resolves to the reviewed patched version.
+  - Tests/operations: frozen install, dependency audit, lifecycle report,
+    production build/runtime and all four browser cases become affected gates.
+  - Phase order/schedule: unchanged; no image feature or later slice is added.
+- Validation required: lockfile policy, zero-high audit, absence of Sharp and
+  `next/image`, production build/runtime/browser, final Level C, and exact-head
+  hosted CI.
+- Follow-up owner and exact phase/slice: the first accepted slice that needs
+  `next/image` or server image processing must choose a Next-supported patched
+  Sharp path before deploy; a Next upgrade that natively resolves patched
+  PostCSS should remove the parent-scoped override after the same targeted
+  evidence.
+- Related ADR/integration/session entries: ADR-017, KI-015,
+  `INT-2026-011`, and the P1-S1 session entry.
 
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
@@ -733,19 +938,13 @@ next slice in the same conversation.
 
 ## Exact next action
 
-First resolve `KI-012`, obtain a visible required hosted-CI result, and review
-the exact commit in
-[PR #21](https://github.com/toannnnq1424/life-bridge/pull/21). Do not merge or
-write directly to `main` to bypass this bootstrap gate.
+Finish only the remaining P1-S1 promotion gates: coherent commit/push, pull
+request to `dev`, exact-head hosted CI, merge commit, and issue #5 closeout. Do
+not start another slice inside this task.
 
-After the foundation is integrated, open one new conversation for
-[`P1-S1 — Accountable care-task loop` issue #5](https://github.com/toannnnq1424/life-bridge/issues/5).
-Begin with the P1 research gate, current task/event contract, and required
-Stitch handoff for `LB-011`, `LB-013`, `LB-014`, applicable `LB-019`, and shared
-state patterns. Production UI implementation remains blocked until
-[`GATE-P1` issue #3](https://github.com/toannnnq1424/life-bridge/issues/3)
-freezes the reviewed Stitch handoff.
-
-The independent research lane may instead open one separate conversation for
-[`DATA-S1` issue #4](https://github.com/toannnnq1424/life-bridge/issues/4) on
-`init/research`; do not combine it with `P1-S1`.
+After that merge, the exact next product slice is
+`P2-S1 — Account access and accessible onboarding`. Its first action is a fresh
+research/contract task on integrated `dev` that replaces fixture identity with
+real account, authorization and recovery boundaries before any UI code. DATA-S1
+issue #4 remains a separate `init/research` lane and must not be combined with
+P2-S1.

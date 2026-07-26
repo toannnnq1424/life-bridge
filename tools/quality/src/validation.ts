@@ -85,6 +85,17 @@ function normalizePath(filePath: string): string {
   return filePath.replaceAll("\\", "/");
 }
 
+export function decodeProcessOutput(value: string | Buffer | null | undefined): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  return Buffer.isBuffer(value) ? value.toString("utf8") : "";
+}
+
+export function gitExecutable(platform: NodeJS.Platform = process.platform): string {
+  return platform === "win32" ? "git.exe" : "git";
+}
+
 function readUtf8(filePath: string): string {
   return readFileSync(filePath, "utf8").replace(/^\uFEFF/, "");
 }
@@ -361,7 +372,7 @@ export function validateConfiguration(repoRoot: string): readonly Finding[] {
 
 function listRepositoryFiles(repoRoot: string): readonly string[] {
   const result = spawnSync(
-    "git.exe",
+    gitExecutable(),
     ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
     {
       cwd: repoRoot,
@@ -370,11 +381,14 @@ function listRepositoryFiles(repoRoot: string): readonly string[] {
     },
   );
 
+  if (result.error) {
+    throw new Error(`git ls-files failed: ${result.error.message}`);
+  }
   if (result.status !== 0) {
-    throw new Error(`git ls-files failed: ${result.stderr.trim()}`);
+    throw new Error(`git ls-files failed: ${decodeProcessOutput(result.stderr).trim()}`);
   }
 
-  return result.stdout
+  return decodeProcessOutput(result.stdout)
     .split("\0")
     .filter((entry) => entry.length > 0)
     .map(normalizePath);

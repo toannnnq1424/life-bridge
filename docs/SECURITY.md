@@ -36,6 +36,12 @@ or medical-safety assessment.
 - Revocation changes future access; any retention obligation must be explicit.
 - Error behavior must not reveal the existence of an inaccessible person,
   household, document, invitation, or task.
+- P1 fixture identity is an explicit local/test adapter. The production build
+  rejects fixture mode. The owning service still verifies actor, household,
+  active assignment, resource, and action rather than trusting UI role text.
+- Under `CHG-2026-008`, the completion audience is the distinct task
+  creator/coordinator. Care resolves delivery versus self-suppression before
+  emitting the minimum event; Notification enforces recipient-scoped reads.
 
 ## Sensitive data rules
 
@@ -66,9 +72,17 @@ Logs must not include:
 - complete request/response bodies by default;
 - names, contact details, care notes, medication text, document contents;
 - database connection strings or stack traces in client responses.
+- task titles/descriptions, event/request payload bodies, fixture display names,
+  or raw thrown-error messages.
 
 Redaction is allow-list based. A logging change touching shared middleware
 requires adjacent tests and phase-level secret scanning.
+
+P1 local PostgreSQL passwords are generated into ignored local state, passed by
+process environment, and never printed. Committed Compose/workflow files contain
+no reusable credential. CI databases are disposable and isolated to the run.
+GitHub workflow-generated owner passwords are masked before they are exported
+to later steps; synthetic/transient scope is not an exception to log hygiene.
 
 ## Dependency and supply-chain policy
 
@@ -77,6 +91,12 @@ requires adjacent tests and phase-level secret scanning.
 - New dependencies require purpose, maintenance/provenance review, license
   review, and smallest reasonable scope.
 - Install scripts are inspected when risk is material.
+- `pnpm-workspace.yaml` uses explicit `allowBuilds`: required `esbuild` is
+  allowed and `sharp` is denied. Because P1-S1 has no `next/image` or server
+  image pipeline, the vulnerable optional Sharp edge is excluded rather than
+  forced outside Next's declared range. Only Next 16.2.11's required PostCSS
+  edge is overridden to reviewed patched 8.5.18. A later image feature must
+  reopen the review before enabling or replacing Sharp.
 - Known vulnerabilities are classified by exploitability and exposure, not
   hidden by blanket ignores.
 - The rejected `@_davideast/stitch-mcp@0.9.0` package must not be executed.

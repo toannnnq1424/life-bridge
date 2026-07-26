@@ -4,14 +4,16 @@
 
 ```text
 Slice: P1-S1
-Status: Design review — not frozen
-Version: 0.1
+Status: Frozen for P1-S1 implementation
+Version: 1.0
 Owner: LifeBridge project owner
-Last reviewed: 2026-07-26
+Last reviewed/frozen: 2026-07-26
 Product requirement: MVP-001 through MVP-012
 Flow: create → assign → view → complete → outbox → notify → dashboard
 Routes: /households/:id, /households/:id/tasks, /tasks/:taskId, /notifications
 Data class: Synthetic coordination data only
+Contract: P1-S1-v1
+Change: CHG-2026-008
 ```
 
 The official Google Stitch MCP produced the visual references. They are design
@@ -49,6 +51,82 @@ The first LB-013 generation response was not retained as a discoverable
 artifact. After `list_screens` and project metadata showed no retrievable
 reference, one controlled regeneration captured a complete server-side screen
 reference. No third generation was attempted.
+
+## Freeze trace and correction resolution
+
+No new Stitch call is required. The reviewed remote aliases remain the visual
+provenance; this repository-native specification resolves the correction list
+without importing generated source or private locators.
+
+| Route/surface                                  | Stitch alias                          | Frozen correction and implementation trace                                                                                                                                                                            | Required evidence                                    |
+| ---------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Dashboard `/households/:id`                    | `LB011-DESKTOP-v1`                    | Header shows `Lan — Người chăm sóc gia đình / Family caregiver`; every task row has a named detail link and explicit complete action when authorized; icon + text accompanies state; 3 px focus ring is never clipped | semantic/keyboard/partial-Notification/browser tests |
+| Task board `/households/:id/tasks`             | `LB013-DESKTOP-v1`, `LB013-MOBILE-v1` | Neutral synthetic “Arrange transport / Sắp xếp phương tiện” task replaces medication content; list-first layout; compact header retains actor role; offline create/complete is blocked, never queued                  | 320–1440 reflow, offline, actor/role tests           |
+| Task create/detail `/tasks/:id` and board form | `LB014-DESKTOP-v1`, `LB014-MOBILE-v1` | VI-first navigation; local input retention is labelled “Chưa lưu trên máy chủ / Not saved to server”; long VI/EN wraps at 320 px; sticky actions follow fields in DOM/focus order and never cover focus               | validation retention, conflict, 320/zoom/focus tests |
+| Notifications `/notifications`                 | `LB019-DESKTOP-v1`                    | VI-first status/error labels; persistent list, empty, denied, load-error, pending/failed dependency context, and delivered rows; no toast-only truth or fabricated Notification row                                   | recipient-scope, degraded, duplicate, VI/EN tests    |
+
+Accepted accessible divergence: production uses semantic lists and native
+controls instead of any canvas-like board or generated custom control. Layout
+may reflow earlier than a Stitch reference to preserve long strings, target
+size, focus, and 320 px behavior.
+
+## Frozen notification and actor model
+
+- Primary fixture: Lan creates/co-ordinates; Minh is assigned and completes;
+  Lan receives exactly one persistent completion notification.
+- Completion never notifies the completing actor about their own action.
+  Self-completion is durably suppressed and produces no notification row.
+- Create/assignment produces no P1 notification.
+- Care-owned pending/retry/failed delivery appears with the affected task or
+  dashboard status. Notification-owned persistent items appear only after its
+  durable commit.
+- The fixture actor control is visibly labelled local demo context, contains
+  only synthetic members, and cannot be enabled by a production build.
+
+## Localization contract
+
+- Default fixture locale: `vi-VN`; supported alternate: `en`.
+- The visible language switch preserves route, actor, safe form input, and
+  confirmed state, and updates the document `lang`.
+- Every visible and assistive string is keyed. Missing keys fail tests; there
+  is no mixed-language fallback or concatenated translated sentence.
+- Dates use `Intl.DateTimeFormat` with the selected locale and the stored IANA
+  time zone. The explicit zone label remains visible.
+- Minimum key families:
+  `nav.*`, `actor.*`, `dashboard.*`, `tasks.*`, `task.form.*`,
+  `task.status.*`, `priority.*`, `delivery.*`, `notifications.*`,
+  `state.loading`, `state.empty`, `state.offline`, `state.denied`,
+  `state.conflict`, `state.error`, `action.*`, and `errors.*`.
+
+## State, focus, and announcement contract
+
+| State                         | Persistent visible truth                                                 | Focus/announcement                                    | Recovery                                      |
+| ----------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- | --------------------------------------------- |
+| Loading                       | named region and scope; no fake task                                     | polite status only for meaningful delay               | wait or retry when exposed                    |
+| Empty                         | reason and permitted create action                                       | normal reading order                                  | focus create heading/action                   |
+| Validation                    | linked summary + inline field errors; valid input retained               | focus error summary, links focus invalid field        | correct and resubmit with same intent         |
+| Denied/not found              | capability boundary without resource disclosure                          | focus page heading; no sensitive announcement         | safe dashboard destination                    |
+| Offline                       | “not saved/not queued”; confirmed cached content labelled with freshness | polite persistent status; no success                  | reconnect then explicit submit                |
+| Conflict                      | current server version and retained local input                          | focus persistent alert once                           | explicit “Load current version”; no overwrite |
+| Task completed                | confirmed task/version/time remains in page                              | polite in-place status; logical action focus retained | follow task/detail links                      |
+| Notification pending/retrying | task remains completed; delivery not claimed                             | polite status, not alert spam                         | automatic bounded retry/status refresh        |
+| Notification failed           | task remains completed; delivery attention required                      | persistent alert with correlation-safe retry          | retry dispatcher/status refresh               |
+| Notification delivered        | one persistent recipient-scoped item                                     | polite status; no forced route change                 | open source task                              |
+
+## Frozen tokens and preimplementation contrast review
+
+| Purpose          | Foreground      | Background            |   Ratio |
+| ---------------- | --------------- | --------------------- | ------: |
+| Primary text     | `#15332B`       | warm canvas `#FFF9F0` | 13.02:1 |
+| Secondary text   | `#4C625A`       | warm canvas `#FFF9F0` |  6.26:1 |
+| Primary action   | white `#FFFFFF` | deep green `#1F5F4A`  |  7.52:1 |
+| Green text/state | `#1F5F4A`       | pale mint `#E8F3ED`   |  6.61:1 |
+| Error text       | `#A12828`       | warm canvas `#FFF9F0` |  7.04:1 |
+| Focus indicator  | `#B54708`       | warm canvas `#FFF9F0` |  5.18:1 |
+
+Implementation must preserve at least these ratios, add explicit borders/icons
+for forced colors, honor reduced motion, and package fonts locally or use the
+approved system fallback. No runtime font or asset request to Stitch is allowed.
 
 ## Approved extracted intent / Ý định được chấp nhận
 
@@ -145,13 +223,13 @@ server behavior from the Stitch screens.
 
 ```text
 Design direction: Accepted
-Responsive direction: Accepted with listed corrections
+Responsive direction: Accepted; corrections mapped above
 Product boundary: Accepted
 Generated source import: Rejected
-Production UI implementation readiness: Blocked
-Blocking reason: P1 service contracts, corrections, localization mapping, and
-manual accessibility evidence are not complete
-Exact next action: In the dedicated P1-S1 task, freeze task/event/API contracts,
-apply the correction list to repository-native component specifications, then
-approve this handoff before frontend implementation
+Product/accessibility/privacy/security specification review: Accepted
+Production UI implementation readiness: Ready for P1-S1
+Remaining acceptance evidence: implementation-level automated and manual
+accessibility, responsive, contrast, privacy, browser, and visual review
+Exact next action: implement only P1-S1 through the frozen P1-S1-v1 contract,
+then record test results and accessible divergences before slice acceptance
 ```
