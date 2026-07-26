@@ -1191,6 +1191,16 @@ No row means simultaneous implementation. Design generation/review may prepare a
   format/lint, production web build and P2-S1 browser 5/5 passed. Already-green
   inputs were not rerun. Exact-head hosted CI must execute the coherent script
   from scratch, including the now-earlier runtime log scan, before merge.
+- Hosted planned versus actual: planned was one feature commit and an unchanged
+  exact-head run. Actual push run `30208198696` passed static/security and
+  P2-S3 browser 8/8, then exposed Linux PowerShell returning `$null` for an
+  empty raw log. The reason is runner-specific shell behavior unavailable in
+  the supported local Windows campaign. Impact is validation tooling only; no
+  product contract/data/runtime behavior changed and no merge occurred. The
+  scan now normalizes null raw content to an empty string, requires targeted
+  parser/privacy validation and a replacement exact-head run. A second small
+  conventional commit is necessary because force-push/history rewriting is
+  prohibited.
 - Follow-up owner and exact phase/slice: P3-S1 freezes authorized timeline
   projection, time-zone ordering and handoff concurrency against the accepted
   P2 consent boundary; it must not invent delegated consent authority.

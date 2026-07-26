@@ -75,6 +75,7 @@ function Assert-PrivacySafeRuntimeLogs {
   foreach ($runtimeFile in $runtimeFiles) {
     if (-not (Test-Path -LiteralPath $runtimeFile)) { continue }
     $content = Get-Content -LiteralPath $runtimeFile -Raw
+    if ($null -eq $content) { $content = "" }
     foreach ($value in $prohibited) {
       if ($content.Contains($value)) {
         throw "Privacy-sensitive synthetic value found in runtime logs: $value"

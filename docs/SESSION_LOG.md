@@ -1207,6 +1207,24 @@ after their exact workspace paths were verified. The user-owned
 not be staged. Exact-head CI, merge commit, post-merge `dev` CI and issue #8
 closeout remain pending and are not claimed early.
 
+### Hosted portability deviation and recovery
+
+Planned was one coherent feature commit whose exact-head hosted run would
+execute the already-proven validation script unchanged. Actual push run
+`30208198696` passed the static/security job and every P2-S3 product/browser
+check through 8/8, then the runtime privacy scan failed because PowerShell on
+the Linux runner returned `$null` for an empty log while Windows returned an
+empty string. The reason is a cross-platform shell semantic that the local
+Windows-only campaign could not expose. Impact is validation tooling only:
+contracts, migrations, production behavior and privacy rules are unchanged,
+and no merge occurred. The scanner now normalizes null raw content to an empty
+string before matching, preserving fail-closed prohibited-value detection for
+non-empty logs. Targeted parser/privacy-scan validation must pass, followed by
+a new exact-head push and PR run. Because force-push and history rewriting are
+prohibited, this hosted-only recovery requires a second small conventional
+commit; the PR must not merge until that replacement head and post-merge
+`dev` are green.
+
 ### Exact next orientation
 
 Only after every P2-S3 acceptance/promotion gate passes, P3-S1 daily timeline
