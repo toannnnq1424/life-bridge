@@ -700,6 +700,15 @@ unit command discovered the P2 integration suite. This was classified as a CI
 ordering/scope defect, not a product failure: the fix keeps the Identity URL
 unset through P1 and injects it only inside the dedicated P2 backend campaign.
 The replacement exact-head hosted run remains required.
+That replacement PR run `30188080211` confirmed the isolation fix: aggregate
+unit reported 32 passed and five Identity PostgreSQL cases skipped. It then
+failed when the cumulative P1 runtime launcher reached Gateway readiness
+without supplying or starting the newly required Identity dependency. This
+second failure is classified as CI runtime orchestration, not a weakened
+readiness contract or product-test failure. The narrow follow-up provisions
+Identity, starts the real built service with masked ephemeral keys only around
+the P1 campaign, and removes its database URL before aggregate unit discovery.
+A new exact-head run is still required.
 
 Project Owner + Design Lead next restore the approved Stitch MCP/secret path,
 perform one bounded synthetic-only reference session, review input schema/data

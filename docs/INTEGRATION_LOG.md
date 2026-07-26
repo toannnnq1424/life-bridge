@@ -333,7 +333,14 @@ environments are intended to converge. It is not a substitute for Git history.
   `IDENTITY_DATABASE_URL` before provisioning and the preceding P1 unit
   command therefore discovered the P2 integration suite. The classified CI
   ordering/scope fix localizes that URL to the dedicated P2 campaign; a
-  replacement exact-head run is required.
+  replacement exact-head run is required. Replacement PR run `30188080211`
+  confirmed 32 aggregate units passed with all five database cases skipped,
+  then exposed that the cumulative P1 runtime launcher neither configured nor
+  started the newly required Identity readiness dependency. This second CI
+  orchestration defect is fixed by provisioning and running the real built
+  Identity service with masked ephemeral keys only around P1 runtime
+  acceptance, while keeping its database URL unset during aggregate unit
+  discovery. Another exact-head run is required.
 - Conflicts/risks: Stitch MCP inventory was empty at
   `2026-07-26T02:09:54.193Z` and again after 180 seconds at
   `2026-07-26T02:13:03.970Z`. No credential, locator, signed URL, remote ID or
