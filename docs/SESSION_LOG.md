@@ -606,3 +606,240 @@ run `30183168519`. PR #42 merged into `dev` as
   current `dev`. First freeze real identity, session, household authorization,
   recovery, language, and accessibility-preference contracts before code.
   DATA-S1 remains a separate `init/research` lane. Neither scope starts here.
+
+## 2026-07-26 — P2-S1 backend candidate and blocked UI handoff
+
+### Objective and current result
+
+Execute only issue #6 from integrated `dev@a3e9fc2`: freeze the identity,
+session, MFA, recovery, preferences, accessibility and permission contracts;
+then build the smallest production-oriented account-access path without
+account enumeration. P2-S2, DATA-S1 and deployment remain out of scope.
+
+The first-party Identity & Consent backend candidate is implemented and passes
+focused Level A/B evidence. It owns one database and grants only account scope.
+No production UI was implemented: the required Stitch MCP inventory remained
+empty through the one 180-second gate, so `MCP-DEBT-2026-002`/KI-017 blocks
+`LB-001`–`LB-007`, full P2-S1 acceptance, the single Level C command, merge-as-
+complete, deployment and issue #6 closure.
+
+### Planned versus actual
+
+- Planned: research and three independent audits, freeze ADR/threat/API/data/
+  audit/recovery/preferences/design acceptance, implement account backend plus
+  accessible VI/EN UI, run one stable-candidate Level C, pass exact-head hosted
+  CI, merge by PR and close issue #6.
+- Actual architecture/backend: `CHG-2026-010`/ADR-018 selects a first-party
+  service using the existing PostgreSQL engine. It stores Argon2id password
+  hashes, AEAD-sealed TOTP secrets, digest-only challenges/sessions/recovery
+  codes and service-owned audit. Gateway owns opaque `HttpOnly` cookie
+  serialization, exact-Origin/Fetch-Metadata/CSRF checks and fixture rejection
+  outside loopback/non-production configuration.
+- Actual behavior: registration requires TOTP plus recovery-code
+  acknowledgement; sign-in requires password plus TOTP; password recovery
+  requires TOTP plus one code; factor recovery requires password plus one code
+  and TOTP re-enrollment. Preferences are versioned and non-gating. Onboarding
+  rotates the session but grants no household membership/capability.
+- Actual design: requirements, permission contract and semantic local
+  wireframes exist for `LB-001`–`LB-007`; they are not a Google Stitch reference
+  or production handoff. No Stitch credential, private locator, signed URL,
+  remote ID, generated source, screenshot or sensitive prompt data was used.
+- Roadmap impact: order unchanged. The exact next work remains completion of
+  P2-S1 after its Stitch gate; P2-S2 and DATA-S1 are not started.
+
+### Research and dependency decisions
+
+- Current official NIST SP 800-63B-4, OWASP authentication/session/password/
+  MFA/forgot-password/CSRF guidance, W3C WCAG 2.2 and official dependency docs
+  changed or confirmed the password, replay, session rotation/expiry, generic
+  response, cookie/CSRF, focus/reflow and non-conformance-claim tests.
+- `@node-rs/argon2@2.0.2` uses the frozen Argon2id parameters
+  `m=19456 KiB,t=2,p=1`; `otpauth@9.5.1` supplies maintained TOTP;
+  `@fastify/cookie@11.1.2` supplies the official Fastify cookie boundary.
+  `argon2@0.45.1` was not selected because its install lifecycle was broader.
+- The local host has Node 24.14 while the repository pins Node 22; local results
+  are useful but hosted Node 22 is decisive. The private GitHub issue body was
+  not retrievable; the controller delegation plus local plan/board are the
+  canonical scope authority for this checkpoint.
+
+### Files, contracts and validation
+
+- Runtime: new `services/identity-consent`; gateway Identity proxy/cookie/
+  origin/CSRF boundary; strengthened fixture configuration guard.
+- Contracts/data: P2 Zod schemas, Identity migration, ADR-018, threat model,
+  API/data/architecture/security/test/deployment/design/state updates.
+- Operations: P2 database provision/reset helpers, locked dependency graph and
+  exact-head CI backend-only PostgreSQL step. The existing P1 browser gate is
+  unchanged and no P2 browser/full-Level-C claim is made.
+- Focused results: config 2/2, contracts 6/6, Identity unit/internal 5/5,
+  gateway 9/9 (including required-Identity readiness), aggregate unit 32/32,
+  Identity PostgreSQL 5/5, affected format/lint/type/build, frozen install,
+  docs/config/secrets and zero-high dependency audit passed. The
+  first database run exposed a PostgreSQL `CASE` timestamp inference defect;
+  it was classified as real, fixed with an explicit `timestamptz` cast, and the
+  targeted rerun passed. Account IDs were also removed from safe structured
+  session logs while the owned audit relation remains.
+- The repository-wide format check reported seven pre-existing Phase 0/P1
+  documents outside the P2 footprint, including the user-owned Stitch canary.
+  This was classified as harness scope rather than a P2 defect; none was edited.
+  The frozen `format:p2:backend:check` and existing P1 footprint check pass.
+- PostgreSQL validation used the isolated Compose project
+  `lifebridge-p2-s1-019f9c2a` on loopback port 55433 with synthetic credentials.
+  Cleanup removes exactly that container, network and volume.
+
+### Promotion status, limitations and exact next action
+
+No Level C was run because its frozen contract includes P2 browser/UI evidence.
+No production UI, manual screen-reader, forced-colors, 200%/400% zoom, hosted
+exact-head success, merge, deployment or issue closure is claimed at this
+checkpoint. Draft PR #44 preserves the backend candidate and CI evidence but
+must remain blocked and must not be merged as P2-S1 complete. Its first hosted
+push run `30187900426` failed because CI exported `IDENTITY_DATABASE_URL`
+before provisioning the Identity owner/database, so the earlier P1 Level C
+unit command discovered the P2 integration suite. This was classified as a CI
+ordering/scope defect, not a product failure: the fix keeps the Identity URL
+unset through P1 and injects it only inside the dedicated P2 backend campaign.
+The replacement exact-head hosted run remains required.
+That replacement PR run `30188080211` confirmed the isolation fix: aggregate
+unit reported 32 passed and five Identity PostgreSQL cases skipped. It then
+failed when the cumulative P1 runtime launcher reached Gateway readiness
+without supplying or starting the newly required Identity dependency. This
+second failure is classified as CI runtime orchestration, not a weakened
+readiness contract or product-test failure. The narrow follow-up provisions
+Identity, starts the real built service with masked ephemeral keys only around
+the P1 campaign, and removes its database URL before aggregate unit discovery.
+A new exact-head run is still required.
+
+Project Owner + Design Lead next restore the approved Stitch MCP/secret path,
+perform one bounded synthetic-only reference session, review input schema/data
+egress/security/accessibility/privacy, and freeze a redacted handoff for
+`LB-001`–`LB-007`. Only then implement production UI and run exactly one
+`pnpm.cmd run validate:p2-s1`. P2-S2 (`LB-008`–`LB-010` household,
+invitation and care-recipient context) begins only after full P2-S1 acceptance;
+do not start it here.
+
+## 2026-07-26 — P2-S1 governance amendment for the future Spring boundary
+
+### Accepted direction and planned versus actual
+
+- `CHG-2026-011`/ADR-019 accepts LifeBridge as a polyglot microservice system
+  and selects greenfield Community as the first Spring Boot service beginning
+  at P5-S1/issue #15, then extending through P5-S2/P5-S3.
+- Planned baseline: Community was a future independently deployable service
+  inside a TypeScript-oriented monorepo; no second backend language was
+  required. Actual in this change is documentation/governance only. Gateway,
+  Identity & Consent, Care Coordination and Notification remain Node services;
+  no Java source, Maven wrapper, JDK, dependency, image or runtime was added.
+- Community will own its PostgreSQL database/role/migrations/outbox/audit.
+  Gateway integration is versioned language-neutral OpenAPI/JSON Schema with
+  provider/consumer tests. Identity & Consent remains authority and Community
+  receives minimum authorized context only. PostgreSQL search is first; later
+  engines require measured access-pattern evidence and another accepted ADR.
+- The P5 research gate, not this P2 task, must verify official supported JDK
+  distribution/version, Spring Boot version, Maven plugins/checksums and a
+  repository-owned Windows wrapper, preferably `mvnw.cmd`. P6 owns
+  mixed-version, independent artifact/upgrade, dependency isolation,
+  health/readiness, observability, SBOM/supply-chain, container and rollback
+  proof.
+
+### Scope and next action
+
+This amendment does not implement P5, start P2-S2, alter P2 ordering or weaken
+`MCP-DEBT-2026-002`. P2-S1 remains backend-only in draft PR #44 and production
+UI/full Level C/merge/issue #6 closure remain blocked until the valid Stitch
+reference and frozen `LB-001`–`LB-007` handoff exist. The exact next action
+therefore remains the P2 Stitch gate. Existing issue #15 received the accepted
+Spring boundary and research/ownership/P6 gates and remains open/planned; no
+duplicate issue was created. `docs/REPOSITORY_MAP.md` is unchanged because this
+governance amendment creates no directory, file, command or implemented
+dependency to map.
+
+Changed-document Prettier, config, docs, secrets and `git diff --check` gates
+pass. No application, workflow, dependency, lockfile or test input changed, so
+no Level C, browser or Java build is run or claimed. The coherent docs commit
+must refresh exact-head hosted CI on draft PR #44; the PR remains non-mergeable
+as complete work while the Stitch blocker is open.
+
+## 2026-07-26 — P2-S1 official Stitch activation checkpoint
+
+### Evidence and planned versus actual
+
+- Planned after the original 180-second gate: restore an approved official
+  Stitch MCP path, then review schemas/data egress and create a bounded
+  synthetic reference before any production UI work.
+- Actual transport/authentication evidence: the project owner authorized
+  persistent local setup, and a read-only direct canary against the official
+  endpoint completed initialization and tool discovery with HTTP 200, protocol
+  `2025-06-18`, and 15 project/screen/design-system tools. It made no project
+  mutation. Authentication remains environment-backed; no credential value is
+  tracked, printed, copied into evidence or exposed to the application.
+- Actual repository change: the existing secret-free project Stitch stanza is
+  enabled while retaining the official endpoint, environment header mapping,
+  prompt approval mode, `required = false`, and bounded timeouts. No application
+  code, production UI, generated Stitch source, private locator, signed URL or
+  remote identifier is added.
+- Runtime limitation: the current Codex App process cannot dynamically acquire
+  a newly configured MCP namespace. A full app restart and resumed turn are
+  required before in-task schema, side-effect, approval and data-egress review.
+- Ownership boundary: the pre-existing user-owned
+  `docs/orchestration/reports/STITCH_MCP_CANARY.md` remains unmodified and
+  unstaged.
+- Validation: changed Markdown/TypeScript format, config/docs/secrets,
+  validator unit 10/10, affected lint/typecheck and `git diff --check` pass.
+  The broad local unit/typecheck attempts were classified as workspace
+  dependency-link/environment failures under host Node 24, not product
+  failures; exact affected checks pass and hosted Node 22 remains decisive.
+
+### Debt status and exact next action
+
+`MCP-DEBT-2026-002`/KI-017 remains open, but is no longer classified as an
+endpoint or key-path failure. It now tracks the required Codex App restart,
+in-task schema/data-egress/security review, bounded synthetic Stitch reference
+operations and seven Frozen handoffs for `LB-001`–`LB-007`. Until those gates
+pass, production UI, P2 Level C, merge-as-complete, deployment and issue #6
+closure remain blocked; draft PR #44 must remain Draft.
+
+After restart, resume this same P2-S1 task, inspect the newly callable Stitch
+schemas, perform only bounded synthetic design operations, freeze the reviewed
+`LB-001`–`LB-007` handoff, implement the production UI, then run exactly one
+P2 Level C. Do not start P2-S2 or P5.
+
+## 2026-07-26 — P2-S1 Stitch handoff and native UI candidate
+
+The task used official Streamable HTTP MCP while the current Codex App process
+could not dynamically expose the namespace. It reviewed all 15 input schemas,
+classified five read-only and ten write/non-idempotent tools, called
+`list_projects` once, reused the single unambiguous LifeBridge display name and
+performed exactly seven synthetic screen generations. No project creation,
+delete, edit, variant, upload or design-system mutation occurred. No secret,
+remote identifier, private locator, signed URL or generated source was
+persisted.
+
+`docs/design/reviews/P2_S1_STITCH_HANDOFF.md` freezes redacted aliases
+`P2-LB-001`–`P2-LB-007` after product/accessibility/privacy/security review.
+The native Next.js candidate adds the seven public/account routes, VI/EN,
+generic anonymous states, offline blocking, required factor/recovery handling,
+account-only onboarding and non-gating preferences. P1 household routes remain
+present but are not linked or authorized by the P2 account-only surface.
+
+The dedicated P2 Playwright project disables trace, video and screenshots.
+Targeted browser evidence is 4/4 after selector-only test fixes; affected
+format/lint/type/contracts/build are green. Manual NVDA/Narrator, text-spacing
+and zoom observations remain unexecuted and are not claimed. The exact next
+action is the single `pnpm.cmd run validate:p2-s1`, followed by exact-head CI;
+P2-S2 and P5 remain out of scope.
+
+The single Level C subsequently passed: P1 PostgreSQL/browser regression,
+Identity PostgreSQL 5/5, aggregate unit 37/37, contracts 6/6, P2 artifact-
+disabled browser 4/4, format/lint/type/build/docs/config/secrets, dependency
+audit, diff and exact Compose/process cleanup. One orchestration observation
+showed the default P1 Playwright config discovering the P2 file; all cases
+passed and no failure artifact was created. A targeted config fix now limits
+the default project to `p1-s1.spec.ts`; the dedicated P2 config remains the
+only runner for credential flows. Level C is not rerun.
+
+`MCP-DEBT-2026-002` is resolved by the complete schema/egress review, bounded
+synthetic references, Frozen handoff, native implementation and local Level C.
+Exact-head CI, PR merge-commit promotion, issue #6 closure and canonical
+post-merge evidence remain. KI-016 retains the honest manual accessibility
+rows and deployment remains separately gated.

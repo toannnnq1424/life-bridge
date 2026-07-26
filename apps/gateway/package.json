@@ -9,13 +9,14 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "start": "tsx src/main.ts",
-    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --external:fastify --outfile=dist/main.mjs"
+    "build": "esbuild src/main.ts --bundle --platform=node --format=esm --external:fastify --external:@fastify/cookie --outfile=dist/main.mjs"
   },
   "dependencies": {
     "@lifebridge/config": "workspace:*",
     "@lifebridge/contracts": "workspace:*",
     "@lifebridge/observability": "workspace:*",
     "@lifebridge/test-fixtures": "workspace:*",
+    "@fastify/cookie": "11.1.2",
     "fastify": "5.10.0"
   }
 }

@@ -115,30 +115,51 @@ baseline / Baseline trước đây` and link `CHG-2026-004`; #20 no longer carri
 
 ## Applied issue catalog before `CHG-2026-004`
 
-| ID       | Title                                                       | Milestone | Labels                                               | Dependency                            | GitHub                                                             |
-| -------- | ----------------------------------------------------------- | --------- | ---------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------ |
-| `GH-001` | `[P0] Establish governed Windows foundation`                | P0        | `operations`, `data`, `accessibility`                | None; completed baseline              | [#2 closed](https://github.com/toannnnq1424/life-bridge/issues/2)  |
-| `GH-002` | `[GATE-P1] Activate Stitch MCP and freeze P1 handoff`       | P1        | `design`, `security`, `accessibility`, `blocked`     | Credential owner and read-only canary | [#3 blocked](https://github.com/toannnnq1424/life-bridge/issues/3) |
-| `GH-003` | `[DATA-S1] Pin aggregate context fixture with provenance`   | P1        | `research`, `data`, `ready`                          | `init/research` lane                  | [#4](https://github.com/toannnnq1424/life-bridge/issues/4)         |
-| `GH-004` | `[P1-S1] Accountable care-task loop`                        | P1        | `frontend`, `backend`, `accessibility`, `ready`      | P0; GH-002 before production UI       | [#5](https://github.com/toannnnq1424/life-bridge/issues/5)         |
-| `GH-005` | `[P2-S1] Account access and accessible onboarding`          | P2        | `frontend`, `backend`, `security`, `accessibility`   | P1 contracts                          | [#6](https://github.com/toannnnq1424/life-bridge/issues/6)         |
-| `GH-006` | `[P2-S2] Household, invitation, and care-recipient context` | P2        | `frontend`, `backend`, `security`                    | P2-S1                                 | [#7](https://github.com/toannnnq1424/life-bridge/issues/7)         |
-| `GH-007` | `[P2-S3] Consent, privacy, audit, and settings`             | P2        | `frontend`, `backend`, `security`                    | P2-S2                                 | [#8](https://github.com/toannnnq1424/life-bridge/issues/8)         |
-| `GH-008` | `[P3-S1] Daily timeline and handoff`                        | P3        | `frontend`, `backend`, `accessibility`               | P1 task; P2 roles/consent             | [#9](https://github.com/toannnnq1424/life-bridge/issues/9)         |
-| `GH-009` | `[P3-S2] Calendar and appointment coordination`             | P3        | `frontend`, `backend`, `accessibility`               | P3-S1 time contract                   | [#10](https://github.com/toannnnq1424/life-bridge/issues/10)       |
-| `GH-010` | `[P3-S3] Care-plan review`                                  | P3        | `frontend`, `backend`, `security`                    | P2 consent; P3 time                   | [#11](https://github.com/toannnnq1424/life-bridge/issues/11)       |
-| `GH-011` | `[P4-S1] Medication reminder acknowledgement`               | P4        | `frontend`, `backend`, `security`, `accessibility`   | P3 time; notification                 | [#12](https://github.com/toannnnq1424/life-bridge/issues/12)       |
-| `GH-012` | `[P4-S2] Emergency contacts and offline-readable plan`      | P4        | `frontend`, `security`, `accessibility`              | Consent and offline threat review     | [#13](https://github.com/toannnnq1424/life-bridge/issues/13)       |
-| `GH-013` | `[P4-S3] Access-controlled document vault`                  | P4        | `frontend`, `backend`, `data`, `security`            | Storage/scanner ADR and consent       | [#14](https://github.com/toannnnq1424/life-bridge/issues/14)       |
-| `GH-014` | `[P5-S1] Consented help request and directory`              | P5        | `frontend`, `backend`, `research`, `security`        | Reviewed source and consent           | [#15](https://github.com/toannnnq1424/life-bridge/issues/15)       |
-| `GH-015` | `[P5-S2] Volunteer match and organization coordination`     | P5        | `frontend`, `backend`, `security`                    | P5-S1 and safeguarding                | [#16](https://github.com/toannnnq1424/life-bridge/issues/16)       |
-| `GH-016` | `[P5-S3] Moderation resolution`                             | P5        | `frontend`, `backend`, `security`                    | P5-S2 and moderation policy           | [#17](https://github.com/toannnnq1424/life-bridge/issues/17)       |
-| `GH-017` | `[P6-S1] Offline, conflict, and reusable-state hardening`   | P6        | `frontend`, `backend`, `accessibility`, `operations` | Release flow inventory                | [#18](https://github.com/toannnnq1424/life-bridge/issues/18)       |
-| `GH-018` | `[P6-S2] Production deployment and operations`              | P6        | `backend`, `data`, `security`, `operations`          | Accepted release scope/platform       | [#19](https://github.com/toannnnq1424/life-bridge/issues/19)       |
-| `GH-019` | `[P6-S3] Demo, submission, and release`                     | P6        | `accessibility`, `operations`, `ready`               | P6-S1 and P6-S2                       | [#20](https://github.com/toannnnq1424/life-bridge/issues/20)       |
+| ID       | Title                                                       | Milestone | Labels                                               | Dependency                                              | GitHub                                                             |
+| -------- | ----------------------------------------------------------- | --------- | ---------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------ |
+| `GH-001` | `[P0] Establish governed Windows foundation`                | P0        | `operations`, `data`, `accessibility`                | None; completed baseline                                | [#2 closed](https://github.com/toannnnq1424/life-bridge/issues/2)  |
+| `GH-002` | `[GATE-P1] Activate Stitch MCP and freeze P1 handoff`       | P1        | `design`, `security`, `accessibility`, `blocked`     | Credential owner and read-only canary                   | [#3 blocked](https://github.com/toannnnq1424/life-bridge/issues/3) |
+| `GH-003` | `[DATA-S1] Pin aggregate context fixture with provenance`   | P1        | `research`, `data`, `ready`                          | `init/research` lane                                    | [#4](https://github.com/toannnnq1424/life-bridge/issues/4)         |
+| `GH-004` | `[P1-S1] Accountable care-task loop`                        | P1        | `frontend`, `backend`, `accessibility`, `ready`      | P0; GH-002 before production UI                         | [#5](https://github.com/toannnnq1424/life-bridge/issues/5)         |
+| `GH-005` | `[P2-S1] Account access and accessible onboarding`          | P2        | `frontend`, `backend`, `security`, `accessibility`   | P1 contracts                                            | [#6](https://github.com/toannnnq1424/life-bridge/issues/6)         |
+| `GH-006` | `[P2-S2] Household, invitation, and care-recipient context` | P2        | `frontend`, `backend`, `security`                    | P2-S1                                                   | [#7](https://github.com/toannnnq1424/life-bridge/issues/7)         |
+| `GH-007` | `[P2-S3] Consent, privacy, audit, and settings`             | P2        | `frontend`, `backend`, `security`                    | P2-S2                                                   | [#8](https://github.com/toannnnq1424/life-bridge/issues/8)         |
+| `GH-008` | `[P3-S1] Daily timeline and handoff`                        | P3        | `frontend`, `backend`, `accessibility`               | P1 task; P2 roles/consent                               | [#9](https://github.com/toannnnq1424/life-bridge/issues/9)         |
+| `GH-009` | `[P3-S2] Calendar and appointment coordination`             | P3        | `frontend`, `backend`, `accessibility`               | P3-S1 time contract                                     | [#10](https://github.com/toannnnq1424/life-bridge/issues/10)       |
+| `GH-010` | `[P3-S3] Care-plan review`                                  | P3        | `frontend`, `backend`, `security`                    | P2 consent; P3 time                                     | [#11](https://github.com/toannnnq1424/life-bridge/issues/11)       |
+| `GH-011` | `[P4-S1] Medication reminder acknowledgement`               | P4        | `frontend`, `backend`, `security`, `accessibility`   | P3 time; notification                                   | [#12](https://github.com/toannnnq1424/life-bridge/issues/12)       |
+| `GH-012` | `[P4-S2] Emergency contacts and offline-readable plan`      | P4        | `frontend`, `security`, `accessibility`              | Consent and offline threat review                       | [#13](https://github.com/toannnnq1424/life-bridge/issues/13)       |
+| `GH-013` | `[P4-S3] Access-controlled document vault`                  | P4        | `frontend`, `backend`, `data`, `security`            | Storage/scanner ADR and consent                         | [#14](https://github.com/toannnnq1424/life-bridge/issues/14)       |
+| `GH-014` | `[P5-S1] Consented help request and directory`              | P5        | `frontend`, `backend`, `research`, `security`        | P2 consent; ADR-019; official Spring toolchain research | [#15](https://github.com/toannnnq1424/life-bridge/issues/15)       |
+| `GH-015` | `[P5-S2] Volunteer match and organization coordination`     | P5        | `frontend`, `backend`, `security`                    | P5-S1 and safeguarding                                  | [#16](https://github.com/toannnnq1424/life-bridge/issues/16)       |
+| `GH-016` | `[P5-S3] Moderation resolution`                             | P5        | `frontend`, `backend`, `security`                    | P5-S2 and moderation policy                             | [#17](https://github.com/toannnnq1424/life-bridge/issues/17)       |
+| `GH-017` | `[P6-S1] Offline, conflict, and reusable-state hardening`   | P6        | `frontend`, `backend`, `accessibility`, `operations` | Release flow inventory                                  | [#18](https://github.com/toannnnq1424/life-bridge/issues/18)       |
+| `GH-018` | `[P6-S2] Production deployment and operations`              | P6        | `backend`, `data`, `security`, `operations`          | Accepted release scope/platform                         | [#19](https://github.com/toannnnq1424/life-bridge/issues/19)       |
+| `GH-019` | `[P6-S3] Demo, submission, and release`                     | P6        | `accessibility`, `operations`, `ready`               | P6-S1 and P6-S2                                         | [#20](https://github.com/toannnnq1424/life-bridge/issues/20)       |
 
 This table is retained as publication history. It is not the post-change
 execution baseline.
+
+### `CHG-2026-011` amendment to existing issue #15
+
+Do not create a duplicate P5-S1 issue. Existing issue #15 is the implementation
+owner for the first Spring Boot Community boundary. Its acceptance must retain
+the consented request/directory outcome and add:
+
+- one greenfield Community service extended through P5-S2/P5-S3; no rewrite of
+  Gateway, Identity & Consent, Care Coordination or Notification;
+- Community-owned PostgreSQL role/database/migrations/outbox/audit with no
+  cross-service SQL, credential or business-code import;
+- Node Gateway ↔ Spring versioned OpenAPI/JSON Schema provider/consumer tests,
+  with Identity & Consent authoritative and minimum context only;
+- PostgreSQL search first; no Elasticsearch, Redis, broker or object storage
+  without later measured evidence and an accepted ADR;
+- a P5 official-source gate that pins the supported JDK distribution/version,
+  Spring Boot version, Maven plugins/checksums and repository-owned Windows
+  wrapper, preferably `mvnw.cmd`, before Java source exists;
+- P6 mixed-version, independent artifact/upgrade, dependency isolation,
+  health/readiness, observability, SBOM/supply-chain, container and rollback
+  evidence.
 
 ## Accepted P6–P12 issue catalog
 

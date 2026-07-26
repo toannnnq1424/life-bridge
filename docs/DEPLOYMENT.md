@@ -7,6 +7,12 @@ Next.js web, Fastify gateway, Care Coordination, Notification, and one local
 PostgreSQL engine with two owner-isolated databases. This is local/CI evidence,
 not a public or production deployment.
 
+P2-S1 currently adds a production-oriented Identity backend candidate and
+gateway boundary only. Its PostgreSQL migration and focused tests are local/CI
+evidence; no P2 runtime deployment, public endpoint, production credential or
+production UI is claimed. `MCP-DEBT-2026-002` blocks the full slice and every
+deployment claim.
+
 ## Environments
 
 | Environment | Branch/source                                      | Purpose                             | Data                         |
@@ -43,6 +49,11 @@ infrastructure is consolidated for cost.
 - Startup validates required variables and rejects unknown production defaults.
 - Secrets are injected by the target platform; never built into images.
 - Fixture mode is explicit and cannot silently activate in production.
+- Gateway startup rejects fixture identity when runtime is production, the
+  bind host is non-loopback, or the configured public origin is non-loopback.
+- Identity requires separate database/internal-service/data-encryption/rate-
+  digest keys. Production gateway cookies use the `__Host-` prefix,
+  `HttpOnly`, `Secure`, `SameSite=Strict`, path `/`, and no `Domain`.
 - Each service exposes liveness, readiness, and build-version endpoints.
 - Logs are structured and follow `docs/SECURITY.md`.
 
@@ -73,6 +84,13 @@ enforced; build plus Chromium runtime smoke is the evidence that P1 does not
 require Sharp install/runtime code. The temporary parent-scoped PostCSS patch
 must be reassessed on a Next upgrade. Any later `next/image` or server
 image-processing work must reopen the supply-chain decision before deployment.
+
+The P2 backend uses the existing PostgreSQL engine with a distinct
+`lifebridge_identity` owner/database. `tools/quality/src/p2-database.ts` and
+`p2-reset.ts` are validation helpers, not deployment automation. Identity and
+gateway require configuration through the approved local/CI secret mechanism;
+no example or repository file contains usable credentials, TOTP seeds,
+recovery codes, cookies or tokens.
 
 ## Promotion
 
@@ -130,3 +148,8 @@ applicable platform authorization. Phase 0 performs none of these actions.
 Authorization never bypasses safety, validation, or debt gates. A development
 credential disclosed in chat is not an approved deployment secret and must be
 revoked rather than persisted.
+
+P2-S1 adds no deployment. `validate:p2-s1` is a local/CI acceptance topology:
+it provisions owned PostgreSQL databases, starts the real Identity dependency,
+preserves the P1 regression campaign, runs the artifact-disabled P2 browser
+campaign, and removes only its task-owned processes and Compose resources.

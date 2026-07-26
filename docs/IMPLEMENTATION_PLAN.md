@@ -6,10 +6,11 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P1 — Daily task MVP` accepted and integrated
-- Current scope: no active product implementation; P1-S1 is closed and P2-S1
-  has not started
-- Next product slice after P1-S1: `P2-S1 — Account access and accessible onboarding`
+- Current phase: `P2 — Trust and household`
+- Current scope: `P2-S1 — Account access and accessible onboarding` in progress
+  on `phase/2-account-access-onboarding`; backend/contracts only while the P2
+  Stitch gate is blocked
+- Active product slice: `P2-S1 — Account access and accessible onboarding`
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -327,6 +328,12 @@ Explicitly deferred: recurrence, cancellation, attachments, real authentication,
 
 Outcome: a user can register/sign in, complete the required factor/recovery path, choose language/accessibility preferences, and enter an authorized session without account enumeration.
 
+Status: **In progress; production UI and full acceptance blocked**.
+`CHG-2026-010`/ADR-018 freezes a first-party Identity & Consent backend and an
+account-scoped session that grants no household access. `MCP-DEBT-2026-002`
+blocks `LB-001`–`LB-007` production implementation and the eventual full Level
+C campaign.
+
 Screens: `LB-001`–`LB-007`.
 
 Acceptance:
@@ -340,6 +347,53 @@ Acceptance:
 Dependencies: P1 gateway/config baseline; accepted identity architecture ADR if an external provider is introduced.
 
 Deferred: enterprise SSO and delegated organization administration.
+
+#### P2-S1 research micro-cycle and contract freeze
+
+- Gate: **PASS WITH ASSUMPTIONS** for contracts/backend; **BLOCKED** for
+  production UI.
+- Questions: authenticator/recovery minimum; session/cookie/CSRF/rotation;
+  enumeration/rate limits; credential artifact storage; accessible VI/EN
+  authentication and preferences.
+- Primary/official sources: NIST SP 800-63B-4 (2025), current OWASP
+  Authentication/Forgot Password/Session Management/Password Storage/MFA/CSRF
+  Cheat Sheets, W3C WCAG 2.2 Understanding documents, and official Fastify,
+  Node.js 22, `@node-rs/argon2`, and `otpauth` documentation. Retrieved
+  2026-07-26; details and engineering limitations are recorded in
+  `docs/security/P2_S1_THREAT_MODEL.md`.
+- Findings: require password plus TOTP; issue one-time saved recovery codes;
+  use remaining factor plus one recovery code for recovery; rotate/revoke
+  sessions; keep opaque tokens server-side; require synchronizer CSRF token,
+  exact Origin and Fetch Metadata; keep generic public login/recovery behavior;
+  allow password managers/autofill/paste; never gate access on preferences.
+- Assumptions: a non-email login name and saved recovery codes are acceptable
+  for this bounded slice; total-loss support recovery and phishing-resistant
+  passkeys are not built; no AAL, legal, identity-proofing, or deployment claim.
+- Product boundary: new accounts receive account/onboarding authority only.
+  Role intent in LB-006 is non-authoritative; P2-S2 owns membership.
+- Stitch gate: zero callable tools from `2026-07-26T02:09:54.193Z` through
+  `02:13:03.970Z`; fallback/debt is recorded in
+  `docs/design/reviews/P2_S1_LOCAL_WIREFRAME.md`.
+- Frozen backend footprint: Identity service/migration; contracts, config,
+  observability; gateway session boundary; P2 PostgreSQL integration; database,
+  reset/start/validation/CI helpers; affected persistent docs. Web/browser files
+  enter only after seven handoffs are Frozen.
+- Eventual single Level C: `pnpm.cmd run validate:p2-s1`; it includes static,
+  unit/contract/integration/browser/build/security/accessibility evidence and
+  is not run or claimed while UI is blocked. Backend work uses Level A/B only.
+- Stop rule: further sources would not change the frozen backend decision.
+  Re-check on Stitch activation, authenticator/provider change, public pilot,
+  passkey scope, or changed NIST/OWASP/WCAG guidance.
+
+#### P2-S1 planned versus actual — backend candidate checkpoint
+
+- Planned: implement `LB-001`–`LB-007` and a complete production-oriented
+  register/sign-in/factor/recovery/preferences/session journey.
+- Actual: external Stitch capability is unavailable, so only contracts,
+  security architecture, backend, tests, and truthful local wireframes proceed.
+  Production UI, browser acceptance, full Level C, merge-as-complete, and issue
+  closure remain blocked rather than being relabeled complete.
+- Phase order: unchanged. P2-S2 and DATA-S1 remain outside this task.
 
 ### `P2-S2 — Household, invitation, and care-recipient context`
 
@@ -483,9 +537,23 @@ Acceptance:
 - visibility and consent are explained before submission;
 - public directory uses reviewed provenance and minimum data;
 - location denial, no result, duplicate request, unavailable matching, and safe recovery work;
+- the greenfield Community boundary is implemented as the repository's first
+  Spring Boot service, with its own PostgreSQL role/database/migrations,
+  transactional outbox, and audit;
+- Node Gateway ↔ Community uses versioned language-neutral OpenAPI/JSON Schema
+  with provider/consumer tests; Identity & Consent remains authoritative and
+  only minimum authorized context crosses the boundary;
+- the P5 research gate verifies and pins an officially supported JDK
+  distribution/version, Spring Boot version, Maven plugins, checksums and a
+  repository-owned Windows wrapper (prefer `mvnw.cmd`); no version is assumed
+  by this plan;
+- PostgreSQL search is the initial implementation; Elasticsearch, Redis,
+  broker or object storage requires a later accepted ADR with measured
+  access-pattern evidence;
 - security/privacy/integration/browser tests pass.
 
-Dependencies: P2 consent; research source review; community service boundary.
+Dependencies: P2 consent; research source review; ADR-019 Community boundary;
+P5 official toolchain/supply-chain research gate.
 
 ### `P5-S2 — Volunteer match and organization coordination`
 
@@ -498,6 +566,8 @@ Acceptance:
 - eligibility/permission, approval/revocation, assignment, capacity and status are explicit;
 - unrelated household fields are inaccessible;
 - concurrent/revoked match and audit behavior are tested;
+- matching extends the same Spring Community service and owned store rather
+  than creating a second runtime or cross-service persistence path;
 - organization-scoped contract/integration/browser/security checks pass.
 
 Dependencies: `P5-S1`; P2 roles/audit.
@@ -513,6 +583,8 @@ Acceptance:
 - least-privilege queue/detail access and safe destructive confirmation;
 - decision reason, actor, time, result, retention and redaction are auditable;
 - denied access never reveals case existence/details;
+- moderation extends the same Spring Community boundary and preserves its
+  owner-scoped audit/outbox/data contract;
 - integration/browser/security tests pass.
 
 Dependencies: `P5-S2`; moderation policy and retention decision.
@@ -528,7 +600,9 @@ Acceptance:
 
 - current and previous supported API/event versions pass provider/consumer tests;
 - breaking changes fail CI and deprecation/migration policy is explicit;
-- the primary flow passes during a mixed-version rolling upgrade.
+- the primary flow passes during a mixed Node/Spring version rolling upgrade;
+- Gateway/Community compatibility is proven from language-neutral contracts,
+  not shared generated business code.
 
 ### `P6-S2 — Independently runnable service artifacts and ownership`
 
@@ -540,7 +614,9 @@ Acceptance:
 - every deployable has an owned build/start/config/health contract and artifact;
 - one service can be upgraded independently;
 - no cross-service business import, table access, credential, or shared ownership
-  exists; architecture fitness checks enforce the boundary.
+  exists; architecture fitness checks enforce the boundary;
+- Node and Spring dependencies, SBOMs, supply-chain policy and containers are
+  isolated per artifact.
 
 ### `P6-S3 — Authenticated service communication and dependency isolation`
 
@@ -552,7 +628,9 @@ Acceptance:
 - service identity and transport protection are documented and tested;
 - timeouts, retry, idempotency, rate, circuit/bulkhead, and payload bounds apply;
 - Notification or Community failure produces truthful degradation without
-  corrupting the care-task source of truth.
+  corrupting the care-task source of truth;
+- health/readiness, redacted observability and rollback are validated across
+  the mixed-runtime topology.
 
 Phase gate: independent artifacts, mixed-version flow, architecture fitness,
 authenticated calls, and dependency-failure tests pass.
@@ -837,17 +915,19 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ### Current accepted changes
 
-| Change ID      | State                                | Effect on baseline                                                                   |
-| -------------- | ------------------------------------ | ------------------------------------------------------------------------------------ |
-| `CHG-2026-001` | Implemented in Phase 0               | Windows + Codex App replace legacy mixed-platform/tool delivery paths                |
-| `CHG-2026-002` | Baseline implemented; lane due       | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control |
-| `CHG-2026-003` | Partially superseded                 | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded      |
-| `CHG-2026-004` | Implemented in docs/GitHub           | Preserves P0–P5 and expands production maturity through P6–P12                       |
-| `CHG-2026-005` | Accepted; debt gate active           | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt      |
-| `CHG-2026-006` | Bounded design session complete      | P1 handoff v1.0 is Frozen; credential retirement remains a deployment gate           |
-| `CHG-2026-007` | CI bootstrap implemented             | One guarded workflow-only PR registered hosted CI on default `main`                  |
-| `CHG-2026-008` | Integrated; hosted validation passed | Freeze one useful completion-to-creator notification and suppress self-notification  |
-| `CHG-2026-009` | Integrated; hosted validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge    |
+| Change ID      | State                                | Effect on baseline                                                                     |
+| -------------- | ------------------------------------ | -------------------------------------------------------------------------------------- |
+| `CHG-2026-001` | Implemented in Phase 0               | Windows + Codex App replace legacy mixed-platform/tool delivery paths                  |
+| `CHG-2026-002` | Baseline implemented; lane due       | Adds bilingual 2016–2026 research and `init/research → data → dev` promotion control   |
+| `CHG-2026-003` | Partially superseded                 | Research/runbook overlay remains; its compact P0–P6 roadmap limit is superseded        |
+| `CHG-2026-004` | Implemented in docs/GitHub           | Preserves P0–P5 and expands production maturity through P6–P12                         |
+| `CHG-2026-005` | Accepted; debt gate active           | Required MCP unavailable after 180 seconds becomes tracked deploy-blocking debt        |
+| `CHG-2026-006` | Bounded design session complete      | P1 handoff v1.0 is Frozen; credential retirement remains a deployment gate             |
+| `CHG-2026-007` | CI bootstrap implemented             | One guarded workflow-only PR registered hosted CI on default `main`                    |
+| `CHG-2026-008` | Integrated; hosted validation passed | Freeze one useful completion-to-creator notification and suppress self-notification    |
+| `CHG-2026-009` | Integrated; hosted validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge      |
+| `CHG-2026-010` | Accepted; implementation in progress | First-party P2 account/session boundary; account scope does not grant household access |
+| `CHG-2026-011` | Accepted; implementation deferred    | Select Spring Boot for greenfield Community at P5; preserve existing Node boundaries   |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -922,6 +1002,91 @@ No row means simultaneous implementation. Design generation/review may prepare a
 - Related ADR/integration/session entries: ADR-017, KI-015,
   `INT-2026-011`, and the P1-S1 session entry.
 
+## CHG-2026-010 — Freeze the P2-S1 first-party account boundary
+
+- State: Accepted; backend implementation in progress; production UI blocked
+- Raised in phase/slice: `P2-S1`
+- Planned baseline: replace P1 fixture identity with registration, required
+  factor/recovery, preferences, and an authorized session. Provider, identifier,
+  recovery proof, and whether account authority implied household access were
+  unspecified.
+- Proposed/actual implementation: Identity & Consent owns accounts,
+  password/TOTP/recovery artifacts, sessions, rate limits, preferences, and
+  audit in its own PostgreSQL database. Login uses a non-email login name.
+  Recovery requires one remaining primary factor plus a saved one-time recovery
+  code. Authorized sessions are account-scoped only; P2-S2 owns household
+  membership. No external provider/new engine is added.
+- Reason/evidence: NIST/OWASP/WCAG and the existing service-ownership contract
+  require explicit authenticator lifecycle, replay/race protection,
+  non-enumeration, accessible authentication, and separation of authentication
+  from authorization. Selecting the owned boundary avoids an unfrozen provider
+  trust/residency/cost/exit decision.
+- Impact:
+  - Product/UI: required TOTP and recovery-code acknowledgement; total-loss
+    automated recovery is unavailable; P2 UI remains blocked by Stitch debt.
+  - API/events: new `P2-S1-v1` account/challenge/session/preferences contracts;
+    no cross-service event or household authorization is added.
+  - Data/migration: one Identity-owned PostgreSQL database and additive initial
+    migration; no Care/Notification write.
+  - Privacy/security: server-side opaque cookies, CSRF/origin controls,
+    Argon2id, encrypted TOTP seed, digest-only tokens/codes, generic responses,
+    atomic rate/race handling, safe audit/logging.
+  - Tests/operations: package Level A/B now; one full P2 Level C and hosted
+    exact-head aggregate gate after design/UI unblock.
+  - Phase order/schedule: unchanged; P2-S2/DATA-S1/deployment remain deferred.
+- Validation required: frozen contract/unit/PostgreSQL/gateway/supply-chain
+  evidence now; later seven Frozen handoffs, browser/accessibility, one complete
+  Level C, exact-head hosted CI, reviewed PR merge, post-merge CI and issue #6
+  closure.
+- Follow-up owner and exact phase/slice: Project Owner/Design Lead resolve
+  `MCP-DEBT-2026-002` inside P2-S1. P2-S2 starts only after P2-S1 acceptance.
+- Related ADR/integration/session entries: ADR-018,
+  `docs/security/P2_S1_THREAT_MODEL.md`, and the P2-S1 session entry.
+
+## CHG-2026-011 — Select the greenfield Spring Community boundary
+
+- State: Accepted architecture direction; implementation deferred to P5-S1
+- Raised in phase/slice: governance-only amendment during `P2-S1`
+- Planned baseline: Community was a future independently deployable service,
+  while the repository operating baseline described a practical TypeScript
+  monorepo and did not require a second backend runtime.
+- Proposed/actual implementation: LifeBridge is a polyglot microservice system.
+  The first Spring Boot service is the greenfield Community boundary beginning
+  at P5-S1/issue #15 and extended through P5-S2/P5-S3. Existing Gateway,
+  Identity & Consent, Care Coordination and Notification remain Node services;
+  no rewrite is authorized. No Java source, wrapper or toolchain is added now.
+- Reason/evidence: the project owner requires at least one bounded Spring Boot
+  backend. Community is future, cohesive and independently owned, so it proves
+  cross-runtime contracts without destabilizing accepted P1/P2 boundaries.
+- Impact:
+  - Product/UI: P2 scope/order and `MCP-DEBT-2026-002` are unchanged; no P5
+    behavior or screen begins in this task.
+  - API/events: Node Gateway ↔ Spring Community uses versioned
+    language-neutral OpenAPI/JSON Schema plus provider/consumer tests.
+    Identity & Consent remains authority and supplies minimum authorized
+    context only.
+  - Data/migration: Community owns one PostgreSQL role/database/migrations,
+    outbox and audit; no cross-service SQL, credential or business import.
+    PostgreSQL search is first; another engine/broker/storage needs evidence
+    and a later accepted ADR.
+  - Privacy/security: Community cannot read general household or Identity
+    stores; contract fixtures and logs remain minimum-data and synthetic.
+  - Tests/operations: the P5 research gate must verify official supported JDK,
+    Spring Boot, Maven plugin and checksum sources, then pin a repository-owned
+    Windows wrapper, preferably `mvnw.cmd`. P6 must prove mixed-version
+    compatibility, independent artifact/upgrade, dependency isolation,
+    health/readiness, observability, SBOM/supply-chain, container and rollback.
+  - Phase order/schedule: unchanged; P5 and P6 remain planned behind P2–P4.
+- Validation required: changed-document format/config/docs/secrets/diff now;
+  official dependency/toolchain research and provider/consumer/build/container
+  evidence only when P5-S1 begins; cumulative mixed-runtime proof in P6.
+- Follow-up owner and exact phase/slice: P5-S1 owner updates existing issue #15,
+  runs the official-source research gate, freezes exact toolchain and contract
+  pins, then implements Community. P5-S2/P5-S3 extend it; P6 owns platform-wide
+  compatibility and operations proof.
+- Related ADR/integration/session entries: ADR-019, `INT-2026-013`, issue #15,
+  and the P2-S1 governance amendment session entry.
+
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
 until this phase closes. It contains no raw dataset or product fixture. All
@@ -943,10 +1108,16 @@ post-merge hosted runs passed, and issue #5 is closed. The docs-only closeout
 did not rerun Level C because no runtime, test, workflow, dependency, or
 lockfile input changed.
 
-The exact next product slice is `P2-S1 — Account access and accessible
-onboarding`. Start it only in a fresh task from current integrated `dev`. Its
-first action is a bounded research/contract freeze that replaces fixture
-identity with real account, session, household authorization, recovery,
-language, and accessibility-preference boundaries before UI code. DATA-S1
-issue #4 remains a separate `init/research` lane and must not be combined with
-P2-S1. Do not start either scope in this P1 closeout.
+P2-S1 is active on `phase/2-account-access-onboarding` from `dev@a3e9fc2`.
+ADR-018 and the account/session/recovery/preferences contracts are frozen; the
+backend candidate has focused Level A/B and PostgreSQL evidence. The required
+Stitch MCP reference and frozen handoff for `LB-001`–`LB-007` do not exist, so
+production UI, browser acceptance, the one Level C campaign, merge-as-complete
+and issue #6 closure remain blocked by `MCP-DEBT-2026-002`.
+
+The exact next action is still inside P2-S1: Project Owner + Design Lead restore
+the approved Stitch MCP/secret path, complete the synthetic-only schema/data-
+egress/security/accessibility review, and freeze a redacted handoff. Only then
+may the P2-S1 production UI and `pnpm.cmd run validate:p2-s1` proceed. P2-S2
+(`LB-008`–`LB-010` household/invitation/context) and DATA-S1 remain separate and
+unstarted.

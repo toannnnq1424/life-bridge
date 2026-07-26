@@ -5,6 +5,9 @@ import {
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
   IanaTimeZoneSchema,
+  PasswordSchema,
+  RegistrationRequestSchema,
+  UpdateIdentityPreferencesSchema,
 } from "./index.js";
 
 describe("P1-S1-v1 contracts", () => {
@@ -82,6 +85,41 @@ describe("P1-S1-v1 contracts", () => {
           completedBy: "member_minh",
           completedAt: "2026-08-03T02:05:00.000Z",
         },
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("P2-S1-v1 identity contracts", () => {
+  it("normalizes login names and Unicode passwords without composition rules", () => {
+    expect(
+      RegistrationRequestSchema.parse({
+        loginName: "  Care.User  ",
+        password: "một cụm từ an toàn",
+      }),
+    ).toEqual({ loginName: "care.user", password: "một cụm từ an toàn" });
+    expect(PasswordSchema.safeParse("password123").success).toBe(false);
+    expect(PasswordSchema.safeParse("short").success).toBe(false);
+  });
+
+  it("accepts only minimum-data accessibility preferences with a version", () => {
+    expect(
+      UpdateIdentityPreferencesSchema.parse({
+        locale: "vi-VN",
+        textScale: "large",
+        contrast: "more",
+        motion: "reduce",
+        expectedVersion: 1,
+      }),
+    ).toMatchObject({ locale: "vi-VN", motion: "reduce" });
+    expect(
+      UpdateIdentityPreferencesSchema.safeParse({
+        locale: "vi-VN",
+        textScale: "large",
+        contrast: "more",
+        motion: "reduce",
+        expectedVersion: 1,
+        disability: "screen-reader-user",
       }).success,
     ).toBe(false);
   });

@@ -211,6 +211,23 @@ Until measured with representative synthetic fixtures, targets are engineering b
 - Health endpoints distinguish liveness and dependency readiness.
 - Metrics cover command result, outbox age/retries, notification processing, and API error categories.
 
+### P2-S1 account-access outcome
+
+P2-S1 replaces the local fixture boundary with a first-party account scope:
+registration requires password, TOTP enrollment and recovery-code
+acknowledgement; sign-in requires password plus TOTP; bounded password and
+factor recovery never auto-sign in. Successful proof creates an opaque,
+server-revocable session. VI/EN, text scale, contrast and motion preferences
+persist but never gate account access. Completing onboarding records only
+non-authoritative role intent and grants no household, Care or Notification
+capability; P2-S2 owns those later permissions.
+
+Public sign-in/recovery behavior must not disclose whether an account exists.
+Denied, locked, expired and offline states remain explicit without exposing
+credential or account facts. This outcome is not accepted until the reviewed
+Stitch handoff and accessible production `LB-001`–`LB-007` UI exist;
+`MCP-DEBT-2026-002` currently blocks that part of the slice.
+
 ## 8. Backlog and staged scope
 
 The 35-screen inventory is a governed backlog:

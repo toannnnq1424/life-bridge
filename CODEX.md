@@ -205,7 +205,12 @@ Bootstrap and doctor must be idempotent. A fresh Git worktree must be able to ma
 
 ## 10. Architecture and data ownership
 
-Use a practical TypeScript monorepo with independently runnable/deployable boundaries:
+Use a practical polyglot microservice repository with independently
+runnable/deployable boundaries. Existing Node.js/TypeScript boundaries remain
+valid; do not rewrite them merely to satisfy language diversity. Community is
+the accepted greenfield Spring Boot boundary beginning at P5-S1, but no Java
+toolchain or implementation may be added before that slice's research gate
+pins official supported versions and checksums.
 
 - web client;
 - API gateway/BFF;
@@ -223,7 +228,16 @@ Default persistence is PostgreSQL with a separate database or schema owned by ea
 - never treats another service's schema as a shared database;
 - integrates through versioned API/event contracts.
 
-Polyglot persistence is allowed, not required. Add an engine only through an accepted ADR that defines purpose/access pattern, owner, consistency, backup/restore, retention, migration, cost, and failure modes. Examples may include object storage for documents, a search index for directories, and Redis as a non-authoritative cache. Planned technology is not actual implementation; record both.
+Polyglot service runtimes are accepted, while polyglot persistence is allowed
+but not required. Cross-runtime integration uses versioned language-neutral
+OpenAPI/JSON Schema plus provider/consumer tests; no service imports another
+service's business code or credentials. Add a persistence engine only through
+an accepted ADR that defines purpose/access pattern, owner, consistency,
+backup/restore, retention, migration, cost, and failure modes. Community starts
+with its own PostgreSQL database/role/migrations/outbox/audit. Examples of
+later evidence-gated engines may include object storage, a search index, or
+Redis as a non-authoritative cache. Planned technology is not actual
+implementation; record both.
 
 Use transactional outbox/inbox and idempotency for cross-service notification work. Do not claim an event was delivered until its durable state supports that claim.
 

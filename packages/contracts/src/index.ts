@@ -8,6 +8,117 @@ export const OpaqueIdSchema = z.string().regex(opaqueIdPattern);
 export const CorrelationIdSchema = z.string().regex(correlationIdPattern);
 export const IdempotencyKeySchema = z.string().regex(idempotencyPattern);
 export const LocaleSchema = z.enum(["vi-VN", "en"]);
+export const LoginNameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9][a-z0-9._-]{2,63}$/);
+
+const blockedPasswords = new Set([
+  "password",
+  "password123",
+  "12345678",
+  "123456789",
+  "qwerty123",
+  "letmein123",
+  "lifebridge",
+]);
+
+export const PasswordSchema = z
+  .string()
+  .transform((value) => value.normalize("NFC"))
+  .refine((value) => [...value].length >= 8 && [...value].length <= 128, {
+    message: "password_length",
+  })
+  .refine((value) => !blockedPasswords.has(value.toLocaleLowerCase("en-US")), {
+    message: "password_blocked",
+  });
+
+export const TotpCodeSchema = z.string().regex(/^\d{6}$/);
+export const RecoveryCodeSchema = z.string().regex(/^[A-F0-9]{8}(?:-[A-F0-9]{8}){3}$/);
+export const IdentityChallengeTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+export const IdentitySessionTokenSchema = IdentityChallengeTokenSchema;
+export const CsrfTokenSchema = IdentityChallengeTokenSchema;
+export const OnboardingStateSchema = z.enum(["required", "complete"]);
+export const TextScaleSchema = z.enum(["default", "large"]);
+export const ContrastPreferenceSchema = z.enum(["system", "more"]);
+export const MotionPreferenceSchema = z.enum(["system", "reduce"]);
+
+export const RegistrationRequestSchema = z
+  .object({ loginName: LoginNameSchema, password: PasswordSchema })
+  .strict();
+
+export const RegistrationFactorRequestSchema = z
+  .object({ challengeToken: IdentityChallengeTokenSchema, code: TotpCodeSchema })
+  .strict();
+
+export const RegistrationRecoveryConfirmationSchema = z
+  .object({ challengeToken: IdentityChallengeTokenSchema, acknowledged: z.literal(true) })
+  .strict();
+
+export const SignInRequestSchema = RegistrationRequestSchema;
+export const SignInFactorRequestSchema = RegistrationFactorRequestSchema;
+
+export const PasswordRecoveryRequestSchema = z
+  .object({
+    loginName: LoginNameSchema,
+    totpCode: TotpCodeSchema,
+    recoveryCode: RecoveryCodeSchema,
+    newPassword: PasswordSchema,
+  })
+  .strict();
+
+export const FactorRecoveryRequestSchema = z
+  .object({
+    loginName: LoginNameSchema,
+    password: PasswordSchema,
+    recoveryCode: RecoveryCodeSchema,
+  })
+  .strict();
+
+export const FactorRecoveryConfirmationSchema = RegistrationFactorRequestSchema;
+
+export const IdentityPreferencesSchema = z
+  .object({
+    locale: LocaleSchema,
+    textScale: TextScaleSchema,
+    contrast: ContrastPreferenceSchema,
+    motion: MotionPreferenceSchema,
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const UpdateIdentityPreferencesSchema = z
+  .object({
+    locale: LocaleSchema,
+    textScale: TextScaleSchema,
+    contrast: ContrastPreferenceSchema,
+    motion: MotionPreferenceSchema,
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict();
+
+export const CompleteAccountOnboardingSchema = z
+  .object({
+    roleIntent: z.enum(["coordinate", "participate"]).optional(),
+  })
+  .strict();
+
+export const IdentitySessionProjectionSchema = z
+  .object({
+    accountId: OpaqueIdSchema,
+    onboardingState: OnboardingStateSchema,
+    authorizationScope: z.literal("account"),
+    preferences: IdentityPreferencesSchema,
+    session: z
+      .object({
+        idleExpiresAt: z.iso.datetime({ offset: true }),
+        absoluteExpiresAt: z.iso.datetime({ offset: true }),
+      })
+      .strict(),
+    csrfToken: CsrfTokenSchema,
+  })
+  .strict();
 export const PrioritySchema = z.enum(["normal", "important", "urgent"]);
 export const TaskStatusSchema = z.enum(["open", "completed"]);
 export const NotificationDeliverySchema = z.enum([
@@ -173,6 +284,17 @@ export const ApiErrorCodeSchema = z.enum([
   "NOTIFICATION_UNAVAILABLE",
   "SERVICE_UNAVAILABLE",
   "INTERNAL_CONTRACT_INVALID",
+  "REGISTRATION_ACCEPTED",
+  "AUTHENTICATION_CONTINUE",
+  "AUTHENTICATION_FAILED",
+  "AUTHENTICATION_RATE_LIMITED",
+  "RECOVERY_ACCEPTED",
+  "SESSION_REQUIRED",
+  "SESSION_EXPIRED",
+  "CSRF_REJECTED",
+  "ORIGIN_REJECTED",
+  "PREFERENCES_VERSION_CONFLICT",
+  "IDENTITY_SERVICE_UNAVAILABLE",
 ]);
 
 export const ApiErrorSchema = z
@@ -200,6 +322,20 @@ export type Notification = z.infer<typeof NotificationSchema>;
 export type ConsumerAcknowledgement = z.infer<typeof ConsumerAcknowledgementSchema>;
 export type DashboardProjection = z.infer<typeof DashboardProjectionSchema>;
 export type ApiErrorCode = z.infer<typeof ApiErrorCodeSchema>;
+export type RegistrationRequest = z.infer<typeof RegistrationRequestSchema>;
+export type RegistrationFactorRequest = z.infer<typeof RegistrationFactorRequestSchema>;
+export type RegistrationRecoveryConfirmation = z.infer<
+  typeof RegistrationRecoveryConfirmationSchema
+>;
+export type SignInRequest = z.infer<typeof SignInRequestSchema>;
+export type SignInFactorRequest = z.infer<typeof SignInFactorRequestSchema>;
+export type PasswordRecoveryRequest = z.infer<typeof PasswordRecoveryRequestSchema>;
+export type FactorRecoveryRequest = z.infer<typeof FactorRecoveryRequestSchema>;
+export type FactorRecoveryConfirmation = z.infer<typeof FactorRecoveryConfirmationSchema>;
+export type IdentityPreferences = z.infer<typeof IdentityPreferencesSchema>;
+export type UpdateIdentityPreferences = z.infer<typeof UpdateIdentityPreferencesSchema>;
+export type CompleteAccountOnboarding = z.infer<typeof CompleteAccountOnboardingSchema>;
+export type IdentitySessionProjection = z.infer<typeof IdentitySessionProjectionSchema>;
 
 export interface SuccessEnvelope<T> {
   data: T;

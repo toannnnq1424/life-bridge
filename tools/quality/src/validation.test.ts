@@ -84,12 +84,12 @@ describe("validatePackageManifest", () => {
 });
 
 describe("validateCodexStitchConfig", () => {
-  it("accepts the disabled, environment-backed Stitch contract", () => {
+  it("accepts the enabled, environment-backed Stitch contract", () => {
     const content = [
       "[mcp_servers.stitch]",
       'url = "https://stitch.googleapis.com/mcp"',
       'env_http_headers = { "X-Goog-Api-Key" = "STITCH_API_KEY" }',
-      "enabled = false",
+      "enabled = true",
       "required = false",
       'default_tools_approval_mode = "prompt"',
     ].join("\n");
@@ -97,18 +97,18 @@ describe("validateCodexStitchConfig", () => {
     expect(validateCodexStitchConfig(content)).toEqual([]);
   });
 
-  it("rejects enabled or literal-backed Stitch configuration", () => {
+  it("rejects disabled or literal-backed Stitch configuration", () => {
     const content = [
       "[mcp_servers.stitch]",
       'url = "https://stitch.googleapis.com/mcp"',
       'env_http_headers = { "X-Goog-Api-Key" = "literal-value" }',
-      "enabled = true",
+      "enabled = false",
       "required = false",
       'default_tools_approval_mode = "never"',
     ].join("\n");
 
     expect(validateCodexStitchConfig(content)).toEqual([
-      "Stitch MCP must remain disabled until the live canary gate passes.",
+      "Stitch MCP must remain enabled after the approved live canary.",
       "Stitch MCP tools must use prompt approval.",
       "Stitch MCP must resolve X-Goog-Api-Key from STITCH_API_KEY.",
     ]);

@@ -1,32 +1,34 @@
 # Repository Map
 
 Verified: 2026-07-26
-Active slice: `P1-S1 — Accountable care-task loop`
+Active slice: `P2-S1 — Account access and accessible onboarding` (full
+candidate pending Level C and exact-head CI)
 
-This map reflects the P1-S1 implementation tree. It excludes generated and
+This map reflects the integrated P1 tree plus the P2-S1 backend candidate. It excludes generated and
 local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
 
 ## Top-level layout
 
-| Path                          | Responsibility                                                                               | P1-S1 entry points                                                  |
-| ----------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `apps/web/`                   | Stitch-derived Next.js UI, VI/EN localization, responsive and accessible states              | `app/`, `src/CareApp.tsx`, `src/i18n.ts`                            |
-| `apps/gateway/`               | Public BFF, fixture-identity boundary, dependency composition and honest degradation         | `src/main.ts`, `src/server.ts`                                      |
-| `services/care-coordination/` | Task authority, authorization, optimistic concurrency, audit and transactional outbox        | `src/service.ts`, `src/dispatcher.ts`, `migrations/001_initial.sql` |
-| `services/notification/`      | Completion-event inbox/deduplication and recipient-scoped notification store                 | `src/service.ts`, `migrations/001_initial.sql`                      |
-| `packages/contracts/`         | Frozen `P1-S1-v1` Zod HTTP/event/projection schemas                                          | `src/index.ts`                                                      |
-| `packages/config/`            | Required runtime configuration and production fixture guard                                  | `src/index.ts`                                                      |
-| `packages/observability/`     | Allow-listed structured safe logging and correlation IDs                                     | `src/index.ts`                                                      |
-| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                     | `src/index.ts`                                                      |
-| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                  | `p1-s1.test.ts`                                                     |
-| `tests/browser/`              | Real-runtime VI/EN, keyboard/focus, reflow, axe and failure-state acceptance                 | `p1-s1.spec.ts`                                                     |
-| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                           | `docker-compose.yml`                                                |
-| `scripts/`                    | Windows bootstrap, demo and validation entry points                                          | `start-p1.ps1`, `validate-p1-s1.ps1`                                |
-| `tools/quality/`              | Repository validators plus P1 database provisioning/reset helpers                            | `src/phase0.ts`, `src/p1-database.ts`, `src/p1-reset.ts`            |
-| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                              | `workflows/ci.yml`                                                  |
-| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory | documents listed below                                              |
+| Path                          | Responsibility                                                                                        | P1-S1 entry points                                                   |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `apps/web/`                   | Native Next.js UI from reviewed Stitch handoffs, VI/EN localization, responsive/accessibility states  | `app/`, `src/CareApp.tsx`, `src/AccountAccessApp.tsx`, `src/i18n.ts` |
+| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition | `src/main.ts`, `src/server.ts`                                       |
+| `services/identity-consent/`  | Account, TOTP/recovery, opaque session, preferences and owned audit authority                         | `src/service.ts`, `src/server.ts`, `migrations/001_initial.sql`      |
+| `services/care-coordination/` | Task authority, authorization, optimistic concurrency, audit and transactional outbox                 | `src/service.ts`, `src/dispatcher.ts`, `migrations/001_initial.sql`  |
+| `services/notification/`      | Completion-event inbox/deduplication and recipient-scoped notification store                          | `src/service.ts`, `migrations/001_initial.sql`                       |
+| `packages/contracts/`         | Frozen P1 schemas plus P2-S1 account/challenge/session/preferences schemas                            | `src/index.ts`                                                       |
+| `packages/config/`            | Required runtime configuration and production fixture guard                                           | `src/index.ts`                                                       |
+| `packages/observability/`     | Allow-listed structured safe logging and correlation IDs                                              | `src/index.ts`                                                       |
+| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                              | `src/index.ts`                                                       |
+| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                           | `p1-s1.test.ts`                                                      |
+| `tests/browser/`              | P1 runtime plus artifact-disabled P2 VI/EN, keyboard/focus, reflow, axe and security-state acceptance | `p1-s1.spec.ts`, `p2-s1.spec.ts`                                     |
+| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                    | `docker-compose.yml`                                                 |
+| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                        | `start-p1.ps1`, `validate-p1-s1.ps1`, `validate-p2-s1.ps1`           |
+| `tools/quality/`              | Repository validators plus P1/P2 database provisioning/reset helpers                                  | `src/phase0.ts`, `src/p1-database.ts`, `src/p2-database.ts`          |
+| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                       | `workflows/ci.yml`                                                   |
+| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory          | documents listed below                                               |
 
 The existing `.ai-orchestrator/`, `.codex/`, `.vscode/`, `data/`, and
 `docs/research/` boundaries remain governed by the Phase 0 rules. P1-S1 does
@@ -38,6 +40,7 @@ not add DATA-S1 inputs or modify the private Stitch control plane.
 browser
   → apps/web
       → apps/gateway
+          → services/identity-consent  → owned PostgreSQL database
           → services/care-coordination → owned PostgreSQL database
           → services/notification      → owned PostgreSQL database
 
@@ -47,8 +50,8 @@ care-coordination local transaction
           → notification inbox/dedup + recipient notification
 ```
 
-The two services may share one local PostgreSQL engine, but use different
-databases, owners and credentials. Neither service imports or writes the other
+The three services may share one local PostgreSQL engine, but use different
+databases, owners and credentials. No service imports or writes another
 service's persistence. Gateway composes projections and never fabricates an
 empty Notification success when that dependency is unavailable.
 
@@ -69,14 +72,23 @@ empty Notification success when that dependency is unavailable.
 | `docs/KNOWN_ISSUES.md`                                 | Controlled limitations and follow-up triggers                   |
 | `docs/WORKSTREAM_BOARD.md` / `docs/INTEGRATION_LOG.md` | Slice and promotion state                                       |
 
+P2-S1 adds ADR-018, `docs/security/P2_S1_THREAT_MODEL.md`, the preparatory local
+wireframe and Frozen `docs/design/reviews/P2_S1_STITCH_HANDOFF.md`. Native
+routes `/`, `/login`, `/register`, `/mfa`, `/recover`, `/onboarding` and
+`/onboarding/accessibility` live in `apps/web`; generated Stitch source is not
+present.
+
 ## Commands and generated state
 
-| Command                            | Behavior                                                                                                    |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `pnpm.cmd run demo:p1`             | Builds and runs the synthetic P1 loop on local ports `3000`, `3001`, `3101`, `3102`, and PostgreSQL `55432` |
-| `pnpm.cmd run validate:p1-s1`      | One isolated Level C campaign with PostgreSQL, build/runtime, Chromium, accessibility and security evidence |
-| `pnpm.cmd run test:p1:integration` | Targeted real-PostgreSQL service acceptance; requires provisioned database URLs                             |
-| `pnpm.cmd run test:p1:browser`     | Targeted browser acceptance; requires an already running built stack                                        |
+| Command                                     | Behavior                                                                                                    |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `pnpm.cmd run demo:p1`                      | Builds and runs the synthetic P1 loop on local ports `3000`, `3001`, `3101`, `3102`, and PostgreSQL `55432` |
+| `pnpm.cmd run validate:p1-s1`               | One isolated Level C campaign with PostgreSQL, build/runtime, Chromium, accessibility and security evidence |
+| `pnpm.cmd run test:p1:integration`          | Targeted real-PostgreSQL service acceptance; requires provisioned database URLs                             |
+| `pnpm.cmd run test:p1:browser`              | Targeted browser acceptance; requires an already running built stack                                        |
+| `pnpm.cmd run test:p2:identity-integration` | Targeted P2 Identity PostgreSQL Level B; requires a provisioned Identity-owned database                     |
+| `pnpm.cmd run test:p2:browser`              | Artifact-disabled P2 UI/accessibility/security browser campaign against a running production web build      |
+| `pnpm.cmd run validate:p2-s1`               | Single cumulative P2 Level C including P1 regression, Identity PostgreSQL, P2 browser and security gates    |
 
 Local credentials and logs live only under ignored `.lifebridge-local/`. The
 validation runner creates a PID-scoped Compose project and removes only that
@@ -92,6 +104,7 @@ databases are ignored.
 
 - Package/service unit and contract tests: colocated `src/*.test.ts`.
 - PostgreSQL integration: `tests/integration/p1-s1.test.ts`.
+- P2 Identity integration: `services/identity-consent/src/service.integration.test.ts`.
 - Browser/accessibility: `tests/browser/p1-s1.spec.ts`.
 - CI aggregate gate: `.github/workflows/ci.yml`.
 - Legacy foundation validator: `tools/quality/src/phase0.ts`.

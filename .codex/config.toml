@@ -4,7 +4,7 @@
 [mcp_servers.stitch]
 url = "https://stitch.googleapis.com/mcp"
 env_http_headers = { "X-Goog-Api-Key" = "STITCH_API_KEY" }
-enabled = false
+enabled = true
 required = false
 default_tools_approval_mode = "prompt"
 startup_timeout_sec = 20

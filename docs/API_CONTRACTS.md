@@ -300,3 +300,105 @@ Every deployable exposes:
 Gateway readiness reports required task dependency readiness and separately
 reports Notification degradation so a notification outage cannot erase or
 falsify confirmed task state.
+
+With P2-S1 enabled, Identity readiness is also required for gateway readiness;
+Notification remains the only degraded/optional dependency in this slice.
+
+## P2-S1 account and session contract
+
+State: **Frozen for contracts/backend implementation** on 2026-07-26 under
+`CHG-2026-010`/ADR-018. Production UI and the complete P2-S1 contract set remain
+blocked by `MCP-DEBT-2026-002`.
+
+The executable schemas extend `packages/contracts` without breaking
+`P1-S1-v1`. All identity responses set `Cache-Control: no-store`; public errors
+contain a safe localization key and correlation ID only. Login names are never
+placed in URLs, logs, audit metadata, or response copy.
+
+### Public unauthenticated routes
+
+| Route                                                 | Request                                       | Public result                                                                                              |
+| ----------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/account/registrations`                  | login name, password                          | `202 REGISTRATION_ACCEPTED` with a real-or-decoy enrollment challenge of the same shape                    |
+| `POST /api/v1/account/registrations/factor`           | challenge token, TOTP                         | `202 REGISTRATION_ACCEPTED`; returns real-or-decoy one-time recovery codes of the same shape               |
+| `POST /api/v1/account/registrations/confirm-recovery` | challenge token, acknowledgement              | `202 REGISTRATION_ACCEPTED`; activates only a valid real flow and creates no session                       |
+| `POST /api/v1/account/sessions`                       | login name, password                          | `202 AUTHENTICATION_CONTINUE` with a real-or-decoy factor challenge                                        |
+| `POST /api/v1/account/sessions/factor`                | challenge token, TOTP                         | valid proof creates an opaque session; all failures use `401 AUTHENTICATION_FAILED`                        |
+| `POST /api/v1/account/recoveries/password`            | login name, TOTP, recovery code, new password | generic failure; valid proof changes password, rotates codes and revokes all sessions; never auto-signs in |
+| `POST /api/v1/account/recoveries/factor`              | login name, password, recovery code           | generic failure; valid proof starts purpose-bound TOTP re-enrollment                                       |
+| `POST /api/v1/account/recoveries/factor/confirm`      | challenge token, TOTP                         | valid proof replaces factor/codes and revokes all sessions; never auto-signs in                            |
+
+Registration response equivalence covers new and duplicate login names.
+Authentication response equivalence covers unknown, wrong-password, locked,
+disabled and unverified accounts. Recovery failure equivalence covers unknown,
+invalid, expired, used and mismatched artifacts. Rate-limited responses are
+based on buckets that also exist for unknown identifiers.
+
+The gateway owns cookie serialization and never forwards public actor headers.
+Identity returns a raw session token and CSRF token only across the protected
+internal response; gateway converts the session token to the cookie and returns
+the CSRF token in the success body. Raw tokens are never logged.
+
+### Cookie-authenticated account routes
+
+| Route                                      | Behavior                                                                                              |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/account/session`              | returns opaque account ID, onboarding state, preferences and CSRF token for a current account session |
+| `POST /api/v1/account/session/logout`      | revokes server session and clears cookie; idempotent public result                                    |
+| `PATCH /api/v1/account/preferences`        | version-checked optional locale/text/contrast/motion update; failure never revokes/gates the session  |
+| `POST /api/v1/account/onboarding/complete` | records non-authoritative role intent and completion; rotates session; grants no household capability |
+
+Cookie-authenticated mutations require `X-CSRF-Token`, exact configured
+`Origin`, non-cross-site Fetch Metadata and JSON input. Missing, wrong,
+cross-origin, expired, revoked or replayed session material fails before the
+mutation. Preferences use optimistic `expectedVersion`; a retry cannot create a
+second transition and a stale or changed intent returns a bounded version
+conflict. The client retrieves the confirmed projection before retrying an
+unknown result.
+
+### Account/session projections
+
+```json
+{
+  "accountId": "account_opaque",
+  "onboardingState": "required",
+  "authorizationScope": "account",
+  "preferences": {
+    "locale": "vi-VN",
+    "textScale": "default",
+    "contrast": "system",
+    "motion": "system",
+    "version": 1
+  },
+  "session": {
+    "idleExpiresAt": "2026-07-26T03:00:00.000Z",
+    "absoluteExpiresAt": "2026-07-26T14:30:00.000Z"
+  },
+  "csrfToken": "returned_only_to_the_authenticated_client"
+}
+```
+
+`authorizationScope: account` is explicit. Gateway returns a non-disclosing
+denial for household/Care routes because P2-S1 creates no membership.
+
+### P2-S1 stable errors and audit actions
+
+Stable public codes:
+
+```text
+REGISTRATION_ACCEPTED
+AUTHENTICATION_CONTINUE
+AUTHENTICATION_FAILED
+AUTHENTICATION_RATE_LIMITED
+RECOVERY_ACCEPTED
+SESSION_REQUIRED
+SESSION_EXPIRED
+CSRF_REJECTED
+ORIGIN_REJECTED
+PREFERENCES_VERSION_CONFLICT
+IDENTITY_SERVICE_UNAVAILABLE
+```
+
+Required audit actions and prohibited telemetry fields are frozen in
+`docs/security/P2_S1_THREAT_MODEL.md`. Identity audit is service-owned business
+evidence; safe logs do not substitute for it.

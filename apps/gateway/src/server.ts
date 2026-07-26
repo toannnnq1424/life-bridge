@@ -6,14 +6,20 @@ import {
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, SafeLogger } from "@lifebridge/observability";
 import { fixtureMember } from "@lifebridge/test-fixtures";
+import cookie from "@fastify/cookie";
 import Fastify from "fastify";
 
 export interface GatewayConfig {
   careUrl: string;
+  identityUrl: string;
   notificationUrl: string;
   careToken: string;
+  identityToken: string;
   notificationToken: string;
   fixtureEnabled: boolean;
+  publicOrigin: string;
+  sessionCookieName: string;
+  secureCookies: boolean;
 }
 
 type Fetcher = typeof fetch;
@@ -73,15 +79,51 @@ async function dependencyRequest(
   return new DependencyResponse(response.status, body);
 }
 
+async function identityRequest(
+  fetcher: Fetcher,
+  url: string,
+  input: {
+    method?: string;
+    correlationId: string;
+    token: string;
+    sourceKey: string;
+    sessionToken?: string;
+    csrfToken?: string;
+    body?: unknown;
+  },
+): Promise<DependencyResponse> {
+  const response = await fetcher(url, {
+    method: input.method ?? "GET",
+    headers: {
+      "content-type": "application/json",
+      "x-correlation-id": input.correlationId,
+      "x-internal-service-token": input.token,
+      "x-rate-limit-source": input.sourceKey,
+      ...(input.sessionToken ? { "x-session-token": input.sessionToken } : {}),
+      ...(input.csrfToken ? { "x-csrf-token": input.csrfToken } : {}),
+    },
+    ...(input.body === undefined ? {} : { body: JSON.stringify(input.body) }),
+    signal: AbortSignal.timeout(2_500),
+  });
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    body = null;
+  }
+  return new DependencyResponse(response.status, body);
+}
+
 export function buildGatewayServer(
   config: GatewayConfig,
   fetcher: Fetcher = fetch,
   logger = new SafeLogger("gateway"),
 ) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
+  void app.register(cookie);
 
   app.get("/health/live", async () => ({ status: "live" }));
-  app.get("/version", async () => ({ service: "gateway", contract: "P1-S1-v1" }));
+  app.get("/version", async () => ({ service: "gateway", contract: "P2-S1-backend-v1" }));
   app.get("/health/ready", async (_request, reply) => {
     try {
       const care = await fetcher(`${config.careUrl}/health/ready`, {
@@ -89,6 +131,12 @@ export function buildGatewayServer(
       });
       if (!care.ok) {
         return reply.code(503).send({ status: "not_ready", dependency: "care" });
+      }
+      const identity = await fetcher(`${config.identityUrl}/health/ready`, {
+        signal: AbortSignal.timeout(1_000),
+      });
+      if (!identity.ok) {
+        return reply.code(503).send({ status: "not_ready", dependency: "identity" });
       }
       let notification = "available";
       try {
@@ -240,6 +288,103 @@ export function buildGatewayServer(
     }
   });
 
+  const anonymousIdentityRoutes = [
+    ["/api/v1/account/registrations", "/internal/v1/account/registrations"],
+    ["/api/v1/account/registrations/factor", "/internal/v1/account/registrations/factor"],
+    [
+      "/api/v1/account/registrations/confirm-recovery",
+      "/internal/v1/account/registrations/confirm-recovery",
+    ],
+    ["/api/v1/account/sessions", "/internal/v1/account/sessions"],
+    ["/api/v1/account/recoveries/password", "/internal/v1/account/recoveries/password"],
+    ["/api/v1/account/recoveries/factor", "/internal/v1/account/recoveries/factor"],
+    ["/api/v1/account/recoveries/factor/confirm", "/internal/v1/account/recoveries/factor/confirm"],
+  ] as const;
+  for (const [publicPath, internalPath] of anonymousIdentityRoutes) {
+    app.post<{ Body: unknown }>(publicPath, async (request, reply) =>
+      forwardIdentity(request, reply, internalPath, { method: "POST", body: request.body }),
+    );
+  }
+
+  app.post<{ Body: unknown }>("/api/v1/account/sessions/factor", async (request, reply) => {
+    const response = await callIdentity(request, "/internal/v1/account/sessions/factor", {
+      method: "POST",
+      body: request.body,
+    });
+    if (!response) {
+      return dependencyUnavailable(
+        reply,
+        resolveCorrelationId(request.headers["x-correlation-id"]),
+        logger,
+        "identity",
+      );
+    }
+    return sendSessionResponse(reply, response);
+  });
+
+  app.get("/api/v1/account/session", async (request, reply) =>
+    forwardIdentity(request, reply, "/internal/v1/account/session", {
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+    }),
+  );
+
+  app.patch<{ Body: unknown }>("/api/v1/account/preferences", async (request, reply) => {
+    if (!validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    return forwardIdentity(request, reply, "/internal/v1/account/preferences", {
+      method: "PATCH",
+      body: request.body,
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+    });
+  });
+
+  app.post<{ Body: unknown }>("/api/v1/account/onboarding/complete", async (request, reply) => {
+    if (!validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    const response = await callIdentity(request, "/internal/v1/account/onboarding/complete", {
+      method: "POST",
+      body: request.body,
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+    });
+    if (!response) {
+      return dependencyUnavailable(
+        reply,
+        resolveCorrelationId(request.headers["x-correlation-id"]),
+        logger,
+        "identity",
+      );
+    }
+    return sendSessionResponse(reply, response);
+  });
+
+  app.post("/api/v1/account/session/logout", async (request, reply) => {
+    if (!validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    const response = await callIdentity(request, "/internal/v1/account/session/logout", {
+      method: "POST",
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+    });
+    reply.clearCookie(config.sessionCookieName, cookieOptions());
+    if (!response) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    const errorCode = (response.body as { error?: { code?: unknown } } | null)?.error?.code;
+    if (
+      response.status === 401 &&
+      (errorCode === "SESSION_REQUIRED" || errorCode === "SESSION_EXPIRED")
+    ) {
+      return reply.code(200).send(successEnvelope({ revoked: true }, correlationId));
+    }
+    return reply.code(response.status).send(response.body);
+  });
+
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
     const idempotencyRequired = error instanceof IdempotencyKeyRequiredError;
@@ -285,6 +430,113 @@ export function buildGatewayServer(
     }
   }
 
+  async function callIdentity(
+    request: {
+      headers: Record<string, unknown>;
+      ip: string;
+    },
+    internalPath: string,
+    options: {
+      method?: string;
+      sessionToken?: string;
+      csrfToken?: string;
+      body?: unknown;
+    } = {},
+  ): Promise<DependencyResponse | null> {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    try {
+      return await identityRequest(fetcher, `${config.identityUrl}${internalPath}`, {
+        correlationId,
+        token: config.identityToken,
+        sourceKey: request.ip,
+        ...(options.method ? { method: options.method } : {}),
+        ...(options.sessionToken ? { sessionToken: options.sessionToken } : {}),
+        ...(options.csrfToken ? { csrfToken: options.csrfToken } : {}),
+        ...(options.body === undefined ? {} : { body: options.body }),
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  async function forwardIdentity(
+    request: { headers: Record<string, unknown>; ip: string },
+    reply: { code: (status: number) => { send: (body: unknown) => unknown } },
+    internalPath: string,
+    options: {
+      method?: string;
+      sessionToken?: string;
+      csrfToken?: string;
+      body?: unknown;
+    } = {},
+  ) {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    const response = await callIdentity(request, internalPath, options);
+    if (!response) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    return reply.code(response.status).send(response.body);
+  }
+
+  function sendSessionResponse(
+    reply: {
+      code: (status: number) => { send: (body: unknown) => unknown };
+      setCookie: (
+        name: string,
+        value: string,
+        options: ReturnType<typeof cookieOptions>,
+      ) => unknown;
+    },
+    response: DependencyResponse,
+  ) {
+    const envelope = response.body as
+      { data?: { sessionToken?: unknown; projection?: unknown }; meta?: unknown } | undefined;
+    const token = envelope?.data?.sessionToken;
+    if (response.status < 400 && typeof token === "string") {
+      reply.setCookie(config.sessionCookieName, token, cookieOptions());
+      return reply.code(response.status).send({
+        data: envelope?.data?.projection,
+        meta: envelope?.meta,
+      });
+    }
+    return reply.code(response.status).send(response.body);
+  }
+
+  function cookieOptions() {
+    return {
+      path: "/",
+      httpOnly: true,
+      secure: config.secureCookies,
+      sameSite: "strict" as const,
+      maxAge: 12 * 60 * 60,
+    };
+  }
+
+  function sessionOption(value: string | undefined): { sessionToken?: string } {
+    return value ? { sessionToken: value } : {};
+  }
+
+  function validBrowserMutation(headers: Record<string, unknown>): boolean {
+    const origin = String(headers.origin ?? "");
+    const fetchSite = String(headers["sec-fetch-site"] ?? "");
+    return origin === config.publicOrigin && (fetchSite === "same-origin" || fetchSite === "none");
+  }
+
+  function rejectedBrowserMutation(
+    reply: { code: (status: number) => { send: (body: unknown) => unknown } },
+    headers: Record<string, unknown>,
+  ) {
+    const correlationId = resolveCorrelationId(headers["x-correlation-id"]);
+    return reply.code(403).send({
+      error: {
+        code: "ORIGIN_REJECTED",
+        messageKey: "origin.rejected",
+        retryable: false,
+        correlationId,
+      },
+    });
+  }
+
   return app;
 }
 
@@ -299,7 +551,7 @@ function dependencyUnavailable(
   reply: { code: (status: number) => { send: (body: unknown) => unknown } },
   correlationId: string,
   logger: SafeLogger,
-  dependency: "care" | "notification",
+  dependency: "care" | "notification" | "identity",
 ) {
   logger.emit({
     level: "warn",
@@ -307,15 +559,27 @@ function dependencyUnavailable(
     operation: "dependency.request",
     result: "failed",
     correlationId,
-    errorCode: dependency === "notification" ? "NOTIFICATION_UNAVAILABLE" : "SERVICE_UNAVAILABLE",
+    errorCode:
+      dependency === "notification"
+        ? "NOTIFICATION_UNAVAILABLE"
+        : dependency === "identity"
+          ? "IDENTITY_SERVICE_UNAVAILABLE"
+          : "SERVICE_UNAVAILABLE",
   });
   return reply.code(503).send({
     error: {
-      code: dependency === "notification" ? "NOTIFICATION_UNAVAILABLE" : "SERVICE_UNAVAILABLE",
+      code:
+        dependency === "notification"
+          ? "NOTIFICATION_UNAVAILABLE"
+          : dependency === "identity"
+            ? "IDENTITY_SERVICE_UNAVAILABLE"
+            : "SERVICE_UNAVAILABLE",
       messageKey:
         dependency === "notification"
           ? "errors.notification.unavailable"
-          : "errors.service.unavailable",
+          : dependency === "identity"
+            ? "identity.unavailable"
+            : "errors.service.unavailable",
       retryable: true,
       correlationId,
     },
