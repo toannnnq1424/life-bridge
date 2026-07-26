@@ -6,7 +6,8 @@
 - Flow: `F-01` plus the P2-S1 portion of `F-02`
 - Status: **Flow drafted — production UI blocked**
 - Source: repository-native local semantic wireframe only
-- Stitch reference: unavailable after the recorded 180-second gate
+- Stitch reference: pending Codex App restart, in-task schema/data-egress
+  review, and bounded synthetic design operations
 - Debt: `MCP-DEBT-2026-002`
 - Backend contract: `P2-S1-v1`
 - Production implementation approved: **No**
@@ -180,10 +181,12 @@ lang>`, title, labels, errors, and status without resetting or submitting.
 
 ## Required Stitch review before Frozen
 
-The project owner/design lead must make official Stitch MCP callable through an
-approved secret path, review complete tool schemas and data egress, and run one
-bounded synthetic design session for `LB-001`–`LB-007`. No real login name,
-credential, private URL, signed URL, remote ID, or care data may be sent.
+The official endpoint and environment-backed authentication passed a read-only
+direct MCP transport canary without project mutation. After a full Codex App
+restart, the project owner/design lead must inspect the newly callable tool
+schemas, classify side effects and data egress, and run one bounded synthetic
+design session for `LB-001`–`LB-007`. No real login name, credential, private
+URL, signed URL, remote ID, or care data may be sent.
 
 Then create seven screen handoffs from
 `docs/design/reviews/SCREEN_HANDOFF_TEMPLATE.md`. Each must include a redacted
@@ -197,17 +200,23 @@ target-size rows remain honestly untested until executed.
 
 ## MCP debt
 
-`MCP-DEBT-2026-002 — P2-S1 LB-001–LB-007 Stitch reference unavailable`
+`MCP-DEBT-2026-002 — P2-S1 LB-001–LB-007 Stitch reference and handoff pending`
 
 - Owner: Project Owner and Design Lead; MCP activation owner supports.
 - Affected slice/screens: P2-S1, `LB-001`–`LB-007`.
-- Gate evidence: callable Stitch inventory was empty at
+- Original gate evidence: callable Stitch inventory was empty at
   `2026-07-26T02:09:54.193Z` and remained empty at
   `2026-07-26T02:13:03.970Z` (>180 seconds). No secret/private locator was
   inspected.
+- Activation evidence: the official endpoint and environment-backed
+  authentication later passed a read-only direct MCP canary with HTTP 200 for
+  initialization and tool discovery, protocol `2025-06-18`, and 15 exposed
+  project/screen/design-system tools. No project mutation occurred.
+- Remaining availability gate: restart Codex App and resume this same task so
+  the newly configured namespace becomes callable in-task.
 - Fallback: this local semantic wireframe, frozen backend contracts, bilingual
   copy requirements, and backend implementation only.
-- Remaining security/data-egress review: exact tool schemas, side effects,
+- Remaining security/data-egress review: exact callable tool schemas, side effects,
   least privilege, synthetic-only payload, artifact metadata, private-URL and
   secret scan; write/cost operations require approval.
 - Blocks production UI implementation: yes.

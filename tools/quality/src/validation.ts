@@ -181,8 +181,8 @@ export function validateCodexStitchConfig(content: string): readonly string[] {
   if (stitch.url !== "https://stitch.googleapis.com/mcp") {
     errors.push("Stitch MCP must use the approved Google endpoint.");
   }
-  if (stitch.enabled !== false) {
-    errors.push("Stitch MCP must remain disabled until the live canary gate passes.");
+  if (stitch.enabled !== true) {
+    errors.push("Stitch MCP must remain enabled after the approved live canary.");
   }
   if (stitch.required !== false) {
     errors.push("Stitch MCP must remain optional during Phase 0.");

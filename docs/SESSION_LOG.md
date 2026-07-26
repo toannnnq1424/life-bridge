@@ -759,3 +759,47 @@ pass. No application, workflow, dependency, lockfile or test input changed, so
 no Level C, browser or Java build is run or claimed. The coherent docs commit
 must refresh exact-head hosted CI on draft PR #44; the PR remains non-mergeable
 as complete work while the Stitch blocker is open.
+
+## 2026-07-26 — P2-S1 official Stitch activation checkpoint
+
+### Evidence and planned versus actual
+
+- Planned after the original 180-second gate: restore an approved official
+  Stitch MCP path, then review schemas/data egress and create a bounded
+  synthetic reference before any production UI work.
+- Actual transport/authentication evidence: the project owner authorized
+  persistent local setup, and a read-only direct canary against the official
+  endpoint completed initialization and tool discovery with HTTP 200, protocol
+  `2025-06-18`, and 15 project/screen/design-system tools. It made no project
+  mutation. Authentication remains environment-backed; no credential value is
+  tracked, printed, copied into evidence or exposed to the application.
+- Actual repository change: the existing secret-free project Stitch stanza is
+  enabled while retaining the official endpoint, environment header mapping,
+  prompt approval mode, `required = false`, and bounded timeouts. No application
+  code, production UI, generated Stitch source, private locator, signed URL or
+  remote identifier is added.
+- Runtime limitation: the current Codex App process cannot dynamically acquire
+  a newly configured MCP namespace. A full app restart and resumed turn are
+  required before in-task schema, side-effect, approval and data-egress review.
+- Ownership boundary: the pre-existing user-owned
+  `docs/orchestration/reports/STITCH_MCP_CANARY.md` remains unmodified and
+  unstaged.
+- Validation: changed Markdown/TypeScript format, config/docs/secrets,
+  validator unit 10/10, affected lint/typecheck and `git diff --check` pass.
+  The broad local unit/typecheck attempts were classified as workspace
+  dependency-link/environment failures under host Node 24, not product
+  failures; exact affected checks pass and hosted Node 22 remains decisive.
+
+### Debt status and exact next action
+
+`MCP-DEBT-2026-002`/KI-017 remains open, but is no longer classified as an
+endpoint or key-path failure. It now tracks the required Codex App restart,
+in-task schema/data-egress/security review, bounded synthetic Stitch reference
+operations and seven Frozen handoffs for `LB-001`–`LB-007`. Until those gates
+pass, production UI, P2 Level C, merge-as-complete, deployment and issue #6
+closure remain blocked; draft PR #44 must remain Draft.
+
+After restart, resume this same P2-S1 task, inspect the newly callable Stitch
+schemas, perform only bounded synthetic design operations, freeze the reviewed
+`LB-001`–`LB-007` handoff, implement the production UI, then run exactly one
+P2 Level C. Do not start P2-S2 or P5.

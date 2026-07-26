@@ -118,6 +118,24 @@ Rollback:
 
 The canary validates tooling only. It must not create or delete a Stitch project, download an entire project, build a site, write production code, or execute generated scripts.
 
+### Current Codex App P2 activation evidence
+
+The project-owner-authorized, environment-backed official endpoint passed a
+read-only direct MCP transport canary: initialization and tool discovery
+returned HTTP 200, negotiated protocol `2025-06-18`, and exposed 15
+project/screen/design-system tools. No project mutation occurred. Repository
+configuration contains only the environment-variable header mapping and keeps
+prompt approvals plus `required = false`; no literal credential belongs in
+Git, documentation, commands, issues, PRs or logs.
+
+The active Codex App process cannot dynamically acquire a newly configured MCP
+namespace. Restart the app and resume the same P2-S1 task before treating tools
+as callable. Then inspect complete tool schemas, classify read/write and
+cost-bearing behavior, review data egress and artifacts, and use only bounded
+synthetic design operations for `LB-001`–`LB-007`. This transport canary does
+not approve production UI, close `MCP-DEBT-2026-002`, freeze a handoff or
+satisfy P2 Level C.
+
 1. Confirm the disclosed credential was revoked.
 2. Confirm a restricted non-production replacement exists.
 3. Confirm both MCP configurations contain no literal credential.

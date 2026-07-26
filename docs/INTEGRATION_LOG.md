@@ -383,3 +383,30 @@ environments are intended to converge. It is not a substitute for Git history.
 - Follow-up: do not start P5 here. When P5-S1 is eligible, run its
   official-source research gate, pin the exact supported toolchain/wrapper and
   freeze the language-neutral provider/consumer contract before code.
+
+## INT-2026-014 — Activate the official Stitch namespace for the P2 handoff gate
+
+- Date: 2026-07-26
+- Status: In progress; endpoint/authentication canary passed, Codex App restart
+  and design handoff still pending
+- Source: project-owner-authorized local Stitch activation on the existing
+  `phase/2-account-access-onboarding` task
+- Target: P2-S1 `LB-001`–`LB-007` design gate only
+- Scope: enable the repository-scoped official Stitch MCP stanza while
+  retaining environment-backed authentication, prompt approvals,
+  `required = false`, and secret-free tracked configuration
+- Validation: an externally completed read-only direct MCP canary returned HTTP
+  200 for initialization and tool discovery, negotiated protocol `2025-06-18`,
+  and exposed 15 project/screen/design-system tools without project mutation.
+  Changed config/docs/secrets/diff and exact-head hosted CI remain required for
+  this tracked checkpoint.
+- Conflicts/risks: the active Codex App process cannot dynamically acquire the
+  newly configured MCP namespace. Tool schemas, side effects, data egress,
+  artifacts and approval boundaries therefore have not yet been reviewed
+  inside this task. No secret, private locator, signed URL or remote identifier
+  is recorded here, and the user-owned canary report remains untouched.
+- Decision/change references: issue #6, `MCP-DEBT-2026-002`, KI-017
+- Follow-up: restart Codex App, resume this same P2-S1 task, inspect every newly
+  callable Stitch schema, perform only bounded synthetic design operations,
+  freeze the reviewed `LB-001`–`LB-007` handoff, implement production UI and
+  run exactly one P2 Level C. Do not start P2-S2 or P5.
