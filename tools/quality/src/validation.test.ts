@@ -91,7 +91,8 @@ describe("validateCodexStitchConfig", () => {
       'env_http_headers = { "X-Goog-Api-Key" = "STITCH_API_KEY" }',
       "enabled = true",
       "required = false",
-      'default_tools_approval_mode = "prompt"',
+      'default_tools_approval_mode = "approve"',
+      "tool_timeout_sec = 600",
     ].join("\n");
 
     expect(validateCodexStitchConfig(content)).toEqual([]);
@@ -105,11 +106,13 @@ describe("validateCodexStitchConfig", () => {
       "enabled = false",
       "required = false",
       'default_tools_approval_mode = "never"',
+      "tool_timeout_sec = 60",
     ].join("\n");
 
     expect(validateCodexStitchConfig(content)).toEqual([
       "Stitch MCP must remain enabled after the approved live canary.",
-      "Stitch MCP tools must use prompt approval.",
+      "Stitch MCP tools must use the user-authorized approve policy.",
+      "Stitch MCP tool timeout must be the bounded 600-second generation window.",
       "Stitch MCP must resolve X-Goog-Api-Key from STITCH_API_KEY.",
     ]);
   });

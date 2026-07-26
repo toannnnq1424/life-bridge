@@ -859,3 +859,223 @@ P2-S1 is complete. The exact next slice is P2-S2 household creation,
 invitation and care-recipient context (`LB-008`–`LB-010`) in a fresh task from
 integrated `dev`. It must freeze household membership/authorization and
 anti-enumeration contracts before code. This task does not start P2-S2 or P5.
+
+## 2026-07-26 — P2-S2 backend-only candidate under Stitch reload gate
+
+### Objective
+
+Freeze and implement the non-UI household, invitation and minimum recipient
+context path without starting P2-S3.
+
+### Planned versus actual
+
+Planned full P2-S2 includes Stitch references, Frozen LB-008–LB-010 handoff,
+native UI, browser acceptance and one Level C. Actual here is backend-only
+because Stitch needs a Codex App reload/reconnect
+(`MCP-DEBT-2026-003`/KI-018). No substitute UI/reference was created.
+
+### Completed
+
+Three audits and a saturated official-source micro-cycle were reconciled.
+Authority/API/data/threat contracts are Frozen. Identity & Consent owns
+creator-organizer households, bounded membership/invitations, all five states,
+digest-only token rotation/expiry, idempotency/version/row-lock safety, generic
+inaccessible errors, minimum context and redacted audit/log evidence. Gateway
+preserves cookie/CSRF/origin/idempotency evidence.
+
+### Files changed
+
+Contracts/tests; Gateway server/tests; Identity migration, household service,
+session/server wiring and PostgreSQL test; API/data/security/research/threat,
+plan, map, board, integration, known-issue and session docs.
+
+### Decisions and Change IDs
+
+No ADR or roadmap deviation: the existing Identity & Consent/PostgreSQL
+boundary is extended. `MCP-DEBT-2026-003` blocks UI, merge and deploy. Granular
+consent remains P2-S3.
+
+### Validation performed
+
+Affected contract/Identity/Gateway type checks; affected Gateway/Identity lint;
+contracts 8/8; Gateway P2-S2 2/2; disposable PostgreSQL household path 1/1;
+targeted formatting and `git diff --check`. Task-owned Compose resources were
+removed.
+
+A later heartbeat Level B reproduced and fixed two candidate defects:
+transactional expiry was rolled back by a terminal-state exception, and
+concurrent identical creates lacked serialization before their idempotency row.
+PostgreSQL 1/1 now proves persistent expiry, advisory-lock replay and unknown-
+login decoy non-enumeration; affected Identity type/lint pass and the exact
+disposable Compose resources were removed.
+
+The user also authorized all Stitch tools for LifeBridge. Repository policy and
+its validator now require `default_tools_approval_mode = "approve"`; direct
+validator unit 10/10 plus config/docs/secrets checks pass. No credential,
+header, endpoint, tool allow/deny list, sandbox/network or OS setting changed.
+This policy does not resolve transport authentication.
+
+### Validation intentionally deferred
+
+No production UI, browser/accessibility, full build/regression, Level C,
+hosted CI, PR, merge or issue closure until Stitch handoff exists.
+
+### Known issues
+
+KI-018/MCP debt above. Bootstrap broad formatting also observed unrelated
+pre-existing files including the user-owned Stitch canary; none was edited.
+
+### Exact next step
+
+Post-reset authenticated project discovery passed and selected the single
+private LifeBridge project. The first authorized synthetic LB-008 generation
+exceeded the configured 60-second MCP call timeout. Per tool contract it was
+not retried; ten 30-second read-only screen polls found no new artifact, and
+LB-009/LB-010 were not issued. No remote ID, locator, signed URL or generated
+source was persisted.
+
+Provide a generation-capable MCP timeout/session and reload the app. Then
+generate/review/freeze synthetic LB-008–LB-010 references, implement native UI,
+and run the one P2-S2 Level C. Do not start P2-S3.
+
+Controller diagnosis then confirmed `.codex/config.toml` overrode the global
+generation window at 60 seconds. The user authorized the smallest policy fix:
+`tool_timeout_sec = 600`, with its direct validator/test expectation. No
+credential, endpoint, header, allow/deny list, sandbox/network or other MCP
+server changed. The still-loaded runtime was not retried. Restart MCP once,
+confirm LB-008 remains absent with one screen read, then resume generation.
+
+## 2026-07-26 — P2-S2 Stitch handoff, native UI, and stable candidate
+
+### Planned versus actual
+
+The planned slice remained LB-008–LB-010 only. After the MCP reload, one
+read-only reconciliation confirmed the uncertain LB-008 write had produced no
+screen. The bounded 600-second retry succeeded, followed by one synthetic
+LB-009 and LB-010 generation in the existing project. No duplicate project,
+real identity/care data, locator, remote ID, signed URL or generated source was
+persisted.
+
+Independent design review froze three redacted aliases and rejected generated
+partial-save/offline queueing, account-existence validation, membership-removal
+scope, raw-token display, clinical/legal inference and consent mutation. Native
+VI/EN routes now cover atomic household creation, one caregiver/member
+invitation with resend/revoke states, a generic body-token accept/decline shell,
+and minimum care-recipient context view/edit.
+
+### Architecture, data, and threat decisions
+
+Identity & Consent remains the sole authority and PostgreSQL owner; no service,
+engine, shared table, cross-service credential or ADR was added. Pending
+uniqueness now keys the same invitee-dimension digest for real and decoy rows.
+Recipient-context writers serialize at the household scope. Acceptance cannot
+silently reuse an inactive membership. Terminal token replay is bounded by the
+original expiry. Success logs occur only after commit; audit evidence includes
+membership grants, expiry and protected denied/conflict outcomes without
+invitee, token or recipient content.
+
+### Targeted validation
+
+- server/contracts/validator groups: 35/35;
+- Identity-owned disposable PostgreSQL lifecycle/concurrency: 7/7;
+- mocked LB-008–LB-010 browser/axe/offline/privacy paths: 6/6;
+- built web → Gateway → Identity → PostgreSQL two-account browser path: 1/1;
+- affected type/lint, production web build, PowerShell parser and exact
+  task-owned Docker/process/log cleanup pass.
+
+The single `pnpm.cmd run validate:p2-s2` Level C, hosted exact-head CI,
+merge-commit promotion, post-merge `dev` CI and issue #7 closure remain to be
+recorded. This entry does not claim those gates early.
+
+### Manual limitations and exact next orientation
+
+Automated axe, keyboard semantics, visible focus, 320 px reflow, reduced-motion,
+forced-color CSS and offline no-auto-submit paths are covered. Manual
+NVDA/Narrator, physical touch target observation, text-spacing and 200%/400%
+assistive-technology sessions remain unexecuted and must be retained before a
+pilot/release claim.
+
+After P2-S2 promotion only, the exact next slice is P2-S3 consent, privacy,
+audit-history and settings (`LB-028`–`LB-031`). It must begin from actual
+Identity-owned household roles and minimum context, freeze versioned
+grant/narrow/revoke semantics and never reinterpret organizer membership as
+care-recipient consent. No P2-S3 code or design work begins here.
+
+## 2026-07-26 — P2-S2 recovered Level C and local acceptance
+
+### Interruption classification and planned versus actual
+
+The host interruption preserved the worktree and the single running
+`pnpm.cmd run validate:p2-s2` campaign. The process later returned its buffered
+evidence: P1 format/lint/type, unit 38/38, contracts 8/8, docs/config/secrets,
+dependency audit, PostgreSQL 5/5 and production build had passed. It then
+stopped at Gateway readiness because P2-S1 made Identity a normal readiness
+dependency while the cumulative P1 loopback fixture intentionally runs without
+an Identity process.
+
+This was classified as a cumulative compatibility defect, not a product,
+Stitch, credential or PostgreSQL failure. The smallest Level B correction skips
+the Identity readiness probe only when the existing fixture-safe runtime guard
+is active; normal mode remains fail-closed. Gateway source format, lint,
+typecheck and 13/13 unit tests passed. Already-green P1 inputs were not rerun.
+One resume wrapper then used PowerShell's automatic `$Args` name and failed
+before starting the runtime; it was classified as orchestration-only and
+corrected without a product edit. The remaining campaign resumed from the
+smallest missing boundary.
+
+### Final local Level C evidence
+
+- P1 real PostgreSQL/runtime/browser regression: 4/4 after the targeted
+  readiness Level B; prior P1 PostgreSQL 5/5 and build evidence retained.
+- Aggregate affected unit: 46/46; contracts: 8/8.
+- Identity-owned disposable PostgreSQL P2-S2 lifecycle/concurrency: 7/7.
+- Production build: Next.js routes plus Gateway, Identity, Care and
+  Notification bundles passed.
+- Built web → Gateway → Identity → PostgreSQL P2-S2 runtime plus mocked
+  LB-008–LB-010 axe/keyboard/reflow/offline/privacy/security: 7/7.
+- P2-S1 artifact-disabled browser regression: 4/4.
+- Affected format/lint/type, docs/config/secrets, dependency audit and
+  `git diff --check`: passed.
+- Exact PID-scoped containers, networks, volumes, processes and runtime logs:
+  removed; no P2 task-owned listener/resource remains.
+- The user-owned `docs/orchestration/reports/STITCH_MCP_CANARY.md` has no diff
+  and remains unstaged/untouched.
+
+The Level C command was invoked exactly once. Recovery used targeted Level B
+and explicit missing-phase resumes rather than a second Level C invocation.
+Three independent audit workstreams were asked to re-review the final diff
+without write ownership, but the host refused all three turns because the
+subagent usage quota was exhausted. Their completed original authority,
+design and acceptance audits remain reconciled; this external re-audit
+limitation is not represented as new evidence.
+
+### Exact-head CI defect classification
+
+PR #47 opened from candidate `d74faf2`. Its push workflow passed the full
+Windows, PostgreSQL/Chromium and integrated gate. The parallel pull-request
+workflow exposed one deterministic locale race in LB-008: the session bootstrap
+effect depended on translated error copy, so selecting English started another
+session read whose stored Vietnamese preference could overwrite the user's
+selection. This was classified as a UI lifecycle defect, not PostgreSQL,
+Stitch, GitHub or runner infrastructure.
+
+The targeted fix makes session bootstrap run once and adds browser evidence
+that locale selection performs no second session read. Affected
+format/lint/type, i18n unit 2/2, production web build and mocked P2-S2 browser
+6/6 pass; the real-runtime spec is intentionally skipped for this UI-only Level
+B. The full Level C is not rerun. PR exact-head CI must rerun on the fix commit
+before merge.
+
+### Gate and exact next orientation
+
+Local P2-S2 acceptance is green. Exact-head hosted CI, merge-commit promotion,
+post-merge `dev` CI and issue #7 closeout remain before this slice is complete.
+No deployment occurred.
+
+After those promotion gates only, P2-S3 is the exact next slice. It must start
+from the actual Identity-owned household/membership tables, capability checks,
+minimum recipient context and redacted audit conventions now present. Its first
+action is to freeze versioned consent grant/narrow/revoke and audit-history
+read contracts for `LB-028`–`LB-031`, explicitly separating care-recipient
+consent from organizer membership. This task does not design or implement
+P2-S3.

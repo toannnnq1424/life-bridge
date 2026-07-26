@@ -79,6 +79,15 @@ routes `/`, `/login`, `/register`, `/mfa`, `/recover`, `/onboarding` and
 `/onboarding/accessibility` live in `apps/web`; generated Stitch source is not
 present.
 
+P2-S2 adds Identity migration `002_household_authorization.sql`,
+`services/identity-consent/src/household-service.ts` and
+`docs/security/P2_S2_THREAT_MODEL.md`. Its redacted design authority is
+`docs/design/reviews/P2_S2_STITCH_HANDOFF.md`. Native routes are composed by
+`apps/web/src/HouseholdAccessApp.tsx` with parity-checked copy in
+`household-i18n.ts`; artifact-disabled browser coverage lives in
+`tests/browser/p2-s2*.spec.ts`. `scripts/validate-p2-s2.ps1` owns the single
+cumulative candidate command and exact task-resource cleanup.
+
 ## Commands and generated state
 
 | Command                                     | Behavior                                                                                                    |
@@ -90,6 +99,8 @@ present.
 | `pnpm.cmd run test:p2:identity-integration` | Targeted P2 Identity PostgreSQL Level B; requires a provisioned Identity-owned database                     |
 | `pnpm.cmd run test:p2:browser`              | Artifact-disabled P2 UI/accessibility/security browser campaign against a running production web build      |
 | `pnpm.cmd run validate:p2-s1`               | Single cumulative P2 Level C including P1 regression, Identity PostgreSQL, P2 browser and security gates    |
+| `pnpm.cmd run test:p2-s2:browser`           | LB-008–LB-010 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner    |
+| `pnpm.cmd run validate:p2-s2`               | Cumulative P2-S2 Level C with P1/P2-S1 regression, PostgreSQL, built runtime, Chromium and security         |
 
 Local credentials and logs live only under ignored `.lifebridge-local/`. The
 validation runner creates a PID-scoped Compose project and removes only that
@@ -106,7 +117,8 @@ databases are ignored.
 - Package/service unit and contract tests: colocated `src/*.test.ts`.
 - PostgreSQL integration: `tests/integration/p1-s1.test.ts`.
 - P2 Identity integration: `services/identity-consent/src/service.integration.test.ts`.
-- Browser/accessibility: `tests/browser/p1-s1.spec.ts`.
+- Browser/accessibility: `tests/browser/p1-s1.spec.ts`, `p2-s1.spec.ts` and
+  artifact-disabled `p2-s2*.spec.ts`.
 - CI aggregate gate: `.github/workflows/ci.yml`.
 - Legacy foundation validator: `tools/quality/src/phase0.ts`.
 

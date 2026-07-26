@@ -187,8 +187,11 @@ export function validateCodexStitchConfig(content: string): readonly string[] {
   if (stitch.required !== false) {
     errors.push("Stitch MCP must remain optional during Phase 0.");
   }
-  if (stitch.default_tools_approval_mode !== "prompt") {
-    errors.push("Stitch MCP tools must use prompt approval.");
+  if (stitch.default_tools_approval_mode !== "approve") {
+    errors.push("Stitch MCP tools must use the user-authorized approve policy.");
+  }
+  if (stitch.tool_timeout_sec !== 600) {
+    errors.push("Stitch MCP tool timeout must be the bounded 600-second generation window.");
   }
 
   const headers = stitch.env_http_headers;

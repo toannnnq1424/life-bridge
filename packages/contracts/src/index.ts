@@ -119,6 +119,99 @@ export const IdentitySessionProjectionSchema = z
     csrfToken: CsrfTokenSchema,
   })
   .strict();
+
+export const HouseholdRoleSchema = z.enum(["organizer", "caregiver", "member"]);
+export const InvitationStateSchema = z.enum([
+  "pending",
+  "accepted",
+  "declined",
+  "expired",
+  "revoked",
+]);
+export const HouseholdCapabilitySchema = z.enum([
+  "household.view",
+  "household.manage",
+  "invitation.manage",
+  "recipient_context.view",
+  "recipient_context.manage",
+]);
+
+export const CreateHouseholdRequestSchema = z
+  .object({
+    displayLabel: z.string().trim().min(1).max(80),
+  })
+  .strict();
+
+export const CreateHouseholdInvitationRequestSchema = z
+  .object({
+    inviteeLoginName: LoginNameSchema,
+    role: z.enum(["caregiver", "member"]),
+  })
+  .strict();
+
+export const InvitationTokenRequestSchema = z
+  .object({ invitationToken: IdentityChallengeTokenSchema })
+  .strict();
+
+export const ResendHouseholdInvitationRequestSchema = z
+  .object({ expectedVersion: z.number().int().positive() })
+  .strict();
+
+export const RevokeHouseholdInvitationRequestSchema = ResendHouseholdInvitationRequestSchema;
+
+export const UpsertCareRecipientContextRequestSchema = z
+  .object({
+    displayLabel: z.string().trim().min(1).max(80),
+    relationshipLabel: z.string().trim().min(1).max(80),
+    expectedVersion: z.number().int().nonnegative(),
+  })
+  .strict();
+
+export const HouseholdProjectionSchema = z
+  .object({
+    householdId: OpaqueIdSchema,
+    displayLabel: z.string().min(1).max(80),
+    role: HouseholdRoleSchema,
+    capabilities: z.array(HouseholdCapabilitySchema),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const HouseholdInvitationProjectionSchema = z
+  .object({
+    invitationId: OpaqueIdSchema,
+    householdId: OpaqueIdSchema,
+    role: z.enum(["caregiver", "member"]),
+    state: InvitationStateSchema,
+    expiresAt: z.iso.datetime({ offset: true }),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const CareRecipientContextProjectionSchema = z
+  .object({
+    recipientContextId: OpaqueIdSchema,
+    householdId: OpaqueIdSchema,
+    displayLabel: z.string().min(1).max(80),
+    relationshipLabel: z.string().min(1).max(80),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export type CreateHouseholdRequest = z.infer<typeof CreateHouseholdRequestSchema>;
+export type CreateHouseholdInvitationRequest = z.infer<
+  typeof CreateHouseholdInvitationRequestSchema
+>;
+export type InvitationTokenRequest = z.infer<typeof InvitationTokenRequestSchema>;
+export type ResendHouseholdInvitationRequest = z.infer<
+  typeof ResendHouseholdInvitationRequestSchema
+>;
+export type UpsertCareRecipientContextRequest = z.infer<
+  typeof UpsertCareRecipientContextRequestSchema
+>;
+export type HouseholdProjection = z.infer<typeof HouseholdProjectionSchema>;
+export type HouseholdInvitationProjection = z.infer<typeof HouseholdInvitationProjectionSchema>;
+export type CareRecipientContextProjection = z.infer<typeof CareRecipientContextProjectionSchema>;
 export const PrioritySchema = z.enum(["normal", "important", "urgent"]);
 export const TaskStatusSchema = z.enum(["open", "completed"]);
 export const NotificationDeliverySchema = z.enum([

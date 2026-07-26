@@ -414,6 +414,23 @@ Dependencies: `P2-S1`.
 
 Deferred: organization federation, legal guardianship adjudication, and bulk import.
 
+Actual, 2026-07-26: the contract and Identity-owned PostgreSQL path are
+implemented on `phase/2-household-authorization` under the frozen
+`docs/security/P2_S2_THREAT_MODEL.md`. This includes all five invitation states
+including decline, digest-only expiry-bound tokens, resend limits,
+row-lock/version and idempotency safety, non-disclosing access, minimum
+recipient context and redacted audit/log evidence. Official synthetic
+LB-008–LB-010 references were independently reviewed and frozen in
+`docs/design/reviews/P2_S2_STITCH_HANDOFF.md`; native VI/EN routes implement
+atomic offline-blocked household creation, bounded invitation management and
+decision, and minimum-context view/edit. Real-browser Gateway-to-PostgreSQL and
+targeted concurrency evidence pass. The one P2-S2 Level C campaign now passes
+the cumulative P1/P2-S1 regression, affected static/unit/contracts, real
+PostgreSQL integration, production build/runtime, artifact-disabled
+browser/accessibility/security paths, docs/config/secrets/diff checks and exact
+task-owned cleanup. Exact-head hosted CI, merge-commit promotion and post-merge
+`dev` CI remain; P2-S3 remains unstarted.
+
 ### `P2-S3 — Consent, privacy, audit, and settings`
 
 Outcome: an authorized care recipient/account owner can review, grant/narrow/revoke sharing, adjust privacy/settings, and inspect redacted access history.

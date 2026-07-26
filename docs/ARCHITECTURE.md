@@ -491,3 +491,28 @@ reference → reviews → Frozen handoffs → implementation. The official synth
 references and redacted handoff are now Frozen, and native Next.js routes
 connect to the existing Gateway/Identity boundary. Full P2-S1 acceptance still
 requires the single Level C and exact-head hosted CI.
+
+## 18. P2-S2 household authorization ownership
+
+P2-S2 extends the existing Identity & Consent authority and its
+`lifebridge_identity` PostgreSQL database. It does not add a service, datastore,
+shared table owner, cross-service credential or business-code import, so no new
+ADR is required.
+
+```text
+verified account session
+  -> Gateway (cookie, CSRF, Origin/Fetch Metadata, idempotency)
+      -> Identity & Consent
+          -> households + memberships
+          -> digest-only bounded invitations
+          -> minimum recipient context
+          -> authorization audit evidence
+```
+
+Authentication alone grants no household capability. Every protected lookup is
+membership/capability checked and uses the same generic inaccessible response
+for absent and unauthorized resources. Invitation acceptance is the only path
+in this slice that grants collaborator membership; organizer status originates
+only from atomic household creation. Recipient context remains orientation
+metadata, not a clinical record, legal authority or consent grant. Granular
+consent remains P2-S3 and is not inferred from organizer membership.

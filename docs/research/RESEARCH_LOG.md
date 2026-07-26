@@ -101,4 +101,23 @@ Nếu một nguồn mới làm thay đổi phase/slice đã dự kiến, entry k
 - acceptance criteria and validation delta;
 - whether completed slices require revalidation.
 
+## 2026-07-26 — P2-S2 backend authorization micro-cycle
+
+Result: `PASS WITH ASSUMPTIONS`; retrieved 2026-07-26. OWASP Forgot Password
+Cheat Sheet (global/current living guidance, CC BY-SA 4.0) confirms consistent
+existent/non-existent responses plus random, securely stored, single-use,
+expiring and rate-limited URL tokens; this confirms invitation
+non-disclosure/digest lifecycle tests. PostgreSQL 17 Explicit Locking
+(global/current official documentation, PostgreSQL licence) confirms
+`SELECT FOR UPDATE` blocks competing writers until transaction end; this
+confirms accept/decline/revoke/resend race tests. NIST SP 800-63B-4 (US, 2025,
+US Government work) confirms throttling for online secret verification; this
+confirms bounded invite attempts without making an AAL/compliance claim.
+
+These are background requirements, contain no person-level data and create no
+fixture. Password recovery is analogous rather than invitation-specific.
+Another source did not change a requirement, test, non-goal or decision, so the
+micro-cycle stopped. Consent authority remains the frozen product contract and
+P2-S3 gate, not an inference from these security sources.
+
 If evidence changes the roadmap, the plan delta must be explicit and dated; do not rewrite history.

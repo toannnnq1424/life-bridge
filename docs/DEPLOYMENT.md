@@ -153,3 +153,11 @@ P2-S1 adds no deployment. `validate:p2-s1` is a local/CI acceptance topology:
 it provisions owned PostgreSQL databases, starts the real Identity dependency,
 preserves the P1 regression campaign, runs the artifact-disabled P2 browser
 campaign, and removes only its task-owned processes and Compose resources.
+
+P2-S2 also adds no deployment or public infrastructure. Its local/CI topology
+extends the same Identity-owned PostgreSQL database with owner-scoped
+migrations, starts built Identity, Gateway and web processes on loopback, runs
+artifact-disabled household/invitation/context browser paths, and deletes only
+its PID-scoped Compose/process/log resources. Promotion to `dev` is evidence of
+integration only; KI-001, KI-016 and the later P8–P11 security, accessibility,
+rollback and rollout gates still block any pilot or deployment claim.

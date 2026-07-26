@@ -5,9 +5,10 @@
 - Updated: 2026-07-26
 - Most recently integrated scope: `P2-S1 — Account access and accessible
 onboarding`; accepted and merged at `dev@e20ecdbe`
-- No active product slice in this closeout correction
-- Next action: start P2-S2 household authorization/consent only in a fresh task
-  from integrated `dev`
+- Active product slice: `P2-S2 — Household, invitation, and care-recipient context`
+- Stable candidate is in progress on `phase/2-household-authorization`;
+  the redacted Stitch handoff, native UI and one local Level C campaign pass;
+  exact-head PR and post-merge `dev` CI remain
 - Accepted future direction: `CHG-2026-011`/ADR-019 assigns greenfield
   Community to Spring Boot at P5-S1/#15; this does not start P5 or alter P2
 - Rule: one conversation owns one phase or one slice
@@ -30,55 +31,56 @@ No owner role may mark another row complete without its evidence/handoff. Parall
 
 ## Known environment/external gates
 
-| Gate                                    | Classification                   | Current handling                                                                                                       | Prohibited shortcut                                                              | Exact acceptance action                                                    |
-| --------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Docker host versus sandbox visibility   | Environment isolation, mitigated | Current task reaches client/server 27.5.1; restricted contexts may warn                                                | Do not elevate or edit services/Registry/firewall/Docker config automatically    | Recheck in the first Docker-owning slice and classify by execution context |
-| PowerShell blocks package `*.ps1` shims | Environment policy, mitigated    | Use `npm.cmd`, `npx.cmd`, `pnpm.cmd`                                                                                   | Do not change machine-wide Execution Policy                                      | Canonical commands succeed through `.cmd`                                  |
-| `MCP-DEBT-2026-001` deployment gate     | Security/integration debt        | P1 handoff v1.0 is Frozen; credential retirement/usage review remains unconfirmed                                      | Do not reuse/log/persist the credential or claim deployment-ready                | Confirm provider retirement/usage review before deployment                 |
-| `MCP-DEBT-2026-002` P2 acceptance gate  | Resolved                         | Official schemas, seven synthetic references, Frozen handoff, native UI, full Level C, exact-head/post-merge CI passed | Do not copy generated source or weaken artifact controls                         | Preserve evidence; deployment remains separately gated                     |
-| Branch protection unavailable           | Platform limitation, controlled  | Hosted CI is registered; P1 exact-head and post-merge runs passed while enforcement remains manual                     | Do not bypass PR/check review, direct-push protected lanes, or claim enforcement | Reassess plan/visibility and retain manual exact-SHA/check review          |
+| Gate                                    | Classification                             | Current handling                                                                                                       | Prohibited shortcut                                                                          | Exact acceptance action                                                    |
+| --------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Docker host versus sandbox visibility   | Environment isolation, mitigated           | Current task reaches client/server 27.5.1; restricted contexts may warn                                                | Do not elevate or edit services/Registry/firewall/Docker config automatically                | Recheck in the first Docker-owning slice and classify by execution context |
+| PowerShell blocks package `*.ps1` shims | Environment policy, mitigated              | Use `npm.cmd`, `npx.cmd`, `pnpm.cmd`                                                                                   | Do not change machine-wide Execution Policy                                                  | Canonical commands succeed through `.cmd`                                  |
+| `MCP-DEBT-2026-001` deployment gate     | Security/integration debt                  | P1 handoff v1.0 is Frozen; credential retirement/usage review remains unconfirmed                                      | Do not reuse/log/persist the credential or claim deployment-ready                            | Confirm provider retirement/usage review before deployment                 |
+| `MCP-DEBT-2026-002` P2 acceptance gate  | Resolved                                   | Official schemas, seven synthetic references, Frozen handoff, native UI, full Level C, exact-head/post-merge CI passed | Do not copy generated source or weaken artifact controls                                     | Preserve evidence; deployment remains separately gated                     |
+| `MCP-DEBT-2026-003` P2-S2 UI gate       | Local acceptance passed; promotion pending | Three synthetic references, independent Frozen handoff, native UI and one cumulative local Level C now pass            | Do not expose locators, import generated source, weaken corrections or claim promotion early | Pass exact-head CI, merge commit and post-merge `dev` CI                   |
+| Branch protection unavailable           | Platform limitation, controlled            | Hosted CI is registered; P1 exact-head and post-merge runs passed while enforcement remains manual                     | Do not bypass PR/check review, direct-push protected lanes, or claim enforcement             | Reassess plan/visibility and retain manual exact-SHA/check review          |
 
 Gates block only dependent validation/work. They do not authorize broad system repair and do not make unrelated Phase 0 documentation fail.
 
 ## Roadmap queue
 
-| Priority | Item                                    | Status                   | Starts only when                                                | Completion handoff                               |
-| -------- | --------------------------------------- | ------------------------ | --------------------------------------------------------------- | ------------------------------------------------ |
-| 0        | `P0` Foundation                         | Validated                | Approved plan                                                   | Validated foundation commit; exact P1 action     |
-| 1        | `P1-S1` Accountable care-task loop      | Validated/merged         | PR #42; exact-head and post-merge CI                            | Issue #5 closed completed                        |
-| 2        | `P2-S1` Account access/onboarding       | Validated/merged         | PR #44 merge `0cb14e2`; exact-head and post-merge full CI green | Issue #6 closed; fresh-task P2-S2 orientation    |
-| 3        | `P2-S2` Household/invitation/context    | Planned                  | P2-S1 passes                                                    | Household authorization flow                     |
-| 4        | `P2-S3` Consent/privacy/audit/settings  | Planned                  | P2-S2 passes                                                    | Consent/revocation/audit flow                    |
-| 5        | `P3-S1` Timeline/handoff                | Planned                  | P2 trust boundary passes                                        | Timeline/handoff flow                            |
-| 6        | `P3-S2` Calendar/appointment            | Planned                  | P3-S1/time contract                                             | Calendar/agenda flow                             |
-| 7        | `P3-S3` Care-plan review                | Planned                  | P2 consent + P3 time                                            | Versioned care-plan flow                         |
-| 8        | `P4-S1` Medication reminder             | Planned                  | P3 time + Notification reliability                              | Non-clinical reminder flow                       |
-| 9        | `P4-S2` Emergency plan                  | Planned                  | Consent + offline threat review                                 | Offline-readable configured plan                 |
-| 10       | `P4-S3` Document vault                  | Planned                  | Consent/audit + storage ADR                                     | Synthetic document flow                          |
-| 11       | `P5-S1` Help request/directory          | Planned; Spring selected | P2 consent + official JDK/Spring/Maven research + ADR-019       | Spring Community + PostgreSQL request/search     |
-| 12       | `P5-S2` Match/organization              | Planned                  | P5-S1 Spring Community boundary accepted                        | Extend same minimum-data Community service       |
-| 13       | `P5-S3` Moderation                      | Planned                  | P5-S2 + policy                                                  | Extend same boundary with auditable resolution   |
-| 14       | `P6-S1` Contract rolling compatibility  | Planned                  | P1–P5 service inventory accepted                                | Mixed Node/Spring version compatibility          |
-| 15       | `P6-S2` Independent artifacts/ownership | Planned                  | P6-S1                                                           | Independent artifacts, upgrades, SBOM/containers |
-| 16       | `P6-S3` Service auth/failure isolation  | Planned                  | P6-S1/S2                                                        | Health, observability, isolation and rollback    |
-| 17       | `P7-S1` Owned migrations                | Planned                  | P6 gate                                                         | Compatible schema upgrade                        |
-| 18       | `P7-S2` Event replay/reconciliation     | Planned                  | P7-S1                                                           | Recoverable idempotent delivery                  |
-| 19       | `P7-S3` Data lifecycle/recovery         | Planned                  | P7-S1/S2; P2 consent                                            | Restore/retention/deletion evidence              |
-| 20       | `P8-S1` Isolation/consent enforcement   | Planned                  | P2; P6/P7                                                       | Authorization isolation matrix                   |
-| 21       | `P8-S2` Secrets/runtime/supply chain    | Planned                  | P8-S1; hosted CI                                                | Rotation/SBOM/provenance evidence                |
-| 22       | `P8-S3` Abuse/privacy response          | Planned                  | P8-S1/S2                                                        | Safeguards and tabletop evidence                 |
-| 23       | `P9-S1` Observability/SLO baseline      | Planned                  | P6–P8 release journeys                                          | Redacted journey telemetry/SLO                   |
-| 24       | `P9-S2` Offline/conflict/degradation    | Planned                  | P9-S1; frozen journey list                                      | Truthful reusable failure states                 |
-| 25       | `P9-S3` Incident/DR game day            | Planned                  | P7-S3; P8-S3; P9-S1/S2                                          | Alert/runbook/restore/postmortem                 |
-| 26       | `P10-S1` Workload/performance budgets   | Planned                  | P9 telemetry                                                    | Measurable representative baseline               |
-| 27       | `P10-S2` Load/soak/backpressure/scale   | Planned                  | P10-S1; P9-S3                                                   | Correct bounded behavior under load              |
-| 28       | `P10-S3` Capacity/cost guardrails       | Planned                  | P10-S2; target platform                                         | Capacity and alerted cost envelope               |
-| 29       | `P11-S1` Production deploy/rollback     | Planned                  | P6–P10; zero deploy debt                                        | Reproducible protected environment               |
-| 30       | `P11-S2` Staged rollout/pilot           | Planned                  | P11-S1                                                          | Rehearsed canary and rollback                    |
-| 31       | `P11-S3` Evidence-backed release        | Planned                  | P11-S2; zero release blockers                                   | Truthful tagged release                          |
-| 32       | `P12-S1` Live operations/postmortem     | Planned                  | P11 release                                                     | Alert-to-resolution ownership                    |
-| 33       | `P12-S2` Patch/rotation/restore cadence | Planned                  | P12-S1                                                          | Exercised maintenance continuity                 |
-| 34       | `P12-S3` Feedback/next roadmap          | Planned                  | P12-S1/S2; privacy-safe evidence                                | Governed successor roadmap                       |
+| Priority | Item                                    | Status                                 | Starts only when                                                | Completion handoff                               |
+| -------- | --------------------------------------- | -------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------ |
+| 0        | `P0` Foundation                         | Validated                              | Approved plan                                                   | Validated foundation commit; exact P1 action     |
+| 1        | `P1-S1` Accountable care-task loop      | Validated/merged                       | PR #42; exact-head and post-merge CI                            | Issue #5 closed completed                        |
+| 2        | `P2-S1` Account access/onboarding       | Validated/merged                       | PR #44 merge `0cb14e2`; exact-head and post-merge full CI green | Issue #6 closed; fresh-task P2-S2 orientation    |
+| 3        | `P2-S2` Household/invitation/context    | Stable candidate; local Level C passed | Exact-head PR and post-merge `dev` CI                           | Household authorization flow                     |
+| 4        | `P2-S3` Consent/privacy/audit/settings  | Planned                                | P2-S2 passes                                                    | Consent/revocation/audit flow                    |
+| 5        | `P3-S1` Timeline/handoff                | Planned                                | P2 trust boundary passes                                        | Timeline/handoff flow                            |
+| 6        | `P3-S2` Calendar/appointment            | Planned                                | P3-S1/time contract                                             | Calendar/agenda flow                             |
+| 7        | `P3-S3` Care-plan review                | Planned                                | P2 consent + P3 time                                            | Versioned care-plan flow                         |
+| 8        | `P4-S1` Medication reminder             | Planned                                | P3 time + Notification reliability                              | Non-clinical reminder flow                       |
+| 9        | `P4-S2` Emergency plan                  | Planned                                | Consent + offline threat review                                 | Offline-readable configured plan                 |
+| 10       | `P4-S3` Document vault                  | Planned                                | Consent/audit + storage ADR                                     | Synthetic document flow                          |
+| 11       | `P5-S1` Help request/directory          | Planned; Spring selected               | P2 consent + official JDK/Spring/Maven research + ADR-019       | Spring Community + PostgreSQL request/search     |
+| 12       | `P5-S2` Match/organization              | Planned                                | P5-S1 Spring Community boundary accepted                        | Extend same minimum-data Community service       |
+| 13       | `P5-S3` Moderation                      | Planned                                | P5-S2 + policy                                                  | Extend same boundary with auditable resolution   |
+| 14       | `P6-S1` Contract rolling compatibility  | Planned                                | P1–P5 service inventory accepted                                | Mixed Node/Spring version compatibility          |
+| 15       | `P6-S2` Independent artifacts/ownership | Planned                                | P6-S1                                                           | Independent artifacts, upgrades, SBOM/containers |
+| 16       | `P6-S3` Service auth/failure isolation  | Planned                                | P6-S1/S2                                                        | Health, observability, isolation and rollback    |
+| 17       | `P7-S1` Owned migrations                | Planned                                | P6 gate                                                         | Compatible schema upgrade                        |
+| 18       | `P7-S2` Event replay/reconciliation     | Planned                                | P7-S1                                                           | Recoverable idempotent delivery                  |
+| 19       | `P7-S3` Data lifecycle/recovery         | Planned                                | P7-S1/S2; P2 consent                                            | Restore/retention/deletion evidence              |
+| 20       | `P8-S1` Isolation/consent enforcement   | Planned                                | P2; P6/P7                                                       | Authorization isolation matrix                   |
+| 21       | `P8-S2` Secrets/runtime/supply chain    | Planned                                | P8-S1; hosted CI                                                | Rotation/SBOM/provenance evidence                |
+| 22       | `P8-S3` Abuse/privacy response          | Planned                                | P8-S1/S2                                                        | Safeguards and tabletop evidence                 |
+| 23       | `P9-S1` Observability/SLO baseline      | Planned                                | P6–P8 release journeys                                          | Redacted journey telemetry/SLO                   |
+| 24       | `P9-S2` Offline/conflict/degradation    | Planned                                | P9-S1; frozen journey list                                      | Truthful reusable failure states                 |
+| 25       | `P9-S3` Incident/DR game day            | Planned                                | P7-S3; P8-S3; P9-S1/S2                                          | Alert/runbook/restore/postmortem                 |
+| 26       | `P10-S1` Workload/performance budgets   | Planned                                | P9 telemetry                                                    | Measurable representative baseline               |
+| 27       | `P10-S2` Load/soak/backpressure/scale   | Planned                                | P10-S1; P9-S3                                                   | Correct bounded behavior under load              |
+| 28       | `P10-S3` Capacity/cost guardrails       | Planned                                | P10-S2; target platform                                         | Capacity and alerted cost envelope               |
+| 29       | `P11-S1` Production deploy/rollback     | Planned                                | P6–P10; zero deploy debt                                        | Reproducible protected environment               |
+| 30       | `P11-S2` Staged rollout/pilot           | Planned                                | P11-S1                                                          | Rehearsed canary and rollback                    |
+| 31       | `P11-S3` Evidence-backed release        | Planned                                | P11-S2; zero release blockers                                   | Truthful tagged release                          |
+| 32       | `P12-S1` Live operations/postmortem     | Planned                                | P11 release                                                     | Alert-to-resolution ownership                    |
+| 33       | `P12-S2` Patch/rotation/restore cadence | Planned                                | P12-S1                                                          | Exercised maintenance continuity                 |
+| 34       | `P12-S3` Feedback/next roadmap          | Planned                                | P12-S1/S2; privacy-safe evidence                                | Governed successor roadmap                       |
 
 Only the first eligible item may move to In progress in a new conversation.
 
