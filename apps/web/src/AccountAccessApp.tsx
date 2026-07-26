@@ -361,6 +361,7 @@ export function AccountAccessApp({ initialScreen }: { initialScreen: Screen }) {
                 const projection = envelope.data?.projection as unknown as SessionProjection;
                 setSession(projection);
                 setChallenge("");
+                setStatus("");
                 setScreen("onboarding");
                 window.history.replaceState({}, "", routes.onboarding);
               } else {
@@ -441,10 +442,10 @@ export function AccountAccessApp({ initialScreen }: { initialScreen: Screen }) {
                   expectedVersion: session.preferences.version,
                 });
                 setSession(envelope.data as unknown as SessionProjection);
+                setStatus(t.accountReady);
               } catch {
                 // Preference failure is displayed but never gates the account session.
               }
-              setStatus(t.accountReady);
             }}
           />
         ) : null}

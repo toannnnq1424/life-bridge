@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { SafeLogger, resolveCorrelationId } from "./index.js";
+import { SafeLogger, SafeMetrics, SafeTracer, resolveCorrelationId } from "./index.js";
 
 describe("safe structured logging", () => {
   it("serializes only the allow-listed shape", () => {
@@ -39,5 +39,46 @@ describe("safe structured logging", () => {
   it("replaces invalid inbound correlation identifiers", () => {
     const resolved = resolveCorrelationId("unsafe correlation\nsecret");
     expect(resolved).toMatch(/^corr_[a-f0-9]{32}$/);
+  });
+
+  it("emits metrics and spans with no extensible sensitive labels", () => {
+    const output: string[] = [];
+    const now = () => new Date("2026-07-26T12:00:00.000Z");
+    const metrics = new SafeMetrics("identity-consent", (value) => output.push(value), now);
+    const tracer = new SafeTracer("identity-consent", (value) => output.push(value), now);
+
+    metrics.emit({
+      metricName: "lifebridge_operation_total",
+      operation: "consent.revoke",
+      result: "success",
+      value: 1,
+    });
+    tracer.emit({
+      operation: "consent.revoke",
+      result: "success",
+      correlationId: "corr_consent_123",
+      durationMs: 8,
+    });
+
+    expect(output).toHaveLength(2);
+    expect(output.join("\n")).not.toContain("recipient_context.basic_label");
+    expect(output.join("\n")).not.toContain("idempotency");
+    expect(JSON.parse(output[0] ?? "{}")).toEqual({
+      timestamp: "2026-07-26T12:00:00.000Z",
+      service: "identity-consent",
+      metricName: "lifebridge_operation_total",
+      operation: "consent.revoke",
+      result: "success",
+      value: 1,
+    });
+    expect(JSON.parse(output[1] ?? "{}")).toEqual({
+      timestamp: "2026-07-26T12:00:00.000Z",
+      service: "identity-consent",
+      spanName: "lifebridge.operation",
+      operation: "consent.revoke",
+      result: "success",
+      correlationId: "corr_consent_123",
+      durationMs: 8,
+    });
   });
 });

@@ -1,8 +1,9 @@
 import { Pool } from "pg";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { SafeLogger } from "@lifebridge/observability";
+import { SafeLogger, SafeMetrics, SafeTracer } from "@lifebridge/observability";
 
+import { ConsentService } from "./consent-service.js";
 import { generateTotp, hashPassword } from "./crypto.js";
 import { HouseholdService } from "./household-service.js";
 import { migrateIdentityDatabase } from "./migration.js";
@@ -14,7 +15,9 @@ const pool = databaseUrl ? new Pool({ connectionString: databaseUrl, max: 8 }) :
 const clock = { value: Date.parse("2026-08-03T02:00:00.000Z") };
 let identity: IdentityService;
 let households: HouseholdService;
+let consent: ConsentService;
 const householdLogs: string[] = [];
+const consentTelemetry: string[] = [];
 
 integration("P2-S1 identity lifecycle", () => {
   beforeAll(async () => {
@@ -34,12 +37,37 @@ integration("P2-S1 identity lifecycle", () => {
         () => new Date(clock.value),
       ),
     });
+    consent = new ConsentService(pool!, {
+      rateLimitKey: Buffer.alloc(32, 9),
+      cursorKey: Buffer.alloc(32, 7),
+      now: () => new Date(clock.value),
+      logger: new SafeLogger(
+        "identity-consent",
+        (serialized) => consentTelemetry.push(serialized),
+        () => new Date(clock.value),
+      ),
+      metrics: new SafeMetrics(
+        "identity-consent",
+        (serialized) => consentTelemetry.push(serialized),
+        () => new Date(clock.value),
+      ),
+      tracer: new SafeTracer(
+        "identity-consent",
+        (serialized) => consentTelemetry.push(serialized),
+        () => new Date(clock.value),
+      ),
+    });
   });
 
   beforeEach(async () => {
     clock.value = Date.parse("2026-08-03T02:00:00.000Z");
     householdLogs.length = 0;
+    consentTelemetry.length = 0;
     await pool!.query(`TRUNCATE
+      identity_consent_outbox, identity_consent_transitions,
+      identity_consent_idempotency, identity_consent_audit,
+      identity_consent_grants, identity_consent_subjects,
+      identity_privacy_preferences,
       identity_audit, identity_care_recipient_contexts, identity_household_idempotency,
       identity_household_invitations, identity_household_memberships, identity_households,
       identity_preferences, identity_rate_limits, identity_sessions,
@@ -253,6 +281,329 @@ integration("P2-S1 identity lifecycle", () => {
     expect(householdLogs.join("\n")).not.toContain("unknown.user");
     expect(householdLogs.join("\n")).not.toContain(invitation.invitationToken);
     expect(householdLogs.join("\n")).not.toContain("Synthetic recipient");
+  });
+
+  it("binds explicit self authority and enforces grant, narrow, revoke, audit and privacy", async () => {
+    const subjectFactor = await enroll("consent.subject", "Consent subject synthetic passphrase");
+    const memberFactor = await enroll("consent.member", "Consent member synthetic passphrase");
+    clock.value += 30_000;
+    const subjectAccount = await signIn(
+      "consent.subject",
+      "Consent subject synthetic passphrase",
+      subjectFactor.secret,
+    );
+    const memberAccount = await signIn(
+      "consent.member",
+      "Consent member synthetic passphrase",
+      memberFactor.secret,
+    );
+    const household = await households.createHousehold({
+      accountId: subjectAccount.projection.accountId,
+      request: { displayLabel: "P2-S3 synthetic household" },
+      idempotencyKey: "p2-s3-household-0001",
+      correlationId: "corr_p2_s3_household",
+    });
+    const invitation = await households.createInvitation({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: { inviteeLoginName: "consent.member", role: "member" },
+      idempotencyKey: "p2-s3-invitation-0001",
+      correlationId: "corr_p2_s3_invitation",
+    });
+    await households.respondToInvitation({
+      accountId: memberAccount.projection.accountId,
+      invitationToken: invitation.invitationToken!,
+      decision: "accepted",
+      correlationId: "corr_p2_s3_accept",
+    });
+    const context = await households.upsertRecipientContext({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: {
+        displayLabel: "Recipient Alpha",
+        relationshipLabel: "Relationship Beta",
+        expectedVersion: 0,
+      },
+      correlationId: "corr_p2_s3_context",
+    });
+
+    await expect(
+      consent.grant({
+        accountId: subjectAccount.projection.accountId,
+        householdId: household.householdId,
+        request: {
+          action: "grant",
+          recipientRef: "member_unbound",
+          purpose: "household_coordination",
+          scopes: ["recipient_context.basic_label"],
+          effectiveTime: {
+            mode: "immediate",
+            displayTimeZone: "Asia/Bangkok",
+          },
+          expectedSubjectVersion: 1,
+        },
+        idempotencyKey: "p2-s3-organizer-not-authority",
+        correlationId: "corr_p2_s3_organizer_not_authority",
+      }),
+    ).rejects.toMatchObject({
+      code: "CONSENT_RESOURCE_NOT_FOUND",
+      statusCode: 404,
+    });
+
+    await expect(
+      consent.establishSubject({
+        accountId: memberAccount.projection.accountId,
+        householdId: household.householdId,
+        request: {
+          recipientContextId: context.recipientContextId,
+          displayTimeZone: "Asia/Bangkok",
+        },
+        correlationId: "corr_p2_s3_unauthorized_bind",
+      }),
+    ).rejects.toMatchObject({
+      code: "CONSENT_AUTHORITY_REQUIRED",
+      statusCode: 403,
+    });
+
+    const subject = await consent.establishSubject({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: {
+        recipientContextId: context.recipientContextId,
+        displayTimeZone: "Asia/Bangkok",
+      },
+      correlationId: "corr_p2_s3_bind",
+    });
+    expect(subject).toMatchObject({ authority: "self", version: 1 });
+    await expect(
+      households.getRecipientContext({
+        accountId: memberAccount.projection.accountId,
+        householdId: household.householdId,
+      }),
+    ).rejects.toMatchObject({ code: "HOUSEHOLD_NOT_FOUND", statusCode: 404 });
+
+    const overview = await consent.overview({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+    });
+    const recipientRef = overview.eligibleRecipients[0]!.recipientRef;
+    const grantCommand = {
+      action: "grant" as const,
+      recipientRef,
+      purpose: "household_coordination" as const,
+      scopes: [
+        "recipient_context.basic_label" as const,
+        "recipient_context.relationship_label" as const,
+      ],
+      effectiveTime: {
+        mode: "immediate" as const,
+        displayTimeZone: "Asia/Bangkok",
+      },
+      expectedSubjectVersion: 1,
+    };
+    const grants = await Promise.all([
+      consent.grant({
+        accountId: subjectAccount.projection.accountId,
+        householdId: household.householdId,
+        request: grantCommand,
+        idempotencyKey: "p2-s3-grant-replay-0001",
+        correlationId: "corr_p2_s3_grant_a",
+      }),
+      consent.grant({
+        accountId: subjectAccount.projection.accountId,
+        householdId: household.householdId,
+        request: grantCommand,
+        idempotencyKey: "p2-s3-grant-replay-0001",
+        correlationId: "corr_p2_s3_grant_b",
+      }),
+    ]);
+    expect(grants[0]).toEqual(grants[1]);
+    await expect(
+      pool!.query(`SELECT COUNT(*)::int AS count FROM identity_consent_grants`),
+    ).resolves.toMatchObject({ rows: [{ count: 1 }] });
+
+    await expect(
+      consent.grant({
+        accountId: subjectAccount.projection.accountId,
+        householdId: household.householdId,
+        request: {
+          ...grantCommand,
+          scopes: ["recipient_context.basic_label"],
+        },
+        idempotencyKey: "p2-s3-grant-replay-0001",
+        correlationId: "corr_p2_s3_grant_changed",
+      }),
+    ).rejects.toMatchObject({ code: "IDEMPOTENCY_CONFLICT" });
+
+    await expect(
+      consent.governedRecipientContext({
+        accountId: memberAccount.projection.accountId,
+        householdId: household.householdId,
+        scope: "recipient_context.relationship_label",
+        correlationId: "corr_p2_s3_relationship_before_narrow",
+      }),
+    ).resolves.toMatchObject({ value: "Relationship Beta" });
+
+    clock.value += 1;
+    const narrowed = await consent.narrow({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      grantId: grants[0]!.grantId,
+      request: {
+        action: "narrow",
+        scopes: ["recipient_context.basic_label"],
+        effectiveTime: {
+          mode: "immediate",
+          displayTimeZone: "Asia/Bangkok",
+        },
+        expectedSubjectVersion: 2,
+        expectedGrantVersion: 1,
+      },
+      idempotencyKey: "p2-s3-narrow-0001",
+      correlationId: "corr_p2_s3_narrow",
+    });
+    expect(narrowed.scopes).toEqual(["recipient_context.basic_label"]);
+    await expect(
+      consent.narrow({
+        accountId: subjectAccount.projection.accountId,
+        householdId: household.householdId,
+        grantId: narrowed.grantId,
+        request: {
+          action: "narrow",
+          scopes: ["recipient_context.basic_label", "recipient_context.relationship_label"],
+          effectiveTime: {
+            mode: "immediate",
+            displayTimeZone: "Asia/Bangkok",
+          },
+          expectedSubjectVersion: 3,
+          expectedGrantVersion: 2,
+        },
+        idempotencyKey: "p2-s3-broadening-rejected",
+        correlationId: "corr_p2_s3_broadening",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_SCOPE_BROADENING_REJECTED" });
+    await expect(
+      consent.governedRecipientContext({
+        accountId: memberAccount.projection.accountId,
+        householdId: household.householdId,
+        scope: "recipient_context.relationship_label",
+        correlationId: "corr_p2_s3_relationship_after_narrow",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_RESOURCE_NOT_FOUND" });
+    await expect(
+      consent.governedRecipientContext({
+        accountId: memberAccount.projection.accountId,
+        householdId: household.householdId,
+        scope: "recipient_context.basic_label",
+        correlationId: "corr_p2_s3_basic_after_narrow",
+      }),
+    ).resolves.toMatchObject({ value: "Recipient Alpha" });
+
+    clock.value += 1;
+    const revoked = await consent.revoke({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      grantId: narrowed.grantId,
+      request: {
+        action: "revoke",
+        effectiveTime: {
+          mode: "immediate",
+          displayTimeZone: "Asia/Bangkok",
+        },
+        expectedSubjectVersion: 3,
+        expectedGrantVersion: 2,
+      },
+      idempotencyKey: "p2-s3-revoke-0001",
+      correlationId: "corr_p2_s3_revoke",
+    });
+    expect(revoked.revokedEffectiveAt).toBe(new Date(clock.value).toISOString());
+    await expect(
+      consent.governedRecipientContext({
+        accountId: memberAccount.projection.accountId,
+        householdId: household.householdId,
+        scope: "recipient_context.basic_label",
+        correlationId: "corr_p2_s3_basic_at_revoke_boundary",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_RESOURCE_NOT_FOUND" });
+
+    const history = await consent.auditHistory({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      query: { limit: 2, displayTimeZone: "Asia/Bangkok" },
+      correlationId: "corr_p2_s3_audit",
+    });
+    expect(history.items).toHaveLength(2);
+    expect(history.nextCursor).toEqual(expect.any(String));
+    expect(Object.hasOwn(history, "total")).toBe(false);
+    const nextPage = await consent.auditHistory({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      query: {
+        limit: 25,
+        displayTimeZone: "Asia/Bangkok",
+        cursor: history.nextCursor!,
+      },
+      correlationId: "corr_p2_s3_audit_next",
+    });
+    expect(nextPage.items.length).toBeGreaterThan(0);
+    await expect(
+      consent.auditHistory({
+        accountId: memberAccount.projection.accountId,
+        householdId: household.householdId,
+        query: { limit: 20, displayTimeZone: "Asia/Bangkok" },
+        correlationId: "corr_p2_s3_audit_denied",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_RESOURCE_NOT_FOUND" });
+
+    const privacy = await consent.getPrivacy({
+      accountId: subjectAccount.projection.accountId,
+    });
+    const updatedPrivacy = await consent.updatePrivacy({
+      accountId: subjectAccount.projection.accountId,
+      request: {
+        profileVisibility: "household_only",
+        coordinationActivityVisibility: "household_only",
+        accessAlerts: false,
+        expectedVersion: privacy.version,
+        displayTimeZone: "Asia/Bangkok",
+      },
+      correlationId: "corr_p2_s3_privacy",
+    });
+    expect(updatedPrivacy).toMatchObject({
+      profileVisibility: "household_only",
+      coordinationActivityVisibility: "household_only",
+      accessAlerts: false,
+      version: 2,
+    });
+    await expect(
+      consent.updatePrivacy({
+        accountId: subjectAccount.projection.accountId,
+        request: {
+          profileVisibility: "private",
+          coordinationActivityVisibility: "hidden",
+          accessAlerts: true,
+          expectedVersion: privacy.version,
+          displayTimeZone: "Asia/Bangkok",
+        },
+        correlationId: "corr_p2_s3_privacy_stale",
+      }),
+    ).rejects.toMatchObject({ code: "PRIVACY_VERSION_CONFLICT" });
+    await expect(
+      consent.getPrivacy({ accountId: subjectAccount.projection.accountId }),
+    ).resolves.toEqual(updatedPrivacy);
+
+    const persistedEvidence = await pool!.query<{ serialized: string }>(
+      `SELECT event_json::text AS serialized FROM identity_consent_outbox`,
+    );
+    expect(persistedEvidence.rows).toHaveLength(3);
+    const serialized = persistedEvidence.rows.map((row) => row.serialized).join("\n");
+    expect(serialized).not.toContain("Recipient Alpha");
+    expect(serialized).not.toContain("Relationship Beta");
+    expect(serialized).not.toContain("p2-s3-revoke-0001");
+    expect(consentTelemetry.join("\n")).not.toContain("Recipient Alpha");
+    expect(consentTelemetry.join("\n")).not.toContain("Relationship Beta");
+    expect(consentTelemetry.join("\n")).not.toContain("recipient_context.basic_label");
+    expect(await identity.isReady()).toBe(true);
   });
 
   it("bounds decoys and resolves invitation and first-context races without disclosure", async () => {
@@ -660,6 +1011,16 @@ integration("P2-S1 identity lifecycle", () => {
     await expect(identity.getSession(authenticated.sessionToken)).rejects.toMatchObject({
       code: "SESSION_EXPIRED",
     });
+  });
+
+  it("requires the latest schema marker for readiness and reapplies migration safely", async () => {
+    await migrateIdentityDatabase(databaseUrl);
+    await migrateIdentityDatabase(databaseUrl);
+    await expect(identity.isReady()).resolves.toBe(true);
+    await pool!.query(`DELETE FROM identity_schema_state WHERE service = 'identity-consent'`);
+    await expect(identity.isReady()).resolves.toBe(false);
+    await migrateIdentityDatabase(databaseUrl);
+    await expect(identity.isReady()).resolves.toBe(true);
   });
 });
 

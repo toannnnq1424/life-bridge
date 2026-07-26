@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ApiErrorSchema,
+  AuditHistoryProjectionSchema,
+  AuditHistoryQuerySchema,
+  ConsentTransitionEventSchema,
   CreateHouseholdInvitationRequestSchema,
+  GrantConsentRequestSchema,
   HouseholdInvitationProjectionSchema,
+  NarrowConsentRequestSchema,
+  PrivacyPreferencesProjectionSchema,
+  RevokeConsentRequestSchema,
+  UpdatePrivacyPreferencesSchema,
   UpsertCareRecipientContextRequestSchema,
   CareTaskCompletedEventSchema,
   CompleteTaskRequestSchema,
@@ -172,5 +181,169 @@ describe("P2-S2-v1 household authorization contracts", () => {
         diagnosis: "not permitted",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("P2-S3-v1 consent, privacy, and audit contracts", () => {
+  const effectiveTime = {
+    mode: "immediate",
+    displayTimeZone: "Asia/Bangkok",
+  } as const;
+
+  it("freezes distinct versioned grant, narrow, and revoke commands", () => {
+    expect(
+      GrantConsentRequestSchema.parse({
+        action: "grant",
+        recipientRef: "member_reference",
+        purpose: "household_coordination",
+        scopes: ["recipient_context.basic_label", "recipient_context.relationship_label"],
+        effectiveTime,
+        expectedSubjectVersion: 1,
+      }),
+    ).toMatchObject({ action: "grant", expectedSubjectVersion: 1 });
+
+    expect(
+      NarrowConsentRequestSchema.parse({
+        action: "narrow",
+        scopes: ["recipient_context.basic_label"],
+        effectiveTime,
+        expectedSubjectVersion: 2,
+        expectedGrantVersion: 1,
+      }),
+    ).toMatchObject({ action: "narrow", expectedGrantVersion: 1 });
+
+    expect(
+      RevokeConsentRequestSchema.parse({
+        action: "revoke",
+        effectiveTime,
+        expectedSubjectVersion: 3,
+        expectedGrantVersion: 2,
+      }),
+    ).toMatchObject({ action: "revoke", expectedGrantVersion: 2 });
+
+    expect(
+      GrantConsentRequestSchema.safeParse({
+        action: "grant",
+        recipientRef: "member_reference",
+        purpose: "household_coordination",
+        scopes: [],
+        effectiveTime,
+        expectedSubjectVersion: 1,
+      }).success,
+    ).toBe(false);
+    expect(
+      NarrowConsentRequestSchema.safeParse({
+        action: "narrow",
+        scopes: ["recipient_context.basic_label", "recipient_context.basic_label"],
+        effectiveTime,
+        expectedSubjectVersion: 2,
+        expectedGrantVersion: 1,
+      }).success,
+    ).toBe(false);
+    expect(
+      RevokeConsentRequestSchema.safeParse({
+        action: "revoke",
+        effectiveTime: { mode: "immediate", displayTimeZone: "ICT" },
+        expectedSubjectVersion: 3,
+        expectedGrantVersion: 2,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("keeps transition events versioned and rejects sensitive payload copies", () => {
+    const event = {
+      eventId: "event_consent_1",
+      eventType: "identity.consent.revoked.v1",
+      eventVersion: 1,
+      producer: "identity-consent",
+      aggregateId: "subject_consent_1",
+      aggregateVersion: 4,
+      grantId: "grant_consent_1",
+      grantVersion: 3,
+      action: "revoke",
+      purpose: "household_coordination",
+      scopes: ["recipient_context.basic_label"],
+      effectiveAt: "2026-07-26T12:00:00.000Z",
+      occurredAt: "2026-07-26T12:00:00.000Z",
+      correlationId: "corr_consent_123",
+      causationId: "command_consent_1",
+    };
+    expect(ConsentTransitionEventSchema.safeParse(event).success).toBe(true);
+    expect(
+      ConsentTransitionEventSchema.safeParse({
+        ...event,
+        recipientLabel: "not permitted",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("freezes bounded audit history without total or hidden counts", () => {
+    expect(
+      AuditHistoryQuerySchema.parse({
+        limit: "25",
+        displayTimeZone: "Asia/Bangkok",
+      }),
+    ).toMatchObject({ limit: 25 });
+    expect(
+      AuditHistoryQuerySchema.safeParse({
+        limit: 26,
+        displayTimeZone: "Asia/Bangkok",
+      }).success,
+    ).toBe(false);
+    expect(
+      AuditHistoryProjectionSchema.safeParse({
+        items: [
+          {
+            eventRef: "audit_event_1",
+            category: "consent.revoked",
+            actorAlias: "your_account",
+            redaction: "protected",
+            occurredAt: "2026-07-26T12:00:00.000Z",
+            displayTimeZone: "Asia/Bangkok",
+            outcome: "confirmed",
+          },
+        ],
+        nextCursor: null,
+      }).success,
+    ).toBe(true);
+    expect(
+      AuditHistoryProjectionSchema.safeParse({
+        items: [],
+        nextCursor: null,
+        total: 0,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("freezes atomic privacy preferences and complete P2-S3 errors", () => {
+    expect(
+      UpdatePrivacyPreferencesSchema.parse({
+        profileVisibility: "private",
+        coordinationActivityVisibility: "hidden",
+        accessAlerts: true,
+        expectedVersion: 1,
+        displayTimeZone: "Asia/Bangkok",
+      }),
+    ).toMatchObject({ expectedVersion: 1 });
+    expect(
+      PrivacyPreferencesProjectionSchema.safeParse({
+        profileVisibility: "private",
+        coordinationActivityVisibility: "hidden",
+        accessAlerts: true,
+        version: 2,
+        confirmedAt: "2026-07-26T12:00:00.000Z",
+      }).success,
+    ).toBe(true);
+    expect(
+      ApiErrorSchema.safeParse({
+        error: {
+          code: "CONSENT_VERSION_CONFLICT",
+          messageKey: "consent.conflict",
+          retryable: false,
+          correlationId: "corr_consent_123",
+          recoveryAction: "reload_current",
+        },
+      }).success,
+    ).toBe(true);
   });
 });

@@ -420,6 +420,53 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   sources, pins or containers; extend the boundary through P5-S3 and execute
   the cumulative mixed-runtime proof in P6.
 
+## ADR-020 — Require explicit self-established consent authority
+
+- Status: Accepted for P2-S3; local validation passed, promotion pending
+- Date: 2026-07-26
+- Change ID: `CHG-2026-012`
+- Context: P2-S2 proves account authentication, household membership,
+  organizer capability and a minimum recipient context, but none of those
+  proves that an account may consent for the care recipient. P2-S3 must allow
+  useful grant/narrow/revoke behavior without silently converting household
+  administration into consent authority or adding an unverified legal proxy
+  model.
+- Decision: keep consent inside Identity & Consent and its owned PostgreSQL
+  database. Permit only the active member who originally created an eligible
+  recipient context to explicitly bind their own account as that context's
+  subject when no subject exists. The bound subject alone may grant, strictly
+  narrow, revoke and inspect that subject's redacted history. Organizer and
+  membership roles never imply this authority. Delegation, guardianship,
+  proxy proof and authority transfer are not implemented. Governed recipient
+  reads require either the subject or an active exact-scope grant evaluated at
+  the server UTC decision instant.
+- Alternatives considered: organizer-as-consenter; any member self-binding;
+  automatic creator backfill; delegated/proxy authority without evidence;
+  shared household consent; a new consent service/database; client-only
+  enforcement.
+- Consequences: existing P2-S2 contexts receive no automatic consent subject,
+  so no migration broadens access. A non-creator care recipient needs a future
+  verified authority/transfer path. Grant/narrow/revoke and their outbox,
+  audit and idempotency evidence commit atomically. Revocation denies new
+  governed reads at its effective boundary; redacted history remains under the
+  documented 90-day boundary. Errors are generic for inaccessible resources
+  and audit pages expose no totals.
+- Planned baseline: P2-S3 required an authorized care recipient/account owner
+  and versioned consent changes but left establishment and delegation
+  undefined.
+- Actual implementation/evidence: `P2-S3-v1` contracts, migration 003,
+  `ConsentService`, Gateway/native UI, the Frozen corrected handoff and
+  `docs/security/P2_S3_THREAT_MODEL.md` implement this narrow proof. No new
+  service, engine, cross-service SQL, credential or imported Stitch source is
+  present.
+- Validation and follow-up: the one local Level C invocation plus targeted
+  P2-S1 Level B recovery passed; exact-head hosted CI, merge commit, post-merge
+  `dev` CI and issue #8 closure remain required.
+  Manual assistive-technology evidence and independent visual inspection of
+  the private generated renders remain explicit limitations. Any delegation
+  or subject-transfer model requires a separate accepted policy, proof model,
+  threat review and migration.
+
 ## Decision-change template
 
 ```md

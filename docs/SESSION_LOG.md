@@ -1113,3 +1113,124 @@ it in a fresh task after this canonical closeout merges. Its first action is to
 freeze versioned consent grant/narrow/revoke and audit-history read contracts
 for `LB-028`–`LB-031`, explicitly separating care-recipient consent from
 organizer membership. DATA-S1, P3 and P5 remain separate and unstarted.
+
+## 2026-07-26 — P2-S3 consent, privacy, audit and settings candidate
+
+### Objective and planned versus actual
+
+The controller dispatched exactly P2-S3 from clean
+`dev@22157b10a9cdd479d7bb0a439a74fc18dccfaf67` on
+`phase/2-consent-privacy-audit`. Planned behavior was versioned
+grant/narrow/revoke, privacy/settings and redacted audit for LB-028–LB-031.
+Actual behavior stays within that slice and narrows an undefined authority
+edge: only the eligible recipient-context creator may explicitly self-bind as
+the subject. Organizer/member status never implies care-recipient consent.
+Delegation, authority transfer, export/deletion automation, enterprise policy,
+regulatory automation, P3, DATA, P5, deployment and release were not started.
+
+### Audits, research and design handoff
+
+Three independent bounded audits converged on organizer membership being
+insufficient authority and on an allow-before/revoke-deny-at-boundary governed
+read proof. The consent audit required minimum versioned events, no backfill,
+row locks, idempotency and redacted retention. The design audit required
+explicit confirmation, denial/conflict/offline truth, no queue, keyboard/focus/
+reflow/contrast/reduced-motion and VI/EN privacy-safe copy. The test/operations
+audit required PostgreSQL races, exact-head CI, safe telemetry and cumulative
+browser/security/accessibility proof.
+
+The bounded official-source micro-cycle is recorded in
+`docs/research/RESEARCH_LOG.md` and the P2-S3 threat model. Four synthetic
+Stitch references were created exactly once in the existing project. No remote
+ID, locator, credential, URL or generated source was persisted. The Frozen
+redacted handoff rejects placeholder timestamps, non-IANA `ICT`, offline
+queueing, audit totals and unconfirmed destructive actions. Independent
+private-render inspection remained unavailable, so KI-019 prevents any claim
+that generated visuals alone were approved; native automated evidence is the
+acceptance path.
+
+### Contracts, implementation and ownership
+
+`P2-S3-v1` freezes subject establishment, grant, strict-subset narrow, revoke,
+governed exact-scope read, atomic privacy preference and read-only audit
+contracts. Commands use server UTC instants, validated IANA display zones,
+optimistic versions, keyed idempotency digests, row locks and one transaction.
+Revoke denies governed access at its effective boundary. Audit history is
+subject-scoped, redacted, 90-day bounded, keyset-paginated, cursor-sealed and
+has no total.
+
+Identity & Consent remains sole service/data owner. Additive migration 003
+adds subject, consent, transition, idempotency, outbox, audit, privacy and
+schema-marker state with no consent backfill. Gateway preserves cookie/CSRF/
+origin boundaries. Native VI/EN LB-028–LB-031 routes block offline mutations
+without queuing, review every mutation, reset failed privacy drafts to
+confirmed state and never claim deferred export/deletion succeeded. Structured
+logs/metrics/traces expose only allow-listed operation/result/correlation/
+duration fields.
+
+### Exactly-once Level C and targeted recovery
+
+The single `pnpm.cmd run validate:p2-s3` invocation passed:
+
+- cumulative P1 static/unit/contracts/PostgreSQL/build/runtime and browser 4/4;
+- affected format/lint/type, aggregate unit 54/54 and contracts 12/12;
+- Identity-owned PostgreSQL 9/9 plus transactional migration rollback,
+  no-backfill, reapply and latest-schema readiness;
+- production build for all affected boundaries;
+- built web → Gateway → Identity → PostgreSQL real P2-S3 path plus mocked
+  LB-028–LB-031, 8/8 total;
+- P2-S2 mocked browser 6/6; its household/invitation/context real boundary is
+  also exercised by the P2-S3 runtime path;
+- docs/config/secrets, dependency audit and exact Compose/process cleanup.
+
+The command then stopped in the final P2-S1 browser group because the truthful
+preference-success correction made the same safe account message visible in a
+live status and preview, so an old broad text locator matched twice. Targeted
+Level B first narrowed the locator, then exposed the actual stale state: the
+pre-factor generic “request accepted” announcement remained through
+onboarding. After two failed test-only expectations, investigation stopped
+blind iteration and traced that state transition. The product now clears the
+stale status when sign-in factor authorization completes; a failed preference
+save shows its error without stale or false account-ready success.
+
+Affected format/lint, a targeted production web build and all P2-S1 browser
+checks 5/5 passed. No second Level C command was issued and already-green
+inputs were not rerun. The runner now performs the P2-S3 sensitive runtime-log
+scan immediately after that browser group and tracks nested P1 log files for
+cleanup, so exact-head hosted CI must execute this coherent ordering from
+scratch before merge. Direct consent telemetry assertions already passed
+without recipient labels, relationships, scopes or idempotency material.
+
+Generated P1/Playwright logs from the interrupted ordering were removed only
+after their exact workspace paths were verified. The user-owned
+`docs/orchestration/reports/STITCH_MCP_CANARY.md` remains untouched and must
+not be staged. Exact-head CI, merge commit, post-merge `dev` CI and issue #8
+closeout remain pending and are not claimed early.
+
+### Hosted portability deviation and recovery
+
+Planned was one coherent feature commit whose exact-head hosted run would
+execute the already-proven validation script unchanged. Actual push run
+`30208198696` passed the static/security job and every P2-S3 product/browser
+check through 8/8, then the runtime privacy scan failed because PowerShell on
+the Linux runner returned `$null` for an empty log while Windows returned an
+empty string. The reason is a cross-platform shell semantic that the local
+Windows-only campaign could not expose. Impact is validation tooling only:
+contracts, migrations, production behavior and privacy rules are unchanged,
+and no merge occurred. The scanner now normalizes null raw content to an empty
+string before matching, preserving fail-closed prohibited-value detection for
+non-empty logs. Targeted parser/privacy-scan validation must pass, followed by
+a new exact-head push and PR run. Because force-push and history rewriting are
+prohibited, this hosted-only recovery requires a second small conventional
+commit; the PR must not merge until that replacement head and post-merge
+`dev` are green.
+
+### Exact next orientation
+
+Only after every P2-S3 acceptance/promotion gate passes, P3-S1 daily timeline
+and handoff is exact next. Its first action is to freeze an authorized,
+time-zone-explicit timeline read projection and a versioned handoff command
+against the accepted P2 governed-read boundary. Manual NVDA/Narrator,
+physical-device/touch, text-spacing and 200%/400% assistive-technology evidence
+remains KI-016; private Stitch render review remains KI-019. No later slice
+begins here.

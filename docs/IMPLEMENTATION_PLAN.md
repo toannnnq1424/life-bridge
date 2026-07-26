@@ -10,8 +10,11 @@
 - Most recently integrated slice: `P2-S2 — Household, invitation, and
 care-recipient context`; validated and merged at
   `dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`
-- Next eligible product slice: `P2-S3 — Consent, privacy, audit, and settings`,
-  only in a fresh controller-dispatched task after this canonical closeout
+- Active product slice: `P2-S3 — Consent, privacy, audit, and settings`;
+  locally accepted candidate on `phase/2-consent-privacy-audit`, with hosted
+  promotion gates pending
+- Next eligible product slice after P2-S3 acceptance: `P3-S1 — Daily timeline
+and handoff`; it is orientation only and does not start here
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -433,13 +436,35 @@ task-owned cleanup. Exact-head hosted CI, merge-commit promotion and post-merge
 `dev` CI passed at fix head `af6a75f4fcf54a70b2185a903f4bcb330e837b31`
 in runs `30202003327` and `30202004747`. PR #47 merged as
 `dev@82a8c833ec15e01dacecbcde7285d5a63a307bbd`; post-merge run
-`30202144955` passed and issue #7 closed completed. P2-S3 remains unstarted.
+`30202144955` passed and issue #7 closed completed. That accepted boundary is
+the base for the active P2-S3 candidate.
 
 ### `P2-S3 — Consent, privacy, audit, and settings`
 
 Outcome: an authorized care recipient/account owner can review, grant/narrow/revoke sharing, adjust privacy/settings, and inspect redacted access history.
 
 Screens: `LB-028`–`LB-031`.
+
+Actual contract:
+
+- only the account that explicitly binds itself to an eligible
+  care-recipient context may establish consent authority in this slice;
+  organizer or household membership alone never grants it;
+- grant, strict-subset narrow and revoke commands are versioned, idempotent,
+  row-locked and transactional; server UTC instants and validated IANA zones
+  replace generated placeholders and the non-IANA `ICT` label;
+- governed reads require an active exact-scope grant at the decision instant;
+  revocation denies at its committed effective boundary while a minimum
+  redacted transition/audit record is retained;
+- audit history is read-only, subject-scoped, 90-day bounded, keyset-paginated
+  and omits totals; sealed cursors cannot be changed or reused across viewers
+  or filters;
+- account privacy preferences save atomically. Export, deletion, delegated
+  authority and regulatory automation are truthful deferred non-actions.
+
+Implementation remains inside the existing Identity & Consent service and its
+owned PostgreSQL database. No service, engine, cross-service SQL, shared-table
+write, broker or persistence credential was added.
 
 Acceptance:
 
@@ -452,6 +477,18 @@ Acceptance:
 Dependencies: `P2-S2`; versioned consent/audit events.
 
 Deferred: regulatory export automation and enterprise policy packs.
+
+Planned versus actual: the baseline allowed a care recipient or account owner
+but did not define how an account becomes the care recipient. The smallest
+proof available from P2-S2 is creator-bound explicit self-establishment; the
+candidate therefore rejects organizer-derived and delegated authority. This
+narrows rather than broadens access and leaves a future verified delegation
+model to its own accepted slice. Generated Stitch output was usable only as
+untrusted direction: the Frozen redacted handoff mandates native UTC/IANA,
+offline/no-queue, redaction/no-total, confirmation and accessibility
+corrections. Visual inspection of private generated renders could not be
+independently completed; automated native evidence and KI-019 retain that
+limitation.
 
 ## P3 — Care planning
 
@@ -950,6 +987,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | `CHG-2026-009` | Integrated; hosted validation passed | Exclude unused vulnerable Sharp and narrowly patch Next's vulnerable PostCSS edge      |
 | `CHG-2026-010` | Accepted; implementation in progress | First-party P2 account/session boundary; account scope does not grant household access |
 | `CHG-2026-011` | Accepted; implementation deferred    | Select Spring Boot for greenfield Community at P5; preserve existing Node boundaries   |
+| `CHG-2026-012` | Accepted; local validation passed    | Consent authority is explicit self-establishment, never organizer membership           |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -1110,6 +1148,66 @@ No row means simultaneous implementation. Design generation/review may prepare a
 - Related ADR/integration/session entries: ADR-019, `INT-2026-013`, issue #15,
   and the P2-S1 governance amendment session entry.
 
+## CHG-2026-012 — Freeze P2-S3 consent authority and governed-read boundaries
+
+- State: Accepted; recovered local Level C passed, hosted promotion pending
+- Raised in phase/slice: `P2-S3`
+- Planned baseline: P2-S3 required versioned consent changes and an authorized
+  care recipient/account owner, but P2-S2 organizer/member state did not prove
+  who could speak for the care recipient.
+- Proposed/actual implementation: only the creator of an eligible recipient
+  context may explicitly bind their own account as its subject. That subject
+  alone may grant, narrow, revoke and read audit history in P2-S3. Organizer
+  and membership roles never imply consent authority. A governed context read
+  requires the subject or a current exact-scope grant at the server decision
+  instant.
+- Reason/evidence: least privilege and object-level authorization require an
+  affirmative authority proof; treating organizer membership as consent would
+  silently broaden P2-S2. Creator-bound self-establishment is the narrowest
+  repository-supported proof and is denied when another subject already
+  exists.
+- Impact:
+  - Product/UI: LB-028 reviews recipient, pseudonymous recipient, exact scope,
+    action and live UTC/IANA time before mutation; LB-029 saves one atomic
+    privacy preference group; LB-030 is redacted/read-only/no-total; LB-031 is
+    a settings hub.
+  - API/events: `P2-S3-v1` grant/narrow/revoke, governed-read, audit-history and
+    privacy contracts use optimistic versions and digest-bound idempotency.
+  - Data/migration: additive Identity-owned migration 003 adds subject,
+    consent, transition, idempotency, outbox, audit, privacy and schema-marker
+    state; it does not backfill consent authority.
+  - Privacy/security: revoke denies at its effective boundary; 90-day redacted
+    history and sealed bounded cursors preserve necessary evidence without
+    protected payloads or inferential totals.
+  - Tests/operations: real PostgreSQL migration/reapply/race/idempotency/
+    boundary tests, built and mocked browser paths, axe/keyboard/reflow/offline,
+    privacy-safe telemetry, cumulative regression and exact cleanup are gates.
+  - Phase order/schedule: unchanged. P3-S1 is next only after acceptance;
+    DATA-S1, P5, deployment and release remain separate.
+- Validation: the single local `pnpm.cmd run validate:p2-s3` invocation passed
+  every P1/P2-S3 gate and stopped only at a deterministic P2-S1 locator
+  ambiguity after the truthful preference-status correction. Targeted Level B
+  then exposed and fixed the underlying stale pre-factor announcement; affected
+  format/lint, production web build and P2-S1 browser 5/5 passed. Already-green
+  inputs were not rerun. Exact-head hosted CI must execute the coherent script
+  from scratch, including the now-earlier runtime log scan, before merge.
+- Hosted planned versus actual: planned was one feature commit and an unchanged
+  exact-head run. Actual push run `30208198696` passed static/security and
+  P2-S3 browser 8/8, then exposed Linux PowerShell returning `$null` for an
+  empty raw log. The reason is runner-specific shell behavior unavailable in
+  the supported local Windows campaign. Impact is validation tooling only; no
+  product contract/data/runtime behavior changed and no merge occurred. The
+  scan now normalizes null raw content to an empty string, requires targeted
+  parser/privacy validation and a replacement exact-head run. A second small
+  conventional commit is necessary because force-push/history rewriting is
+  prohibited.
+- Follow-up owner and exact phase/slice: P3-S1 freezes authorized timeline
+  projection, time-zone ordering and handoff concurrency against the accepted
+  P2 consent boundary; it must not invent delegated consent authority.
+- Related ADR/integration/session entries: ADR-020,
+  `docs/security/P2_S3_THREAT_MODEL.md`, `INT-2026-016`, KI-019 and the P2-S3
+  session entry.
+
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
 until this phase closes. It contains no raw dataset or product fixture. All
@@ -1135,7 +1233,13 @@ P2-S2 promotion is complete: fix head
 deployment and KI-016 retains manual assistive-technology evidence before
 pilot/release.
 
-The exact next action, only in a fresh controller-dispatched P2-S3 task, is to
-freeze versioned consent grant/narrow/revoke and audit-history read contracts
-for `LB-028`–`LB-031`, explicitly separating care-recipient consent from
-organizer membership. DATA-S1, P3 and P5 remain separate and unstarted.
+P2-S3 has frozen and implemented those contracts on its short-lived phase
+branch. The exactly-once local campaign plus targeted Level B recovery is
+green. Its remaining actions are one coherent commit, exact-head hosted CI,
+merge-commit promotion, post-merge `dev` CI and issue #8 closeout.
+
+Only after those gates pass, the exact next product slice is `P3-S1 — Daily
+timeline and handoff`. Its first action is to freeze the authorized,
+time-zone-explicit timeline projection and versioned handoff command against
+the accepted P2 consent boundary. DATA-S1, P5, deployment and release remain
+separate and unstarted.

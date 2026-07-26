@@ -123,9 +123,13 @@ export function buildGatewayServer(
 ) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
   void app.register(cookie);
+  app.addHook("onRequest", async (_request, reply) => {
+    reply.header("cache-control", "no-store");
+    reply.header("pragma", "no-cache");
+  });
 
   app.get("/health/live", async () => ({ status: "live" }));
-  app.get("/version", async () => ({ service: "gateway", contract: "P2-S1-backend-v1" }));
+  app.get("/version", async () => ({ service: "gateway", contract: "P2-S3-v1" }));
   app.get("/health/ready", async (_request, reply) => {
     try {
       const care = await fetcher(`${config.careUrl}/health/ready`, {
@@ -344,6 +348,24 @@ export function buildGatewayServer(
     });
   });
 
+  app.get("/api/v1/account/privacy", async (request, reply) =>
+    forwardIdentity(request, reply, "/internal/v1/account/privacy", {
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+    }),
+  );
+
+  app.patch<{ Body: unknown }>("/api/v1/account/privacy", async (request, reply) => {
+    if (!validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    return forwardIdentity(request, reply, "/internal/v1/account/privacy", {
+      method: "PATCH",
+      body: request.body,
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+    });
+  });
+
   app.post<{ Body: unknown }>("/api/v1/account/onboarding/complete", async (request, reply) => {
     if (!validBrowserMutation(request.headers)) {
       return rejectedBrowserMutation(reply, request.headers);
@@ -503,6 +525,112 @@ export function buildGatewayServer(
       );
     },
   );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/consent/subject",
+    async (request, reply) => {
+      if (!validBrowserMutation(request.headers)) {
+        return rejectedBrowserMutation(reply, request.headers);
+      }
+      return forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/consent/subject`,
+        {
+          method: "POST",
+          body: request.body,
+          ...sessionOption(request.cookies[config.sessionCookieName]),
+          csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+        },
+      );
+    },
+  );
+
+  app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/consent",
+    async (request, reply) =>
+      forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/consent`,
+        { ...sessionOption(request.cookies[config.sessionCookieName]) },
+      ),
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/consent/grants",
+    async (request, reply) => {
+      if (!validBrowserMutation(request.headers)) {
+        return rejectedBrowserMutation(reply, request.headers);
+      }
+      return forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/consent/grants`,
+        {
+          method: "POST",
+          body: request.body,
+          ...sessionOption(request.cookies[config.sessionCookieName]),
+          csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+          idempotencyKey: requiredIdempotencyKey(request.headers["idempotency-key"]),
+        },
+      );
+    },
+  );
+
+  for (const action of ["narrow", "revoke"] as const) {
+    app.post<{
+      Params: { householdId: string; grantId: string };
+      Body: unknown;
+    }>(
+      `/api/v1/households/:householdId/consent/grants/:grantId/${action}`,
+      async (request, reply) => {
+        if (!validBrowserMutation(request.headers)) {
+          return rejectedBrowserMutation(reply, request.headers);
+        }
+        return forwardIdentity(
+          request,
+          reply,
+          `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/consent/grants/${encodeURIComponent(request.params.grantId)}/${action}`,
+          {
+            method: "POST",
+            body: request.body,
+            ...sessionOption(request.cookies[config.sessionCookieName]),
+            csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+            idempotencyKey: requiredIdempotencyKey(request.headers["idempotency-key"]),
+          },
+        );
+      },
+    );
+  }
+
+  app.get<{ Params: { householdId: string; scope: string } }>(
+    "/api/v1/households/:householdId/recipient-context/scopes/:scope",
+    async (request, reply) =>
+      forwardIdentity(
+        request,
+        reply,
+        `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/recipient-context/scopes/${encodeURIComponent(request.params.scope)}`,
+        { ...sessionOption(request.cookies[config.sessionCookieName]) },
+      ),
+  );
+
+  app.get<{
+    Params: { householdId: string };
+    Querystring: Record<string, string | undefined>;
+  }>("/api/v1/households/:householdId/audit", async (request, reply) => {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(request.query)) {
+      if (value !== undefined) query.set(key, value);
+    }
+    const suffix = query.size > 0 ? `?${query.toString()}` : "";
+    return forwardIdentity(
+      request,
+      reply,
+      `/internal/v1/households/${encodeURIComponent(request.params.householdId)}/audit${suffix}`,
+      { ...sessionOption(request.cookies[config.sessionCookieName]) },
+    );
+  });
 
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);

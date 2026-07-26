@@ -82,9 +82,9 @@ jobs:
         run: pnpm.cmd run security:deps
 
   postgres-browser:
-    name: PostgreSQL integration and Chromium acceptance
+    name: P2-S3 PostgreSQL integration and Chromium acceptance
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     services:
       postgres:
         image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
@@ -150,9 +150,9 @@ jobs:
           "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
           "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
 
-      - name: Run the P2-S2 Level C campaign
+      - name: Run the P2-S3 Level C campaign
         shell: pwsh
-        run: ./scripts/validate-p2-s2.ps1 -UseExistingDatabase -SkipInstall
+        run: ./scripts/validate-p2-s3.ps1 -UseExistingDatabase -SkipInstall
 
   integrated-gate:
     name: P1 plus P2 full required gate

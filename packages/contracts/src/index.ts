@@ -8,6 +8,9 @@ export const OpaqueIdSchema = z.string().regex(opaqueIdPattern);
 export const CorrelationIdSchema = z.string().regex(correlationIdPattern);
 export const IdempotencyKeySchema = z.string().regex(idempotencyPattern);
 export const LocaleSchema = z.enum(["vi-VN", "en"]);
+export const IanaTimeZoneSchema = z.string().min(1).max(80).refine(isIanaTimeZone, {
+  message: "invalid_time_zone",
+});
 export const LoginNameSchema = z
   .string()
   .trim()
@@ -212,6 +215,237 @@ export type UpsertCareRecipientContextRequest = z.infer<
 export type HouseholdProjection = z.infer<typeof HouseholdProjectionSchema>;
 export type HouseholdInvitationProjection = z.infer<typeof HouseholdInvitationProjectionSchema>;
 export type CareRecipientContextProjection = z.infer<typeof CareRecipientContextProjectionSchema>;
+
+export const ConsentScopeSchema = z.enum([
+  "recipient_context.basic_label",
+  "recipient_context.relationship_label",
+]);
+export const ConsentPurposeSchema = z.literal("household_coordination");
+export const ConsentActionSchema = z.enum(["grant", "narrow", "revoke"]);
+export const ConsentStateSchema = z.enum(["active", "revoked"]);
+
+export const ImmediateEffectiveTimeSchema = z
+  .object({
+    mode: z.literal("immediate"),
+    displayTimeZone: IanaTimeZoneSchema,
+  })
+  .strict();
+
+export const EstablishConsentSubjectRequestSchema = z
+  .object({
+    recipientContextId: OpaqueIdSchema,
+    displayTimeZone: IanaTimeZoneSchema,
+  })
+  .strict();
+
+export const ConsentSubjectProjectionSchema = z
+  .object({
+    subjectId: OpaqueIdSchema,
+    householdId: OpaqueIdSchema,
+    recipientContextId: OpaqueIdSchema,
+    authority: z.literal("self"),
+    version: z.number().int().positive(),
+    establishedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const ConsentRecipientProjectionSchema = z
+  .object({
+    recipientRef: OpaqueIdSchema,
+    role: z.enum(["organizer", "caregiver", "member"]),
+    displayKey: z.literal("consent.recipient.household_member"),
+  })
+  .strict();
+
+const ConsentScopeSetSchema = z
+  .array(ConsentScopeSchema)
+  .min(1)
+  .max(2)
+  .superRefine((value, context) => {
+    if (new Set(value).size !== value.length) {
+      context.addIssue({ code: "custom", message: "duplicate_consent_scope" });
+    }
+  });
+
+export const GrantConsentRequestSchema = z
+  .object({
+    action: z.literal("grant"),
+    recipientRef: OpaqueIdSchema,
+    purpose: ConsentPurposeSchema,
+    scopes: ConsentScopeSetSchema,
+    effectiveTime: ImmediateEffectiveTimeSchema,
+    expectedSubjectVersion: z.number().int().positive(),
+  })
+  .strict();
+
+export const NarrowConsentRequestSchema = z
+  .object({
+    action: z.literal("narrow"),
+    scopes: ConsentScopeSetSchema,
+    effectiveTime: ImmediateEffectiveTimeSchema,
+    expectedSubjectVersion: z.number().int().positive(),
+    expectedGrantVersion: z.number().int().positive(),
+  })
+  .strict();
+
+export const RevokeConsentRequestSchema = z
+  .object({
+    action: z.literal("revoke"),
+    effectiveTime: ImmediateEffectiveTimeSchema,
+    expectedSubjectVersion: z.number().int().positive(),
+    expectedGrantVersion: z.number().int().positive(),
+  })
+  .strict();
+
+export const ConsentGrantProjectionSchema = z
+  .object({
+    grantId: OpaqueIdSchema,
+    subjectId: OpaqueIdSchema,
+    recipientRef: OpaqueIdSchema,
+    recipientDisplayKey: z.literal("consent.recipient.household_member"),
+    purpose: ConsentPurposeSchema,
+    scopes: ConsentScopeSetSchema,
+    state: ConsentStateSchema,
+    effectiveAt: z.iso.datetime({ offset: true }),
+    revokedEffectiveAt: z.iso.datetime({ offset: true }).nullable(),
+    displayTimeZone: IanaTimeZoneSchema,
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const ConsentOverviewProjectionSchema = z
+  .object({
+    authority: z.enum(["unbound", "self"]),
+    subject: ConsentSubjectProjectionSchema.nullable(),
+    eligibleRecipients: z.array(ConsentRecipientProjectionSchema).max(25),
+    grants: z.array(ConsentGrantProjectionSchema).max(25),
+    serverTime: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const ConsentTransitionEventSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventType: z.enum([
+      "identity.consent.granted.v1",
+      "identity.consent.narrowed.v1",
+      "identity.consent.revoked.v1",
+    ]),
+    eventVersion: z.literal(1),
+    producer: z.literal("identity-consent"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    grantId: OpaqueIdSchema,
+    grantVersion: z.number().int().positive(),
+    action: ConsentActionSchema,
+    purpose: ConsentPurposeSchema,
+    scopes: z.array(ConsentScopeSchema).max(2),
+    effectiveAt: z.iso.datetime({ offset: true }),
+    occurredAt: z.iso.datetime({ offset: true }),
+    correlationId: CorrelationIdSchema,
+    causationId: OpaqueIdSchema,
+  })
+  .strict();
+
+export const AuditCategorySchema = z.enum([
+  "consent.subject_established",
+  "consent.granted",
+  "consent.narrowed",
+  "consent.revoked",
+  "recipient_context.access_allowed",
+  "recipient_context.access_denied",
+  "privacy.confirmed",
+]);
+export const AuditOutcomeSchema = z.enum(["confirmed", "allowed", "denied"]);
+export const AuditActorAliasSchema = z.enum(["your_account", "household_member", "protected"]);
+export const AuditRedactionSchema = z.literal("protected");
+
+export const AuditHistoryQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(25).default(20),
+    cursor: z.string().min(20).max(1024).optional(),
+    category: AuditCategorySchema.optional(),
+    from: z.iso.datetime({ offset: true }).optional(),
+    to: z.iso.datetime({ offset: true }).optional(),
+    displayTimeZone: IanaTimeZoneSchema,
+  })
+  .strict()
+  .refine((value) => !value.from || !value.to || value.from <= value.to, {
+    message: "invalid_audit_range",
+    path: ["to"],
+  });
+
+export const AuditHistoryItemSchema = z
+  .object({
+    eventRef: OpaqueIdSchema,
+    category: AuditCategorySchema,
+    actorAlias: AuditActorAliasSchema,
+    redaction: AuditRedactionSchema,
+    occurredAt: z.iso.datetime({ offset: true }),
+    displayTimeZone: IanaTimeZoneSchema,
+    outcome: AuditOutcomeSchema,
+  })
+  .strict();
+
+export const AuditHistoryProjectionSchema = z
+  .object({
+    items: z.array(AuditHistoryItemSchema).max(25),
+    nextCursor: z.string().min(20).max(1024).nullable(),
+  })
+  .strict();
+
+export const ProfileVisibilitySchema = z.enum(["private", "household_only"]);
+export const CoordinationActivityVisibilitySchema = z.enum(["hidden", "household_only"]);
+
+export const PrivacyPreferencesProjectionSchema = z
+  .object({
+    profileVisibility: ProfileVisibilitySchema,
+    coordinationActivityVisibility: CoordinationActivityVisibilitySchema,
+    accessAlerts: z.boolean(),
+    version: z.number().int().positive(),
+    confirmedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const UpdatePrivacyPreferencesSchema = z
+  .object({
+    profileVisibility: ProfileVisibilitySchema,
+    coordinationActivityVisibility: CoordinationActivityVisibilitySchema,
+    accessAlerts: z.boolean(),
+    expectedVersion: z.number().int().positive(),
+    displayTimeZone: IanaTimeZoneSchema,
+  })
+  .strict();
+
+export const GovernedRecipientContextProjectionSchema = z
+  .object({
+    recipientContextId: OpaqueIdSchema,
+    householdId: OpaqueIdSchema,
+    scope: ConsentScopeSchema,
+    value: z.string().min(1).max(80),
+    grantId: OpaqueIdSchema.nullable(),
+    authorizedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export type ConsentScope = z.infer<typeof ConsentScopeSchema>;
+export type EstablishConsentSubjectRequest = z.infer<typeof EstablishConsentSubjectRequestSchema>;
+export type ConsentSubjectProjection = z.infer<typeof ConsentSubjectProjectionSchema>;
+export type ConsentRecipientProjection = z.infer<typeof ConsentRecipientProjectionSchema>;
+export type GrantConsentRequest = z.infer<typeof GrantConsentRequestSchema>;
+export type NarrowConsentRequest = z.infer<typeof NarrowConsentRequestSchema>;
+export type RevokeConsentRequest = z.infer<typeof RevokeConsentRequestSchema>;
+export type ConsentGrantProjection = z.infer<typeof ConsentGrantProjectionSchema>;
+export type ConsentOverviewProjection = z.infer<typeof ConsentOverviewProjectionSchema>;
+export type ConsentTransitionEvent = z.infer<typeof ConsentTransitionEventSchema>;
+export type AuditHistoryQuery = z.infer<typeof AuditHistoryQuerySchema>;
+export type AuditHistoryProjection = z.infer<typeof AuditHistoryProjectionSchema>;
+export type PrivacyPreferencesProjection = z.infer<typeof PrivacyPreferencesProjectionSchema>;
+export type UpdatePrivacyPreferences = z.infer<typeof UpdatePrivacyPreferencesSchema>;
+export type GovernedRecipientContextProjection = z.infer<
+  typeof GovernedRecipientContextProjectionSchema
+>;
+
 export const PrioritySchema = z.enum(["normal", "important", "urgent"]);
 export const TaskStatusSchema = z.enum(["open", "completed"]);
 export const NotificationDeliverySchema = z.enum([
@@ -231,10 +465,6 @@ export function isIanaTimeZone(value: string): boolean {
     return false;
   }
 }
-
-export const IanaTimeZoneSchema = z.string().min(1).max(80).refine(isIanaTimeZone, {
-  message: "invalid_time_zone",
-});
 
 export const MemberSchema = z
   .object({
@@ -388,6 +618,21 @@ export const ApiErrorCodeSchema = z.enum([
   "ORIGIN_REJECTED",
   "PREFERENCES_VERSION_CONFLICT",
   "IDENTITY_SERVICE_UNAVAILABLE",
+  "HOUSEHOLD_NOT_FOUND",
+  "HOUSEHOLD_CONFLICT",
+  "IDEMPOTENCY_CONFLICT",
+  "INVITATION_ACCEPTED",
+  "INVITATION_DECLINED",
+  "INVITATION_EXPIRED",
+  "INVITATION_REVOKED",
+  "INVITATION_RATE_LIMITED",
+  "CONSENT_VALIDATION_FAILED",
+  "CONSENT_AUTHORITY_REQUIRED",
+  "CONSENT_RESOURCE_NOT_FOUND",
+  "CONSENT_VERSION_CONFLICT",
+  "CONSENT_SCOPE_BROADENING_REJECTED",
+  "AUDIT_CURSOR_INVALID",
+  "PRIVACY_VERSION_CONFLICT",
 ]);
 
 export const ApiErrorSchema = z
