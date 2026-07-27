@@ -49,6 +49,7 @@ export function ConsentPrivacyApp({ view, householdId }: { view: View; household
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [announcementSequence, setAnnouncementSequence] = useState(0);
   const statusRef = useRef<HTMLDivElement>(null);
   const settingsHref = householdId
     ? `/settings?householdId=${encodeURIComponent(householdId)}`
@@ -62,8 +63,14 @@ export function ConsentPrivacyApp({ view, householdId }: { view: View; household
       setError("");
       setMessage(value);
     }
-    requestAnimationFrame(() => statusRef.current?.focus());
+    setAnnouncementSequence((current) => current + 1);
   }, []);
+
+  useEffect(() => {
+    if (announcementSequence > 0) {
+      statusRef.current?.focus();
+    }
+  }, [announcementSequence]);
 
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
