@@ -590,3 +590,41 @@ commit. Its context is an enumerated reason, never free-form text. A 5xx after
 submission remains uncertain until current task state is re-read; offline mode
 is read-only and never queues mutation. The full control is
 `docs/security/P3_S1_THREAT_MODEL.md`.
+
+## P3-S2 governed calendar and appointment coordination
+
+P3-S2 extends the accepted boundaries without adding a service, engine,
+cross-service SQL path, credential or shared datastore owner:
+
+```text
+native LB-015/LB-016
+  -> Gateway session/CSRF/origin boundary
+    -> Identity fresh action/request-digest decision
+      -> Care appointment command or calendar projection
+        -> Care-owned PostgreSQL transaction
+          -> structured reminder-intent outbox
+            -> Notification-owned inbox/reminder intent
+```
+
+Identity & Consent owns the current subject, grant, privacy and action-specific
+decision. The existing P2 `household_coordination` basic-label grant maps to
+P3-S2 only through `P3-S2-v1`; organizer/member/caregiver role remains
+insufficient. Care verifies the decision again and owns structured appointment
+kind/logistics, finite occurrence materialization, conflict serialization,
+optimistic version, cancellation history, audit, idempotency and outbox.
+Gateway normalizes and composes only. Notification receives and owns one
+minimum structured schedule/cancel intent and makes no delivery claim.
+
+Server-confirmed UTC, source local time, numeric offset and validated IANA zone
+are separate contract facts. DST gaps fail; overlaps use an explicit
+earlier/later policy. Weekly recurrence is finite and materialized, so
+confirmed occurrence UTC instants do not silently move when runtime time-zone
+data changes. V1 change/cancel scope is one occurrence only; series surgery,
+arbitrary RRULEs and external calendar synchronization remain non-goals.
+
+The calendar and agenda use one lossless Care projection ordered by UTC start
+and opaque appointment ID. Unavailable dependencies cannot become an empty
+calendar, conflicting writes cannot overwrite silently, cancellation cannot
+delete history, and a mutation transport failure cannot become optimistic
+success or blind retry. The full control is
+`docs/security/P3_S2_THREAT_MODEL.md`.

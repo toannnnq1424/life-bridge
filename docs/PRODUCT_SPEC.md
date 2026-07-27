@@ -277,6 +277,37 @@ must remain truthful and non-inferential in VI/EN. Offline handoff is blocked
 without queue or reconnect submission. No free-form handoff content, medical
 claim, diagnosis or treatment advice is introduced.
 
+### P3-S2 calendar and appointment outcome
+
+An authorized household participant can create, change, and cancel a
+structured appointment occurrence and see only the durable confirmed result
+in `LB-015` plus the equivalent keyboard agenda and `LB-016` detail/recovery
+flow. Every operation consumes a fresh permission-specific P2 governed
+decision; household role never substitutes for the accepted
+`household_coordination` consent and privacy boundary.
+
+Every appointment exposes canonical UTC start/end, source local date/time,
+numeric offset, validated IANA zone, duration, finite recurrence boundary,
+occurrence number/count/final local date, occurrence-only mutation scope,
+structured kind/logistics, optimistic version, last change, status and
+reminder-intent receipt. A spring-forward gap is invalid; a fall-back overlap
+requires explicit earlier/later selection and matching first-occurrence
+offset. Weekly recurrence preserves wall time and materializes at most 12
+concrete occurrences. Cancelled occurrences remain visible.
+
+Conflict checks are serialized for one recipient context and use half-open
+intervals with deterministic UTC/opaque-ID ordering. Stale writes preserve
+unsent choices and require a fresh review; unavailable or uncertain mutations
+never imply success or retry blindly. Offline changes are blocked without a
+queue. Notification receives only a structured reminder schedule/cancel
+intent and its durable receipt never claims delivery.
+
+The visual calendar is an enhancement. The semantic agenda is a complete
+keyboard path containing every critical appointment fact. VI/EN, visible
+focus, native controls, 320 CSS px/400% reflow, forced colours, reduced
+motion, denied, empty, unavailable, conflict, stale, cancelled, offline and
+recovery states remain acceptance requirements.
+
 ## 9. Explicit non-goals for the initial MVP
 
 - clinical diagnosis, treatment, dosage advice, or health-risk scoring;

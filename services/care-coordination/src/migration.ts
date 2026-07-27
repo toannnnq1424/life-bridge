@@ -6,6 +6,7 @@ export async function migrateCareDatabase(connectionString: string): Promise<voi
   const migrations = await Promise.all([
     readFile(new URL("../migrations/001_initial.sql", import.meta.url), "utf8"),
     readFile(new URL("../migrations/002_daily_timeline_handoff.sql", import.meta.url), "utf8"),
+    readFile(new URL("../migrations/003_calendar_appointments.sql", import.meta.url), "utf8"),
   ]);
   const pool = new Pool({ connectionString, max: 1 });
   try {

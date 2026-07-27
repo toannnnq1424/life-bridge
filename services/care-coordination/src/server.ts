@@ -1,5 +1,9 @@
 import {
+  CalendarQuerySchema,
+  CancelAppointmentRequestSchema,
+  ChangeAppointmentRequestSchema,
   CoordinationAuthorizationDecisionSchema,
+  CreateAppointmentRequestSchema,
   DailyTimelineQuerySchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
@@ -12,6 +16,7 @@ import { resolveCorrelationId } from "@lifebridge/observability";
 import Fastify from "fastify";
 
 import { CareError } from "./errors.js";
+import type { AppointmentService } from "./appointment-service.js";
 import type { CoordinationService } from "./coordination-service.js";
 import type { CareService } from "./service.js";
 
@@ -23,6 +28,7 @@ export function buildCareServer(
   care: CareService,
   internalToken: string,
   coordination?: CoordinationService,
+  appointments?: AppointmentService,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
 
@@ -40,7 +46,97 @@ export function buildCareServer(
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "care_database" }),
   );
-  app.get("/version", async () => ({ service: "care-coordination", contract: "P3-S1-v1" }));
+  app.get("/version", async () => ({ service: "care-coordination", contract: "P3-S2-v1" }));
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/calendar/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireAppointments(appointments).calendar({
+          householdId: request.params.householdId,
+          query: CalendarQuerySchema.parse(body.query),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; appointmentId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/appointments/:appointmentId/read",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireAppointments(appointments).get({
+          householdId: request.params.householdId,
+          appointmentId: request.params.appointmentId,
+          permission: "coordination.calendar.read",
+          operation: "appointment.read",
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/appointments",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const result = await requireAppointments(appointments).create({
+        householdId: request.params.householdId,
+        request: CreateAppointmentRequestSchema.parse(body.request),
+        idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+        authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+        correlationId,
+      });
+      return reply.code(201).send(successEnvelope(result, correlationId));
+    },
+  );
+
+  app.patch<{ Params: { householdId: string; appointmentId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/appointments/:appointmentId",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireAppointments(appointments).change({
+          householdId: request.params.householdId,
+          appointmentId: request.params.appointmentId,
+          request: ChangeAppointmentRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; appointmentId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/appointments/:appointmentId/cancel",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireAppointments(appointments).cancel({
+          householdId: request.params.householdId,
+          appointmentId: request.params.appointmentId,
+          request: CancelAppointmentRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
 
   app.post<{ Params: { householdId: string }; Body: unknown }>(
     "/internal/v1/coordination/households/:householdId/timeline/query",
@@ -188,13 +284,24 @@ export function buildCareServer(
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
     const errorName = error instanceof Error ? error.name : "UnknownError";
+    const appointmentValidation =
+      errorName === "ZodError" &&
+      (request.url.includes("/appointments") || request.url.includes("/calendar"));
     const careError =
       error instanceof CareError
         ? error
         : new CareError(
             errorName === "ZodError" ? 400 : 500,
-            errorName === "ZodError" ? "TASK_VALIDATION_FAILED" : "SERVICE_UNAVAILABLE",
-            errorName === "ZodError" ? "errors.task.validation" : "errors.service.unavailable",
+            appointmentValidation
+              ? "APPOINTMENT_VALIDATION_FAILED"
+              : errorName === "ZodError"
+                ? "TASK_VALIDATION_FAILED"
+                : "SERVICE_UNAVAILABLE",
+            appointmentValidation
+              ? "appointment.validation"
+              : errorName === "ZodError"
+                ? "errors.task.validation"
+                : "errors.service.unavailable",
             errorName !== "ZodError",
           );
     return reply.code(careError.statusCode).send({
@@ -207,6 +314,11 @@ export function buildCareServer(
         ...(careError.currentTask
           ? { currentTask: careError.currentTask, recoveryAction: "reload_current" }
           : {}),
+        ...(careError.currentAppointment
+          ? { currentAppointment: careError.currentAppointment }
+          : {}),
+        ...(careError.conflict ? { conflict: careError.conflict } : {}),
+        ...(careError.recoveryAction ? { recoveryAction: careError.recoveryAction } : {}),
       },
     });
   });
@@ -222,6 +334,11 @@ function requiredIdempotencyKey(value: unknown): string {
 }
 
 function requireCoordination(service: CoordinationService | undefined): CoordinationService {
+  if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
+  return service;
+}
+
+function requireAppointments(service: AppointmentService | undefined): AppointmentService {
   if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
   return service;
 }

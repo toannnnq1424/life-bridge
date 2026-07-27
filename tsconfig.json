@@ -22,6 +22,6 @@
     "packages/**/*.ts",
     "tests/**/*.ts",
     "tools/quality/**/*.ts",
-    "playwright.config.ts"
+    "playwright*.config.ts"
   ]
 }

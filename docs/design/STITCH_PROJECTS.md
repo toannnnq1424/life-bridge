@@ -7,9 +7,11 @@ Integration: Official MCP canary passed; bounded design session complete
 Transport: Remote HTTPS MCP
 Tooling canary: PASS WITH CONTROLLED EXCEPTION (CHG-2026-006)
 Approved Stitch projects: 1 private non-production project
-Registered screens: LB-011, LB-013, LB-014, and LB-019 review references
+Registered screens: P1 LB-011/LB-013/LB-014/LB-019, P3-S1 LB-012/LB-014,
+and P3-S2 LB-015/LB-016 synthetic review references
 Imported artifacts: None
-Production UI implementation: Blocked until P1 handoff freeze
+Production UI implementation: P3-S2 native candidate follows the Frozen
+corrected handoff; generated source remains rejected
 ```
 
 On 2026-07-26 the user authorized one bounded use of a disposable
@@ -148,13 +150,17 @@ Project creation remains blocked while any field affecting identity, access, dat
 docs/design/reviews/SCREEN_HANDOFF_TEMPLATE.md
 ```
 
-| Screen ID           | Local project reference | Redacted screen reference                             | Design version | Artifact path                                                 | Handoff                                                      | Design status | Accessibility status                                   | Last reviewed |
-| ------------------- | ----------------------- | ----------------------------------------------------- | -------------- | ------------------------------------------------------------- | ------------------------------------------------------------ | ------------- | ------------------------------------------------------ | ------------- |
-| `LB-011`            | `STITCH-P1-001`         | Private alias `LB011-DESKTOP-v1`                      | 0.1            | Remote reference only; temporary review image not committed   | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Contract review; manual evidence pending               | 2026-07-26    |
-| `LB-013`            | `STITCH-P1-001`         | Private aliases `LB013-DESKTOP-v1`, `LB013-MOBILE-v1` | 0.1            | Remote references only; temporary review images not committed | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Responsive direction accepted; manual evidence pending | 2026-07-26    |
-| `LB-014`            | `STITCH-P1-001`         | Private aliases `LB014-DESKTOP-v1`, `LB014-MOBILE-v1` | 0.1            | Remote references only; temporary review images not committed | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Responsive direction accepted; manual evidence pending | 2026-07-26    |
-| `LB-019`            | `STITCH-P1-001`         | Private alias `LB019-DESKTOP-v1`                      | 0.1            | Remote reference only; temporary review image not committed   | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Contract review; manual evidence pending               | 2026-07-26    |
-| Other inventory IDs | None                    | None                                                  | None           | None                                                          | Pending                                                      | Not generated | Not reviewed                                           | N/A           |
+| Screen ID           | Local project reference | Redacted screen reference                                 | Design version | Artifact path                                                 | Handoff                                                      | Design status | Accessibility status                                   | Last reviewed |
+| ------------------- | ----------------------- | --------------------------------------------------------- | -------------- | ------------------------------------------------------------- | ------------------------------------------------------------ | ------------- | ------------------------------------------------------ | ------------- |
+| `LB-011`            | `STITCH-P1-001`         | Private alias `LB011-DESKTOP-v1`                          | 0.1            | Remote reference only; temporary review image not committed   | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Contract review; manual evidence pending               | 2026-07-26    |
+| `LB-013`            | `STITCH-P1-001`         | Private aliases `LB013-DESKTOP-v1`, `LB013-MOBILE-v1`     | 0.1            | Remote references only; temporary review images not committed | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Responsive direction accepted; manual evidence pending | 2026-07-26    |
+| `LB-014`            | `STITCH-P1-001`         | Private aliases `LB014-DESKTOP-v1`, `LB014-MOBILE-v1`     | 0.1            | Remote references only; temporary review images not committed | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Responsive direction accepted; manual evidence pending | 2026-07-26    |
+| `LB-019`            | `STITCH-P1-001`         | Private alias `LB019-DESKTOP-v1`                          | 0.1            | Remote reference only; temporary review image not committed   | [`P1_S1_STITCH_HANDOFF.md`](reviews/P1_S1_STITCH_HANDOFF.md) | Design review | Contract review; manual evidence pending               | 2026-07-26    |
+| `LB-012` P3-S1      | `STITCH-P1-001`         | Private aliases `P3S1-LB012-DESKTOP`, `P3S1-LB012-MOBILE` | 1.0            | Remote references only; generated source not imported         | [`P3_S1_STITCH_HANDOFF.md`](reviews/P3_S1_STITCH_HANDOFF.md) | Frozen        | Corrected native proof; KI-019 retained                | 2026-07-26    |
+| `LB-014` P3-S1      | `STITCH-P1-001`         | Private aliases `P3S1-LB014-DESKTOP`, `P3S1-LB014-MOBILE` | 1.0            | Remote references only; generated source not imported         | [`P3_S1_STITCH_HANDOFF.md`](reviews/P3_S1_STITCH_HANDOFF.md) | Frozen        | Corrected native proof; KI-019 retained                | 2026-07-26    |
+| `LB-015` P3-S2      | `STITCH-P1-001`         | Private aliases `P3S2-LB015-DESKTOP`, `P3S2-LB015-MOBILE` | 1.0            | Remote references only; generated source not imported         | [`P3_S2_STITCH_HANDOFF.md`](reviews/P3_S2_STITCH_HANDOFF.md) | Frozen        | Corrected native proof; KI-019 retained                | 2026-07-27    |
+| `LB-016` P3-S2      | `STITCH-P1-001`         | Private aliases `P3S2-LB016-DESKTOP`, `P3S2-LB016-MOBILE` | 1.0            | Remote references only; generated source not imported         | [`P3_S2_STITCH_HANDOFF.md`](reviews/P3_S2_STITCH_HANDOFF.md) | Frozen        | Corrected native proof; KI-019 retained                | 2026-07-27    |
+| Other inventory IDs | None                    | None                                                      | None           | None                                                          | Pending                                                      | Not generated | Not reviewed                                           | N/A           |
 
 Allowed design status values:
 

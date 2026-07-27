@@ -4,6 +4,7 @@ import { port, requiredSecret, requiredUrl } from "@lifebridge/config";
 import { Pool } from "pg";
 
 import { OutboxDispatcher, httpEventDeliverer } from "./dispatcher.js";
+import { AppointmentService } from "./appointment-service.js";
 import { CoordinationService } from "./coordination-service.js";
 import { migrateCareDatabase } from "./migration.js";
 import { buildCareServer } from "./server.js";
@@ -25,7 +26,8 @@ const care = new CareService(pool);
 const coordination = new CoordinationService(pool, {
   cursorKey: createHash("sha256").update(cursorSecret).digest(),
 });
-const app = buildCareServer(care, internalToken, coordination);
+const appointments = new AppointmentService(pool);
+const app = buildCareServer(care, internalToken, coordination, appointments);
 const dispatcher = new OutboxDispatcher(
   care,
   httpEventDeliverer(notificationUrl, notificationToken),

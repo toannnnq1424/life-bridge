@@ -624,3 +624,63 @@ failures, not product failures.
   task must freeze its own appointment/calendar semantics against the accepted
   P3-S1 time contract. P3-S2, P3-S3, DATA, P5, deployment and release are not
   started here.
+
+## INT-2026-018 — P3-S2 calendar and appointment coordination
+
+- Date: 2026-07-27
+- Status: Candidate complete; local retained Level C evidence passed; hosted
+  promotion pending
+- Source: `phase/3-calendar-appointment` from verified
+  `dev@83bfe45006241d160db7359eb61fafc4286de58b`
+- Owning work: GitHub issue #10
+- Scope: `P3-S2-v1` fresh action authority, calendar/detail projections,
+  finite structured create/change/cancel commands,
+  `care.appointment.reminder_intent.v1`, Care migration 003, Notification
+  migration 002, Gateway/native VI/EN LB-015/LB-016 and cumulative validation
+  tooling
+- Ownership: Identity & Consent evaluates the current accepted P2 governed
+  boundary for each action. Gateway composes only. Care owns appointment,
+  transition, audit, idempotency and outbox state in its PostgreSQL database.
+  Notification owns only inbox and structured reminder-intent receipt. There
+  is no new service, engine, shared table, cross-service SQL, credential or
+  direct import.
+- Contract/time: canonical millisecond `Z`, source local minute, numeric offset
+  and IANA zone are explicit. Care rejects DST gaps, requires explicit
+  earlier/later overlap policy plus matching first offset, preserves weekly
+  wall time, materializes at most 12 occurrences and supports only
+  occurrence-only mutation. Conflicts are half-open, serialized per recipient
+  context and ordered by UTC/opaque ID.
+- Mutation/evidence: one Care transaction writes durable occurrence state,
+  immutable transition, privacy-minimized audit, digest-only idempotency and
+  minimum reminder outbox intent. Stale/state/time conflicts preserve unsent
+  intent and require fresh review. Cancellation remains visible history.
+  Notification acknowledges schedule/cancel intent without claiming delivery.
+- UI/design: four private synthetic LB-015/LB-016 references were generated and
+  read back once; no locator, remote ID, signed URL or generated source was
+  persisted. The independent reviewer could not inspect private pixels, so
+  `KI-019` remains and no visual conformance is claimed. Native UI provides a
+  complete semantic agenda, calendar enhancement, explicit time/recurrence/
+  reminder facts, VI/EN, keyboard/focus, 320 px reflow, axe, denied,
+  unavailable, offline, stale, conflict, cancellation and recovery states.
+- Planned versus actual: `CHG-2026-014` planned one Level C after coherent
+  implementation. The single wrapper invocation continued after the desktop
+  shell detached, then exited with its output unavailable. Visible targeted
+  continuation retained classified green gates rather than issuing a second
+  full campaign. It found and fixed one legacy migration-reapply default,
+  browser locator ambiguity and two native recovery-state defects. Product
+  scope, service boundaries and phase order did not change.
+- Validation: four format scopes; lint/type; unit 55 passed with 19
+  environment-skipped; contracts 19/19; P1 PostgreSQL 6/6; P3-S1
+  Identity/Care PostgreSQL 14/14; P3-S2 Care/Notification PostgreSQL 5/5;
+  P3-S1 and P3-S2 rollback/reapply/no-backfill scripts; dependency/docs/
+  config/secrets; all builds; retained P3-S2 mocked 6/6 plus real 1/1;
+  cumulative P3-S1 mocked 6/6 and P2 mocked 18/18; privacy-safe runtime logs,
+  `git diff --check` and exact PID-scoped cleanup.
+- Promotion: feature commit, push, ready PR, exact-head hosted CI, merge
+  commit, post-merge `dev` CI and issue #10 closeout remain pending and are not
+  claimed.
+- Decision/change references: issue #10, `CHG-2026-014`, ADR-022,
+  `docs/security/P3_S2_THREAT_MODEL.md`, KI-001/KI-016/KI-019
+- Follow-up: no next product slice is eligible. After immutable P3-S2
+  promotion and canonical closeout, a fresh P3-S3 task may freeze care-plan
+  review; this task does not begin it.

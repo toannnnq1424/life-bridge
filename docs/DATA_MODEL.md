@@ -320,3 +320,56 @@ owning product-record lifecycle. Physical retention purge, legal hold,
 account-deletion reconciliation and restore/erasure proof remain P7-S3/P8.
 Handoff idempotency expires after 24 hours. These are engineering defaults,
 not legal-compliance claims.
+
+## P3-S2 Care-owned appointment and Notification reminder-intent data
+
+Care Coordination migration `003_calendar_appointments.sql` is additive,
+transactional, repeatable and performs no appointment or reminder backfill.
+It advances the Care schema marker to version 3 while keeping a distinct
+`appointment_coverage_started_at`; the P3-S1 timeline coverage marker is not
+reused. Care remains the sole appointment writer.
+
+| Table                          | Essential invariant                                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `care_schema_state`            | schema version 3; P3-S1 timeline coverage preserved; distinct P3-S2 appointment coverage start                                         |
+| `care_appointments`            | one concrete occurrence aggregate; structured kind/logistics, source local/IANA/offset, UTC interval, status, version and series facts |
+| `care_appointment_transitions` | immutable create/change/cancel evidence with prior/new UTC intervals, occurrence-only scope and enumerated action/reason               |
+| `care_audit`                   | opaque appointment action/result/correlation with empty bounded metadata                                                               |
+| `care_outbox`                  | one `care.appointment.reminder_intent.v1` per appointment version when schedule/cancel intent changes                                  |
+| `care_idempotency`             | 24-hour digest-only key and canonical complete intent with original safe response                                                      |
+
+Each finite weekly recurrence is materialized as 2–12 concrete
+`care_appointments` rows sharing one opaque `series_id`. Every row stores its
+occurrence number/count, interval weeks, final local date, confirmed source
+local start, IANA zone, numeric offset, canonical UTC start/end and version.
+Changing or cancelling one occurrence does not rewrite the series or another
+occurrence. Cancellation sets state and appends evidence; it never deletes the
+row.
+
+Conflict checks are scoped to the governed recipient context, exclude
+cancelled rows, use half-open UTC intervals and serialize through a
+recipient-scheduling advisory lock. Calendar order is
+`(starts_at_utc, appointment_id)`. No cross-service table, credential or
+foreign-key ownership is introduced.
+
+Appointment kind and logistics are enums. There is no title, description,
+address, meeting URL, attendee, contact, note, clinical content or arbitrary
+recurrence rule in P3-S2. Those values therefore cannot enter event, audit,
+outbox, Notification, log, metric or trace payloads.
+
+Notification migration `002_appointment_reminder_intents.sql` is additive,
+repeatable and has no reminder backfill. Notification remains the sole writer
+of:
+
+| Table                           | Essential invariant                                                                                                    |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `notification_inbox`            | existing source-event deduplication remains authoritative for every accepted event                                     |
+| `notification_reminder_intents` | one latest structured schedule/cancel state per appointment with recipient, UTC trigger/start, message key and version |
+
+The Notification projection contains no household/recipient label, appointment
+kind/logistics, local time, zone, recurrence, reason, free text or delivery
+claim. A later reminder-delivery engine, channel preference, acknowledgement,
+retention purge, legal hold, account deletion and restore/erasure proof remain
+future accepted work. Appointment/idempotency/transition and reminder-intent
+retention are engineering defaults subject to P7/P8 policy, not legal
+compliance claims.

@@ -8,6 +8,12 @@ export const OpaqueIdSchema = z.string().regex(opaqueIdPattern);
 export const CorrelationIdSchema = z.string().regex(correlationIdPattern);
 export const IdempotencyKeySchema = z.string().regex(idempotencyPattern);
 export const LocaleSchema = z.enum(["vi-VN", "en"]);
+export const CanonicalUtcInstantSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+  .refine((value) => !Number.isNaN(Date.parse(value)), "invalid_utc_instant");
+export const LocalDateTimeSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+export const UtcOffsetSchema = z.string().regex(/^[+-](?:0\d|1[0-4]):[0-5]\d$/);
 export const IanaTimeZoneSchema = z.string().min(1).max(80).refine(isIanaTimeZone, {
   message: "invalid_time_zone",
 });
@@ -461,6 +467,10 @@ export type GovernedRecipientContextProjection = z.infer<
 export const CoordinationPermissionSchema = z.enum([
   "coordination.timeline.read",
   "coordination.task.handoff",
+  "coordination.calendar.read",
+  "coordination.appointment.create",
+  "coordination.appointment.change",
+  "coordination.appointment.cancel",
 ]);
 export const CoordinationActorDisplayKeySchema = z.enum([
   "coordination.actor.you",
@@ -500,6 +510,7 @@ export const CoordinationAuthorizationRequestSchema = z
     permission: CoordinationPermissionSchema,
     householdId: OpaqueIdSchema,
     taskId: OpaqueIdSchema.optional(),
+    appointmentId: OpaqueIdSchema.optional(),
     targetActorRef: OpaqueIdSchema.optional(),
     requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
   })
@@ -508,6 +519,23 @@ export const CoordinationAuthorizationRequestSchema = z
     const handoff = value.permission === "coordination.task.handoff";
     if (handoff !== Boolean(value.taskId)) {
       context.addIssue({ code: "custom", message: "task_scope_required", path: ["taskId"] });
+    }
+    const appointmentMutation =
+      value.permission === "coordination.appointment.change" ||
+      value.permission === "coordination.appointment.cancel";
+    if (appointmentMutation !== Boolean(value.appointmentId)) {
+      context.addIssue({
+        code: "custom",
+        message: "appointment_scope_required",
+        path: ["appointmentId"],
+      });
+    }
+    if (!handoff && value.targetActorRef) {
+      context.addIssue({
+        code: "custom",
+        message: "target_scope_not_allowed",
+        path: ["targetActorRef"],
+      });
     }
   });
 
@@ -703,6 +731,186 @@ export const HandoffResultProjectionSchema = z
   })
   .strict();
 
+export const AppointmentKindSchema = z.enum([
+  "household_coordination",
+  "transport",
+  "community_support",
+  "other_personal",
+]);
+export const AppointmentLogisticsSchema = z.enum(["unspecified", "in_person", "phone", "online"]);
+export const AppointmentStatusSchema = z.enum(["scheduled", "cancelled"]);
+export const AppointmentLastChangeSchema = z.enum(["created", "changed", "cancelled"]);
+export const AppointmentReminderLeadMinutesSchema = z.union([
+  z.literal(15),
+  z.literal(60),
+  z.literal(1440),
+]);
+export const AppointmentAmbiguousTimePolicySchema = z.enum(["earlier", "later"]);
+
+export const AppointmentRecurrenceSchema = z.discriminatedUnion("frequency", [
+  z.object({ frequency: z.literal("none") }).strict(),
+  z
+    .object({
+      frequency: z.literal("weekly"),
+      intervalWeeks: z.number().int().min(1).max(4),
+      occurrenceCount: z.number().int().min(2).max(12),
+    })
+    .strict(),
+]);
+
+export const AppointmentScheduleSchema = z
+  .object({
+    localStart: LocalDateTimeSchema,
+    sourceTimeZone: IanaTimeZoneSchema,
+    sourceUtcOffset: UtcOffsetSchema,
+    ambiguousTimePolicy: AppointmentAmbiguousTimePolicySchema,
+    durationMinutes: z.number().int().min(15).max(480),
+    recurrence: AppointmentRecurrenceSchema,
+  })
+  .strict();
+
+export const CreateAppointmentRequestSchema = z
+  .object({
+    operation: z.literal("create_appointment"),
+    appointmentKind: AppointmentKindSchema,
+    logisticsMode: AppointmentLogisticsSchema,
+    schedule: AppointmentScheduleSchema,
+    reminder: z.object({ leadMinutes: AppointmentReminderLeadMinutesSchema.nullable() }).strict(),
+  })
+  .strict();
+
+export const ChangeAppointmentRequestSchema = z
+  .object({
+    operation: z.literal("change_appointment"),
+    scope: z.literal("occurrence_only"),
+    expectedVersion: z.number().int().positive(),
+    appointmentKind: AppointmentKindSchema,
+    logisticsMode: AppointmentLogisticsSchema,
+    schedule: AppointmentScheduleSchema.extend({
+      recurrence: z.object({ frequency: z.literal("none") }).strict(),
+    }).strict(),
+    reminder: z.object({ leadMinutes: AppointmentReminderLeadMinutesSchema.nullable() }).strict(),
+  })
+  .strict();
+
+export const CancelAppointmentRequestSchema = z
+  .object({
+    operation: z.literal("cancel_appointment"),
+    scope: z.literal("occurrence_only"),
+    expectedVersion: z.number().int().positive(),
+    reasonCode: z.enum(["no_longer_needed", "schedule_changed", "duplicate", "other_coordination"]),
+  })
+  .strict();
+
+export const AppointmentProjectionSchema = z
+  .object({
+    appointmentId: OpaqueIdSchema,
+    seriesId: OpaqueIdSchema,
+    householdId: OpaqueIdSchema,
+    recipientContextId: OpaqueIdSchema,
+    kind: AppointmentKindSchema,
+    logistics: AppointmentLogisticsSchema,
+    status: AppointmentStatusSchema,
+    lastChange: AppointmentLastChangeSchema,
+    startsAtUtc: CanonicalUtcInstantSchema,
+    endsAtUtc: CanonicalUtcInstantSchema,
+    sourceLocalStart: LocalDateTimeSchema,
+    sourceUtcOffset: UtcOffsetSchema,
+    sourceTimeZone: IanaTimeZoneSchema,
+    durationMinutes: z.number().int().min(15).max(480),
+    occurrenceNumber: z.number().int().positive(),
+    occurrenceCount: z.number().int().positive().max(12),
+    recurrenceFrequency: z.enum(["none", "weekly"]),
+    recurrenceIntervalWeeks: z.number().int().min(1).max(4).nullable(),
+    recurrenceFinalLocalDate: LocalDateSchema,
+    mutationScope: z.literal("occurrence_only"),
+    reminderIntent: z.enum(["not_requested", "recorded", "cancelled"]),
+    reminderLeadMinutes: AppointmentReminderLeadMinutesSchema.nullable(),
+    version: z.number().int().positive(),
+    createdAt: CanonicalUtcInstantSchema,
+    updatedAt: CanonicalUtcInstantSchema,
+    cancelledAt: CanonicalUtcInstantSchema.nullable(),
+    confirmedAt: CanonicalUtcInstantSchema,
+  })
+  .strict()
+  .refine((value) => value.endsAtUtc > value.startsAtUtc, {
+    message: "appointment_interval_invalid",
+    path: ["endsAtUtc"],
+  })
+  .refine((value) => value.occurrenceNumber <= value.occurrenceCount, {
+    message: "appointment_occurrence_invalid",
+    path: ["occurrenceNumber"],
+  });
+
+export const AppointmentSeriesProjectionSchema = z
+  .object({
+    seriesId: OpaqueIdSchema,
+    appointments: z.array(AppointmentProjectionSchema).min(1).max(12),
+  })
+  .strict();
+
+export const CalendarFilterSchema = z.enum(["all", "scheduled", "cancelled"]);
+export const CalendarQuerySchema = z
+  .object({
+    localDate: LocalDateSchema,
+    displayTimeZone: IanaTimeZoneSchema,
+    filter: CalendarFilterSchema.default("all"),
+  })
+  .strict();
+
+export const CalendarProjectionSchema = z
+  .object({
+    localDate: LocalDateSchema,
+    displayTimeZone: IanaTimeZoneSchema,
+    dayStartUtc: CanonicalUtcInstantSchema,
+    dayEndUtc: CanonicalUtcInstantSchema,
+    filter: CalendarFilterSchema,
+    coverageStartedAt: CanonicalUtcInstantSchema,
+    coverage: z.enum(["complete", "history_unavailable"]),
+    items: z.array(AppointmentProjectionSchema).max(100),
+    snapshotAt: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const AppointmentConflictProjectionSchema = z
+  .object({
+    startsAtUtc: CanonicalUtcInstantSchema,
+    endsAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const AppointmentReminderIntentEventSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventType: z.literal("care.appointment.reminder_intent.v1"),
+    eventVersion: z.literal(1),
+    occurredAt: CanonicalUtcInstantSchema,
+    producer: z.literal("care-coordination"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    correlationId: CorrelationIdSchema,
+    causationId: OpaqueIdSchema,
+    payload: z.discriminatedUnion("intent", [
+      z
+        .object({
+          intent: z.literal("schedule"),
+          recipientId: OpaqueIdSchema,
+          remindAtUtc: CanonicalUtcInstantSchema,
+          startsAtUtc: CanonicalUtcInstantSchema,
+          messageKey: z.literal("notifications.appointment.reminder"),
+        })
+        .strict(),
+      z
+        .object({
+          intent: z.literal("cancel"),
+          recipientId: OpaqueIdSchema,
+          messageKey: z.literal("notifications.appointment.reminder"),
+        })
+        .strict(),
+    ]),
+  })
+  .strict();
+
 const EventBaseSchema = z
   .object({
     eventId: OpaqueIdSchema,
@@ -784,6 +992,7 @@ export const CareTaskHandedOffEventSchema = z
 export const CareCoordinationEventSchema = z.union([
   CareTaskCompletedEventSchema,
   CareTaskHandedOffEventSchema,
+  AppointmentReminderIntentEventSchema,
 ]);
 
 export const NotificationSchema = z
@@ -806,7 +1015,13 @@ export const NotificationSchema = z
 export const ConsumerAcknowledgementSchema = z
   .object({
     eventId: OpaqueIdSchema,
-    result: z.enum(["stored", "duplicate", "suppressed_self"]),
+    result: z.enum([
+      "stored",
+      "duplicate",
+      "suppressed_self",
+      "reminder_scheduled",
+      "reminder_cancelled",
+    ]),
     notificationId: OpaqueIdSchema.nullable(),
     processedAt: z.iso.datetime({ offset: true }),
   })
@@ -866,6 +1081,14 @@ export const ApiErrorCodeSchema = z.enum([
   "HANDOFF_VALIDATION_FAILED",
   "HANDOFF_VERSION_CONFLICT",
   "HANDOFF_STATE_CONFLICT",
+  "APPOINTMENT_VALIDATION_FAILED",
+  "APPOINTMENT_LOCAL_TIME_INVALID",
+  "APPOINTMENT_RECURRENCE_INVALID",
+  "CALENDAR_RANGE_TOO_DENSE",
+  "APPOINTMENT_VERSION_CONFLICT",
+  "APPOINTMENT_STATE_CONFLICT",
+  "APPOINTMENT_TIME_CONFLICT",
+  "APPOINTMENT_RESULT_UNKNOWN",
 ]);
 
 export const ApiErrorSchema = z
@@ -878,7 +1101,11 @@ export const ApiErrorSchema = z
         retryable: z.boolean(),
         correlationId: CorrelationIdSchema,
         currentTask: TaskProjectionSchema.optional(),
-        recoveryAction: z.literal("reload_current").optional(),
+        currentAppointment: AppointmentProjectionSchema.optional(),
+        conflict: AppointmentConflictProjectionSchema.optional(),
+        recoveryAction: z
+          .enum(["reload_current", "choose_another_time", "check_current_state"])
+          .optional(),
       })
       .strict(),
   })
@@ -896,6 +1123,19 @@ export type HandoffReasonCode = z.infer<typeof HandoffReasonCodeSchema>;
 export type HandoffTaskRequest = z.infer<typeof HandoffTaskRequestSchema>;
 export type HandoffReviewProjection = z.infer<typeof HandoffReviewProjectionSchema>;
 export type HandoffResultProjection = z.infer<typeof HandoffResultProjectionSchema>;
+export type AppointmentKind = z.infer<typeof AppointmentKindSchema>;
+export type AppointmentLogistics = z.infer<typeof AppointmentLogisticsSchema>;
+export type AppointmentSchedule = z.infer<typeof AppointmentScheduleSchema>;
+export type CreateAppointmentRequest = z.infer<typeof CreateAppointmentRequestSchema>;
+export type ChangeAppointmentRequest = z.infer<typeof ChangeAppointmentRequestSchema>;
+export type CancelAppointmentRequest = z.infer<typeof CancelAppointmentRequestSchema>;
+export type AppointmentProjection = z.infer<typeof AppointmentProjectionSchema>;
+export type AppointmentSeriesProjection = z.infer<typeof AppointmentSeriesProjectionSchema>;
+export type AppointmentConflictProjection = z.infer<typeof AppointmentConflictProjectionSchema>;
+export type CalendarQuery = z.infer<typeof CalendarQuerySchema>;
+export type CalendarFilter = z.infer<typeof CalendarFilterSchema>;
+export type CalendarProjection = z.infer<typeof CalendarProjectionSchema>;
+export type AppointmentReminderIntentEvent = z.infer<typeof AppointmentReminderIntentEventSchema>;
 export type CareTaskCompletedEvent = z.infer<typeof CareTaskCompletedEventSchema>;
 export type CareTaskHandedOffEvent = z.infer<typeof CareTaskHandedOffEventSchema>;
 export type CareCoordinationEvent = z.infer<typeof CareCoordinationEventSchema>;
