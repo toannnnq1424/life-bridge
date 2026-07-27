@@ -3,12 +3,13 @@
 ## Board control
 
 - Updated: 2026-07-27
-- Most recently integrated scope: `P3-S1 — Daily timeline and handoff`;
-  accepted and merged at
-  `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`
-- Active product slice: `P3-S2 — Calendar and appointment coordination`;
-  canonical issue #10 verified open
-- Exact next product slice: none until P3-S2 is accepted
+- Most recently integrated scope: `P3-S2 — Calendar and appointment coordination`;
+  feature PR #53 merged at
+  `dev@142096516533aea7561b1b13a2187047dc726a71`; canonical-memory PR #54
+  merged at `dev@ed091b3cc50549c39f456f8ac9e0bb61f4abfef7`
+- Active product slice: none; canonical issue #10 closed completed
+- Exact next product slice: `P3-S3 — Care-plan review`, only in a fresh task;
+  not started
 - Accepted future direction: `CHG-2026-011`/ADR-019 assigns greenfield
   Community to Spring Boot at P5-S1/#15; this does not start P5 or alter P2
 - Rule: one conversation owns one phase or one slice

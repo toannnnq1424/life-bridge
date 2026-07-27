@@ -6,14 +6,15 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P3 — Care planning`; P3-S2 in progress
-- Most recently integrated slice: `P3-S1 — Daily timeline and handoff`;
-  validated and merged at
-  `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`
-- Active product slice: `P3-S2 — Calendar and appointment coordination`;
-  canonical issue
-  [#10](https://github.com/toannnnq1424/life-bridge/issues/10) verified open
-- Exact next eligible product slice: none until P3-S2 is accepted
+- Current phase: `P3 — Care planning`; P3-S2 accepted and merged
+- Most recently integrated slice: `P3-S2 — Calendar and appointment coordination`;
+  feature PR #53 merged at
+  `dev@142096516533aea7561b1b13a2187047dc726a71`; canonical-memory PR #54
+  merged at `dev@ed091b3cc50549c39f456f8ac9e0bb61f4abfef7`
+- Active product slice: none; canonical issue
+  [#10](https://github.com/toannnnq1424/life-bridge/issues/10) closed completed
+- Exact next eligible product slice: `P3-S3 — Care-plan review`, only in a fresh
+  task; not started
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
