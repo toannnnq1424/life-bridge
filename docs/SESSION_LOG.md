@@ -1514,3 +1514,52 @@ Feature commit, push, ready PR to `dev`, exact-head hosted CI, merge commit,
 post-merge `dev` CI, bilingual issue #10 closeout and any required docs-only
 canonical-memory PR remain pending and are not claimed. No next slice is
 eligible. P3-S3, DATA-S1, P4/P5, deployment and release remain unstarted.
+
+## 2026-07-27 — P3-S2 hosted promotion and canonical closeout
+
+### Immutable promotion evidence
+
+Feature commit `f37077fa90cf3740a004a617839dd447fb9b91df` was pushed to the
+existing `phase/3-calendar-appointment` branch and ready PR #53. Initial push
+run `30220557513` passed P3-S2 contracts, PostgreSQL, migrations, Notification
+runtime and all six P3-S2 browser cases, but the cumulative P2-S3 conflict case
+rendered its alert without moving focus. This was a real shared accessibility
+race, not a P3-S2 contract, data or runtime failure.
+
+The host `systemError` preserved the smallest focus fix uncommitted. Recovery
+first verified HEAD, worktree, index, live `origin/dev`, the phase ref and
+existing PR #53, so no task, branch, commit, push or PR action was duplicated.
+The fix replaced animation-frame focus with a render-committed announcement
+sequence. Only the previously failed P2-S3 conflict/focus path was rerun and
+passed 1/1. Affected Prettier, ESLint, TypeScript and production web build had
+already passed with the same inputs and were not repeated; all unrelated green
+gates remained retained. Runtime logs and browser artifacts were removed from
+their verified task-owned paths, and the protected Stitch canary remained
+untouched.
+
+Follow-up commit `e21334c2631f3617d79d827480be4563c34b31a2` passed exact-head
+push run `30230392943` and pull-request run `30230394014`, including Windows
+static/unit/build/security, P3-S2 PostgreSQL/Chromium and the full required
+gate. PR #53 merged by merge commit as
+`dev@142096516533aea7561b1b13a2187047dc726a71`; post-merge `dev` run
+`30230627085` passed all required jobs. Issue #10 closed completed with
+bilingual evidence at
+https://github.com/toannnnq1424/life-bridge/issues/10#issuecomment-5086517596.
+
+### Canonical handoff
+
+Planned was to record immutable GitHub evidence only after it existed. Actual
+promotion therefore requires this same-branch docs-only PR after the feature
+merge; it changes no product contract, migration, runtime, test, design or
+repository structure and does not justify another Level C. The phase branch
+fast-forwarded to canonical `origin/dev`; no new task or branch was created.
+`REPOSITORY_MAP.md` requires no closeout change because structure is unchanged.
+
+P3-S2 is accepted. KI-001 still blocks deployment; KI-016 retains manual
+NVDA/Narrator, physical-device, text-spacing and 200%/400%
+assistive-technology evidence; KI-019 retains independent private-render
+review before any visual-conformance claim. After this docs-only closeout
+merges, P3-S3 is exact next only in a fresh task. Its first action is to freeze
+versioned care-plan review authority, command/read/event and time semantics
+against accepted P2 authority and the P3-S2 appointment boundary. P3-S3,
+DATA-S1, P4/P5, deployment and release were not started here.
