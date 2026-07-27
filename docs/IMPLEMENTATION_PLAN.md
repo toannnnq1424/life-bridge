@@ -1058,7 +1058,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 | `CHG-2026-011` | Accepted; implementation deferred    | Select Spring Boot for greenfield Community at P5; preserve existing Node boundaries   |
 | `CHG-2026-012` | Accepted; local validation passed    | Consent authority is explicit self-establishment, never organizer membership           |
 | `CHG-2026-013` | Integrated; hosted validation passed | Fresh P2 decision plus Care-owned snapshot timeline and atomic structured handoff      |
-| `CHG-2026-014` | Accepted; implementation in progress | Finite Care-owned appointment occurrences and minimum Notification reminder intent     |
+| `CHG-2026-014` | Integrated; hosted validation passed | Finite Care-owned appointment occurrences and minimum Notification reminder intent     |
 
 ## CHG-2026-008 — Freeze the P1-S1 accountable notification audience
 
@@ -1343,8 +1343,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ## CHG-2026-014 — Freeze finite governed appointment occurrences
 
-- State: Candidate complete; local Level C plus targeted continuation passed;
-  hosted promotion pending
+- State: Integrated; exact-head and post-merge hosted validation passed
 - Raised in phase/slice: `P3-S2`
 - Planned baseline: an authorized member creates/updates an appointment and
   sees the confirmed result in an accessible calendar and equivalent agenda.
@@ -1388,10 +1387,13 @@ No row means simultaneous implementation. Design generation/review may prepare a
   Level C invocation completed. The desktop shell detached its output, so
   classified targeted continuation retained every green gate and fixed one
   migration-reapply compatibility defect, browser locator defects and two
-  recovery-state UI defects. Static, PostgreSQL, migration, build, mocked/real
-  browser, privacy-log and cleanup evidence is green. Exact-head hosted CI,
-  ready PR, merge commit, post-merge `dev` CI and canonical issue closeout
-  remain required.
+  recovery-state UI defects. Initial hosted run `30220557513` passed P3-S2 but
+  found a cumulative P2-S3 alert-focus race; the smallest shared fix passed the
+  failed path 1/1 and affected static scope without repeating unchanged green
+  gates. Exact head `e21334c2631f3617d79d827480be4563c34b31a2` passed push/PR
+  runs `30230392943`/`30230394014`; PR #53 merged as
+  `dev@142096516533aea7561b1b13a2187047dc726a71`; post-merge run
+  `30230627085` and issue #10 bilingual closeout passed.
 - Follow-up owner and exact phase/slice: after P3-S2 acceptance, a fresh P3-S3
   task freezes versioned care-plan review. Series-wide calendar mutation,
   external synchronization and reminder delivery require later accepted scope.
@@ -1424,11 +1426,18 @@ KI-001 still blocks deployment, KI-016 retains manual assistive-technology
 evidence, and KI-019 retains private-render review before any
 visual-conformance claim.
 
-P3-S2 is the active and only product slice. `P3-S2-v1`, ADR-022,
+P3-S2 is accepted at
+`dev@142096516533aea7561b1b13a2187047dc726a71`. `P3-S2-v1`, ADR-022,
 `CHG-2026-014`, the P3-S2 threat model, research record and Frozen corrected
-LB-015/LB-016 Stitch handoff are implemented in native semantics. The retained
-single Level C campaign evidence is green and all task-owned resources were
-removed. Exact next is feature commit, push, ready PR to `dev`, exact-head
-hosted CI, merge commit, post-merge `dev` CI, issue #10 closeout and a
-docs-only canonical-memory PR if required. No next slice is eligible. P3-S3,
-DATA-S1, P4/P5, deployment and release remain unstarted.
+LB-015/LB-016 handoff are implemented in native semantics. Exact head
+`e21334c2631f3617d79d827480be4563c34b31a2` passed push/PR runs
+`30230392943`/`30230394014`; PR #53 merged with a merge commit; post-merge
+`dev` run `30230627085` passed and issue #10 closed completed. KI-001 still
+blocks deployment, KI-016 retains manual assistive-technology evidence, and
+KI-019 retains private-render review before any visual-conformance claim.
+
+After this docs-only canonical closeout merges, P3-S3 is exact next only in a
+fresh task. Its first action is to freeze versioned care-plan review authority,
+command/read/event and time semantics against accepted P2 authority and the
+P3-S2 appointment boundary. DATA-S1, P4/P5, deployment and release remain
+separate and unstarted.

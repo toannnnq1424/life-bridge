@@ -628,8 +628,7 @@ failures, not product failures.
 ## INT-2026-018 — P3-S2 calendar and appointment coordination
 
 - Date: 2026-07-27
-- Status: Candidate complete; local retained Level C evidence passed; hosted
-  promotion pending
+- Status: Integrated; exact-head and post-merge hosted validation passed
 - Source: `phase/3-calendar-appointment` from verified
   `dev@83bfe45006241d160db7359eb61fafc4286de58b`
 - Owning work: GitHub issue #10
@@ -667,8 +666,14 @@ failures, not product failures.
   shell detached, then exited with its output unavailable. Visible targeted
   continuation retained classified green gates rather than issuing a second
   full campaign. It found and fixed one legacy migration-reapply default,
-  browser locator ambiguity and two native recovery-state defects. Product
-  scope, service boundaries and phase order did not change.
+  browser locator ambiguity and two native recovery-state defects. Initial
+  hosted push run `30220557513` then passed P3-S2 itself but exposed a real
+  cumulative P2-S3 alert-focus race. The host `systemError` preserved the
+  smallest shared fix uncommitted; recovery verified worktree/index/remote/PR
+  state before continuing. A render-committed announcement sequence replaced
+  the racing animation-frame focus, and only the failed P2-S3 conflict/focus
+  path plus affected static scope were validated. Product scope, contracts,
+  data ownership, service boundaries and phase order did not change.
 - Validation: four format scopes; lint/type; unit 55 passed with 19
   environment-skipped; contracts 19/19; P1 PostgreSQL 6/6; P3-S1
   Identity/Care PostgreSQL 14/14; P3-S2 Care/Notification PostgreSQL 5/5;
@@ -676,11 +681,17 @@ failures, not product failures.
   config/secrets; all builds; retained P3-S2 mocked 6/6 plus real 1/1;
   cumulative P3-S1 mocked 6/6 and P2 mocked 18/18; privacy-safe runtime logs,
   `git diff --check` and exact PID-scoped cleanup.
-- Promotion: feature commit, push, ready PR, exact-head hosted CI, merge
-  commit, post-merge `dev` CI and issue #10 closeout remain pending and are not
-  claimed.
+- Promotion: feature commit
+  `f37077fa90cf3740a004a617839dd447fb9b91df` plus cumulative accessibility
+  fix `e21334c2631f3617d79d827480be4563c34b31a2` passed exact-head push run
+  `30230392943` and pull-request run `30230394014`. Ready PR #53 merged through
+  a merge commit as `dev@142096516533aea7561b1b13a2187047dc726a71`;
+  post-merge run `30230627085` passed all required jobs. Issue #10 closed
+  completed with bilingual evidence at
+  https://github.com/toannnnq1424/life-bridge/issues/10#issuecomment-5086517596.
 - Decision/change references: issue #10, `CHG-2026-014`, ADR-022,
   `docs/security/P3_S2_THREAT_MODEL.md`, KI-001/KI-016/KI-019
-- Follow-up: no next product slice is eligible. After immutable P3-S2
-  promotion and canonical closeout, a fresh P3-S3 task may freeze care-plan
-  review; this task does not begin it.
+- Follow-up: after this docs-only canonical closeout merges, P3-S3 is exact
+  next only in a fresh task. Its first action is to freeze versioned care-plan
+  review authority, command/read/event and time semantics against the accepted
+  P2 authority and P3-S2 appointment boundary. This task does not begin it.

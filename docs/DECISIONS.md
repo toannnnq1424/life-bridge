@@ -510,7 +510,7 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 
 ## ADR-022 — Materialize finite governed appointment occurrences in Care
 
-- Status: Accepted for P3-S2 implementation
+- Status: Accepted and implemented in P3-S2
 - Date: 2026-07-27
 - Change ID: `CHG-2026-014`
 - Context: P3-S2 must create/change/cancel appointments and expose a truthful
