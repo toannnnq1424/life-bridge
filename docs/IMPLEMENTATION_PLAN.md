@@ -6,9 +6,9 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P4 — Safety-critical coordination`; the active vertical
-  slice is `P4-S3 — Access-controlled document vault` only.
-- Accepted base: live `dev@1010aeabf7ae87737019477cb1961404299bf0a8`.
+- Current phase: `P4 — Safety-critical coordination`; P4-S3 is accepted and no
+  product implementation is active in this same-task docs-only closeout.
+- Accepted base: live `dev@7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`.
 - Accepted P4-S2 evidence: `P4-S2-v1`/`P4-S2-offline-v1`, Care migration 006,
   ADR-025 and threat model, four synthetic Stitch references, the Frozen
   native-only handoff, native VI/EN LB-020/LB-021/required-LB-032, exactly one
@@ -16,9 +16,8 @@
   `30358335589`, and post-merge `dev` run `30359250442`. Canonical issue
   [#13](https://github.com/toannnnq1424/life-bridge/issues/13) is closed with
   bilingual evidence.
-- Current action: promote the locally accepted P4-S3 candidate from
-  `phase/4-document-vault` through one ready feature PR to `dev`. DATA-S1, P5,
-  Spring, deployment and release remain unstarted.
+- Current action: promote only the same-task P4-S3 canonical closeout. P5-S1,
+  DATA-S1, Spring, deployment and release remain unstarted.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -26,11 +25,12 @@
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
 - Latest integration gate:
-  [PR #62](https://github.com/toannnnq1424/life-bridge/pull/62) accepted exact
-  recovery head `ea5acf761e64ac6718936e262e4b089a5e37b74c` after PR run
-  `30358335589` passed all three jobs. Merge commit
-  `7690a7c584891fbd2bd62de600a5b11bb58a8be7` is on `dev`, post-merge run
-  `30359250442` passed all three jobs, and issue #13 is closed completed.
+  [PR #64](https://github.com/toannnnq1424/life-bridge/pull/64) accepted exact
+  feature head `3eb4bab7751a5e311a285adac17b999994f72c99` after push/PR runs
+  `30375655611`/`30375846902` passed all three jobs. Merge commit
+  `7b10d62d0cd1857e9d63e57d34bfd068040a8fd6` is on `dev`, post-merge run
+  `30376359437` passed all three jobs, and issue #14 is closed completed with
+  bilingual evidence at comment `5106678490`.
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -735,8 +735,11 @@ Actual implementation boundary (`CHG-2026-018`):
   rollback/reapply/no-backfill, pre-delete restore, post-delete
   non-resurrection, real PostgreSQL/Chromium runtime and the complete mocked
   failure/accessibility matrix; its PID-scoped Docker resources were removed.
-  Exact-head hosted CI, one ready PR to `dev`, merge-commit promotion,
-  post-merge CI and issue #14 bilingual closeout remain required.
+  Exact-head push/PR runs `30375655611`/`30375846902` passed all three jobs.
+  Sole ready feature PR #64 merged by merge commit
+  `7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`; post-merge `dev` run
+  `30376359437` passed all three jobs and issue #14 closed completed with
+  bilingual evidence.
 
 ## P5 — Community support
 

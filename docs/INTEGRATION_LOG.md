@@ -820,10 +820,11 @@ failures, not product failures.
   minimum disclosure, retention/deletion, integrity and storage ownership
   before implementing LB-023.
 
-## INT-2026-022 — P4-S3 document-vault candidate
+## INT-2026-022 — P4-S3 document vault
 
 - Date: 2026-07-28
-- Status: locally accepted; hosted promotion pending
+- Status: integrated; exact-head and post-merge hosted validation passed;
+  issue #14 closed completed
 - Source: verified clean `phase/4-document-vault` from accepted live
   `dev@1010aeabf7ae87737019477cb1961404299bf0a8`
 - Target: `dev`
@@ -866,6 +867,13 @@ failures, not product failures.
   DATA-S1, Spring, deployment or release.
 - Decision/change references: issue #14, `CHG-2026-018`, ADR-026,
   `docs/security/P4_S3_THREAT_MODEL.md`, KI-001/KI-016/KI-019/KI-020.
-- Follow-up: create one ready feature PR to `dev`, require green exact-head
-  hosted CI, merge by merge commit, verify post-merge `dev` CI, then close
-  issue #14 with bilingual evidence. Do not start P5-S1 in this task.
+- Promotion: feature commit
+  `3eb4bab7751a5e311a285adac17b999994f72c99` passed exact-head push/PR
+  runs `30375655611`/`30375846902`, each with all three jobs green. Sole ready
+  feature PR #64 merged by merge commit as
+  `dev@7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`; post-merge run
+  `30376359437` passed all three jobs. Canonical issue #14 received verified
+  VI/EN evidence at comment `5106678490` and closed as completed.
+- Follow-up: merge only this same-task docs-only canonical closeout. P5-S1 may
+  start only in a fresh task with official toolchain research and frozen
+  Community authority/data/API/event/failure boundaries. Do not start it here.
