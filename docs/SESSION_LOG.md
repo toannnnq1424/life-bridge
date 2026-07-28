@@ -1621,6 +1621,26 @@ Deviation `CHG-2026-015`: planned private-pixel inspection could not occur;
 impact is no visual-conformance claim, with KI-019 retained and stricter native
 requirements. No product scope/order, service, engine, Notification delivery,
 clinical content, DATA, P4/P5, Spring, deployment, or release work was added.
-Local P3-S3 acceptance is green. Exact-head CI/PR/merge/post-merge evidence,
-issue #11 closeout, and final exact-next orientation remain pending. The protected
-`docs/orchestration/reports/STITCH_MCP_CANARY.md` is untouched.
+
+### Hosted promotion and exact-next orientation
+
+Feature commit `9bfd2263625e25e2f4c3bbf7b1d0257a002591c8` was pushed without
+force. Ready PR #56 targeted `dev`; exact-head push run `30329456918` and PR run
+`30329530973` passed all six reported checks. PR #56 merged by merge commit as
+`dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`; post-merge run
+`30329752886` passed Windows static/unit/build/security, P3-S3
+PostgreSQL/Chromium, and the integrated gate. Canonical issue #11 was then
+closed with bilingual contract, local, hosted, boundary, KI-019 and canary
+evidence.
+
+Planned versus actual promotion order is unchanged: exact-head CI preceded the
+merge, post-merge `dev` CI preceded issue closure, and only this docs-only
+canonical evidence closeout follows. No further Level C was run. The protected
+`docs/orchestration/reports/STITCH_MCP_CANARY.md` remains untouched; no task
+runtime process, container, volume, network, log or Playwright report remains.
+
+After the docs-only closeout merges, exact next is `P4-S1 — Medication reminder
+acknowledgement`, only in a fresh task. Its first action is to freeze
+non-clinical reminder acknowledgement authority, explicit unit/time-zone,
+event, Notification and failure-truth contracts against accepted P2/P3
+boundaries. DATA-S1, P4/P5, Spring, deployment and release were not started here.

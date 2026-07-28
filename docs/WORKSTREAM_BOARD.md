@@ -3,14 +3,12 @@
 ## Board control
 
 - Updated: 2026-07-28
-- Most recently integrated scope: `P3-S2 — Calendar and appointment coordination`;
-  feature PR #53 merged at
-  `dev@142096516533aea7561b1b13a2187047dc726a71`; canonical-memory PR #54
-  merged at `dev@ed091b3cc50549c39f456f8ac9e0bb61f4abfef7`
-- Active product slice: `P3-S3 — Care-plan review`; issue #11 and
-  `phase/3-care-plan-review`
-- Exact next action: exact-head P3-S3 PR/CI/merge/issue closeout; DATA-S1 and P4
-  remain unstarted
+- Most recently integrated scope: `P3-S3 — Care-plan review`; feature PR #56
+  merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`
+- Active product slice: none; issue #11 is closed and
+  `phase/3-care-plan-review` owns docs-only canonical closeout
+- Exact next action: merge that docs-only closeout, then hand off P4-S1 to a
+  fresh task; DATA-S1 and P4 remain unstarted here
 - Accepted future direction: `CHG-2026-011`/ADR-019 assigns greenfield
   Community to Spring Boot at P5-S1/#15; this does not start P5 or alter P2
 - Rule: one conversation owns one phase or one slice
@@ -57,7 +55,7 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 4        | `P2-S3` Consent/privacy/audit/settings  | Validated/merged; PR #49 and CI passed | PR #49; exact-head and post-merge `dev` CI green                | Issue #8 closed completed                        |
 | 5        | `P3-S1` Timeline/handoff                | Validated/merged; PR #51 and CI passed | Exact head `909c645`; merge `2314ee9`; post-merge CI green      | Issue #9 closed completed                        |
 | 6        | `P3-S2` Calendar/appointment            | Validated/merged; PR #53 and CI passed | Exact head `e21334c`; merge `1420965`; post-merge CI green      | Issue #10 closed completed                       |
-| 7        | `P3-S3` Care-plan review                | Locally validated; promotion pending   | P2 consent + accepted P3 time                                   | Versioned support-plan flow; issue #11           |
+| 7        | `P3-S3` Care-plan review                | Validated/merged; PR #56 and CI passed | Exact head `9bfd226`; merge `f3576f4`; post-merge CI green      | Issue #11 closed completed                       |
 | 8        | `P4-S1` Medication reminder             | Planned                                | P3 time + Notification reliability                              | Non-clinical reminder flow                       |
 | 9        | `P4-S2` Emergency plan                  | Planned                                | Consent + offline threat review                                 | Offline-readable configured plan                 |
 | 10       | `P4-S3` Document vault                  | Planned                                | Consent/audit + storage ADR                                     | Synthetic document flow                          |
@@ -153,7 +151,7 @@ For every new proposal, add a stable `CHG-YYYY-NNN` row before implementation:
 | `CHG-2026-012` | Integrated; hosted validation passed | P2-S3 authority establishment and delegation were undefined                                             | Context creator explicitly self-binds as subject; organizer/member role never confers consent authority                         | Least privilege and actual P2-S2 provenance                                 | P2-S3 contract/data/API/UI only; no service/engine/order change       | One Level C, targeted Level B, exact-head and post-merge CI passed      | P3-S1 consumes the accepted governed-read boundary; delegation stays deferred       |
 | `CHG-2026-013` | Integrated; hosted validation passed | Timeline/handoff lacked fresh-decision, snapshot, no-total and no-backfill detail                       | Identity decision is request-bound; Care owns sealed chronology and atomic enumerated handoff                                   | Three audits plus official time/accessibility/handoff research              | P3-S1 contracts/data/UI/tests only; no service/engine/order change    | One Level C plus targeted recovery; exact-head/post-merge CI passed     | P3-S2 fresh task uses the accepted time contract; KI-016/KI-019 remain              |
 | `CHG-2026-014` | Integrated; hosted validation passed | Calendar acceptance left authority, DST, recurrence, scope, conflict and reminder shape open            | Care materializes finite structured occurrences; occurrence-only mutation; Notification receives minimum reminder intent        | Three audits plus RFC/PostgreSQL/Google/W3C/OWASP micro-cycle               | P3-S2 contract/data/UI/tests only; no service/engine/order change     | One Level C, targeted continuation, exact-head and post-merge CI passed | P3-S3 starts only in a fresh task; KI-016/KI-019 remain                             |
-| `CHG-2026-015` | Locally validated; promotion pending | Care-plan authority, shared-draft concurrency, version/history and local review-day semantics were open | Care owns one shared draft/current aggregate, immutable versions and suppressed minimum event; fresh P2 decisions every request | Three independent reviews plus WHATWG/PostgreSQL/OWASP/W3C micro-cycle      | P3-S3 only; no new service/engine/Notification/P4/DATA scope          | One Level C plus classified recovery passed; hosted promotion pending   | Close issue #11 only after exact-head/post-merge evidence; retain KI-016/KI-019     |
+| `CHG-2026-015` | Integrated; hosted validation passed | Care-plan authority, shared-draft concurrency, version/history and local review-day semantics were open | Care owns one shared draft/current aggregate, immutable versions and suppressed minimum event; fresh P2 decisions every request | Three independent reviews plus WHATWG/PostgreSQL/OWASP/W3C micro-cycle      | P3-S3 only; no new service/engine/Notification/P4/DATA scope          | One Level C plus classified recovery; exact-head/post-merge CI passed   | P4-S1 starts only in a fresh task; retain KI-016/KI-019                             |
 
 Mirror accepted changes in `docs/IMPLEMENTATION_PLAN.md`; add an ADR for architecture/product policy, an integration-log entry for contract/promotion impact, and a session-log entry for evidence.
 
@@ -200,10 +198,15 @@ accessibility fix `e21334c` passed exact-head push/PR runs
 finite appointment/time contracts, Care/Notification ownership, migrations,
 Stitch/native handoff and local/hosted evidence are the accepted boundary.
 
-P3-S3 is locally accepted on `phase/3-care-plan-review` from exact accepted
-`dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`. `P3-S3-v1`, ADR-023,
-`CHG-2026-015`, migration 004, the Frozen corrected LB-017 handoff, native VI/EN
-UI, one Level C campaign and classified targeted recovery are green. Exact next
-is only hosted exact-head PR/CI/merge/post-merge/issue #11 evidence and required
-same-task canonical closeout. DATA-S1, P4/P5, deployment and release remain
-separate and unstarted.
+P3-S3 is accepted and merged. Feature head
+`9bfd2263625e25e2f4c3bbf7b1d0257a002591c8` passed push/PR runs
+`30329456918`/`30329530973`; PR #56 merged as
+`dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`; post-merge run
+`30329752886` passed and issue #11 closed completed. Its fresh P2 authority,
+versioned Care ownership, concurrency, review-day, Frozen Stitch/native and
+local/hosted evidence are the accepted boundary.
+
+After this docs-only closeout merges, P4-S1 is exact next only in a fresh task.
+Its first action is to freeze non-clinical reminder acknowledgement authority,
+unit/time-zone, event, Notification and failure-truth contracts. DATA-S1, P4/P5,
+Spring, deployment and release remain separate and unstarted here.
