@@ -64,10 +64,11 @@ No arrow represents direct access to another service's tables. The BFF composes 
 
 Any divergence requires a Change ID and, when architectural, an ADR.
 
-### Accepted future polyglot direction
+### Accepted polyglot direction
 
 `CHG-2026-011`/ADR-019 accepts Community as the first Spring Boot bounded
-service beginning only at P5-S1/issue #15 and extending through P5-S2/P5-S3.
+service, implemented at P5-S1/issue #15 and available for separately governed
+extension through P5-S2/P5-S3.
 Gateway, Identity & Consent, Care Coordination, and Notification are not
 rewrite candidates for satisfying this requirement.
 
@@ -78,12 +79,12 @@ Identity & Consent remains the authority; Community receives only authorized
 minimum context and never another service's database credential or business
 implementation.
 
-P5 starts directory search on Community-owned PostgreSQL. Elasticsearch,
+P5-S1 starts directory search on Community-owned PostgreSQL. Elasticsearch,
 Redis, a broker, object storage, or another engine requires a later accepted
-ADR backed by measured access-pattern evidence. The P5 research gate must use
-official sources to pin the exact supported JDK distribution/version, Spring
-Boot version, Maven plugins, repository-owned Windows wrapper (prefer
-`mvnw.cmd`), and checksums. None exists in the repository today.
+ADR backed by measured access-pattern evidence. The completed official-source
+P5-S1 gate pins Temurin 25.0.3+9, Spring Boot 4.1.0, Maven 3.9.16, Maven
+Wrapper 3.3.4, explicit plugins and checksums under the repository-owned
+Windows bootstrap.
 
 ## 4. Repository topology
 
@@ -177,7 +178,7 @@ It owns notification and inbox/deduplication records. A task can be durably comp
 
 ### Community
 
-Responsibilities, deferred to Phase 5:
+Responsibilities:
 
 - public/approved directory metadata;
 - help requests;
@@ -186,11 +187,12 @@ Responsibilities, deferred to Phase 5:
 
 It receives only minimum-necessary consented data. It does not expose general household records.
 
-Planned runtime: the repository's first Spring Boot service, introduced
-greenfield at P5-S1 and extended rather than duplicated in P5-S2/P5-S3. Its
-runtime, wrapper, build, dependency and container pins remain undecided until
-the official-source P5 research gate; this statement does not claim Java files
-or a toolchain already exist.
+Runtime: the repository's first Spring Boot service, introduced greenfield at
+P5-S1 and extended rather than duplicated in P5-S2/P5-S3. Its accepted
+repository-scoped toolchain is checksum-pinned Temurin 25.0.3+9, Maven 3.9.16
+through Maven Wrapper 3.3.4, Spring Boot 4.1.0 and explicit build plugins.
+P5-S1 implements only bounded help requests and public PostgreSQL directory
+search; matching and moderation remain unstarted.
 
 ### Audit/read models
 
@@ -815,11 +817,13 @@ Spring Boot 4.1.0; it is process-local and does not alter the machine Java or
 Maven configuration. The complete control is
 `docs/security/P5_S1_THREAT_MODEL.md`.
 
-The candidate has focused contract, owner-isolated migration, Spring
+The accepted slice has focused contract, owner-isolated migration, Spring
 integration and built mixed-runtime browser evidence. The only full local
 P5-S1 Level C invocation retained its static-format failure, and the guarded
 same-ledger targeted continuation passed every previously unstarted gate plus
-cleanup. A later review-driven hardening pass was validated only with classified
-targeted Node, PostgreSQL, browser and reproducible-package proof; it did not
-invoke a second full campaign. Hosted exact-head and post-merge gates remain
-before acceptance.
+cleanup. A later review-driven hardening pass was validated only with
+classified targeted Node, PostgreSQL, browser and reproducible-package proof;
+it did not invoke a second full campaign. Final feature head
+`59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head CI, PR #66
+merged as `dev@ac663a714b69aace443f712f1d8ee700b5e48636`, and post-merge run
+`30397698495` passed all required jobs and the aggregate gate.

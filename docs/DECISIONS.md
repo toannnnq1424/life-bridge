@@ -378,8 +378,7 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 
 ## ADR-019 — Introduce Spring Boot at the greenfield Community boundary
 
-- Status: Implemented P5-S1 candidate; local campaign evidence reconciled,
-  hosted promotion pending
+- Status: Implemented and integrated; local and hosted P5-S1 validation passed
 - Date: 2026-07-26
 - Change ID: `CHG-2026-011`
 - Context: LifeBridge must demonstrate a bounded Spring Boot backend without
@@ -423,12 +422,16 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   fresh Identity decisions and native VI/EN LB-022/LB-024. Focused owner-
   isolated migration, Spring provider/integration and built mixed-runtime
   browser proof are green; all data is synthetic.
-- Validation and follow-up: invoke exactly one local `validate:p5-s1` Level C
-  after canonical reconciliation, then require exact-head hosted CI, one ready
-  PR, merge-commit promotion, post-merge `dev` CI and bilingual issue #15
-  closeout. Do not start P5-S2 until those gates pass. P5-S2/P5-S3 may extend
-  the same owner only through separately frozen contracts; P6 retains the
-  platform-wide mixed-version/operations proof.
+- Validation and follow-up: exactly one local `validate:p5-s1` Level C
+  invocation retained its first static-format failure; its same-ledger
+  classified continuation and the later targeted hardening proof passed
+  without a second local campaign. Final feature head
+  `59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head push/PR CI,
+  PR #66 merged as `dev@ac663a714b69aace443f712f1d8ee700b5e48636`,
+  post-merge run `30397698495` passed the aggregate gate and issue #15 closed
+  with bilingual immutable evidence. P5-S2/P5-S3 may extend the same owner only
+  through separately frozen contracts; P6 retains the platform-wide mixed-
+  version/operations proof.
 
 ## ADR-020 — Require explicit self-established consent authority
 
