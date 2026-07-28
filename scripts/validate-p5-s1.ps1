@@ -281,7 +281,10 @@ try {
   New-Item -ItemType Directory -Force -Path $runtime | Out-Null
   $head = (& git rev-parse HEAD).Trim()
   if ($LASTEXITCODE -ne 0 -or $head -notmatch '^[0-9a-f]{40}$') { throw "Candidate HEAD unavailable" }
-  $branch = (& git branch --show-current).Trim()
+  # Hosted Actions intentionally checks out the exact candidate in detached
+  # HEAD state, where git emits no branch text. Casting null to string keeps the
+  # local branch guard intact while allowing the hosted exact-SHA guard below.
+  $branch = ([string](& git branch --show-current)).Trim()
   $hosted = $env:GITHUB_ACTIONS -eq "true"
 
   if ($TargetedRecoveryAfterStaticFailure) {
