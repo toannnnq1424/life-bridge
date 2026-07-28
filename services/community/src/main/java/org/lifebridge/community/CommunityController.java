@@ -112,7 +112,7 @@ public final class CommunityController {
   public Map<String, String> version() {
     return Map.of(
         "service", "community",
-        "contract", "P5-S1-v1");
+        "contract", "P5-S2-v1");
   }
 
   @GetMapping("/health/live")

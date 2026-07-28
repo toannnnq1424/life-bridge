@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export * from "./p5-s2-community-contract.js";
+
 const opaqueIdPattern = /^[a-z][a-z0-9_-]{2,79}$/;
 const correlationIdPattern = /^[A-Za-z0-9_-]{8,80}$/;
 const idempotencyPattern = /^[\x21-\x7E]{8,128}$/;
@@ -242,8 +244,17 @@ export const ConsentScopeSchema = z.enum([
   ...RecipientContextDisclosureScopeSchema.options,
   "document_vault.access",
   "community_help_request.access",
+  "community_match.volunteer.read",
+  "community_match.volunteer.respond",
+  "community_match.coordinator.read",
+  "community_match.coordinator.manage",
+  "community_match.progress.record",
 ]);
-export const ConsentPurposeSchema = z.enum(["household_coordination", "community_support"]);
+export const ConsentPurposeSchema = z.enum([
+  "household_coordination",
+  "community_support",
+  "community_match_coordination",
+]);
 export const ConsentActionSchema = z.enum(["grant", "narrow", "revoke"]);
 export const ConsentStateSchema = z.enum(["active", "revoked"]);
 
@@ -297,7 +308,16 @@ function purposeAllowsScopes(
   if (purpose === "community_support") {
     return scopes.length === 1 && scopes[0] === "community_help_request.access";
   }
-  return scopes.every((scope) => scope !== "community_help_request.access");
+  if (purpose === "community_match_coordination") {
+    return (
+      scopes.length === 1 &&
+      scopes[0] !== "community_help_request.access" &&
+      scopes[0]!.startsWith("community_match.")
+    );
+  }
+  return scopes.every(
+    (scope) => scope !== "community_help_request.access" && !scope.startsWith("community_match."),
+  );
 }
 
 export const GrantConsentRequestSchema = z

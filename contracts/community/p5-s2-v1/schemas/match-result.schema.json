@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s2-v1/schemas/match-result.schema.json",
+  "title": "P5-S2 role-redacted match result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["matches", "serverTime", "minimumDisclosure"],
+  "properties": {
+    "matches": {
+      "type": "array",
+      "maxItems": 25,
+      "items": { "$ref": "#/$defs/MatchProjection" }
+    },
+    "nextCursor": {
+      "oneOf": [{ "type": "string", "minLength": 20, "maxLength": 1024 }, { "type": "null" }]
+    },
+    "serverTime": { "type": "string", "format": "date-time" },
+    "minimumDisclosure": { "const": "P5-S2-v1" }
+  },
+  "$defs": {
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "MatchProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "matchId",
+        "organizationId",
+        "category",
+        "provinceCityCode",
+        "dayPart",
+        "state",
+        "version",
+        "nextActions",
+        "evidenceExpiresAt",
+        "confirmedAt"
+      ],
+      "properties": {
+        "matchId": { "$ref": "#/$defs/OpaqueId" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "category": {
+          "enum": [
+            "daily_living_support",
+            "transport_coordination",
+            "household_errand",
+            "social_connection",
+            "digital_access",
+            "accessibility_support"
+          ]
+        },
+        "provinceCityCode": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[A-Z0-9-]+$"
+        },
+        "dayPart": {
+          "oneOf": [{ "enum": ["flexible", "morning", "afternoon", "evening"] }, { "type": "null" }]
+        },
+        "serviceDate": { "oneOf": [{ "type": "string", "format": "date" }, { "type": "null" }] },
+        "offerId": { "$ref": "#/$defs/OpaqueId" },
+        "accommodation": {
+          "enum": ["none_disclosed", "mobility_access_requested", "communication_access_requested"]
+        },
+        "state": {
+          "enum": [
+            "pending_approval",
+            "approved",
+            "rejected",
+            "offered",
+            "accepted",
+            "declined",
+            "assigned",
+            "in_progress",
+            "closed",
+            "revoked",
+            "expired"
+          ]
+        },
+        "capacityState": { "enum": ["available", "reserved", "full", "unknown"] },
+        "progressCheckpoint": {
+          "oneOf": [
+            {
+              "enum": [
+                "arrangements_confirmed",
+                "support_started",
+                "support_completed",
+                "unable_to_proceed"
+              ]
+            },
+            { "type": "null" }
+          ]
+        },
+        "version": { "type": "integer", "minimum": 1 },
+        "nextActions": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 5,
+          "items": {
+            "enum": [
+              "approve",
+              "reject",
+              "offer",
+              "accept",
+              "decline",
+              "assign",
+              "reassign",
+              "record_progress",
+              "close",
+              "revoke"
+            ]
+          }
+        },
+        "evidenceExpiresAt": { "type": "string", "format": "date-time" },
+        "confirmedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

@@ -8,6 +8,8 @@ import {
   ConsentTransitionEventSchema,
   CommunityAuthorizationContextSchema,
   CommunityAuthorizationRequestSchema,
+  CommunityMatchAuthorizationContextSchema,
+  CommunityMatchAuthorizationRequestSchema,
   CoordinationAuthorizationDecisionSchema,
   CoordinationAuthorizationRequestSchema,
   EstablishConsentSubjectRequestSchema,
@@ -25,6 +27,8 @@ import {
   type ConsentSubjectProjection,
   type CommunityAuthorizationContext,
   type CommunityAuthorizationRequest,
+  type CommunityMatchAuthorizationContext,
+  type CommunityMatchAuthorizationRequest,
   type CoordinationActor,
   type CoordinationAuthorizationDecision,
   type CoordinationAuthorizationRequest,
@@ -66,7 +70,7 @@ interface GrantRow extends QueryResultRow {
   grant_id: string;
   subject_id: string;
   grantee_account_id: string;
-  purpose: "household_coordination" | "community_support";
+  purpose: "household_coordination" | "community_support" | "community_match_coordination";
   scopes: ConsentScope[];
   state: "active" | "revoked";
   effective_at: Date;
@@ -779,6 +783,62 @@ export class ConsentService {
       } catch (error) {
         if (transactionOpen) await client.query("ROLLBACK");
         throw error;
+      } finally {
+        client.release();
+      }
+    });
+  }
+
+  public async authorizeCommunityMatch(input: {
+    accountId: string;
+    request: CommunityMatchAuthorizationRequest;
+    correlationId: string;
+  }): Promise<CommunityMatchAuthorizationContext> {
+    const request = CommunityMatchAuthorizationRequestSchema.parse(input.request);
+    return this.observed("community.authorize", input.correlationId, async () => {
+      const client = await this.pool.connect();
+      try {
+        const subject = (
+          await client.query<SubjectRow>(
+            `SELECT * FROM identity_consent_subjects WHERE household_id = $1`,
+            [request.householdId],
+          )
+        ).rows[0];
+        if (!subject) throw inaccessible();
+        const privacy = (
+          await client.query<{ version: number }>(
+            `SELECT version FROM identity_privacy_preferences WHERE account_id = $1`,
+            [subject.account_id],
+          )
+        ).rows[0];
+        const decisionTime = this.now();
+        const grant = (
+          await client.query<{ grant_id: string; version: number }>(
+            `SELECT grant_id, version FROM identity_consent_grants
+             WHERE subject_id = $1 AND grantee_account_id = $2
+               AND purpose = 'community_match_coordination'
+               AND scopes = ARRAY[$3]::TEXT[] AND state = 'active'
+               AND revoked_effective_at IS NULL AND effective_at <= $4
+             ORDER BY effective_at DESC, grant_id LIMIT 1`,
+            [subject.subject_id, input.accountId, request.permission, decisionTime],
+          )
+        ).rows[0];
+        if (!grant) throw inaccessible();
+        return CommunityMatchAuthorizationContextSchema.parse({
+          decisionId: this.id("decision"),
+          purpose: "community_match_coordination",
+          permission: request.permission,
+          actorRef: this.recipientRef(subject.subject_id, input.accountId),
+          recipientContextId: subject.recipient_context_id,
+          subjectVersion: subject.version,
+          grantId: grant.grant_id,
+          grantVersion: grant.version,
+          privacyVersion: privacy?.version ?? 1,
+          decidedAt: decisionTime.toISOString(),
+          expiresAt: new Date(decisionTime.getTime() + 10_000).toISOString(),
+          correlationId: input.correlationId,
+          requestDigest: request.requestDigest,
+        });
       } finally {
         client.release();
       }

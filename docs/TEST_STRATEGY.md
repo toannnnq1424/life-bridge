@@ -625,3 +625,14 @@ static/unit/build/security, checksummed bootstrap, CycloneDX and two-build
 reproducibility job passed; PostgreSQL/mixed-runtime/cumulative Chromium passed;
 and `P1 through P5-S1 full required gate` passed. The final documentation-only
 feature head must pass the same exact-head gate before merge.
+
+## P5-S2 Level C campaign
+
+After focused schema/consumer/provider, Identity v6 no-backfill, Community V2
+rollback/reapply/owner-isolation, lifecycle/concurrent-accept/revocation,
+desktop/mobile browser/accessibility and build proof are green, invoke exactly
+one `pnpm.cmd run validate:p5-s2`. The immutable marker/ledger owns that single
+campaign. A failure or detachment permits only classified failed/unstarted
+stage recovery; never invoke the full command twice. Hosted CI must repeat the
+same exact-head and exact post-merge evidence and require the terminal P1
+through P5-S2 gate.

@@ -1425,3 +1425,16 @@ forwards a raw Identity failure body: an exact revoked decision becomes
 `COMMUNITY_CONSENT_REVOKED`, other non-enumerating 401/403/404 authority
 failures become `COMMUNITY_AUTHORITY_REQUIRED`, and other Identity failures
 become `IDENTITY_SERVICE_UNAVAILABLE`.
+
+## P5-S2 Community match coordination contract (`P5-S2-v1`)
+
+The frozen language-neutral source is `contracts/community/p5-s2-v1`. Gateway
+obtains a fresh, request-digest-bound Identity decision for each protected
+query or command and forwards only the strict authorization projection.
+Volunteer and coordinator queries, approval/rejection, offer, accept/decline,
+assignment/reassignment, append-only progress, coordinator-only close,
+revocation and reconciliation use the OpenAPI paths and schemas in that tree.
+Approval lasts at most 30 days; an offer at most seven days; capacity is only an
+organization-local service date plus day-part. Stable failures distinguish
+denial/revocation, no capacity, stale/concurrent state, closed/revoked during
+action, dependency unavailable, offline blocked and post-dispatch uncertainty.

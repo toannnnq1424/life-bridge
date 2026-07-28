@@ -1,11 +1,10 @@
 # Repository Map
 
 Verified: 2026-07-29
-Candidate base: exact accepted live
-`origin/dev@486a5276ef43d143af8692501064e952a59a4829`
-Active product slice: P5-S1 implementation candidate on
-`phase/5-consented-help-request-directory`; one local Level C and promotion
-remain pending.
+Candidate base: exact accepted `origin/dev@e56df0f7d36a37f00e3c9750d112464e32cf09a1`.
+Active product slice: P5-S2 candidate on
+`phase/5-volunteer-match-organization-coordination`; one local Level C and
+promotion remain pending.
 
 This map reflects accepted P1–P4 plus the unpromoted P5-S1 candidate. P5-S2,
 P5-S3 and DATA-S1 are not started.
@@ -260,3 +259,15 @@ databases are ignored.
 Update this map only when a package/service boundary, canonical command,
 dependency direction, test location or generated-state rule changes. Routine
 edits inside a mapped boundary do not require a map rewrite.
+
+## P5-S2 candidate additions
+
+- `contracts/community/p5-s2-v1/`: frozen cross-runtime match schemas/hashes.
+- `services/community/.../V2__p5_s2_match_coordination.sql` and
+  `CommunityMatch*`: Community-owned lifecycle, audit and outbox.
+- `services/identity-consent/migrations/006_community_match_scopes.sql`: exact
+  purpose/scope authority with no backfill.
+- `apps/web/app/matching`, `apps/web/app/organization` and
+  `MatchCoordinationApp.tsx`: native Frozen-handoff LB-025/LB-026 UI.
+- `tools/quality/src/p5-s2-*`, `playwright.p5-s2.config.ts` and
+  `scripts/validate-p5-s2.ps1`: focused and one-shot acceptance proof.

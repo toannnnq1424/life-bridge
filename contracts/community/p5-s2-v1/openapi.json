@@ -1,0 +1,192 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "LifeBridge Community P5-S2 internal API",
+    "version": "P5-S2-v1",
+    "description": "Language-neutral Node Gateway to Spring Community contract for approved volunteer matches and organization coordination."
+  },
+  "servers": [{ "url": "http://127.0.0.1:3103" }],
+  "paths": {
+    "/internal/v1/community/matches/volunteer/query": {
+      "post": { "$ref": "#/components/x-operations/query" }
+    },
+    "/internal/v1/community/matches/organization/query": {
+      "post": { "$ref": "#/components/x-operations/query" }
+    },
+    "/internal/v1/community/matches/{matchId}/query": {
+      "parameters": [{ "$ref": "#/components/parameters/MatchId" }],
+      "post": { "$ref": "#/components/x-operations/query" }
+    },
+    "/internal/v1/community/matches/{matchId}/approval": {
+      "parameters": [{ "$ref": "#/components/parameters/MatchId" }],
+      "post": { "$ref": "#/components/x-operations/mutation" }
+    },
+    "/internal/v1/community/matches/{matchId}/offers": {
+      "parameters": [{ "$ref": "#/components/parameters/MatchId" }],
+      "post": { "$ref": "#/components/x-operations/mutation" }
+    },
+    "/internal/v1/community/matches/{matchId}/offers/{offerId}/response": {
+      "parameters": [
+        { "$ref": "#/components/parameters/MatchId" },
+        { "$ref": "#/components/parameters/OfferId" }
+      ],
+      "post": { "$ref": "#/components/x-operations/mutation" }
+    },
+    "/internal/v1/community/matches/{matchId}/assignment": {
+      "parameters": [{ "$ref": "#/components/parameters/MatchId" }],
+      "post": { "$ref": "#/components/x-operations/mutation" }
+    },
+    "/internal/v1/community/matches/{matchId}/progress": {
+      "parameters": [{ "$ref": "#/components/parameters/MatchId" }],
+      "post": { "$ref": "#/components/x-operations/mutation" }
+    },
+    "/internal/v1/community/matches/{matchId}/close": {
+      "parameters": [{ "$ref": "#/components/parameters/MatchId" }],
+      "post": { "$ref": "#/components/x-operations/mutation" }
+    },
+    "/internal/v1/community/matches/{matchId}/revoke": {
+      "parameters": [{ "$ref": "#/components/parameters/MatchId" }],
+      "post": { "$ref": "#/components/x-operations/mutation" }
+    },
+    "/internal/v1/community/matches/reconcile": {
+      "post": { "$ref": "#/components/x-operations/reconcile" }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "internalToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-internal-service-token"
+      }
+    },
+    "parameters": {
+      "MatchId": {
+        "name": "matchId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "OfferId": {
+        "name": "offerId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        }
+      }
+    },
+    "responses": {
+      "Failure": {
+        "description": "Stable non-enumerating P5-S2 failure",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "./schemas/common-failure.schema.json" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Command": { "$ref": "./schemas/match-command.schema.json" },
+      "Result": { "$ref": "./schemas/match-result.schema.json" }
+    },
+    "x-operations": {
+      "query": {
+        "security": [{ "internalToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "./schemas/match-command.schema.json#/$defs/QueryCommand" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Freshly authorized role-redacted projection",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./schemas/match-result.schema.json" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "403": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "409": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      },
+      "mutation": {
+        "security": [{ "internalToken": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdempotencyKey" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "./schemas/match-command.schema.json" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably confirmed authoritative transition or idempotent replay",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./schemas/match-result.schema.json" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "403": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "409": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      },
+      "reconcile": {
+        "security": [{ "internalToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "./schemas/match-command.schema.json#/$defs/ReconcileCommand" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Freshly authorized authoritative reconciliation result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./schemas/match-result.schema.json" }
+              }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      }
+    }
+  }
+}

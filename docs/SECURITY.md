@@ -437,3 +437,14 @@ mixed-runtime browser/storage/log proof is green. The sole Level C invocation
 and its same-ledger continuation are retained; later hardening used targeted
 proof only. Hosted promotion remains. KI-001/KI-016/KI-019 remain; KI-020 is
 unchanged and still scoped to P4-S3 deployment controls.
+
+## P5-S2 match coordination controls
+
+The `P5-S2-v1` threat model requires a new non-backfilled
+`community_match_coordination` purpose with one exact scope per grant/action.
+Community verifies purpose, permission, expiry (maximum ten-second decision),
+canonical request digest, current organization enrollment/role, approval,
+capacity and optimistic aggregate/subordinate versions inside the transaction.
+Same-key first use is serialized; committed state, replay, content-free audit
+and suppressed outbox evidence are atomic. Logs/events exclude request fields,
+recipient/volunteer identifiers, authority bodies and raw idempotency keys.

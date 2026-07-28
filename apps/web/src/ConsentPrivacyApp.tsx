@@ -46,6 +46,11 @@ const scopeLabels: Record<ConsentScope, [string, string]> = {
     "Quyền truy cập yêu cầu hỗ trợ cộng đồng",
     "Community help-request access",
   ],
+  "community_match.volunteer.read": ["Xem đề nghị ghép nối", "View match offers"],
+  "community_match.volunteer.respond": ["Phản hồi đề nghị", "Respond to match offers"],
+  "community_match.coordinator.read": ["Xem hàng đợi tổ chức", "View organization queue"],
+  "community_match.coordinator.manage": ["Điều phối ghép nối", "Coordinate matches"],
+  "community_match.progress.record": ["Ghi tiến độ có cấu trúc", "Record structured progress"],
 };
 
 export function ConsentPrivacyApp({ view, householdId }: { view: View; householdId?: string }) {

@@ -2412,3 +2412,70 @@ any P5-S2 code, freeze match/organization authority, approval, capacity,
 revocation, minimum disclosure and versioned command/read/event/audit/failure
 truth. P5-S2, P5-S3, DATA-S1, P6+, deployment, pilot and release remain
 unstarted.
+
+## 2026-07-29 — P5-S2 candidate implementation and local acceptance
+
+### Objective
+
+Implement only P5-S2 volunteer match and organization coordination on
+`phase/5-volunteer-match-organization-coordination` from exact accepted
+`origin/dev@e56df0f7d36a37f00e3c9750d112464e32cf09a1`.
+
+### Planned versus actual
+
+The planned same-Spring-Community, minimum-data vertical slice was retained.
+Three independent pre-code reviewers froze authority/threat, Stitch UI and
+test/operations boundaries. Four bounded synthetic Stitch references were
+generated once and read once; `P5-S2-UI-v1` is Frozen with KI-019 retained.
+Reconciliation selected separate exact P2 scopes, date+day-part capacity,
+coordinator-only close, 30-day approval, seven-day offer and append-only
+progress. No P5-S3, new service/engine, automatic dispatch or contact exchange
+was added.
+
+### Completed
+
+`P5-S2-v1` OpenAPI/JSON Schemas/hashes and Node/Java digest proof; Identity
+migration 006 and fresh ten-second exact decisions; Community Flyway V2,
+organization roles, offers, capacity, assignment, progress, close/revoke,
+idempotency, audit/outbox; Gateway consumer/session/CSRF forwarding; native
+VI/EN LB-025/LB-026 routes and recovery states; one-shot runner and hosted CI
+wiring.
+
+### Validation performed
+
+Focused contract integrity passed seven artifacts; Node consumer/Identity
+contract set passed 27 tests; TypeScript/lint/build passed; Identity v6 plus
+Community V2 rollback/reapply/no-backfill/owner-isolation passed; Spring
+provider tests passed 5/5; Spring PostgreSQL lifecycle/concurrent-accept/
+revocation tests passed 2/2; mocked desktop/mobile browser/accessibility passed
+8/8. The managed sandbox could not read the repository JDK security file, so
+Java proof ran through the approved repository-scoped command outside that
+sandbox. Task-scoped PostgreSQL containers and web processes were removed.
+
+### Exactly-once Level C and classified continuation
+
+Exactly one local `pnpm.cmd run validate:p5-s2` was invoked. Invocation
+`fbbdf1f7e40a4046aeb8dfe4297ae553` passed toolchain, locked install,
+static/contracts, governance/security and reproducible production build, then
+stopped at database provisioning because pre-existing PID 2208 owned port 3000. The marker and failed campaign truth were retained. No second Level C
+was run and the external process was not stopped or modified.
+
+A hard-bound targeted continuation reused the same ledger and moved the
+task-owned runtime to ports 3200/3201/3210–3213 and PostgreSQL 56432. It passed
+database provisioning; Identity v6 and Community V2 rollback/reapply,
+no-backfill and owner isolation; Spring lifecycle/concurrent-accept/revocation
+2/2; built Node/Spring/PostgreSQL runtime; and desktop/mobile Chromium 10/10,
+including two real-runtime cases. Candidate cleanliness and exact PID/Compose
+cleanup passed. The original campaign remains failed evidence and the
+targeted continuation is separately recorded as passed.
+
+### Validation intentionally deferred
+
+Exact-head hosted CI, merge-commit `dev` CI and issue #16 closeout remain.
+KI-001, KI-016 and KI-019 remain; KI-020 remains scoped to P4-S3 deployment.
+
+### Exact next step
+
+Finish docs/diff/secrets/canary checks and promote only this slice through one
+ready PR, exact-head/post-merge CI and bilingual issue #16 closeout. Do not run
+local Level C again or start P5-S3 or later work.

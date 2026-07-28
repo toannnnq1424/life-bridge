@@ -304,6 +304,57 @@ describe("P2-S3 consent internal HTTP boundary", () => {
   });
 });
 
+describe("P5-S2 match authority boundary", () => {
+  it("requires mutation session proof and returns only the fresh exact decision", async () => {
+    const decision = {
+      decisionId: "decision_match_synthetic",
+      purpose: "community_match_coordination" as const,
+      permission: "community_match.volunteer.respond" as const,
+      actorRef: "actor_match_synthetic",
+      recipientContextId: "recipient_match_synthetic",
+      subjectVersion: 2,
+      grantId: "grant_match_synthetic",
+      grantVersion: 1,
+      privacyVersion: 1,
+      decidedAt: "2026-07-29T00:00:00.000Z",
+      expiresAt: "2026-07-29T00:00:10.000Z",
+      correlationId: "corr_match_authority",
+      requestDigest: "a".repeat(64),
+    };
+    const identity = {
+      isReady: vi.fn(async () => true),
+      requireAccountSession: vi.fn(async () => ({ accountId: "account_synthetic" })),
+    } as unknown as IdentityService;
+    const consent = {
+      authorizeCommunityMatch: vi.fn(async () => decision),
+    } as unknown as ConsentService;
+    const app = buildIdentityServer(identity, "internal-token-value-123456789", undefined, consent);
+    const response = await app.inject({
+      method: "POST",
+      url: "/internal/v1/community/matches/authorize",
+      headers: {
+        "x-internal-service-token": "internal-token-value-123456789",
+        "x-session-token": "s".repeat(43),
+        "x-csrf-token": "c".repeat(43),
+        "x-correlation-id": "corr_match_authority",
+      },
+      payload: {
+        permission: "community_match.volunteer.respond",
+        householdId: "household_synthetic",
+        requestDigest: "a".repeat(64),
+      },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["cache-control"]).toBe("no-store");
+    expect(response.json().data).toEqual(decision);
+    expect(identity.requireAccountSession).toHaveBeenCalledWith("s".repeat(43), "c".repeat(43));
+    expect(consent.authorizeCommunityMatch).toHaveBeenCalledWith(
+      expect.objectContaining({ accountId: "account_synthetic" }),
+    );
+    await app.close();
+  });
+});
+
 describe("P3-S1 coordination authority HTTP boundary", () => {
   it("requires a fresh session and mutation proof only for a selected handoff target", async () => {
     const requireAccountSession = vi.fn(async () => ({ accountId: "account_synthetic" }));
