@@ -284,7 +284,8 @@ try {
   # Hosted Actions intentionally checks out the exact candidate in detached
   # HEAD state, where git emits no branch text. Casting null to string keeps the
   # local branch guard intact while allowing the hosted exact-SHA guard below.
-  $branch = ([string](& git branch --show-current)).Trim()
+  $branchOutput = @(& git branch --show-current)
+  $branch = ($branchOutput -join "").Trim()
   $hosted = $env:GITHUB_ACTIONS -eq "true"
 
   if ($TargetedRecoveryAfterStaticFailure) {
