@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s1-v1/schemas/public-directory-result.schema.json",
+  "title": "P5-S1 public directory result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "items",
+    "generatedAt",
+    "cachePolicy",
+    "matchingState",
+    "resultMeaning"
+  ],
+  "properties": {
+    "items": {
+      "type": "array",
+      "maxItems": 25,
+      "items": { "$ref": "#/$defs/Listing" }
+    },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "cachePolicy": { "const": "public_5m_session_24h" },
+    "matchingState": { "const": "unavailable_in_p5_s1" },
+    "resultMeaning": {
+      "const": "informational_not_eligibility_availability_or_endorsement"
+    }
+  },
+  "$defs": {
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "Category": {
+      "enum": [
+        "daily_living_support",
+        "transport_coordination",
+        "household_errand",
+        "social_connection",
+        "digital_access",
+        "accessibility_support"
+      ]
+    },
+    "ContactChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "label", "value"],
+      "properties": {
+        "type": { "enum": ["phone", "website", "in_person"] },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "Provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceLabel",
+        "sourceUrl",
+        "lastReviewedAt",
+        "nextReviewAt",
+        "state"
+      ],
+      "properties": {
+        "sourceLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 500
+        },
+        "lastReviewedAt": { "type": "string", "format": "date-time" },
+        "nextReviewAt": { "type": "string", "format": "date-time" },
+        "state": { "enum": ["current", "stale"] }
+      }
+    },
+    "Listing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "listingId",
+        "publicName",
+        "organizationType",
+        "provinceCityCode",
+        "provinceCityLabel",
+        "categories",
+        "contactChannel",
+        "accessibilityContactNote",
+        "provenance",
+        "availabilityState",
+        "eligibilityState",
+        "endorsementState"
+      ],
+      "properties": {
+        "listingId": { "$ref": "#/$defs/OpaqueId" },
+        "publicName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "organizationType": {
+          "enum": ["public_service", "nonprofit", "community_group"]
+        },
+        "provinceCityCode": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[A-Z0-9-]+$"
+        },
+        "provinceCityLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/Category" }
+        },
+        "contactChannel": { "$ref": "#/$defs/ContactChannel" },
+        "accessibilityContactNote": {
+          "oneOf": [
+            { "const": "contact_for_accessibility_details" },
+            { "type": "null" }
+          ]
+        },
+        "provenance": { "$ref": "#/$defs/Provenance" },
+        "availabilityState": { "const": "not_verified" },
+        "eligibilityState": { "const": "not_determined" },
+        "endorsementState": { "const": "none" }
+      }
+    }
+  }
+}

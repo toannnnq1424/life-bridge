@@ -9,10 +9,12 @@ Tooling canary: PASS WITH CONTROLLED EXCEPTION (CHG-2026-006)
 Approved Stitch projects: 1 private non-production project
 Registered screens: P1 LB-011/LB-013/LB-014/LB-019, P3-S1 LB-012/LB-014,
 P3-S2 LB-015/LB-016, P3-S3 LB-017, P4-S1 LB-018 plus minimum LB-019,
-P4-S2 LB-020/LB-021/required LB-032, and P4-S3 LB-023 synthetic references
+P4-S2 LB-020/LB-021/required LB-032, P4-S3 LB-023, and P5-S1 LB-022/LB-024
+synthetic references
 Imported artifacts: None
-Production UI implementation: P3-S3 native UI is accepted through PR #56 and
-follows the Frozen corrected handoff; generated source remains rejected
+Production UI implementation: P5-S1 native candidate follows the Frozen
+corrected handoff; generated source remains rejected; one local Level C and
+hosted promotion are pending
 ```
 
 On 2026-07-26 the user authorized one bounded use of a disposable
@@ -167,6 +169,8 @@ docs/design/reviews/SCREEN_HANDOFF_TEMPLATE.md
 | `LB-020` P4-S2      | `STITCH-P1-001`         | Private aliases `P4S2-LB020-ORDER`, `P4S2-LB020-RECOVERY`                                                | 1.0            | Remote references only; generated source not imported         | [`P4_S2_STITCH_HANDOFF.md`](reviews/P4_S2_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-28    |
 | `LB-021` P4-S2      | `STITCH-P1-001`         | Private aliases `P4S2-LB021-LIVE`, `P4S2-LB021-OFFLINE`                                                  | 1.0            | Remote references only; generated source not imported         | [`P4_S2_STITCH_HANDOFF.md`](reviews/P4_S2_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-28    |
 | `LB-023` P4-S3      | `STITCH-P1-001`         | Private aliases `P4S3-LB023-UPLOAD`, `P4S3-LB023-VALIDATION`, `P4S3-LB023-ACCESS`, `P4S3-LB023-RECOVERY` | 1.0            | Remote references only; generated source not imported         | [`P4_S3_STITCH_HANDOFF.md`](reviews/P4_S3_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-28    |
+| `LB-022` P5-S1      | `STITCH-P1-001`         | Private aliases `P5S1-LB022-CURRENT`, `P5S1-LB022-RECOVERY`                                              | 1.0            | Remote references only; generated source not imported         | [`P5_S1_STITCH_HANDOFF.md`](reviews/P5_S1_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-28    |
+| `LB-024` P5-S1      | `STITCH-P1-001`         | Private aliases `P5S1-LB024-DIRECTORY`, `P5S1-LB024-RECOVERY`                                            | 1.0            | Remote references only; generated source not imported         | [`P5_S1_STITCH_HANDOFF.md`](reviews/P5_S1_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-28    |
 | Other inventory IDs | None                    | None                                                                                                     | None           | None                                                          | Pending                                                      | Not generated | Not reviewed                                           | N/A           |
 
 Allowed design status values:
@@ -396,20 +400,17 @@ Product requirements
   credential are not yet user-confirmed; this is a deployment gate.
 - A future Stitch session requires a newly approved restricted credential and
   scoped activation; the committed configuration remains disabled.
-- The P1 review references have an explicit correction list in
-  `docs/design/reviews/P1_S1_STITCH_HANDOFF.md`.
-- Foundation architecture and shared contract policy are defined; executable
-  `P1-S1` service contracts are planned but not implemented or frozen.
+- KI-019 remains because the authorized read-back surface exposed metadata but
+  not independently inspectable private pixels. No accepted slice may claim
+  the generated renders are standalone visual approval.
+- KI-016 retains manual screen-reader, physical-device, text-spacing and
+  assistive-technology zoom evidence before pilot/release.
+- P5-S1's four synthetic references and Frozen corrected handoff are complete;
+  do not regenerate, retry, export or persist remote locators/source. Native
+  LB-022/LB-024 implementation is candidate-complete. The sole full local
+  Level C static failure and guarded same-ledger passing continuation are
+  retained; hosted promotion remains before product acceptance.
 
-The Stitch generation gate is satisfied for P1 design direction. Production UI
-implementation remains blocked until the P1 handoff and service contracts are
-frozen:
-
-```text
-Reviewed Stitch direction
-→ freeze task/event/API contracts
-→ resolve correction list
-→ accessibility/privacy/security approval
-→ frozen handoff
-→ repository-native frontend implementation
-```
+The protected `STITCH_MCP_CANARY.md` is owned outside P5-S1 and remains
+untouched with no worktree/index diff. P5-S2 requires a new task and its own
+reviewed handoff; P5-S1 evidence does not authorize matching UI.

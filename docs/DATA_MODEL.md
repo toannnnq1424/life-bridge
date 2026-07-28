@@ -507,3 +507,49 @@ matching upload replay atomically, so its old key cannot resurrect the object.
 A post-delete backup may contain historical residue; production retirement and
 non-resurrection remain an explicit deployment gate, not a completed P4-S3
 claim.
+
+## P5-S1 Community-owned request and directory data
+
+Community owns a separate PostgreSQL database/role and Flyway history. No
+Gateway, Identity, Care or Notification credential can read or write its
+tables, and Community has no privilege on another service database. Migration
+`V1__p5_s1_community.sql` creates schema only; it inserts no request, listing,
+audit, replay, tombstone or event. The guarded fixture loader is the only path
+for clearly fictional `SYN-PC-*` directory data.
+
+| Table                          | Essential invariant                                                                                                                                                                                                                                                    |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `community_schema_state`       | One `community` row proves owner schema version 1 for readiness; it is not product data.                                                                                                                                                                               |
+| `community_directory_listings` | Reviewed public metadata only; structured category/province-city/organization-type indexes; provenance dates are authoritative and no rank/eligibility/availability/endorsement inference exists.                                                                      |
+| `community_help_requests`      | Opaque request/reference binding plus recipient context, one bounded category, province/city, optional day part, exact visibility, `pending \| closed`, optimistic version and retention instants. One pending request per recipient/category/location/day-part tuple. |
+| `community_idempotency`        | Digest-only key/actor/route/aggregate/intent binding and bounded authoritative response for 24-hour submit/close/delete replay; no raw key or request content. `aggregate_ref_digest` is indexed so delete/purge can invalidate protected historical responses.        |
+| `community_request_tombstones` | Digest-only request/actor/submission-reference evidence prevents delete/replay resurrection for at most 365 days.                                                                                                                                                      |
+| `community_audit`              | Enumerated action/outcome, opaque actor/aggregate digests, version, correlation and UTC only; no category, location, day part, listing, contact, authority body or request payload.                                                                                    |
+| `community_outbox`             | Content-free submitted/closed/deleted facts with opaque aggregate/event IDs, version, lifecycle, UTC, correlation/causation and `suppressed_not_configured`; `(aggregate_id, aggregate_version)` is unique; no delivery or matching consumer.                          |
+
+The lifecycle is `pending -> closed -> deleted`. Pending rows auto-close after
+30 days. Closed protected fields purge within 30 additional days. Explicit
+delete purges active fields immediately. Audit, tombstone and suppressed
+outbox evidence is bounded to 365 days; replay payloads expire after 24 hours.
+Deletion makes no historical production-backup erasure or legal-hold claim.
+
+Submit/close/delete changes, their redacted audit, replay result and outbox row
+commit in one Community transaction. Same digest-bound idempotent intent
+returns the original result; changed intent fails. Close/delete lock the
+aggregate and require exact `expectedVersion`; one concurrent mutation wins
+and the stale mutation cannot overwrite it. Reconciliation by
+`submissionReference` always requires a new Identity decision.
+
+The first use of each actor/operation/key/route tuple is serialized before its
+replay lookup. Explicit delete and retention purge remove every earlier replay
+bound to the aggregate, then explicit delete stores only its minimal response.
+Auto-close and purge run from the Community-owned scheduler as well as
+opportunistically before protected operations; `FOR UPDATE SKIP LOCKED` avoids
+two sweep workers processing the same aggregate. Delete/purge audit and outbox
+facts use the next aggregate version, never the last protected-row version.
+
+The public search query is parameterized and allowlisted, returns at most 25
+rows and orders by `public_name`, then `listing_id`. Location granularity is
+province/city only. Migration apply, forced rollback, checksum-verified
+reapply, zero backfill and cross-owner privilege isolation are mandatory Level
+C/hosted evidence and do not authorize any production directory import.

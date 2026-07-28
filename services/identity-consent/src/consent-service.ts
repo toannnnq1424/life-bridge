@@ -6,6 +6,8 @@ import {
   ConsentOverviewProjectionSchema,
   ConsentSubjectProjectionSchema,
   ConsentTransitionEventSchema,
+  CommunityAuthorizationContextSchema,
+  CommunityAuthorizationRequestSchema,
   CoordinationAuthorizationDecisionSchema,
   CoordinationAuthorizationRequestSchema,
   EstablishConsentSubjectRequestSchema,
@@ -21,6 +23,8 @@ import {
   type ConsentOverviewProjection,
   type ConsentScope,
   type ConsentSubjectProjection,
+  type CommunityAuthorizationContext,
+  type CommunityAuthorizationRequest,
   type CoordinationActor,
   type CoordinationAuthorizationDecision,
   type CoordinationAuthorizationRequest,
@@ -62,7 +66,7 @@ interface GrantRow extends QueryResultRow {
   grant_id: string;
   subject_id: string;
   grantee_account_id: string;
-  purpose: "household_coordination";
+  purpose: "household_coordination" | "community_support";
   scopes: ConsentScope[];
   state: "active" | "revoked";
   effective_at: Date;
@@ -651,6 +655,120 @@ export class ConsentService {
           privacyVersion: privacy?.version ?? null,
           target: target ?? null,
           eligibleTargets,
+          decidedAt: decisionTime.toISOString(),
+          correlationId: input.correlationId,
+          requestDigest: request.requestDigest,
+        });
+        await client.query("COMMIT");
+        transactionOpen = false;
+        return decision;
+      } catch (error) {
+        if (transactionOpen) await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    });
+  }
+
+  public async authorizeCommunity(input: {
+    accountId: string;
+    request: CommunityAuthorizationRequest;
+    correlationId: string;
+  }): Promise<CommunityAuthorizationContext> {
+    const request = CommunityAuthorizationRequestSchema.parse(input.request);
+    return this.observed("community.authorize", input.correlationId, async () => {
+      const client = await this.pool.connect();
+      let transactionOpen = false;
+      try {
+        await client.query("BEGIN");
+        transactionOpen = true;
+        await this.requireActiveMember(client, input.accountId, request.householdId);
+
+        const subjectResult = await client.query<SubjectRow>(
+          `SELECT * FROM identity_consent_subjects
+           WHERE household_id = $1
+           FOR SHARE`,
+          [request.householdId],
+        );
+        const subject = subjectResult.rows[0];
+        if (!subject) throw inaccessible();
+
+        const privacyResult = await client.query<{
+          coordination_activity_visibility: "hidden" | "household_only";
+          version: number;
+        }>(
+          `SELECT coordination_activity_visibility, version
+           FROM identity_privacy_preferences
+           WHERE account_id = $1`,
+          [subject.account_id],
+        );
+        const privacy = privacyResult.rows[0];
+        const decisionTime = this.now();
+        const grantResult = await client.query<{
+          grant_id: string;
+          version: number;
+          state: "active" | "revoked";
+          revoked_effective_at: Date | null;
+        }>(
+          `SELECT grant_id, version, state, revoked_effective_at
+           FROM identity_consent_grants
+           WHERE subject_id = $1
+             AND grantee_account_id = $2
+             AND purpose = 'community_support'
+             AND effective_at <= $3
+             AND scopes = ARRAY['community_help_request.access']::TEXT[]
+           ORDER BY effective_at DESC, grant_id
+           LIMIT 1`,
+          [subject.subject_id, input.accountId, decisionTime],
+        );
+        const actorGrant = grantResult.rows[0];
+        const actorIsSubject = subject.account_id === input.accountId;
+        const actorGrantIsActive =
+          actorGrant?.state === "active" && actorGrant.revoked_effective_at === null;
+        if (
+          !actorIsSubject &&
+          (!actorGrantIsActive || privacy?.coordination_activity_visibility !== "household_only")
+        ) {
+          await this.audit(
+            client,
+            subject.subject_id,
+            input.accountId,
+            actorGrant?.grant_id ?? null,
+            "recipient_context.access_denied",
+            "denied",
+            input.correlationId,
+            decisionTime,
+          );
+          await client.query("COMMIT");
+          transactionOpen = false;
+          if (actorGrant?.state === "revoked") throw communityConsentRevoked();
+          throw inaccessible();
+        }
+        const authorizedGrant = actorIsSubject ? undefined : actorGrant;
+
+        await this.audit(
+          client,
+          subject.subject_id,
+          input.accountId,
+          authorizedGrant?.grant_id ?? null,
+          "recipient_context.access_allowed",
+          "allowed",
+          input.correlationId,
+          decisionTime,
+        );
+        const decision = CommunityAuthorizationContextSchema.parse({
+          decisionId: this.id("decision"),
+          purpose: "community_support",
+          permission: request.permission,
+          actorRef: this.recipientRef(subject.subject_id, input.accountId),
+          householdId: request.householdId,
+          recipientContextId: subject.recipient_context_id,
+          subjectVersion: subject.version,
+          grantId: authorizedGrant?.grant_id ?? null,
+          grantVersion: authorizedGrant?.version ?? null,
+          privacyVersion: privacy?.version ?? null,
+          requestId: request.requestId ?? null,
           decidedAt: decisionTime.toISOString(),
           correlationId: input.correlationId,
           requestDigest: request.requestDigest,
@@ -1281,4 +1399,8 @@ function transitionPast(action: "grant" | "narrow" | "revoke") {
 
 function inaccessible(): IdentityError {
   return new IdentityError(404, "CONSENT_RESOURCE_NOT_FOUND", "consent.resource_not_found");
+}
+
+function communityConsentRevoked(): IdentityError {
+  return new IdentityError(403, "COMMUNITY_CONSENT_REVOKED", "community.consent.revoked");
 }

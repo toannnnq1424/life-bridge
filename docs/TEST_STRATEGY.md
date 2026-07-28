@@ -482,3 +482,146 @@ plus a real Gateway→Identity→Care consent/grant/confirm/revoke journey. Work
 remain one, retries zero, and trace/screenshot/video off. Only classified
 targeted recovery may follow an unproven failure; successful full gates are not
 rerun merely because output detached.
+
+## P5-S1 Level C campaign
+
+Exactly one `pnpm.cmd run validate:p5-s1` campaign proves the reconciled
+candidate. The runner records an atomic one-shot marker, candidate HEAD/branch/
+diff digest, privacy-safe stage ledger and transcript before gates. A detached
+or failed campaign retains that evidence and permits only classified targeted
+recovery; the full Level C command is never invoked a second time.
+
+Required stages, in order:
+
+1. frozen `contracts/community/p5-s1-v1` schema/hash/reference integrity and the
+   same fixed canonical request-digest vectors in Node and Java;
+2. Node model/Gateway consumer and Spring provider/unit contracts, including
+   strict fields/failures, malformed success rejection and public/protected
+   route separation;
+3. docs/config/secrets/dependency gates; exact Temurin 25.0.3+9 archive digest,
+   Maven 3.9.16/Wrapper 3.3.4 metadata, Boot 4.1.0/enforcer/plugin pins,
+   CycloneDX provenance and no system Java/Maven substitution;
+4. production Node and clean Spring packages, two-build Community artifact
+   reproducibility, and packaged liveness/readiness/version startup;
+5. cumulative accepted P1–P4 PostgreSQL integrations and migrations;
+6. Community-owned Flyway V1 apply, forced rollback, checksum-verified reapply,
+   zero request/listing/audit/outbox backfill and role/database privilege
+   isolation;
+7. live Community integration for fresh decision/digest rejection,
+   idempotent replay/changed intent, duplicate tuple, optimistic concurrency,
+   one atomic request/audit/outbox transition, retention/delete/tombstone,
+   parameterized search and current/stale provenance;
+8. built Web→Gateway→Identity→Spring Community→Community PostgreSQL LB-022/
+   LB-024 runtime, proving public search makes no Identity decision and
+   protected submit/read/close/delete consume fresh decisions;
+9. desktop and mobile mocked VI/EN loading/empty/location-denied/stale/offline/
+   unavailable plus draft/validation/denied/revoked/duplicate/conflict/
+   uncertain/pending/closed/delete and explicit matching-boundary paths;
+10. cumulative browser regressions plus keyboard/focus, axe, 44 px targets,
+    320 px reflow, forced colors, reduced motion, no protected browser
+    persistence and privacy-safe logs/diff/canary checks;
+11. exact cleanup of only invocation PIDs, databases, Compose project,
+    ports/logs/browser artifacts while retaining the ignored marker/ledger/
+    transcript.
+
+Local focused evidence is already green for schema/consumer, Spring clean
+package/provider/unit, Community migration/owner isolation/integration,
+desktop/mobile mocked browser 6/6 and built mixed-runtime browser 1/1. That
+does not substitute for the one cumulative campaign. Hosted CI must test the
+literal feature head through the same wrapper/contracts, then test the exact
+merge commit on `dev`; a prior green SHA is not acceptance evidence.
+
+KI-001 still blocks deployment. KI-016 retains manual NVDA/Narrator,
+physical-device, text-spacing and assistive-technology zoom rows. KI-019
+retains independent private-render review. KI-020 remains scoped to P4-S3 and
+is not resolved by Community. P5-S2 is not part of this campaign.
+
+### P5-S1 actual one-shot result
+
+The sole full invocation, ID
+`01d2ea18bc4845f88bf55ceddbfeea44`, immutably failed its first
+`static-schema-integrity` stage after toolchain and locked install passed.
+`format:p1:check` had traversed generated
+`services/community/target/classes/META-INF/sbom/community-sbom.json`; no
+database, service or browser runtime had started, and original cleanup passed.
+The marker retains original candidate digest
+`0d801063ff24673207878b9facd08e68ca35b93c186dca5f20fc99399643e449`.
+
+The correction excludes generated Maven `target/` output from source
+formatting and Git source inventory. The guarded
+`-TargetedRecoveryAfterStaticFailure` continuation verified the exact marker
+and failure signature, reused its invocation/project/ledger/transcript and
+appended corrected candidate digest
+`6f234d1361b1707c69c122645521ce42038345f0e878b445c4a3856b5ddd70db`.
+It then passed corrected static and every previously unstarted gate: contracts,
+docs/config/secrets/audit, production/reproducible builds, cumulative
+PostgreSQL, Community migration/owner isolation and Java database 9/9, P5
+desktop/mobile mixed-runtime browser 8/8, cumulative P2–P4 browsers,
+privacy/diff/canary and cleanup. Both clean Spring packages produced SHA-256
+`811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`.
+
+The append-only ledger ends with `targeted-continuation: pass`; the original
+campaign failure and marker remain unchanged. No second full Level C was
+invoked. Hosted exact-feature-head and post-merge CI must now prove the final
+committed source; local Level C must not be repeated.
+
+### Post-continuation review hardening
+
+A late independent code review identified release blockers that the successful
+same-ledger continuation did not exercise directly: aggregate replay
+invalidation after delete/purge, first-use same-key serialization, monotonic
+delete/purge evidence, an owned retention scheduler, stable Identity denial/
+revocation mapping and a no-GPS UI claim that still invoked geolocation. The
+candidate was corrected without altering the campaign marker/ledger or invoking
+the full Level C command again.
+
+Classified targeted recovery then passed:
+
+- Node typecheck, focused lint and four P5 contract files with 18/18 tests,
+  including raw Identity denial normalization and exact revoked mapping;
+- the task-scoped PostgreSQL project
+  `lifebridge-p5s1-hardening-29448`: migration rollback/reapply/no-backfill/
+  owner isolation, Identity integration 10/10 with grant then revoke, and
+  Community 11/11 with five database integrations covering retention,
+  aggregate replay invalidation, monotonic outbox versions and concurrent
+  first use of one raw idempotency key;
+- the production Web build and mocked desktop/mobile P5 browser suite 6/6,
+  directly covering empty/unavailable/location-denied/location-unavailable,
+  duplicate/uncertain/conflict/denied/revoked/closed, axe, focus and zero
+  geolocation calls. The first targeted browser attempt failed only on a test
+  label locator mismatch before any product defect; the corrected locator then
+  passed, and exact runtime/output cleanup succeeded;
+- two clean Community `verify` packages with valid CycloneDX 1.6 provenance
+  and identical post-hardening JAR SHA-256
+  `13415e9ec9a8dfec40cb66f79bf16735ef3236ede83565b44330d78239285dbf`.
+
+These are targeted proofs of the changed surfaces, not a replacement or rerun
+of the retained one-shot campaign. Hosted exact-head CI remains the next
+cumulative acceptance gate.
+
+### Hosted exact-head recovery
+
+The first push and pull-request runs for feature head
+`094f0e8e568f51cf3b1655d12d2b46667d534ba1` failed before product acceptance.
+Windows `actions/setup-java` rejected the shorter catalog spelling
+`25.0.3+9` while listing the same accepted Temurin build as
+`25.0.3+9.0.LTS`. The Linux database job then stopped before marker/ledger
+creation because the exact-SHA checkout was detached and the runner called
+`.Trim()` on the empty `git branch --show-current` output. Runs
+`30395378226` and `30395421725` retain those failures.
+
+The hosted catalog alias correction passed JDK setup on the next head, while
+direct string casting still exposed the same PowerShell null-binding behavior.
+Superseding runs `30395651937` and `30395657771` retain that classified
+pre-marker result and were cancelled automatically when the next correction
+was pushed. Capturing native output as an array and joining before trimming
+preserves the local exact-branch guard and permits detached hosted exact-SHA
+validation.
+
+Code-bearing exact head
+`74079f829a4c7f9ad20d9e2451f457e766a05a17` then passed both hosted events:
+push run `30395832352` and pull-request run `30395839829`. The Windows
+static/unit/build/security, checksummed bootstrap, CycloneDX and two-build
+reproducibility job passed; PostgreSQL/mixed-runtime/cumulative Chromium passed;
+and `P1 through P5-S1 full required gate` passed. The final documentation-only
+feature head must pass the same exact-head gate before merge.

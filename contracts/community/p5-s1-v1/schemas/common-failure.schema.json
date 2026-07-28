@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s1-v1/schemas/common-failure.schema.json",
+  "title": "P5-S1 failure envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "messageKey", "retryable", "correlationId"],
+      "properties": {
+        "code": {
+          "enum": [
+            "COMMUNITY_REQUEST_VALIDATION_FAILED",
+            "COMMUNITY_REQUEST_DUPLICATE",
+            "COMMUNITY_REQUEST_VERSION_CONFLICT",
+            "COMMUNITY_REQUEST_STATE_CONFLICT",
+            "COMMUNITY_REQUEST_RESULT_UNKNOWN",
+            "COMMUNITY_RESOURCE_NOT_FOUND",
+            "COMMUNITY_AUTHORITY_REQUIRED",
+            "COMMUNITY_CONSENT_REVOKED",
+            "IDEMPOTENCY_KEY_REQUIRED",
+            "IDEMPOTENCY_CONFLICT",
+            "DIRECTORY_VALIDATION_FAILED",
+            "DIRECTORY_SEARCH_UNAVAILABLE",
+            "IDENTITY_SERVICE_UNAVAILABLE",
+            "COMMUNITY_SERVICE_UNAVAILABLE",
+            "INTERNAL_CONTRACT_INVALID"
+          ]
+        },
+        "messageKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^[a-z0-9._-]+$"
+        },
+        "retryable": { "type": "boolean" },
+        "correlationId": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      }
+    }
+  }
+}

@@ -757,3 +757,69 @@ Logical dump/restore is scoped to the Care owner and tests pre-delete byte/
 binding recovery plus post-delete non-resurrection. It does not establish
 production encryption, historical-backup retirement or RPO/RTO. Those remain
 deployment gates.
+
+## P5-S1 Spring Community boundary
+
+P5-S1 realizes ADR-019 without rewriting an accepted Node service:
+
+```text
+native LB-024 public directory
+  -> Node Gateway identity-free public route
+    -> Spring Community structured PostgreSQL search
+
+native LB-022 protected request
+  -> Node Gateway session/origin/CSRF boundary
+    -> fresh Identity community_support decision
+      -> Spring Community decision revalidation
+        -> Community-owned PostgreSQL transaction
+          -> request + audit + idempotency + suppressed outbox
+```
+
+Community is one greenfield Spring Boot service and the sole owner of its
+PostgreSQL role/database, Flyway migration V1, directory/search indexes,
+request aggregates, replay/tombstone evidence, audit and transactional outbox.
+Gateway stores no Community fact. Identity remains the only consent/subject/
+grant authority. Care and Notification receive no Community call, event,
+credential or table access in P5-S1.
+
+Gateway normalizes the Identity boundary rather than leaking its internal
+errors: exact Community revocation maps to `COMMUNITY_CONSENT_REVOKED`, other
+non-enumerating authority failures map to `COMMUNITY_AUTHORITY_REQUIRED`, and
+dependency/contract failures map to `IDENTITY_SERVICE_UNAVAILABLE`.
+
+The Node/Spring boundary is the frozen language-neutral
+`contracts/community/p5-s1-v1` OpenAPI/JSON Schema tree. Both runtimes verify
+its recorded hashes and the same fixed canonical request-digest vectors.
+Business ownership and generated SDK/source are not shared. Protected calls
+carry only the minimum fresh ten-second decision projection; public directory
+calls carry no Identity or household context.
+
+PostgreSQL is the only search engine. Filters are structured and allowlisted,
+results are bounded/deterministic, and provenance freshness is stored owner
+data. No Redis, Elasticsearch, broker, object storage, new cache/storage/
+crypto engine or second Community service is introduced. Gateway's five-
+minute public response cache and the browser's identity-free 24-hour
+`sessionStorage` fallback do not contain protected request state.
+
+Community serializes first-use idempotency keys and duplicate boundaries with
+transaction-scoped PostgreSQL advisory locks. Replay rows are aggregate-digest
+linked and invalidated on explicit deletion or retention purge. A Community-
+owned scheduled sweep uses row locks with `SKIP LOCKED` for the 30-day auto-
+close and subsequent 30-day protected-field purge; audit/outbox versions remain
+monotonic and outbox aggregate/version pairs are unique.
+
+The service exposes separate `/health/live`, database/migration-aware
+`/health/ready` and `/version` endpoints. The accepted repository toolchain is
+checksum-pinned Temurin 25.0.3+9, Maven 3.9.16 through Maven Wrapper 3.3.4 and
+Spring Boot 4.1.0; it is process-local and does not alter the machine Java or
+Maven configuration. The complete control is
+`docs/security/P5_S1_THREAT_MODEL.md`.
+
+The candidate has focused contract, owner-isolated migration, Spring
+integration and built mixed-runtime browser evidence. The only full local
+P5-S1 Level C invocation retained its static-format failure, and the guarded
+same-ledger targeted continuation passed every previously unstarted gate plus
+cleanup. A later review-driven hardening pass was validated only with classified
+targeted Node, PostgreSQL, browser and reproducible-package proof; it did not
+invoke a second full campaign. Hosted exact-head and post-merge gates remain
+before acceptance.

@@ -877,3 +877,108 @@ failures, not product failures.
 - Follow-up: merge only this same-task docs-only canonical closeout. P5-S1 may
   start only in a fresh task with official toolchain research and frozen
   Community authority/data/API/event/failure boundaries. Do not start it here.
+
+## INT-2026-023 — P5-S1 Spring Community request and directory candidate
+
+- Date: 2026-07-29
+- Status: local candidate evidence complete through exactly one Level C
+  invocation and classified targeted continuation; hosted promotion pending
+- Source: `phase/5-consented-help-request-directory` from exact accepted
+  `origin/dev@486a5276ef43d143af8692501064e952a59a4829`
+- Target: `dev`; canonical issue #15 remains open and must be verified again
+  before any closeout mutation
+- Scope: P5-S1 only; LB-022 `/help/new` and LB-024 `/community`; no P5-S2
+  matching, P5-S3 moderation, DATA-S1, P6+, deployment, pilot or release
+- Pre-code control: the contract/toolchain/threat, Stitch privacy/accessibility
+  and test/CI/operations reviewers completed independently and were reconciled
+  before Java/product code. Four synthetic desktop/mobile Stitch references
+  were written once and read back once; generated source and invented facts
+  were rejected. The redacted handoff is Frozen for native semantics and
+  KI-019 remains because private pixels were unavailable.
+- Contracts/authority: `contracts/community/p5-s1-v1` freezes language-neutral
+  OpenAPI/JSON Schemas and `SHA256SUMS`. Node and Java test the same five fixed
+  canonical request-digest vectors. Identity adds `community_support` plus
+  `community_help_request.access` without backfill and issues one fresh exact-
+  action decision for every protected request operation. Public directory
+  reads call Community without Identity or protected context.
+- Ownership/data: the greenfield Spring Boot Community service alone owns its
+  PostgreSQL role/database, Flyway V1, request/directory/search data,
+  idempotency/tombstones, privacy-safe audit and suppressed transactional
+  outbox. PostgreSQL structured search is the only engine. Gateway, Identity,
+  Care and Notification receive no Community SQL credential or ownership.
+- Product truth: requests accept only category, province/city, optional broad
+  day part and reviewed disclosure. `submitted` is a confirmed command outcome;
+  `pending` promises no review, queue, match, availability, eligibility,
+  safety, delivery or outcome. Protected offline submission is blocked. Public
+  listings show minimum reviewed provenance and explicit stale/not-verified/
+  not-determined/no-endorsement truth.
+- Toolchain: official pins are Temurin 25.0.3+9 with frozen Windows archive
+  SHA-256, Spring Boot 4.1.0, Maven 3.9.16, Wrapper 3.3.4 and explicit Maven
+  plugins/dependencies. Bootstrap and wrappers are repository-scoped and
+  process-local; machine Java/Maven/Execution Policy are unchanged.
+- Focused evidence: frozen contract integrity and hashes pass; Node consumer/
+  contracts pass 16/16; Spring clean package/provider/unit passes 9 total with
+  database-gated tests skipped only outside their owner harness; Community
+  PostgreSQL rollback/reapply/no-backfill/privilege proof and live integration
+  pass, including idempotency, conflict, concurrency, delete/tombstone,
+  provenance and content-free audit/outbox. Mocked desktop/mobile LB-022/
+  LB-024 passes 6/6 and the built real Web→Gateway→Identity→Spring Community→
+  PostgreSQL path passes 1/1. Task-scoped runtime resources were cleaned.
+- Level C actual: the sole full invocation
+  `01d2ea18bc4845f88bf55ceddbfeea44` records original candidate digest
+  `0d801063ff24673207878b9facd08e68ca35b93c186dca5f20fc99399643e449`.
+  Toolchain and locked install passed, then `static-schema-integrity` failed
+  because cumulative P1 formatting traversed generated Maven CycloneDX output
+  under `services/community/target/`. No Docker/runtime started and original
+  cleanup passed. The narrow generated-output ignore correction was verified
+  by the guarded `-TargetedRecoveryAfterStaticFailure` path, which reused the
+  same marker/invocation/project/ledger/transcript and recorded corrected
+  digest `6f234d1361b1707c69c122645521ce42038345f0e878b445c4a3856b5ddd70db`.
+  The continuation passed corrected static plus all unstarted contracts,
+  governance/security/dependency, build/reproducibility, cumulative
+  PostgreSQL, Community migration/integration 9/9, mixed-runtime P5 browser
+  8/8, cumulative P2–P4 browser, privacy/diff/canary and cleanup gates. The JAR
+  digest is
+  `811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`.
+  The ledger ends `targeted-continuation: pass`; no second full Level C ran.
+- Late review reconciliation: promotion paused for aggregate replay
+  invalidation, same-key serialization, monotonic delete/purge versions, an
+  owned scheduled retention sweep, stable Identity denial/revocation mapping
+  and removal of the LB-024 geolocation call. Targeted proof—not another Level
+  C—then passed Node P5 contracts 18/18, isolated migration/owner proof,
+  Identity 10/10, Community 11/11, production Web build and mocked browser 6/6
+  with zero GPS calls. Two clean post-hardening Community packages produced the
+  same valid CycloneDX-backed JAR SHA-256
+  `13415e9ec9a8dfec40cb66f79bf16735ef3236ede83565b44330d78239285dbf`.
+  The first targeted browser attempt was truthfully retained as a locator-only
+  harness failure before the corrected 6/6 pass; task-owned resources were
+  cleaned.
+- Hosted promotion recovery: PR #66's initial exact head `094f0e8` failed
+  before acceptance because Windows setup-java required the exact hosted alias
+  `25.0.3+9.0.LTS` for the pinned Temurin build and detached Linux checkout
+  produced empty branch text for a null-unsafe guard. The first correction
+  proved the JDK alias but retained the PowerShell binder failure; its runs were
+  superseded. The array/join detached-HEAD correction preserved local branch
+  and hosted exact-SHA guards. Code head `74079f8` then passed push run
+  `30395832352` and PR run `30395839829`, including both owner/cumulative
+  acceptance jobs and the full aggregate gate. The documentation-only head
+  containing this record still requires exact-head CI before merge.
+- Planned versus actual: ADR-019 planned the future greenfield Spring boundary
+  and PostgreSQL-first search but deferred exact versions and P5 contracts.
+  The official-source review supplied complete supported pins, while
+  `P5-S1-v1` narrowed the slice to bounded non-free-form request data, explicit
+  purpose/visibility, no matching and content-free evidence. No new engine,
+  broker, cache service, object storage or Node rewrite was needed.
+- Remaining acceptance: require hosted CI for the documentation-only PR #66
+  head, then a merge commit, exact post-merge `dev` CI and bilingual issue #15
+  closeout. The one-shot marker/ledger/transcript remain immutable local
+  evidence; do not invoke another full local Level C.
+- Protected canary/evidence: the Stitch canary belongs to another workstream
+  and has no worktree/index diff. No credential, private locator, generated
+  source, remote ID or real data is part of P5-S1 evidence.
+- Deferred: KI-001 blocks deployment, KI-016 retains manual AT/device rows,
+  KI-019 retains private-render visual review and KI-020 remains scoped to
+  P4-S3 document-vault deployment controls.
+- Follow-up: P5-S2 is exact next only after P5-S1 is fully accepted. A new task
+  must first freeze match/organization authority, approval, capacity,
+  revocation, minimum disclosure and audit/failure truth; do not start it here.

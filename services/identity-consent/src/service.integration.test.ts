@@ -658,6 +658,54 @@ integration("P2-S1 identity lifecycle", () => {
       },
       correlationId: "corr_p3_s1_activity_restored",
     });
+    const communityGrantId = "grant_community_integration_0001";
+    await pool!.query(
+      `INSERT INTO identity_consent_grants(
+         grant_id,subject_id,grantee_account_id,purpose,scopes,state,
+         effective_at,revoked_effective_at,display_time_zone,version,created_at,updated_at
+       ) SELECT $1,subject_id,$2,'community_support',
+                ARRAY['community_help_request.access']::TEXT[],'active',
+                $3,NULL,'Asia/Bangkok',1,$3,$3
+         FROM identity_consent_subjects WHERE household_id=$4`,
+      [
+        communityGrantId,
+        memberAccount.projection.accountId,
+        new Date(clock.value),
+        household.householdId,
+      ],
+    );
+    await expect(
+      consent.authorizeCommunity({
+        accountId: memberAccount.projection.accountId,
+        request: {
+          permission: "community.help_request.list",
+          householdId: household.householdId,
+          requestDigest: "e".repeat(64),
+        },
+        correlationId: "corr_p5_s1_community_allowed",
+      }),
+    ).resolves.toMatchObject({
+      purpose: "community_support",
+      grantId: communityGrantId,
+      grantVersion: 1,
+    });
+    await pool!.query(
+      `UPDATE identity_consent_grants
+       SET state='revoked',revoked_effective_at=$2,version=version+1,updated_at=$2
+       WHERE grant_id=$1`,
+      [communityGrantId, new Date(clock.value)],
+    );
+    await expect(
+      consent.authorizeCommunity({
+        accountId: memberAccount.projection.accountId,
+        request: {
+          permission: "community.help_request.list",
+          householdId: household.householdId,
+          requestDigest: "f".repeat(64),
+        },
+        correlationId: "corr_p5_s1_community_revoked",
+      }),
+    ).rejects.toMatchObject({ code: "COMMUNITY_CONSENT_REVOKED", statusCode: 403 });
     clock.value += 1;
     await consent.revoke({
       accountId: subjectAccount.projection.accountId,

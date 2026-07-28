@@ -42,6 +42,10 @@ const scopeLabels: Record<ConsentScope, [string, string]> = {
   "recipient_context.basic_label": ["Nhãn cơ bản", "Basic recipient label"],
   "recipient_context.relationship_label": ["Nhãn quan hệ", "Relationship label"],
   "document_vault.access": ["Truy cập kho tài liệu", "Document vault access"],
+  "community_help_request.access": [
+    "Quyền truy cập yêu cầu hỗ trợ cộng đồng",
+    "Community help-request access",
+  ],
 };
 
 export function ConsentPrivacyApp({ view, householdId }: { view: View; householdId?: string }) {
@@ -238,9 +242,11 @@ function ConsentScreen({
   }, [pending]);
 
   const toggleScope = (scope: ConsentScope) => {
-    setScopes((current) =>
-      current.includes(scope) ? current.filter((item) => item !== scope) : [...current, scope],
-    );
+    setScopes((current) => {
+      if (current.includes(scope)) return current.filter((item) => item !== scope);
+      if (scope === "community_help_request.access") return [scope];
+      return [...current.filter((item) => item !== "community_help_request.access"), scope];
+    });
   };
 
   const confirm = async () => {
@@ -259,7 +265,9 @@ function ConsentScreen({
             ...base,
             action: "grant",
             recipientRef: pending.recipientRef,
-            purpose: "household_coordination",
+            purpose: pending.scopes.includes("community_help_request.access")
+              ? "community_support"
+              : "household_coordination",
             scopes: pending.scopes,
           },
           pending.idempotencyKey,
@@ -409,7 +417,12 @@ function ConsentScreen({
                     <p>
                       Trạng thái / Status: <strong>{grant.state}</strong>
                     </p>
-                    <p>Mục đích / Purpose: Điều phối hộ gia đình / Household coordination</p>
+                    <p>
+                      Mục đích / Purpose:{" "}
+                      {grant.purpose === "community_support"
+                        ? "Hỗ trợ cộng đồng / Community support"
+                        : "Điều phối hộ gia đình / Household coordination"}
+                    </p>
                     <p>
                       Phạm vi / Scopes:{" "}
                       {grant.scopes.map((scope) => scopeLabels[scope].join(" / ")).join(", ")}
@@ -476,6 +489,11 @@ function ConsentScreen({
             </label>
             <fieldset>
               <legend>Phạm vi, không chọn sẵn / Scopes, none preselected</legend>
+              <p>
+                Quyền yêu cầu hỗ trợ cộng đồng là mục đích riêng và không thể kết hợp với quyền điều
+                phối hộ gia đình. / Community help-request access has a separate purpose and cannot
+                be combined with household-coordination scopes.
+              </p>
               {(Object.keys(scopeLabels) as ConsentScope[]).map((scope) => (
                 <label key={scope} className="check-row">
                   <input

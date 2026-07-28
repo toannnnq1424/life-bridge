@@ -241,8 +241,9 @@ export const RecipientContextDisclosureScopeSchema = z.enum([
 export const ConsentScopeSchema = z.enum([
   ...RecipientContextDisclosureScopeSchema.options,
   "document_vault.access",
+  "community_help_request.access",
 ]);
-export const ConsentPurposeSchema = z.literal("household_coordination");
+export const ConsentPurposeSchema = z.enum(["household_coordination", "community_support"]);
 export const ConsentActionSchema = z.enum(["grant", "narrow", "revoke"]);
 export const ConsentStateSchema = z.enum(["active", "revoked"]);
 
@@ -289,6 +290,16 @@ const ConsentScopeSetSchema = z
     }
   });
 
+function purposeAllowsScopes(
+  purpose: z.infer<typeof ConsentPurposeSchema>,
+  scopes: readonly z.infer<typeof ConsentScopeSchema>[],
+): boolean {
+  if (purpose === "community_support") {
+    return scopes.length === 1 && scopes[0] === "community_help_request.access";
+  }
+  return scopes.every((scope) => scope !== "community_help_request.access");
+}
+
 export const GrantConsentRequestSchema = z
   .object({
     action: z.literal("grant"),
@@ -298,7 +309,11 @@ export const GrantConsentRequestSchema = z
     effectiveTime: ImmediateEffectiveTimeSchema,
     expectedSubjectVersion: z.number().int().positive(),
   })
-  .strict();
+  .strict()
+  .refine((value) => purposeAllowsScopes(value.purpose, value.scopes), {
+    message: "consent_scope_purpose_mismatch",
+    path: ["scopes"],
+  });
 
 export const NarrowConsentRequestSchema = z
   .object({
@@ -333,7 +348,11 @@ export const ConsentGrantProjectionSchema = z
     displayTimeZone: IanaTimeZoneSchema,
     version: z.number().int().positive(),
   })
-  .strict();
+  .strict()
+  .refine((value) => purposeAllowsScopes(value.purpose, value.scopes), {
+    message: "consent_scope_purpose_mismatch",
+    path: ["scopes"],
+  });
 
 export const ConsentOverviewProjectionSchema = z
   .object({
@@ -619,6 +638,332 @@ export type CoordinationAuthorizationDecision = z.infer<
 export type CoordinationAuthorizationRequest = z.infer<
   typeof CoordinationAuthorizationRequestSchema
 >;
+
+const CommunityOpaqueIdSchema = z
+  .string()
+  .min(8)
+  .max(128)
+  .regex(/^[A-Za-z0-9_-]+$/);
+const CommunityCorrelationIdSchema = CommunityOpaqueIdSchema;
+const CommunityInstantSchema = z.iso.datetime({ offset: true });
+
+export const CommunityPurposeSchema = z.literal("community_support");
+export const CommunityHelpRequestScopeSchema = z.literal("community_help_request.access");
+export const CommunityPermissionSchema = z.enum([
+  "community.help_request.list",
+  "community.help_request.submit",
+  "community.help_request.reconcile",
+  "community.help_request.close",
+  "community.help_request.delete",
+]);
+export const CommunityHelpCategorySchema = z.enum([
+  "daily_living_support",
+  "transport_coordination",
+  "household_errand",
+  "social_connection",
+  "digital_access",
+  "accessibility_support",
+]);
+export const CommunityProvinceCityCodeSchema = z
+  .string()
+  .min(3)
+  .max(32)
+  .regex(/^[A-Z0-9-]+$/);
+export const CommunityDayPartSchema = z
+  .enum(["flexible", "morning", "afternoon", "evening"])
+  .nullable();
+export const CommunitySubmissionReferenceSchema = z
+  .string()
+  .min(12)
+  .max(128)
+  .regex(/^[A-Za-z0-9_-]+$/);
+
+export const CommunityAuthorizationRequestSchema = z
+  .object({
+    permission: CommunityPermissionSchema,
+    householdId: CommunityOpaqueIdSchema,
+    requestId: CommunityOpaqueIdSchema.optional(),
+    requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const requestScoped =
+      value.permission === "community.help_request.close" ||
+      value.permission === "community.help_request.delete";
+    if (requestScoped !== Boolean(value.requestId)) {
+      context.addIssue({
+        code: "custom",
+        message: "community_request_scope_required",
+        path: ["requestId"],
+      });
+    }
+  });
+
+export const CommunityAuthorizationContextSchema = z
+  .object({
+    decisionId: CommunityOpaqueIdSchema,
+    purpose: CommunityPurposeSchema,
+    permission: CommunityPermissionSchema,
+    actorRef: CommunityOpaqueIdSchema,
+    householdId: CommunityOpaqueIdSchema,
+    recipientContextId: CommunityOpaqueIdSchema,
+    subjectVersion: z.number().int().positive(),
+    grantId: CommunityOpaqueIdSchema.nullable(),
+    grantVersion: z.number().int().positive().nullable(),
+    privacyVersion: z.number().int().positive().nullable(),
+    requestId: CommunityOpaqueIdSchema.nullable(),
+    decidedAt: CommunityInstantSchema,
+    correlationId: CommunityCorrelationIdSchema,
+    requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
+  })
+  .strict();
+
+export const CommunityHelpRequestSubmissionSchema = z
+  .object({
+    submissionReference: CommunitySubmissionReferenceSchema,
+    category: CommunityHelpCategorySchema,
+    location: z
+      .object({
+        granularity: z.literal("province_city"),
+        provinceCityCode: CommunityProvinceCityCodeSchema,
+      })
+      .strict(),
+    dayPart: CommunityDayPartSchema,
+    disclosure: z
+      .object({
+        purpose: CommunityPurposeSchema,
+        visibility: z.literal("current_request_collaborators"),
+        policyVersion: z.literal("P5-S1-v1"),
+        confirmed: z.literal(true),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const CommunityHelpRequestListCommandSchema = z
+  .object({
+    operation: z.literal("list"),
+    authorization: CommunityAuthorizationContextSchema,
+  })
+  .strict();
+export const CommunityHelpRequestSubmitCommandSchema = z
+  .object({
+    operation: z.literal("submit"),
+    authorization: CommunityAuthorizationContextSchema,
+    request: CommunityHelpRequestSubmissionSchema,
+  })
+  .strict();
+export const CommunityHelpRequestReconcileCommandSchema = z
+  .object({
+    operation: z.literal("reconcile"),
+    authorization: CommunityAuthorizationContextSchema,
+    submissionReference: CommunitySubmissionReferenceSchema,
+  })
+  .strict();
+export const CommunityHelpRequestVersionRequestSchema = z
+  .object({ expectedVersion: z.number().int().positive() })
+  .strict();
+export const CommunityHelpRequestCloseCommandSchema = z
+  .object({
+    operation: z.literal("close"),
+    authorization: CommunityAuthorizationContextSchema,
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict();
+export const CommunityHelpRequestDeleteCommandSchema = z
+  .object({
+    operation: z.literal("delete"),
+    authorization: CommunityAuthorizationContextSchema,
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict();
+export const CommunityHelpRequestCommandSchema = z.discriminatedUnion("operation", [
+  CommunityHelpRequestListCommandSchema,
+  CommunityHelpRequestSubmitCommandSchema,
+  CommunityHelpRequestReconcileCommandSchema,
+  CommunityHelpRequestCloseCommandSchema,
+  CommunityHelpRequestDeleteCommandSchema,
+]);
+
+export const CommunityHelpRequestProjectionSchema = z
+  .object({
+    requestId: CommunityOpaqueIdSchema,
+    submissionReference: CommunitySubmissionReferenceSchema,
+    category: CommunityHelpCategorySchema,
+    locationGranularity: z.literal("province_city"),
+    provinceCityCode: CommunityProvinceCityCodeSchema,
+    dayPart: CommunityDayPartSchema,
+    visibility: z.literal("current_request_collaborators"),
+    status: z.enum(["pending", "closed"]),
+    submissionOutcome: z.literal("confirmed"),
+    matchingState: z.literal("unavailable_in_p5_s1"),
+    retentionPolicy: z.literal("pending_30d_closed_30d_then_purge"),
+    version: z.number().int().positive(),
+    confirmedAt: CommunityInstantSchema,
+    pendingAutoCloseAt: CommunityInstantSchema,
+    closedAt: CommunityInstantSchema.nullable(),
+    purgeAfter: CommunityInstantSchema.nullable(),
+  })
+  .strict();
+export const CommunityHelpRequestListProjectionSchema = z
+  .object({
+    requests: z.array(CommunityHelpRequestProjectionSchema).max(25),
+    serverTime: CommunityInstantSchema,
+  })
+  .strict();
+export const CommunityHelpRequestMutationResultSchema = z
+  .object({
+    outcome: z.enum(["submitted", "closed"]),
+    duplicate: z.boolean(),
+    request: CommunityHelpRequestProjectionSchema,
+    confirmedAt: CommunityInstantSchema,
+  })
+  .strict();
+export const CommunityHelpRequestDeleteResultSchema = z
+  .object({
+    outcome: z.literal("deleted"),
+    deletedRequestId: CommunityOpaqueIdSchema,
+    confirmedAt: CommunityInstantSchema,
+  })
+  .strict();
+
+export const CommunityPublicDirectoryQuerySchema = z
+  .object({
+    category: CommunityHelpCategorySchema.optional(),
+    provinceCityCode: CommunityProvinceCityCodeSchema.optional(),
+    organizationType: z.enum(["public_service", "nonprofit", "community_group"]).optional(),
+  })
+  .strict();
+export const CommunityDirectoryListingSchema = z
+  .object({
+    listingId: CommunityOpaqueIdSchema,
+    publicName: z.string().min(1).max(120),
+    organizationType: z.enum(["public_service", "nonprofit", "community_group"]),
+    provinceCityCode: CommunityProvinceCityCodeSchema,
+    provinceCityLabel: z.string().min(1).max(120),
+    categories: z.array(CommunityHelpCategorySchema).min(1).max(6),
+    contactChannel: z
+      .object({
+        type: z.enum(["phone", "website", "in_person"]),
+        label: z.string().min(1).max(80),
+        value: z.string().min(1).max(200),
+      })
+      .strict(),
+    accessibilityContactNote: z.literal("contact_for_accessibility_details").nullable(),
+    provenance: z
+      .object({
+        sourceLabel: z.string().min(1).max(120),
+        sourceUrl: z.url().max(500),
+        lastReviewedAt: CommunityInstantSchema,
+        nextReviewAt: CommunityInstantSchema,
+        state: z.enum(["current", "stale"]),
+      })
+      .strict(),
+    availabilityState: z.literal("not_verified"),
+    eligibilityState: z.literal("not_determined"),
+    endorsementState: z.literal("none"),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (new Set(value.categories).size !== value.categories.length) {
+      context.addIssue({ code: "custom", message: "duplicate_directory_category" });
+    }
+  });
+export const CommunityPublicDirectoryResultSchema = z
+  .object({
+    items: z.array(CommunityDirectoryListingSchema).max(25),
+    generatedAt: CommunityInstantSchema,
+    cachePolicy: z.literal("public_5m_session_24h"),
+    matchingState: z.literal("unavailable_in_p5_s1"),
+    resultMeaning: z.literal("informational_not_eligibility_availability_or_endorsement"),
+  })
+  .strict();
+
+export const CommunityFailureCodeSchema = z.enum([
+  "COMMUNITY_REQUEST_VALIDATION_FAILED",
+  "COMMUNITY_REQUEST_DUPLICATE",
+  "COMMUNITY_REQUEST_VERSION_CONFLICT",
+  "COMMUNITY_REQUEST_STATE_CONFLICT",
+  "COMMUNITY_REQUEST_RESULT_UNKNOWN",
+  "COMMUNITY_RESOURCE_NOT_FOUND",
+  "COMMUNITY_AUTHORITY_REQUIRED",
+  "COMMUNITY_CONSENT_REVOKED",
+  "IDEMPOTENCY_KEY_REQUIRED",
+  "IDEMPOTENCY_CONFLICT",
+  "DIRECTORY_VALIDATION_FAILED",
+  "DIRECTORY_SEARCH_UNAVAILABLE",
+  "IDENTITY_SERVICE_UNAVAILABLE",
+  "COMMUNITY_SERVICE_UNAVAILABLE",
+  "INTERNAL_CONTRACT_INVALID",
+]);
+export const CommunityFailureSchema = z
+  .object({
+    error: z
+      .object({
+        code: CommunityFailureCodeSchema,
+        messageKey: z
+          .string()
+          .min(1)
+          .max(120)
+          .regex(/^[a-z0-9._-]+$/),
+        retryable: z.boolean(),
+        correlationId: CommunityCorrelationIdSchema,
+      })
+      .strict(),
+  })
+  .strict();
+const CommunityMetaSchema = z.object({ correlationId: CommunityCorrelationIdSchema }).strict();
+export const CommunityDirectorySuccessSchema = z
+  .object({
+    data: CommunityPublicDirectoryResultSchema,
+    meta: CommunityMetaSchema,
+  })
+  .strict();
+export const CommunityHelpRequestListSuccessSchema = z
+  .object({
+    data: CommunityHelpRequestListProjectionSchema,
+    meta: CommunityMetaSchema,
+  })
+  .strict();
+export const CommunityHelpRequestMutationSuccessSchema = z
+  .object({
+    data: CommunityHelpRequestMutationResultSchema,
+    meta: CommunityMetaSchema,
+  })
+  .strict();
+export const CommunityHelpRequestDeleteSuccessSchema = z
+  .object({
+    data: CommunityHelpRequestDeleteResultSchema,
+    meta: CommunityMetaSchema,
+  })
+  .strict();
+export const CommunityOutboxEventSchema = z
+  .object({
+    eventId: CommunityOpaqueIdSchema,
+    eventType: z.enum([
+      "community.help_request.submitted.v1",
+      "community.help_request.closed.v1",
+      "community.help_request.deleted.v1",
+    ]),
+    eventVersion: z.literal(1),
+    producer: z.literal("community"),
+    aggregateId: CommunityOpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    lifecycleOutcome: z.enum(["pending", "closed", "deleted"]),
+    deliveryState: z.literal("suppressed_not_configured"),
+    occurredAt: CommunityInstantSchema,
+    correlationId: CommunityCorrelationIdSchema,
+    causationId: CommunityOpaqueIdSchema,
+  })
+  .strict();
+
+export type CommunityPermission = z.infer<typeof CommunityPermissionSchema>;
+export type CommunityAuthorizationRequest = z.infer<typeof CommunityAuthorizationRequestSchema>;
+export type CommunityAuthorizationContext = z.infer<typeof CommunityAuthorizationContextSchema>;
+export type CommunityHelpRequestSubmission = z.infer<typeof CommunityHelpRequestSubmissionSchema>;
+export type CommunityHelpRequestProjection = z.infer<typeof CommunityHelpRequestProjectionSchema>;
+export type CommunityPublicDirectoryQuery = z.infer<typeof CommunityPublicDirectoryQuerySchema>;
+export type CommunityPublicDirectoryResult = z.infer<typeof CommunityPublicDirectoryResultSchema>;
 
 const coordinationMutationPermissions = new Set<CoordinationPermission>([
   "coordination.task.handoff",
@@ -2005,6 +2350,7 @@ export const ApiErrorCodeSchema = z.enum([
   "CONSENT_RESOURCE_NOT_FOUND",
   "CONSENT_VERSION_CONFLICT",
   "CONSENT_SCOPE_BROADENING_REJECTED",
+  "COMMUNITY_CONSENT_REVOKED",
   "AUDIT_CURSOR_INVALID",
   "PRIVACY_VERSION_CONFLICT",
   "COORDINATION_RESOURCE_NOT_FOUND",

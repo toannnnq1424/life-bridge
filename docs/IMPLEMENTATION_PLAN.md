@@ -6,18 +6,17 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P4 — Safety-critical coordination`; P4-S3 is accepted and no
-  product implementation is active in this same-task docs-only closeout.
-- Accepted base: live `dev@7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`.
-- Accepted P4-S2 evidence: `P4-S2-v1`/`P4-S2-offline-v1`, Care migration 006,
-  ADR-025 and threat model, four synthetic Stitch references, the Frozen
-  native-only handoff, native VI/EN LB-020/LB-021/required-LB-032, exactly one
-  local Level C plus classified targeted recovery, exact-head PR run
-  `30358335589`, and post-merge `dev` run `30359250442`. Canonical issue
-  [#13](https://github.com/toannnnq1424/life-bridge/issues/13) is closed with
-  bilingual evidence.
-- Current action: promote only the same-task P4-S3 canonical closeout. P5-S1,
-  DATA-S1, Spring, deployment and release remain unstarted.
+- Current phase: `P5 — Community support`; P5-S1 is the only active candidate.
+- Accepted base: live
+  `origin/dev@486a5276ef43d143af8692501064e952a59a4829`.
+- Accepted predecessor evidence: P4-S3 feature and its docs-only canonical
+  closeout are present on the accepted base with hosted `dev` CI green.
+- Current action: PR #66 is ready and its code-bearing exact head passed hosted
+  push/PR aggregate CI after classified hosted harness recovery. Require the
+  documentation-only head to pass exact-head CI, then merge commit, post-merge
+  `dev` CI and issue #15 closeout. The single local Level C invocation plus
+  classified targeted continuation is complete and must not be repeated.
+  P5-S2, P5-S3, DATA-S1, P6+, deployment and release remain unstarted.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -772,6 +771,43 @@ Acceptance:
 Dependencies: P2 consent; research source review; ADR-019 Community boundary;
 P5 official toolchain/supply-chain research gate.
 
+Actual candidate boundary (`CHG-2026-011`, acceptance pending):
+
+- three independent pre-code reviews reconciled the official toolchain,
+  authority/data/API/event/failure contract, native Stitch handoff and one-
+  shot operations plan before Java or product code;
+- `P5-S1-v1` is frozen as one OpenAPI/JSON Schema tree with recorded SHA-256
+  hashes and shared fixed Node/Java request-digest vectors;
+- Identity adds `community_support` / `community_help_request.access` without
+  backfill and issues a fresh exact decision for every protected action;
+  organizer/member status still grants nothing;
+- Spring Boot 4.1.0 Community exclusively owns Flyway V1, its PostgreSQL
+  role/database, structured directory search, request lifecycle,
+  idempotency/tombstones, privacy-safe audit and suppressed transactional
+  outbox. Gateway consumes the language-neutral contract and stores no
+  Community state; public search does not call Identity;
+- native VI/EN `/help/new` and `/community` implement minimum disclosure,
+  truthful pending/closed/delete, duplicate/conflict/uncertain recovery,
+  stale provenance, unavailable/no-results/location-denied/offline-blocked and
+  explicit P5-S1 matching boundary states. Synthetic geography/listings only;
+- Temurin 25.0.3+9, Maven 3.9.16, Wrapper 3.3.4, Spring Boot 4.1.0 and explicit
+  plugins are pinned/checksummed under a repository-scoped process-local
+  bootstrap; no global Java/Maven change;
+- focused frozen-integrity, Node consumer, Spring provider/unit, owner-
+  isolated rollback/reapply/no-backfill, Community integration/concurrency and
+  built Web→Gateway→Identity→Spring→PostgreSQL browser evidence is green;
+- late review hardening aggregate-links and invalidates protected replays on
+  delete/purge, serializes same-key first use, makes delete/purge evidence
+  monotonic, schedules owned retention, normalizes Identity revoked/denied/
+  unavailable truth and removes all UI geolocation calls. Targeted Node 18/18,
+  Identity 10/10, Community 11/11, browser 6/6 and reproducible-package proof
+  are green without rerunning Level C;
+- exactly one local P5-S1 Level C was invoked. Its immutable static-gate
+  formatting failure and successful classified targeted continuation prove all
+  required local stages without a second full campaign. Exact-head feature CI,
+  ready PR/merge commit, post-merge `dev` CI and bilingual issue #15 closeout
+  remain mandatory before this row becomes accepted. P5-S2 is not started.
+
 ### `P5-S2 — Volunteer match and organization coordination`
 
 Outcome: a volunteer/coordinator accepts an approved match and records progress using only minimum necessary household data.
@@ -1266,22 +1302,25 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ## CHG-2026-011 — Select the greenfield Spring Community boundary
 
-- State: Accepted architecture direction; implementation deferred to P5-S1
+- State: Local P5-S1 evidence complete; hosted promotion pending
 - Raised in phase/slice: governance-only amendment during `P2-S1`
 - Planned baseline: Community was a future independently deployable service,
   while the repository operating baseline described a practical TypeScript
   monorepo and did not require a second backend runtime.
 - Proposed/actual implementation: LifeBridge is a polyglot microservice system.
   The first Spring Boot service is the greenfield Community boundary beginning
-  at P5-S1/issue #15 and extended through P5-S2/P5-S3. Existing Gateway,
-  Identity & Consent, Care Coordination and Notification remain Node services;
-  no rewrite is authorized. No Java source, wrapper or toolchain is added now.
+  at P5-S1/issue #15 and available for separately governed extension through
+  P5-S2/P5-S3. Existing Gateway, Identity & Consent, Care Coordination and
+  Notification remain Node services; no rewrite is authorized. The P5-S1
+  candidate implements Boot 4.1.0, Community-owned PostgreSQL/Flyway,
+  repository-owned Maven wrappers and the frozen language-neutral contract.
 - Reason/evidence: the project owner requires at least one bounded Spring Boot
   backend. Community is future, cohesive and independently owned, so it proves
   cross-runtime contracts without destabilizing accepted P1/P2 boundaries.
 - Impact:
-  - Product/UI: P2 scope/order and `MCP-DEBT-2026-002` are unchanged; no P5
-    behavior or screen begins in this task.
+  - Product/UI: native VI/EN LB-022/LB-024 implement only consented bounded
+    request submission/status and identity-free public directory search. P5-S2
+    matching and P5-S3 moderation remain unstarted.
   - API/events: Node Gateway ↔ Spring Community uses versioned
     language-neutral OpenAPI/JSON Schema plus provider/consumer tests.
     Identity & Consent remains authority and supplies minimum authorized
@@ -1292,19 +1331,28 @@ No row means simultaneous implementation. Design generation/review may prepare a
     and a later accepted ADR.
   - Privacy/security: Community cannot read general household or Identity
     stores; contract fixtures and logs remain minimum-data and synthetic.
-  - Tests/operations: the P5 research gate must verify official supported JDK,
-    Spring Boot, Maven plugin and checksum sources, then pin a repository-owned
-    Windows wrapper, preferably `mvnw.cmd`. P6 must prove mixed-version
-    compatibility, independent artifact/upgrade, dependency isolation,
-    health/readiness, observability, SBOM/supply-chain, container and rollback.
+  - Tests/operations: the completed official-source gate pins Temurin
+    25.0.3+9, Spring Boot 4.1.0, Maven 3.9.16, Wrapper 3.3.4 and explicit
+    plugins/checksums. Focused schema/consumer/provider, migration/integration,
+    reproducible build and mixed-runtime browser proof is green. The one full
+    Level C invocation retained its static formatting failure; an exact-
+    signature targeted continuation passed every corrected and previously
+    unstarted stage without a second campaign. Hosted promotion is pending. P6
+    retains the wider rolling-compatibility, artifact, authenticated transport
+    and rollback proof.
   - Phase order/schedule: unchanged; P5 and P6 remain planned behind P2–P4.
-- Validation required: changed-document format/config/docs/secrets/diff now;
-  official dependency/toolchain research and provider/consumer/build/container
-  evidence only when P5-S1 begins; cumulative mixed-runtime proof in P6.
-- Follow-up owner and exact phase/slice: P5-S1 owner updates existing issue #15,
-  runs the official-source research gate, freezes exact toolchain and contract
-  pins, then implements Community. P5-S2/P5-S3 extend it; P6 owns platform-wide
-  compatibility and operations proof.
+- Validation actual/required: invocation
+  `01d2ea18bc4845f88bf55ceddbfeea44` stopped at generated Maven SBOM
+  formatting after toolchain/install passed; its cleanup passed before any
+  runtime started. The guarded same-invocation targeted continuation passed
+  static through cleanup, including reproducible JAR digest
+  `811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`,
+  Community database 9/9 and P5 browser 8/8. Do not run Level C again. Require
+  feature exact-head CI, one ready PR, merge-commit promotion, post-merge `dev`
+  CI and issue #15 closeout.
+- Follow-up owner and exact phase/slice: after P5-S1 acceptance only, a fresh
+  P5-S2 task must freeze match/organization authority, approval, capacity,
+  revocation, minimum disclosure and audit truth before extending Community.
 - Related ADR/integration/session entries: ADR-019, `INT-2026-013`, issue #15,
   and the P2-S1 governance amendment session entry.
 
@@ -1538,7 +1586,7 @@ acceptance and validation changes, and the exact first action for the next
 slice. This handoff updates the plan; it does not authorize implementing the
 next slice in the same conversation.
 
-## Exact next action
+## Historical accepted handoffs through P4-S2
 
 P3-S1 is accepted at
 `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`. Its frozen contracts, Care
@@ -1584,9 +1632,33 @@ and bilingual issue #13 closeout passed. Its Care-owned aggregate, fresh P2
 authority, ordered contacts, reviewed plan, minimum disclosure and bounded
 encrypted offline-copy contract are the accepted boundary.
 
-Exact next is `P4-S3 — Access-controlled document vault`, only in a fresh
-controller-dispatched task from accepted `dev`. Its first action is to freeze
-document authority, minimum metadata/content disclosure, retention/deletion,
-integrity and storage ownership against accepted P2 audit and P4-S2 offline
-boundaries before selecting storage or implementing LB-023. P4-S3, DATA-S1,
-P5, Spring, deployment and release were not started here.
+P4-S3 was subsequently accepted at
+`dev@7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`; its exact-purpose authority,
+Care/PostgreSQL ownership, unscanned truth, active purge, Frozen native handoff,
+single Level C, exact-head/post-merge CI and issue #14 closeout are complete.
+
+## Exact next action
+
+P5-S1 is the active candidate on
+`phase/5-consented-help-request-directory` from accepted
+`origin/dev@486a5276ef43d143af8692501064e952a59a4829`. The three pre-code reviews,
+official toolchain pins, frozen `P5-S1-v1` schemas/hashes/digest vectors,
+redacted four-reference Stitch handoff, Spring Community owner boundary,
+Gateway/Identity integration and native VI/EN LB-022/LB-024 are implemented.
+Focused schema, Node, Spring, owner-isolated migration/PostgreSQL and built
+mixed-runtime browser evidence is green. Exactly one local P5-S1 Level C was
+invoked. Its immutable marker/ledger retains a generated-SBOM formatting
+failure at the first static stage; the exact-signature same-invocation targeted
+continuation passed corrected static plus every previously unstarted required
+stage, final privacy/diff/canary checks and cleanup. No second Level C ran.
+
+PR #66 is ready. Code-bearing head `74079f8` passed exact-head push and PR CI
+after two classified pre-marker hosted harness corrections. The immediate
+action is exact-head CI for the documentation-only record, then a merge commit.
+Exact post-merge `dev` CI and bilingual issue #15 closeout remain required.
+P5-S2 is the exact next handoff only after all P5-S1
+acceptance and closeout gates pass. Its first action will freeze match/
+organization authority, approval, capacity, revocation, minimum disclosure
+and audit/failure truth; do not implement any P5-S2 behavior in this task.
+KI-001/KI-016/KI-019 remain, KI-020 remains scoped to the P4-S3 deployment
+boundary, and DATA-S1/P6+/deployment/pilot/release are not started.

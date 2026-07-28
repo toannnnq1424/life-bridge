@@ -371,3 +371,69 @@ storage failure and uncertain results are privacy-safe and distinct from empty
 or success. PostgreSQL and backup at-rest encryption, historical-backup
 deletion reconciliation, production RPO/RTO, a malware scanner and manual
 assistive-technology/private-render evidence remain explicit gates and risks.
+
+## P5-S1 Community request and directory controls
+
+`docs/security/P5_S1_THREAT_MODEL.md` and ADR-019 govern the first Spring
+boundary. Identity adds `community_support` and
+`community_help_request.access` without backfill. Every protected list,
+submit, reconcile, close and delete action consumes one fresh request-bound
+decision valid for at most ten seconds. Household organizer/member status,
+prior decisions, opaque request IDs, browser state, audit or outbox facts grant
+nothing. Spring Community validates exact purpose, permission, target,
+correlation and canonical request digest before any protected row access.
+
+Public directory search is intentionally separate: Gateway calls no Identity
+endpoint and forwards no cookie, CSRF, actor, household, subject, grant,
+recipient, request or protected filter. Search accepts only allowlisted
+structured category/province-city/organization-type values, uses parameterized
+PostgreSQL, returns at most 25 deterministic rows and exposes explicit
+provenance/current-or-stale truth. Stored public source URLs are display-only
+reviewed metadata; Community does not fetch, crawl, redirect through or resolve
+them, preventing an SSRF/data-import path.
+
+Protected commands reject unknown fields and accept no free-form narrative,
+precise location/GPS, diagnosis, treatment, medication, urgency, eligibility,
+attachment or matching preference. Submit/close/delete use digest-only 24-hour
+idempotency and atomic request/audit/replay/outbox transactions. Optimistic
+versioning, same-key advisory locks and owner row locks prevent duplicate first
+writes and lost updates. Aggregate-linked replay rows are invalidated on
+delete/purge so an earlier submit or close response cannot disclose deleted
+fields. A post-dispatch timeout is
+`COMMUNITY_REQUEST_RESULT_UNKNOWN` until a new exact-authority reconciliation
+read succeeds; it is never a blind retry or success claim.
+
+Audit/outbox/logs/metrics/traces are allowlisted and content-free: opaque
+actor/aggregate digests, enumerated action/outcome/version, UTC, correlation/
+causation only. They exclude category, location, day part, public contact,
+authority body, raw idempotency key, command body and request/listing IDs in
+high-cardinality labels. The Community service token is required only on the
+internal boundary, never forwarded to the browser or persisted in evidence.
+Community alone receives its PostgreSQL credential and has no other owner
+privilege; Node services have no Community SQL credential.
+
+Pending requests auto-close after 30 days; closed protected fields purge
+within 30 more; explicit delete purges active fields immediately and retains
+only digest-only tombstone/content-free evidence for at most 365 days.
+Community's owned scheduled sweep performs these transitions with locked,
+monotonic versions and cannot make matching or delivery claims.
+Protected offline submission is blocked and never queued. The only browser
+persistence is one identity-free public directory response for at most 24
+hours, permanently labeled offline/stale with provenance/cache time. LB-024
+never calls browser geolocation; its optional control reads only the permission
+state and truthfully reports denial or that LifeBridge cannot use it.
+
+Gateway does not expose raw Identity error bodies. Exact Community revocation
+maps to the stable revoked failure, other 401/403/404 outcomes map to the
+non-enumerating authority-required failure, and dependency/contract failures
+map to Identity unavailable.
+
+The exact pins are Temurin 25.0.3+9, Maven 3.9.16 through repository Wrapper
+3.3.4 and Spring Boot 4.1.0 with frozen checksums and explicit plugin versions.
+The bootstrap is process-local and refuses system runtime substitution.
+Focused consumer/provider, decision/digest, owner-isolated migration,
+idempotency/concurrency, privacy-safe database serialization and built
+mixed-runtime browser/storage/log proof is green. The sole Level C invocation
+and its same-ledger continuation are retained; later hardening used targeted
+proof only. Hosted promotion remains. KI-001/KI-016/KI-019 remain; KI-020 is
+unchanged and still scoped to P4-S3 deployment controls.

@@ -33,13 +33,17 @@ import { fixtureMember } from "@lifebridge/test-fixtures";
 import cookie from "@fastify/cookie";
 import Fastify from "fastify";
 
+import { registerCommunityRoutes } from "./community-routes.js";
+
 export interface GatewayConfig {
   careUrl: string;
   identityUrl: string;
   notificationUrl: string;
+  communityUrl?: string;
   careToken: string;
   identityToken: string;
   notificationToken: string;
+  communityToken?: string;
   fixtureEnabled: boolean;
   publicOrigin: string;
   sessionCookieName: string;
@@ -192,9 +196,22 @@ export function buildGatewayServer(
     reply.header("cache-control", "no-store");
     reply.header("pragma", "no-cache");
   });
+  registerCommunityRoutes(
+    app,
+    {
+      communityUrl: config.communityUrl ?? "http://127.0.0.1:3103",
+      identityUrl: config.identityUrl,
+      communityToken: config.communityToken ?? "community-test-token-000000",
+      identityToken: config.identityToken,
+      publicOrigin: config.publicOrigin,
+      sessionCookieName: config.sessionCookieName,
+    },
+    fetcher,
+    logger,
+  );
 
   app.get("/health/live", async () => ({ status: "live" }));
-  app.get("/version", async () => ({ service: "gateway", contract: "P4-S2-v1" }));
+  app.get("/version", async () => ({ service: "gateway", contract: "P5-S1-v1" }));
   app.get("/health/ready", async (_request, reply) => {
     try {
       const care = await fetcher(`${config.careUrl}/health/ready`, {
@@ -209,6 +226,14 @@ export function buildGatewayServer(
         });
         if (!identity.ok) {
           return reply.code(503).send({ status: "not_ready", dependency: "identity" });
+        }
+      }
+      if (config.communityUrl) {
+        const community = await fetcher(`${config.communityUrl}/health/ready`, {
+          signal: AbortSignal.timeout(1_000),
+        });
+        if (!community.ok) {
+          return reply.code(503).send({ status: "not_ready", dependency: "community" });
         }
       }
       let notification = "available";
