@@ -4,11 +4,11 @@
 
 - Updated: 2026-07-28
 - Most recently integrated scope: `P3-S3 — Care-plan review`; feature PR #56
-  merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`
-- Active product slice: none; issue #11 is closed and
-  `phase/3-care-plan-review` owns docs-only canonical closeout
-- Exact next action: merge that docs-only closeout, then hand off P4-S1 to a
-  fresh task; DATA-S1 and P4 remain unstarted here
+  merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`, followed by
+  docs-only PR #57 at `dev@98a420f17b6bee7494dd889e325e7401d9ec5068`
+- Active product slice: none; issue #11 is closed with bilingual evidence
+- Exact next action: `P4-S1 — Medication reminder acknowledgement`, only in a
+  fresh task; DATA-S1 and P4 implementation have not started here
 - Accepted future direction: `CHG-2026-011`/ADR-019 assigns greenfield
   Community to Spring Boot at P5-S1/#15; this does not start P5 or alter P2
 - Rule: one conversation owns one phase or one slice
@@ -206,7 +206,9 @@ P3-S3 is accepted and merged. Feature head
 versioned Care ownership, concurrency, review-day, Frozen Stitch/native and
 local/hosted evidence are the accepted boundary.
 
-After this docs-only closeout merges, P4-S1 is exact next only in a fresh task.
-Its first action is to freeze non-clinical reminder acknowledgement authority,
-unit/time-zone, event, Notification and failure-truth contracts. DATA-S1, P4/P5,
-Spring, deployment and release remain separate and unstarted here.
+P3-S3 and its docs-only canonical closeout are accepted at
+`dev@98a420f17b6bee7494dd889e325e7401d9ec5068`. P4-S1 is exact next only in a
+fresh task. Its first action is to freeze non-clinical reminder acknowledgement
+authority, unit/time-zone, event, Notification and failure-truth contracts.
+DATA-S1, P4/P5, Spring, deployment and release remain separate and unstarted
+here.

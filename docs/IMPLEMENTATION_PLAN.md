@@ -6,14 +6,16 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P3 — Care planning`; P3-S3 accepted, canonical closeout pending
+- Current phase: `P3 — Care planning`; P3-S3 and its canonical closeout are
+  accepted and merged
 - Most recently integrated slice: `P3-S3 — Care-plan review`; feature PR #56
-  merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`
+  merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`, followed by
+  docs-only PR #57 at `dev@98a420f17b6bee7494dd889e325e7401d9ec5068`
 - Active product slice: none; canonical issue
   [#11](https://github.com/toannnnq1424/life-bridge/issues/11) is closed with
-  bilingual evidence, and `phase/3-care-plan-review` owns docs-only closeout
-- Exact next action: merge the P3-S3 docs-only canonical closeout, then hand off
-  `P4-S1` to a fresh task. Do not start DATA-S1 or P4 here.
+  bilingual evidence
+- Exact next action: `P4-S1 — Medication reminder acknowledgement`, only in a
+  fresh task. DATA-S1 and P4 implementation have not started here.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -617,8 +619,8 @@ The single Level C campaign completed through classified retained-evidence
 continuations: unit 57/57, contracts 24/24, cumulative PostgreSQL integration
 and migrations, mocked LB-017 3/3, real P3-S3 1/1, cumulative browser
 regressions, accessibility, builds, privacy-safe logs and cleanup pass. Hosted
-exact-head and post-merge promotion passed; only docs-only canonical closeout is
-pending.
+exact-head and post-merge promotion passed; docs-only canonical closeout is
+accepted at `dev@98a420f17b6bee7494dd889e325e7401d9ec5068`.
 
 ## P4 — Safety and records
 
@@ -1447,8 +1449,8 @@ No row means simultaneous implementation. Design generation/review may prepare a
   `30329456918`/`30329530973`; PR #56 merged as
   `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`; post-merge run
   `30329752886` passed and issue #11 closed with bilingual evidence.
-- Follow-up: retain KI-001/KI-016/KI-019. After docs-only closeout, hand off
-  P4-S1 to a fresh task; do not start it here.
+- Follow-up: retain KI-001/KI-016/KI-019. Hand off P4-S1 only to a fresh task;
+  do not start it here.
 
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
@@ -1492,9 +1494,10 @@ native VI/EN route and cumulative tests are integrated at
 exact-head push/PR runs `30329456918`/`30329530973`; PR #56 merged, post-merge
 run `30329752886` passed, and issue #11 closed with bilingual evidence.
 
-The exact next action is this same task's docs-only canonical closeout. After it
-merges, `P4-S1 — Medication reminder acknowledgement` is the next product slice
-only in a fresh task. Its first action is to freeze non-clinical reminder
-acknowledgement authority, explicit unit/time-zone, event, Notification and
+P3-S3 and its docs-only canonical closeout are accepted at
+`dev@98a420f17b6bee7494dd889e325e7401d9ec5068`. The exact next action is
+`P4-S1 — Medication reminder acknowledgement`, only in a fresh task. Its first
+action is to freeze non-clinical reminder acknowledgement authority, explicit
+unit/time-zone, event, Notification and
 failure-truth contracts against accepted P2/P3 boundaries. DATA-S1, P4/P5,
 Spring, deployment and release remain separate and unstarted here.
