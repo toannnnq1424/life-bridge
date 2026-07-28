@@ -5,12 +5,14 @@
 - Updated: 2026-07-28
 - Most recently integrated scope:
   `P4-S1 — Medication reminder acknowledgement`; feature PR #59 merged at
-  `dev@d58660cebd91f46b2deab38a38e7187ec7870804`.
+  `dev@d58660cebd91f46b2deab38a38e7187ec7870804`, followed by docs-only PR
+  #60 at `dev@efad56c5fdcdbdd701ee82344e11f18bb2f08225`; final `dev` run
+  `30345391688` passed.
 - Active product slice: none in this task; P4-S1 issue #12 is closed with
   bilingual evidence.
-- Exact next action: merge this same-task docs-only canonical closeout. P4-S2
-  may start only in a fresh controller-dispatched task; later slices remain
-  untouched here.
+- Exact next action: `P4-S2 — Emergency contacts and offline-readable plan`,
+  only in a fresh controller-dispatched task. P4-S2, P4-S3, DATA-S1, P5,
+  Spring, deployment and release were not started here.
 - Accepted future direction: `CHG-2026-011`/ADR-019 assigns greenfield
   Community to Spring Boot at P5-S1/#15; this does not start P5 or alter P2
 - Rule: one conversation owns one phase or one slice
@@ -209,15 +211,16 @@ P3-S3 is accepted and merged. Feature head
 versioned Care ownership, concurrency, review-day, Frozen Stitch/native and
 local/hosted evidence are the accepted boundary.
 
-P4-S1 is accepted and merged. Feature head
+P4-S1 feature and docs-only closeout are accepted and merged at
+`dev@efad56c5fdcdbdd701ee82344e11f18bb2f08225`. Feature head
 `9a2b7fe9683f548a006c63fc673d294aedd39031` passed replacement push/PR runs
 `30343304775`/`30343308183`; PR #59 merged as
 `dev@d58660cebd91f46b2deab38a38e7187ec7870804`; post-merge run
-`30343682227` passed and issue #12 closed completed. Its frozen non-clinical
+`30343682227` passed; docs-only PR #60 and final `dev` run `30345391688`
+passed; issue #12 closed completed. Its frozen non-clinical
 authority/time/event contracts, Stitch/native handoff, owner-isolated
 persistence and one Level C plus classified recovery are the accepted
-boundary. After this docs-only closeout merges, P4-S2 is exact next only in a
-fresh task, beginning with purpose-specific authority, ordered-contact,
-reviewed-plan, offline-copy freshness and minimum-disclosure contracts.
-DATA-S1, P4-S3, P5, Spring, deployment and release remain separate and
-unstarted here.
+boundary. P4-S2 is exact next only in a fresh controller-dispatched task,
+beginning with purpose-specific authority, ordered-contact, reviewed-plan,
+offline-copy freshness and minimum-disclosure contracts. P4-S2, P4-S3,
+DATA-S1, P5, Spring, deployment and release were not started here.

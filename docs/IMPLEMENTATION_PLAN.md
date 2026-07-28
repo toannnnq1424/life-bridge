@@ -10,7 +10,9 @@
   merged, and no later P4 slice is active in this task.
 - Most recently integrated slice:
   `P4-S1 — Medication reminder acknowledgement`; feature PR #59 merged at
-  `dev@d58660cebd91f46b2deab38a38e7187ec7870804`.
+  `dev@d58660cebd91f46b2deab38a38e7187ec7870804`, followed by docs-only PR
+  #60 at `dev@efad56c5fdcdbdd701ee82344e11f18bb2f08225`; final `dev` run
+  `30345391688` passed.
 - Accepted P4-S1 evidence: `P4-S1-v1`, four synthetic
   LB-018/minimum-LB-019 references, the Frozen native-only handoff,
   owner-isolated persistence, native VI/EN UI, one local Level C plus
@@ -19,10 +21,9 @@
   Canonical issue
   [#12](https://github.com/toannnnq1424/life-bridge/issues/12) is closed with
   bilingual evidence.
-- Exact next action: merge this same-task docs-only canonical closeout. After
-  that, only a fresh controller-dispatched task may start
-  `P4-S2 — Emergency contacts and offline-readable plan`. Do not start P4-S2,
-  P4-S3, DATA-S1, P5, Spring, deployment or release here.
+- Exact next action: `P4-S2 — Emergency contacts and offline-readable plan`,
+  only in a fresh controller-dispatched task. P4-S2, P4-S3, DATA-S1, P5,
+  Spring, deployment and release were not started here.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -1501,14 +1502,17 @@ native VI/EN route and cumulative tests are integrated at
 exact-head push/PR runs `30329456918`/`30329530973`; PR #56 merged, post-merge
 run `30329752886` passed, and issue #11 closed with bilingual evidence.
 
-P4-S1 is accepted. Feature commits `9392fc570ba510f4b63c2388bee94677d637541f`
-and `9a2b7fe9683f548a006c63fc673d294aedd39031` passed replacement exact-head
+P4-S1 feature and docs-only closeout are accepted and merged at
+`dev@efad56c5fdcdbdd701ee82344e11f18bb2f08225`. Feature commits
+`9392fc570ba510f4b63c2388bee94677d637541f` and
+`9a2b7fe9683f548a006c63fc673d294aedd39031` passed replacement exact-head
 push/PR runs `30343304775`/`30343308183`; PR #59 merged as
 `dev@d58660cebd91f46b2deab38a38e7187ec7870804`; post-merge run
 `30343682227` passed all three jobs and issue #12 closed with bilingual
-evidence. After this same-task docs-only closeout merges, exact next is
-`P4-S2 — Emergency contacts and offline-readable plan`, only in a fresh task.
+evidence. Docs-only PR #60 and final `dev` run `30345391688` passed. Exact next
+is `P4-S2 — Emergency contacts and offline-readable plan`, only in a fresh
+controller-dispatched task.
 Its first action is to freeze purpose-specific authority, ordered-contact,
 reviewed-plan, offline-copy freshness and minimum-disclosure contracts against
 the accepted P2/P3/P4-S1 boundaries. DATA-S1, P4-S3, P5, Spring, deployment and
-release remain separate and unstarted here.
+release were not started here; P4-S2 was not started here either.
