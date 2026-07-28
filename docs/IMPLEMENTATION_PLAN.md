@@ -6,22 +6,23 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P4 — Safety-critical coordination`; `P4-S1` is the active
-  candidate on `phase/4-medication-reminder-acknowledgement`
-- Most recently integrated slice: `P3-S3 — Care-plan review`; feature PR #56
-  merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`, followed by
-  docs-only PR #57 at `dev@98a420f17b6bee7494dd889e325e7401d9ec5068`
-- Active product slice: `P4-S1 — Medication reminder acknowledgement`;
-  canonical issue
-  [#12](https://github.com/toannnnq1424/life-bridge/issues/12) owns the scope.
-  `P4-S1-v1`, four synthetic LB-018/minimum-LB-019 references, the Frozen
-  native-only handoff, owner-isolated persistence, native VI/EN UI and focused
-  validation and the single Level C plus classified targeted runtime recovery
-  are candidate-complete.
-- Exact next action: promote this exact slice through one ready PR to `dev`,
-  wait exact-head and post-merge hosted CI, then close issue #12 with bilingual
-  evidence. Do not start P4-S2, P4-S3, DATA-S1, P5, Spring, deployment or
-  release.
+- Current phase: `P4 — Safety-critical coordination`; `P4-S1` is validated and
+  merged, and no later P4 slice is active in this task.
+- Most recently integrated slice:
+  `P4-S1 — Medication reminder acknowledgement`; feature PR #59 merged at
+  `dev@d58660cebd91f46b2deab38a38e7187ec7870804`.
+- Accepted P4-S1 evidence: `P4-S1-v1`, four synthetic
+  LB-018/minimum-LB-019 references, the Frozen native-only handoff,
+  owner-isolated persistence, native VI/EN UI, one local Level C plus
+  classified targeted recovery, replacement exact-head runs
+  `30343304775`/`30343308183`, and post-merge `dev` run `30343682227`.
+  Canonical issue
+  [#12](https://github.com/toannnnq1424/life-bridge/issues/12) is closed with
+  bilingual evidence.
+- Exact next action: merge this same-task docs-only canonical closeout. After
+  that, only a fresh controller-dispatched task may start
+  `P4-S2 — Emergency contacts and offline-readable plan`. Do not start P4-S2,
+  P4-S3, DATA-S1, P5, Spring, deployment or release here.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -69,8 +70,8 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 | `P0` Foundation                       | Reproducible, governed, secure Windows repository                              | One foundation phase with parallel workstreams | Existing repository and user-approved plan | Validated     |
 | `P1` Daily task MVP                   | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; frozen P1 handoff                 | Validated     |
 | `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Validated     |
-| `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | In progress   |
-| `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Planned       |
+| `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Validated     |
+| `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | In progress   |
 | `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned       |
 | `P6` Microservice platform            | Prove independent runtime ownership, versioned compatibility, and isolation    | `P6-S1`–`P6-S3`                                | Accepted P1–P5 service boundaries          | Planned       |
 | `P7` Data and event reliability       | Prove migrations, event recovery, backup/restore, retention, and deletion      | `P7-S1`–`P7-S3`                                | P6 contracts and service ownership         | Planned       |
@@ -1500,10 +1501,14 @@ native VI/EN route and cumulative tests are integrated at
 exact-head push/PR runs `30329456918`/`30329530973`; PR #56 merged, post-merge
 run `30329752886` passed, and issue #11 closed with bilingual evidence.
 
-P3-S3 and its docs-only canonical closeout are accepted at
-`dev@98a420f17b6bee7494dd889e325e7401d9ec5068`. The exact next action is
-`P4-S1 — Medication reminder acknowledgement`, only in a fresh task. Its first
-action is to freeze non-clinical reminder acknowledgement authority, explicit
-unit/time-zone, event, Notification and
-failure-truth contracts against accepted P2/P3 boundaries. DATA-S1, P4/P5,
-Spring, deployment and release remain separate and unstarted here.
+P4-S1 is accepted. Feature commits `9392fc570ba510f4b63c2388bee94677d637541f`
+and `9a2b7fe9683f548a006c63fc673d294aedd39031` passed replacement exact-head
+push/PR runs `30343304775`/`30343308183`; PR #59 merged as
+`dev@d58660cebd91f46b2deab38a38e7187ec7870804`; post-merge run
+`30343682227` passed all three jobs and issue #12 closed with bilingual
+evidence. After this same-task docs-only closeout merges, exact next is
+`P4-S2 — Emergency contacts and offline-readable plan`, only in a fresh task.
+Its first action is to freeze purpose-specific authority, ordered-contact,
+reviewed-plan, offline-copy freshness and minimum-disclosure contracts against
+the accepted P2/P3/P4-S1 boundaries. DATA-S1, P4-S3, P5, Spring, deployment and
+release remain separate and unstarted here.
