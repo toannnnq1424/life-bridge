@@ -428,6 +428,207 @@ h1 {
   }
 }
 
+/* P5-S2 volunteer matching and organization coordination */
+.match-app {
+  min-height: 100vh;
+  background: #f8fafb;
+  color: #1a1c1e;
+}
+
+.match-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-bottom: 1px solid #bec9c5;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem);
+  background: #fff;
+}
+
+.match-header h1,
+.match-header p {
+  margin: 0;
+}
+
+.match-kicker {
+  color: #005247;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.match-header label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.match-header select {
+  min-height: 3rem;
+}
+
+.match-main {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+
+.match-boundary,
+.match-state,
+.match-detail,
+.match-workspace > section {
+  border: 1px solid #bec9c5;
+  border-radius: 0.5rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: #fff;
+}
+
+.match-boundary {
+  border-left: 0.5rem solid #005247;
+}
+
+.match-boundary h2,
+.match-state h2,
+.match-detail h2,
+.match-workspace h2 {
+  margin-top: 0;
+}
+
+.match-state {
+  border-left: 0.5rem solid #005a9c;
+}
+
+.match-state.state-denied,
+.match-state.state-revoked,
+.match-state.state-expired,
+.match-state.state-conflict,
+.match-state.state-no-capacity,
+.match-state.state-uncertain,
+.match-state.state-unavailable {
+  border-left-color: #ba1a1a;
+}
+
+.match-state button,
+.match-actions button,
+.match-list button {
+  min-height: 3rem;
+}
+
+.match-workspace {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.8fr) minmax(0, 1.5fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.match-list {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.match-list button {
+  display: grid;
+  width: 100%;
+  gap: 0.25rem;
+  border: 1px solid #6f7976;
+  padding: 0.8rem;
+  background: #fff;
+  color: inherit;
+  text-align: start;
+}
+
+.match-list button[aria-pressed="true"] {
+  border: 3px solid #005a9c;
+  background: #eef7ff;
+}
+
+.match-detail {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.match-detail dl {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) 2fr;
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+
+.match-detail dt {
+  font-weight: 800;
+}
+
+.match-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.match-evidence {
+  border-left: 0.35rem solid #005a9c;
+  padding: 0.25rem 1rem;
+  background: #f3f7fa;
+}
+
+.match-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.match-actions button:disabled {
+  border-color: #6f7976;
+  background: #e2e2e5;
+  color: #3f4946;
+  opacity: 1;
+}
+
+@media (max-width: 48rem) {
+  .match-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .match-workspace,
+  .match-detail dl {
+    grid-template-columns: 1fr;
+  }
+
+  .match-detail dd {
+    margin-bottom: 0.65rem;
+  }
+
+  .match-actions,
+  .match-actions button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match-app *,
+  .match-app *::before,
+  .match-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .match-boundary,
+  .match-state,
+  .match-detail,
+  .match-workspace > section,
+  .match-list button {
+    border: 2px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+}
+
 /* P5-S1 consented help request and public directory: corrected native Frozen handoff. */
 .community-app {
   min-height: 100vh;

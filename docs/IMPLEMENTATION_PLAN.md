@@ -6,17 +6,17 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P5 — Community support`; P5-S1 is the only active candidate.
-- Accepted base: live
-  `origin/dev@486a5276ef43d143af8692501064e952a59a4829`.
-- Accepted predecessor evidence: P4-S3 feature and its docs-only canonical
-  closeout are present on the accepted base with hosted `dev` CI green.
-- Current action: PR #66 is ready and its code-bearing exact head passed hosted
-  push/PR aggregate CI after classified hosted harness recovery. Require the
-  documentation-only head to pass exact-head CI, then merge commit, post-merge
-  `dev` CI and issue #15 closeout. The single local Level C invocation plus
-  classified targeted continuation is complete and must not be repeated.
-  P5-S2, P5-S3, DATA-S1, P6+, deployment and release remain unstarted.
+- Current phase: `P5 — Community support`; P5-S2 is locally accepted and is
+  the only active promotion candidate.
+- Accepted base: `origin/dev@e56df0f7d36a37f00e3c9750d112464e32cf09a1`.
+- Accepted predecessor evidence: P5-S1 feature PR #66 and docs closeout PR #67
+  are present; post-merge run `30400564523` is green and issue #15 is closed.
+- Current action: promote one ready P5-S2 feature PR by exact-head/post-merge
+  CI and close canonical issue #16 with bilingual evidence. The sole local
+  Level C invocation plus its classified continuation are complete; do not run
+  another local Level C.
+  P5-S1 is accepted; P5-S2 is the active candidate. P5-S3, DATA-S1, P6+,
+  deployment and release remain unstarted.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -827,6 +827,14 @@ Acceptance:
 - organization-scoped contract/integration/browser/security checks pass.
 
 Dependencies: `P5-S1`; P2 roles/audit.
+
+Candidate actual (`2026-07-29`): three independent pre-code reviews reconciled
+separate exact P2 scopes, Community organization approval/role and bounded
+capacity evidence before code. `P5-S2-v1` and `P5-S2-UI-v1` are Frozen;
+LB-025/LB-026, Identity migration 006, Community Flyway V2, Gateway consumer,
+content-free audit/outbox and focused proof are implemented. Exactly-one local
+Level C, hosted promotion and issue #16 closeout remain pending; P5-S3 and later
+work remain unstarted.
 
 ### `P5-S3 — Moderation resolution`
 

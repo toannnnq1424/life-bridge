@@ -455,3 +455,15 @@ generated source. Automated desktop/mobile keyboard, focus, reflow, axe,
 forced-colors and reduced-motion proof is candidate evidence only; KI-016 and
 KI-019 remain. Exactly one local Level C and hosted promotion remain before
 the slice is accepted.
+
+### P5-S2 volunteer match and organization coordination outcome
+
+At LB-025 `/matching`, an authorized volunteer can inspect only an approved
+minimum-disclosure offer, accept or decline its current version and record a
+bounded progress checkpoint after assignment. At LB-026 `/organization`, an
+authorized coordinator sees an organization-scoped queue/capacity projection
+and may approve/reject, offer, assign/reassign, record progress, close or
+revoke as the authoritative next-actions permit. No role label creates consent
+or authority; no action infers eligibility, urgency, suitability, availability,
+quality or outcome. The UI confirms success only from authoritative Community
+state and distinguishes unsent offline work from uncertain post-dispatch work.

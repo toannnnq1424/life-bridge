@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s2-v1/schemas/match-command.schema.json",
+  "title": "P5-S2 match commands",
+  "oneOf": [
+    { "$ref": "#/$defs/QueryCommand" },
+    { "$ref": "#/$defs/ApprovalCommand" },
+    { "$ref": "#/$defs/OfferCommand" },
+    { "$ref": "#/$defs/OfferResponseCommand" },
+    { "$ref": "#/$defs/AssignmentCommand" },
+    { "$ref": "#/$defs/ProgressCommand" },
+    { "$ref": "#/$defs/CloseCommand" },
+    { "$ref": "#/$defs/RevokeCommand" },
+    { "$ref": "#/$defs/ReconcileCommand" }
+  ],
+  "$defs": {
+    "Authorization": { "$ref": "authorization-context.schema.json" },
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "Base": {
+      "type": "object",
+      "required": ["authorization", "organizationId"],
+      "properties": {
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" }
+      }
+    },
+    "QueryCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/Base" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["operation", "authorization", "organizationId", "audience"],
+          "properties": {
+            "operation": { "const": "query" },
+            "authorization": { "$ref": "#/$defs/Authorization" },
+            "organizationId": { "$ref": "#/$defs/OpaqueId" },
+            "audience": { "enum": ["volunteer", "coordinator"] },
+            "matchId": { "$ref": "#/$defs/OpaqueId" },
+            "state": { "$ref": "#/$defs/State" },
+            "cursor": { "type": "string", "minLength": 20, "maxLength": 1024 }
+          }
+        }
+      ]
+    },
+    "MutationBaseProperties": {
+      "type": "object",
+      "properties": {
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ApprovalCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "expectedVersion",
+        "decision",
+        "expiresAt"
+      ],
+      "properties": {
+        "operation": { "const": "approval" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 },
+        "decision": { "enum": ["approved", "rejected"] },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "OfferCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "expectedVersion",
+        "volunteerEnrollmentId",
+        "capacitySlot",
+        "expiresAt"
+      ],
+      "properties": {
+        "operation": { "const": "offer" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 },
+        "volunteerEnrollmentId": { "$ref": "#/$defs/OpaqueId" },
+        "capacitySlot": { "$ref": "#/$defs/CapacitySlot" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "OfferResponseCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "expectedVersion",
+        "offerId",
+        "expectedOfferVersion",
+        "response"
+      ],
+      "properties": {
+        "operation": { "const": "offer_response" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 },
+        "offerId": { "$ref": "#/$defs/OpaqueId" },
+        "expectedOfferVersion": { "type": "integer", "minimum": 1 },
+        "response": { "enum": ["accepted", "declined"] }
+      }
+    },
+    "AssignmentCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "expectedVersion",
+        "offerId",
+        "mode"
+      ],
+      "properties": {
+        "operation": { "const": "assignment" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 },
+        "offerId": { "$ref": "#/$defs/OpaqueId" },
+        "mode": { "enum": ["assign", "reassign"] }
+      }
+    },
+    "ProgressCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "expectedVersion",
+        "checkpoint"
+      ],
+      "properties": {
+        "operation": { "const": "progress" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 },
+        "checkpoint": {
+          "enum": [
+            "arrangements_confirmed",
+            "support_started",
+            "support_completed",
+            "unable_to_proceed"
+          ]
+        }
+      }
+    },
+    "CloseCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "expectedVersion",
+        "reason"
+      ],
+      "properties": {
+        "operation": { "const": "close" },
+        "authorization": {
+          "allOf": [
+            { "$ref": "#/$defs/Authorization" },
+            {
+              "type": "object",
+              "properties": {
+                "permission": { "const": "community_match.coordinator.manage" }
+              }
+            }
+          ]
+        },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 },
+        "reason": {
+          "enum": [
+            "support_completed",
+            "recipient_cancelled",
+            "organization_cancelled",
+            "unable_to_proceed"
+          ]
+        }
+      }
+    },
+    "RevokeCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "expectedVersion",
+        "reason"
+      ],
+      "properties": {
+        "operation": { "const": "revoke" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "expectedVersion": { "type": "integer", "minimum": 1 },
+        "reason": { "enum": ["consent_revoked", "approval_revoked", "organization_revoked"] }
+      }
+    },
+    "ReconcileCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation",
+        "authorization",
+        "organizationId",
+        "submissionReference",
+        "command"
+      ],
+      "properties": {
+        "operation": { "const": "reconcile" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "organizationId": { "$ref": "#/$defs/OpaqueId" },
+        "submissionReference": { "$ref": "#/$defs/OpaqueId" },
+        "command": {
+          "enum": [
+            "approval",
+            "offer",
+            "offer_response",
+            "assignment",
+            "progress",
+            "close",
+            "revoke"
+          ]
+        }
+      }
+    },
+    "CapacitySlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serviceDate", "dayPart"],
+      "properties": {
+        "serviceDate": { "type": "string", "format": "date" },
+        "dayPart": { "enum": ["morning", "afternoon", "evening"] }
+      }
+    },
+    "State": {
+      "enum": [
+        "pending_approval",
+        "approved",
+        "rejected",
+        "offered",
+        "accepted",
+        "declined",
+        "assigned",
+        "in_progress",
+        "closed",
+        "revoked",
+        "expired"
+      ]
+    }
+  }
+}

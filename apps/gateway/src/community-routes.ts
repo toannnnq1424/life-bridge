@@ -10,9 +10,14 @@ import {
   CommunityHelpRequestReconcileCommandSchema,
   CommunityHelpRequestSubmissionSchema,
   CommunityHelpRequestVersionRequestSchema,
+  CommunityMatchAuthorizationContextSchema,
+  CommunityMatchAuthorizationRequestSchema,
+  CommunityMatchCommandSchema,
+  CommunityMatchResultSchema,
   CommunityPublicDirectoryQuerySchema,
   IdempotencyKeySchema,
   type CommunityPermission,
+  type CommunityMatchPermission,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, type SafeLogger } from "@lifebridge/observability";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
@@ -199,6 +204,176 @@ export function registerCommunityRoutes(
     },
   );
 
+  for (const audience of ["volunteer", "organization"] as const) {
+    app.post<{ Body: unknown }>(
+      `/api/v1/community/matches/${audience}/query`,
+      async (request, reply) => {
+        const parsed = request.body as {
+          householdId?: unknown;
+          organizationId?: unknown;
+        };
+        const householdId = boundedOpaqueId(String(parsed.householdId ?? ""));
+        const organizationId = boundedOpaqueId(String(parsed.organizationId ?? ""));
+        const permission: CommunityMatchPermission =
+          audience === "volunteer"
+            ? "community_match.volunteer.read"
+            : "community_match.coordinator.read";
+        const internalPath =
+          audience === "volunteer"
+            ? "/internal/v1/community/matches/volunteer/query"
+            : "/internal/v1/community/matches/organization/query";
+        return authorizeMatchAndForward(request, reply, {
+          permission,
+          householdId,
+          internalPath,
+          intentBody: {
+            operation: "query",
+            organizationId,
+            audience: audience === "organization" ? "coordinator" : "volunteer",
+          },
+          commandBody: (authorization) => ({
+            operation: "query",
+            authorization,
+            organizationId,
+            audience: audience === "organization" ? "coordinator" : "volunteer",
+          }),
+        });
+      },
+    );
+  }
+
+  app.post<{
+    Params: { matchId: string; action: string };
+    Body: unknown;
+  }>("/api/v1/community/matches/:matchId/:action", async (request, reply) => {
+    const matchId = boundedOpaqueId(request.params.matchId);
+    const body = request.body as JsonRecord;
+    const action = request.params.action;
+    const operation =
+      action === "respond"
+        ? "offer_response"
+        : action === "record-progress"
+          ? "progress"
+          : action === "offers"
+            ? "offer"
+            : action;
+    if (
+      ![
+        "approval",
+        "offers",
+        "offer_response",
+        "assignment",
+        "progress",
+        "close",
+        "revoke",
+      ].includes(operation)
+    ) {
+      throw new Error("COMMUNITY_MATCH_ACTION_INVALID");
+    }
+    const permission: CommunityMatchPermission =
+      operation === "offer_response"
+        ? "community_match.volunteer.respond"
+        : operation === "progress"
+          ? "community_match.progress.record"
+          : "community_match.coordinator.manage";
+    const offerId =
+      operation === "offer_response" ? boundedOpaqueId(String(body.offerId ?? "")) : undefined;
+    const internalAction = operation === "offer_response" ? `offers/${offerId}/response` : action;
+    const internalPath = `/internal/v1/community/matches/${encodeURIComponent(matchId)}/${internalAction}`;
+    const { householdId, ...commandIntent } = body;
+    return authorizeMatchAndForward(request, reply, {
+      permission,
+      householdId: boundedOpaqueId(String(householdId ?? "")),
+      internalPath,
+      intentBody: { ...commandIntent, operation },
+      idempotencyKey: requiredIdempotencyKey(request),
+      mutation: true,
+      commandBody: (authorization) => ({
+        ...commandIntent,
+        operation,
+        authorization,
+      }),
+    });
+  });
+
+  async function authorizeMatchAndForward(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    input: {
+      permission: CommunityMatchPermission;
+      householdId: string;
+      internalPath: string;
+      intentBody: unknown;
+      idempotencyKey?: string;
+      mutation?: boolean;
+      commandBody: (
+        authorization: ReturnType<typeof CommunityMatchAuthorizationContextSchema.parse>,
+      ) => unknown;
+    },
+  ) {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    if (input.mutation && !validBrowserMutation(request, config.publicOrigin)) {
+      return reply.code(403).send({
+        error: {
+          code: "ORIGIN_REJECTED",
+          messageKey: "origin.rejected",
+          retryable: false,
+          correlationId,
+        },
+      });
+    }
+    const requestDigest = communityRequestDigest("POST", input.internalPath, input.intentBody);
+    try {
+      const decision = await callIdentity(
+        fetcher,
+        config,
+        request,
+        correlationId,
+        CommunityMatchAuthorizationRequestSchema.parse({
+          permission: input.permission,
+          householdId: input.householdId,
+          requestDigest,
+        }),
+        "/internal/v1/community/matches/authorize",
+      );
+      if (decision.status >= 400) {
+        return reply.code(403).send({
+          error: {
+            code: "COMMUNITY_MATCH_AUTHORITY_REQUIRED",
+            messageKey: "community.match.authority_required",
+            retryable: false,
+            correlationId,
+          },
+        });
+      }
+      const authorization = CommunityMatchAuthorizationContextSchema.parse(
+        (decision.body as { data?: unknown } | null)?.data,
+      );
+      if (
+        authorization.permission !== input.permission ||
+        authorization.requestDigest !== requestDigest
+      ) {
+        throw new Error("MATCH_AUTHORITY_MISMATCH");
+      }
+      const command = CommunityMatchCommandSchema.parse(input.commandBody(authorization));
+      const response = await callCommunity(
+        fetcher,
+        config,
+        input.internalPath,
+        "POST",
+        correlationId,
+        command,
+        input.idempotencyKey,
+      );
+      if (response.status >= 200 && response.status < 300) {
+        return reply.code(response.status).send(CommunityMatchResultSchema.parse(response.body));
+      }
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return unavailable(reply, correlationId, logger, "COMMUNITY_SERVICE_UNAVAILABLE");
+    }
+  }
+
   async function authorizeAndForward(
     request: FastifyRequest,
     reply: FastifyReply,
@@ -356,10 +531,11 @@ async function callIdentity(
   request: FastifyRequest,
   correlationId: string,
   body: unknown,
+  path = "/internal/v1/community/authorize",
 ): Promise<DependencyResponse> {
   const sessionToken = request.cookies[config.sessionCookieName];
   const csrfToken = String(request.headers["x-csrf-token"] ?? "");
-  const response = await fetcher(`${config.identityUrl}/internal/v1/community/authorize`, {
+  const response = await fetcher(`${config.identityUrl}${path}`, {
     method: "POST",
     headers: {
       "content-type": "application/json",

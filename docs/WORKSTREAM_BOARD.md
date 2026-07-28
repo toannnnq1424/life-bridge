@@ -5,11 +5,12 @@
 - Updated: 2026-07-29
 - Accepted P5-S1 product merge:
   `dev@ac663a714b69aace443f712f1d8ee700b5e48636`.
-- Active product slice: none; P5-S1 is accepted and P5-S2 is an unstarted
-  handoff.
-- Current action: promote this same-task docs-only canonical closeout, then
-  return the exact P5-S2 orientation to the controller. DATA-S1, deployment
-  and release remain unstarted.
+- Active product slice: P5-S2 locally accepted candidate on
+  `phase/5-volunteer-match-organization-coordination`; focused proof and the
+  sole Level C evidence chain are complete.
+- Current action: exact-head hosted promotion and canonical issue #16
+  closeout. Do not rerun local Level C. DATA-S1, P5-S3, deployment and release
+  remain unstarted.
 - Implemented direction: `CHG-2026-011`/ADR-019 assigns the greenfield Spring
   Community owner; accepted Node services remain unchanged in ownership
 - Rule: one conversation owns one phase or one slice
@@ -61,7 +62,7 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 9        | `P4-S2` Emergency plan                  | Validated/merged; PR #62 and CI passed | Exact head `ea5acf7`; merge `7690a7c`; post-merge CI green      | Issue #13 closed completed                       |
 | 10       | `P4-S3` Document vault                  | Validated/merged; PR #64 and CI passed | Exact head `3eb4bab`; merge `7b10d62`; post-merge CI green      | Issue #14 closed completed                       |
 | 11       | `P5-S1` Help request/directory          | Validated/merged; PR #66 and CI passed | Exact head `59f57e9`; merge `ac663a7`; post-merge CI green      | Issue #15 closed with bilingual evidence         |
-| 12       | `P5-S2` Match/organization              | Planned                                | P5-S1 Spring Community boundary accepted                        | Extend same minimum-data Community service       |
+| 12       | `P5-S2` Match/organization              | Candidate; focused proof green         | Frozen contracts/handoff; Level C and promotion pending         | Extend same minimum-data Community service       |
 | 13       | `P5-S3` Moderation                      | Planned                                | P5-S2 + policy                                                  | Extend same boundary with auditable resolution   |
 | 14       | `P6-S1` Contract rolling compatibility  | Planned                                | P1–P5 service inventory accepted                                | Mixed Node/Spring version compatibility          |
 | 15       | `P6-S2` Independent artifacts/ownership | Planned                                | P6-S1                                                           | Independent artifacts, upgrades, SBOM/containers |

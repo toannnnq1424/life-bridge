@@ -116,7 +116,7 @@ class CommunityProviderContractTest {
     mvc.perform(get("/version"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.service").value("community"))
-        .andExpect(jsonPath("$.contract").value("P5-S1-v1"));
+        .andExpect(jsonPath("$.contract").value("P5-S2-v1"));
   }
 
   private String validSubmitJson() {

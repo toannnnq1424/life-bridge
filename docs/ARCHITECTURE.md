@@ -827,3 +827,12 @@ it did not invoke a second full campaign. Final feature head
 `59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head CI, PR #66
 merged as `dev@ac663a714b69aace443f712f1d8ee700b5e48636`, and post-merge run
 `30397698495` passed all required jobs and the aggregate gate.
+
+## P5-S2 extension of the Community boundary
+
+P5-S2 extends the accepted ADR-019 Spring Community service and its PostgreSQL
+owner; it does not add a service or storage engine. Node Gateway remains the
+browser/session/CSRF boundary, Identity & Consent remains authority, and
+Gateway↔Community uses only frozen `P5-S2-v1` OpenAPI/JSON Schema. Identity
+authority, Community organization approval/role and Community capacity are
+three independent expiring/revocable evidence planes.

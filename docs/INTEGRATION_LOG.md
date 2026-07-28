@@ -987,3 +987,16 @@ failures, not product failures.
   must first freeze match/organization authority, approval, capacity,
   revocation, minimum disclosure and audit/event/failure truth; do not start
   it here.
+
+## INT-2026-024 — P5-S2 match coordination candidate
+
+- Date: 2026-07-29
+- State: candidate; local Level C and hosted promotion pending
+- Boundary: Node Gateway↔Identity↔Spring Community through frozen `P5-S2-v1`;
+  Community owns PostgreSQL V2/audit/outbox and Identity owns migration 006.
+- Planned versus actual: the planned same-service minimum-data extension was
+  retained. Three independent pre-code reviews and four bounded synthetic
+  Stitch references preceded implementation. No second service/engine,
+  automated dispatch, contact exchange or P5-S3 scope was added.
+- Validation: focused contracts, migration, provider/lifecycle/concurrency,
+  browser/accessibility and build proof; exactly-one Level C remains.

@@ -553,3 +553,14 @@ rows and orders by `public_name`, then `listing_id`. Location granularity is
 province/city only. Migration apply, forced rollback, checksum-verified
 reapply, zero backfill and cross-owner privilege isolation are mandatory Level
 C/hosted evidence and do not authorize any production directory import.
+
+## P5-S2 Community-owned match data
+
+Flyway V2 adds only Community-owned organizations/enrollments, matches,
+offers, date-and-day-part capacity reservations, append-only structured
+progress and digest-only match idempotency. It extends the existing content-
+free Community audit/outbox enums. Identity migration 006 adds five exact,
+single-scope `community_match_coordination` grants without backfill. No name,
+contact, precise address, diagnosis, narrative or cross-service key is stored.
+Closed/revoked protected projections purge after 30 days; content-free evidence
+is bounded to 365 days.

@@ -1,4 +1,4 @@
-name: Integrated P1 through P5-S1 acceptance CI
+name: Integrated P1 through P5-S2 acceptance CI
 
 on:
   pull_request:
@@ -98,6 +98,7 @@ jobs:
           pnpm.cmd run format:p4-s2:check
           pnpm.cmd run format:p4-s3:check
           pnpm.cmd run format:p5-s1:check
+          pnpm.cmd run format:p5-s2:check
           pnpm.cmd run lint
           pnpm.cmd run typecheck
           pnpm.cmd run test:unit
@@ -106,6 +107,8 @@ jobs:
           pnpm.cmd run validate:secrets
           pnpm.cmd run test:p5-s1:contracts
           node --experimental-strip-types tools/quality/src/p5-s1-contract-integrity.ts
+          pnpm.cmd run test:p5-s2:contracts
+          node --experimental-strip-types tools/quality/src/p5-s2-contract-integrity.ts
           ./mvnw.cmd -B -ntp -f services/community/pom.xml clean test
           pnpm.cmd run build
 
@@ -133,7 +136,7 @@ jobs:
         run: pnpm.cmd run security:deps
 
   postgres-browser:
-    name: P5-S1 PostgreSQL, mixed-runtime, and cumulative Chromium acceptance
+    name: P5-S2 PostgreSQL, mixed-runtime, and cumulative Chromium acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 35
     services:
@@ -218,18 +221,19 @@ jobs:
           "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
           "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
           "P5_S1_COMMUNITY_TEST_DATABASE_URL=postgresql://lifebridge_community:$($env:P5_COMMUNITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
+          "P5_S2_COMMUNITY_TEST_DATABASE_URL=postgresql://lifebridge_community:$($env:P5_COMMUNITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
           "COMMUNITY_DATABASE_URL=jdbc:postgresql://127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
           "COMMUNITY_DATABASE_USERNAME=lifebridge_community" >> $env:GITHUB_ENV
           "COMMUNITY_DATABASE_PASSWORD=$($env:P5_COMMUNITY_DATABASE_PASSWORD)" >> $env:GITHUB_ENV
 
-      - name: Run the P5-S1 Level C campaign
+      - name: Run the P5-S2 Level C campaign
         shell: pwsh
         env:
           P5_S1_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
-        run: ./scripts/validate-p5-s1.ps1 -UseExistingDatabase -SkipInstall
+        run: ./scripts/validate-p5-s2.ps1 -UseExistingDatabase -SkipInstall
 
   integrated-gate:
-    name: P1 through P5-S1 full required gate
+    name: P1 through P5-S2 full required gate
     if: always()
     needs:
       - windows-quality
