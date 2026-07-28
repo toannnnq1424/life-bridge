@@ -41,6 +41,7 @@ class ApiFailure extends Error {
 const scopeLabels: Record<ConsentScope, [string, string]> = {
   "recipient_context.basic_label": ["Nhãn cơ bản", "Basic recipient label"],
   "recipient_context.relationship_label": ["Nhãn quan hệ", "Relationship label"],
+  "document_vault.access": ["Truy cập kho tài liệu", "Document vault access"],
 };
 
 export function ConsentPrivacyApp({ view, householdId }: { view: View; householdId?: string }) {

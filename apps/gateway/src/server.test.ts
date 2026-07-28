@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { buildGatewayServer } from "./server.js";
 
@@ -787,9 +787,15 @@ function coordinationDecision(
     | "coordination.emergency_plan.draft.save"
     | "coordination.emergency_plan.version.review"
     | "coordination.emergency_plan.history.read"
-    | "coordination.emergency_plan.offline_snapshot.read",
+    | "coordination.emergency_plan.offline_snapshot.read"
+    | "coordination.document_vault.list"
+    | "coordination.document_vault.upload"
+    | "coordination.document_vault.metadata.read"
+    | "coordination.document_vault.content.download"
+    | "coordination.document_vault.delete",
   requestDigest: unknown,
   targetActorRef?: string,
+  documentId?: string,
 ) {
   return {
     decisionId: "coordination_decision_synthetic",
@@ -802,6 +808,7 @@ function coordinationDecision(
     },
     householdId: "household_synthetic",
     recipientContextId: "recipient_synthetic",
+    ...(documentId ? { documentId } : {}),
     subjectId: "subject_synthetic",
     subjectVersion: 2,
     grantId: null,
@@ -1197,6 +1204,225 @@ describe("P4-S2 Gateway exact-purpose emergency authority", () => {
     expect(response.json().error.code).toBe("COORDINATION_RESOURCE_NOT_FOUND");
     expect(calls).toBe(1);
     expect(response.body).not.toMatch(/planVersion|contacts|steps|permission/i);
+    await app.close();
+  });
+});
+
+describe("P4-S3 Gateway exact-purpose document authority", () => {
+  const documentId = "document_synthetic";
+  const upload = {
+    uploadReference: "upload_reference_synthetic",
+    fileName: "synthetic-note.txt",
+    declaredType: "text/plain",
+    decodedSizeBytes: 5,
+    contentBase64: "aGVsbG8=",
+  };
+  const deletion = {
+    expectedVaultVersion: 2,
+    expectedDocumentVersion: 1,
+  };
+  const routes = [
+    {
+      method: "GET" as const,
+      url: "/api/v1/households/household_synthetic/documents",
+      permission: "coordination.document_vault.list" as const,
+    },
+    {
+      method: "POST" as const,
+      url: "/api/v1/households/household_synthetic/documents",
+      permission: "coordination.document_vault.upload" as const,
+      payload: upload,
+    },
+    {
+      method: "GET" as const,
+      url: `/api/v1/households/household_synthetic/documents/${documentId}`,
+      permission: "coordination.document_vault.metadata.read" as const,
+      documentId,
+    },
+    {
+      method: "DELETE" as const,
+      url: `/api/v1/households/household_synthetic/documents/${documentId}`,
+      permission: "coordination.document_vault.delete" as const,
+      documentId,
+      payload: deletion,
+    },
+  ];
+
+  it.each(routes)(
+    "binds $permission and relays exactly one owner request",
+    async ({ method, url, permission, payload, documentId: scopedDocumentId }) => {
+      const calls: Array<{ url: string; body: Record<string, unknown>; headers: Headers }> = [];
+      const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+        const target = String(input);
+        const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+        calls.push({ url: target, body, headers: new Headers(init?.headers) });
+        if (target.endsWith("/internal/v1/coordination/authorize")) {
+          expect(body).toMatchObject({
+            permission,
+            householdId: "household_synthetic",
+            ...(scopedDocumentId ? { documentId: scopedDocumentId } : {}),
+          });
+          if (!scopedDocumentId) expect(body.documentId).toBeUndefined();
+          return jsonResponse(
+            coordinationDecision(permission, body.requestDigest, undefined, scopedDocumentId),
+          );
+        }
+        expect(target.startsWith("http://care.test/internal/v1/coordination/")).toBe(true);
+        return jsonResponse({ outcome: "synthetic_document_response" });
+      }) as typeof fetch;
+      const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+      const response = await app.inject({
+        method,
+        url,
+        headers: {
+          cookie: "lb_session=synthetic_session",
+          origin: config.publicOrigin,
+          "sec-fetch-site": "same-origin",
+          "x-csrf-token": "c".repeat(43),
+          "idempotency-key": `p4s3-${method.toLowerCase()}-0001`,
+          "x-correlation-id": "corr_p3_contract",
+        },
+        ...(payload ? { payload } : {}),
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(calls).toHaveLength(2);
+      expect(calls[1]?.body).toHaveProperty("authorization.permission", permission);
+      if (payload) expect(calls[1]?.body.request).toEqual(payload);
+      expect(calls.every((call) => !call.url.startsWith("http://notification.test"))).toBe(true);
+      await app.close();
+    },
+  );
+
+  it("relays only an attachment response for a freshly bound content decision", async () => {
+    let calls = 0;
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      calls += 1;
+      const target = String(input);
+      const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      if (target.endsWith("/internal/v1/coordination/authorize")) {
+        return jsonResponse(
+          coordinationDecision(
+            "coordination.document_vault.content.download",
+            body.requestDigest,
+            undefined,
+            documentId,
+          ),
+        );
+      }
+      return new Response(Buffer.from("hello"), {
+        status: 200,
+        headers: {
+          "content-type": "application/octet-stream",
+          "content-disposition":
+            "attachment; filename=\"document.txt\"; filename*=UTF-8''synthetic-note.txt",
+          "x-content-type-options": "nosniff",
+          "content-security-policy": "sandbox",
+          "content-length": "5",
+        },
+      });
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "GET",
+      url: `/api/v1/households/household_synthetic/documents/${documentId}/content`,
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_p3_contract",
+      },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(calls).toBe(2);
+    expect(response.headers["content-type"]).toContain("application/octet-stream");
+    expect(response.headers["content-disposition"]).toContain("attachment");
+    expect(response.headers["x-content-type-options"]).toBe("nosniff");
+    expect(response.headers["content-security-policy"]).toBe("sandbox");
+    expect(response.body).toBe("hello");
+    await app.close();
+  });
+
+  it("stops after a generic denied decision without calling Care", async () => {
+    let calls = 0;
+    const fetcher = (async () => {
+      calls += 1;
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "COORDINATION_RESOURCE_NOT_FOUND",
+            messageKey: "coordination.resource_not_found",
+            retryable: false,
+            correlationId: "corr_p3_contract",
+          },
+        }),
+        { status: 404, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "GET",
+      url: `/api/v1/households/household_synthetic/documents/${documentId}/content`,
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_p3_contract",
+      },
+    });
+    expect(response.statusCode).toBe(404);
+    expect(calls).toBe(1);
+    expect(response.body).not.toMatch(/synthetic-note|content|documentId/);
+    await app.close();
+  });
+
+  it("reports an unreachable document owner as storage unavailable, never empty", async () => {
+    let calls = 0;
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      calls += 1;
+      const target = String(input);
+      if (target.endsWith("/internal/v1/coordination/authorize")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+        return jsonResponse(
+          coordinationDecision("coordination.document_vault.list", body.requestDigest),
+        );
+      }
+      throw new Error("synthetic owner outage");
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/documents",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_p3_contract",
+      },
+    });
+    expect(response.statusCode).toBe(503);
+    expect(response.json().error.code).toBe("DOCUMENT_STORAGE_UNAVAILABLE");
+    expect(response.body).not.toMatch(/documents|synthetic owner outage/i);
+    expect(calls).toBe(2);
+    await app.close();
+  });
+
+  it("rejects an over-limit document body before authority or owner calls", async () => {
+    const fetcher = vi.fn() as unknown as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/households/household_synthetic/documents",
+      headers: {
+        "content-type": "application/json",
+        cookie: "lb_session=synthetic_session",
+        origin: config.publicOrigin,
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": "c".repeat(43),
+        "idempotency-key": "p4s3-body-limit-key",
+        "x-correlation-id": "corr_p3_contract",
+      },
+      payload: {
+        contentBase64: "A".repeat(530_000),
+      },
+    });
+    expect(response.statusCode).toBe(413);
+    expect(response.json().error.code).toBe("DOCUMENT_TOO_LARGE");
+    expect(fetcher).not.toHaveBeenCalled();
     await app.close();
   });
 });

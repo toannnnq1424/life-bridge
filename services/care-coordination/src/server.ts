@@ -15,11 +15,13 @@ import {
   IdempotencyKeySchema,
   IanaTimeZoneSchema,
   DisableMedicationReminderRequestSchema,
+  DeleteDocumentRequestSchema,
   EmergencyHistoryQuerySchema,
   ReplaceEmergencyContactsRequestSchema,
   ReviewEmergencyPlanVersionRequestSchema,
   SaveCarePlanDraftRequestSchema,
   SaveEmergencyPlanDraftRequestSchema,
+  UploadDocumentRequestSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
@@ -30,6 +32,7 @@ import type { AppointmentService } from "./appointment-service.js";
 import type { CarePlanService } from "./care-plan-service.js";
 import type { CoordinationService } from "./coordination-service.js";
 import type { EmergencyReadinessService } from "./emergency-readiness-service.js";
+import type { DocumentVaultService } from "./document-vault-service.js";
 import type { MedicationReminderService } from "./medication-reminder-service.js";
 import type { CareService } from "./service.js";
 
@@ -45,8 +48,9 @@ export function buildCareServer(
   carePlans?: CarePlanService,
   medicationReminders?: MedicationReminderService,
   emergencyReadiness?: EmergencyReadinessService,
+  documentVault?: DocumentVaultService,
 ) {
-  const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
+  const app = Fastify({ logger: false, bodyLimit: 512 * 1024 });
 
   app.addHook("onRequest", async (_request, reply) => {
     reply.header("cache-control", "no-store");
@@ -67,7 +71,100 @@ export function buildCareServer(
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "care_database" }),
   );
-  app.get("/version", async () => ({ service: "care-coordination", contract: "P4-S2-v1" }));
+  app.get("/version", async () => ({ service: "care-coordination", contract: "P4-S3-v1" }));
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/documents/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireDocumentVault(documentVault).list({
+          householdId: request.params.householdId,
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/documents",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const result = await requireDocumentVault(documentVault).upload({
+        householdId: request.params.householdId,
+        request: UploadDocumentRequestSchema.parse(body.request),
+        idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+        authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+        correlationId,
+      });
+      return reply.code(201).send(successEnvelope(result, correlationId));
+    },
+  );
+
+  app.post<{ Params: { householdId: string; documentId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/documents/:documentId/read",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireDocumentVault(documentVault).get({
+          householdId: request.params.householdId,
+          documentId: request.params.documentId,
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; documentId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/documents/:documentId/content/read",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const result = await requireDocumentVault(documentVault).download({
+        householdId: request.params.householdId,
+        documentId: request.params.documentId,
+        authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+        correlationId,
+      });
+      const encodedName = encodeURIComponent(result.metadata.displayName);
+      return reply
+        .header("content-type", "application/octet-stream")
+        .header(
+          "content-disposition",
+          `attachment; filename="document.txt"; filename*=UTF-8''${encodedName}`,
+        )
+        .header("x-content-type-options", "nosniff")
+        .header("content-security-policy", "sandbox")
+        .header("content-length", String(result.bytes.length))
+        .send(result.bytes);
+    },
+  );
+
+  app.delete<{ Params: { householdId: string; documentId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/documents/:documentId",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireDocumentVault(documentVault).delete({
+          householdId: request.params.householdId,
+          documentId: request.params.documentId,
+          request: DeleteDocumentRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
 
   app.post<{ Params: { householdId: string }; Body: unknown }>(
     "/internal/v1/coordination/households/:householdId/emergency-contacts/read",
@@ -614,6 +711,12 @@ export function buildCareServer(
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
     const errorName = error instanceof Error ? error.name : "UnknownError";
+    const bodyTooLarge =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "FST_ERR_CTP_BODY_TOO_LARGE" &&
+      request.url.includes("/documents");
     const appointmentValidation =
       errorName === "ZodError" &&
       (request.url.includes("/appointments") || request.url.includes("/calendar"));
@@ -624,39 +727,51 @@ export function buildCareServer(
       errorName === "ZodError" && request.url.includes("/emergency-contacts");
     const emergencyPlanValidation =
       errorName === "ZodError" && request.url.includes("/emergency-plan");
+    const documentRoute = request.url.includes("/documents");
+    const documentValidation = errorName === "ZodError" && documentRoute;
     const careError =
       error instanceof CareError
         ? error
-        : new CareError(
-            errorName === "ZodError" ? 400 : 500,
-            emergencyContactValidation
-              ? "EMERGENCY_CONTACT_VALIDATION_FAILED"
-              : emergencyPlanValidation
-                ? "EMERGENCY_PLAN_VALIDATION_FAILED"
-                : medicationValidation
-                  ? "MEDICATION_REMINDER_VALIDATION_FAILED"
-                  : carePlanValidation
-                    ? "CARE_PLAN_VALIDATION_FAILED"
-                    : appointmentValidation
-                      ? "APPOINTMENT_VALIDATION_FAILED"
-                      : errorName === "ZodError"
-                        ? "TASK_VALIDATION_FAILED"
-                        : "SERVICE_UNAVAILABLE",
-            emergencyContactValidation
-              ? "emergency_contacts.validation"
-              : emergencyPlanValidation
-                ? "emergency_plan.validation"
-                : medicationValidation
-                  ? "medication_reminder.validation"
-                  : carePlanValidation
-                    ? "care_plan.validation"
-                    : appointmentValidation
-                      ? "appointment.validation"
-                      : errorName === "ZodError"
-                        ? "errors.task.validation"
-                        : "errors.service.unavailable",
-            errorName !== "ZodError",
-          );
+        : bodyTooLarge
+          ? new CareError(413, "DOCUMENT_TOO_LARGE", "errors.document.tooLarge", false)
+          : new CareError(
+              errorName === "ZodError" ? 400 : documentRoute ? 503 : 500,
+              documentValidation
+                ? "DOCUMENT_VALIDATION_FAILED"
+                : emergencyContactValidation
+                  ? "EMERGENCY_CONTACT_VALIDATION_FAILED"
+                  : emergencyPlanValidation
+                    ? "EMERGENCY_PLAN_VALIDATION_FAILED"
+                    : medicationValidation
+                      ? "MEDICATION_REMINDER_VALIDATION_FAILED"
+                      : carePlanValidation
+                        ? "CARE_PLAN_VALIDATION_FAILED"
+                        : appointmentValidation
+                          ? "APPOINTMENT_VALIDATION_FAILED"
+                          : errorName === "ZodError"
+                            ? "TASK_VALIDATION_FAILED"
+                            : documentRoute
+                              ? "DOCUMENT_STORAGE_UNAVAILABLE"
+                              : "SERVICE_UNAVAILABLE",
+              documentValidation
+                ? "errors.document.validation"
+                : emergencyContactValidation
+                  ? "emergency_contacts.validation"
+                  : emergencyPlanValidation
+                    ? "emergency_plan.validation"
+                    : medicationValidation
+                      ? "medication_reminder.validation"
+                      : carePlanValidation
+                        ? "care_plan.validation"
+                        : appointmentValidation
+                          ? "appointment.validation"
+                          : errorName === "ZodError"
+                            ? "errors.task.validation"
+                            : documentRoute
+                              ? "errors.document.storageUnavailable"
+                              : "errors.service.unavailable",
+              errorName !== "ZodError",
+            );
     return reply.code(careError.statusCode).send({
       error: {
         code: careError.code,
@@ -711,6 +826,11 @@ function requireMedicationReminders(
 function requireEmergencyReadiness(
   service: EmergencyReadinessService | undefined,
 ): EmergencyReadinessService {
+  if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
+  return service;
+}
+
+function requireDocumentVault(service: DocumentVaultService | undefined): DocumentVaultService {
   if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
   return service;
 }

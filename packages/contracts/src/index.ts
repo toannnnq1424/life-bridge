@@ -234,9 +234,13 @@ export type HouseholdProjection = z.infer<typeof HouseholdProjectionSchema>;
 export type HouseholdInvitationProjection = z.infer<typeof HouseholdInvitationProjectionSchema>;
 export type CareRecipientContextProjection = z.infer<typeof CareRecipientContextProjectionSchema>;
 
-export const ConsentScopeSchema = z.enum([
+export const RecipientContextDisclosureScopeSchema = z.enum([
   "recipient_context.basic_label",
   "recipient_context.relationship_label",
+]);
+export const ConsentScopeSchema = z.enum([
+  ...RecipientContextDisclosureScopeSchema.options,
+  "document_vault.access",
 ]);
 export const ConsentPurposeSchema = z.literal("household_coordination");
 export const ConsentActionSchema = z.enum(["grant", "narrow", "revoke"]);
@@ -278,7 +282,7 @@ export const ConsentRecipientProjectionSchema = z
 const ConsentScopeSetSchema = z
   .array(ConsentScopeSchema)
   .min(1)
-  .max(2)
+  .max(3)
   .superRefine((value, context) => {
     if (new Set(value).size !== value.length) {
       context.addIssue({ code: "custom", message: "duplicate_consent_scope" });
@@ -357,7 +361,7 @@ export const ConsentTransitionEventSchema = z
     grantVersion: z.number().int().positive(),
     action: ConsentActionSchema,
     purpose: ConsentPurposeSchema,
-    scopes: z.array(ConsentScopeSchema).max(2),
+    scopes: z.array(ConsentScopeSchema).max(3),
     effectiveAt: z.iso.datetime({ offset: true }),
     occurredAt: z.iso.datetime({ offset: true }),
     correlationId: CorrelationIdSchema,
@@ -439,7 +443,7 @@ export const GovernedRecipientContextProjectionSchema = z
   .object({
     recipientContextId: OpaqueIdSchema,
     householdId: OpaqueIdSchema,
-    scope: ConsentScopeSchema,
+    scope: RecipientContextDisclosureScopeSchema,
     value: z.string().min(1).max(80),
     grantId: OpaqueIdSchema.nullable(),
     authorizedAt: z.iso.datetime({ offset: true }),
@@ -447,6 +451,7 @@ export const GovernedRecipientContextProjectionSchema = z
   .strict();
 
 export type ConsentScope = z.infer<typeof ConsentScopeSchema>;
+export type RecipientContextDisclosureScope = z.infer<typeof RecipientContextDisclosureScopeSchema>;
 export type EstablishConsentSubjectRequest = z.infer<typeof EstablishConsentSubjectRequestSchema>;
 export type ConsentSubjectProjection = z.infer<typeof ConsentSubjectProjectionSchema>;
 export type ConsentRecipientProjection = z.infer<typeof ConsentRecipientProjectionSchema>;
@@ -489,6 +494,11 @@ export const CoordinationPermissionSchema = z.enum([
   "coordination.emergency_plan.version.review",
   "coordination.emergency_plan.history.read",
   "coordination.emergency_plan.offline_snapshot.read",
+  "coordination.document_vault.list",
+  "coordination.document_vault.upload",
+  "coordination.document_vault.metadata.read",
+  "coordination.document_vault.content.download",
+  "coordination.document_vault.delete",
 ]);
 export const CoordinationActorDisplayKeySchema = z.enum([
   "coordination.actor.you",
@@ -510,6 +520,7 @@ export const CoordinationAuthorizationDecisionSchema = z
     actor: CoordinationActorSchema,
     householdId: OpaqueIdSchema,
     recipientContextId: OpaqueIdSchema,
+    documentId: OpaqueIdSchema.optional(),
     subjectId: OpaqueIdSchema,
     subjectVersion: z.number().int().positive(),
     grantId: OpaqueIdSchema.nullable(),
@@ -531,6 +542,7 @@ export const CoordinationAuthorizationRequestSchema = z
     appointmentId: OpaqueIdSchema.optional(),
     medicationReminderId: OpaqueIdSchema.optional(),
     medicationOccurrenceId: OpaqueIdSchema.optional(),
+    documentId: OpaqueIdSchema.optional(),
     targetActorRef: OpaqueIdSchema.optional(),
     requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
   })
@@ -573,6 +585,23 @@ export const CoordinationAuthorizationRequestSchema = z
         path: ["medicationOccurrenceId"],
       });
     }
+    const documentScoped =
+      value.permission === "coordination.document_vault.metadata.read" ||
+      value.permission === "coordination.document_vault.content.download" ||
+      value.permission === "coordination.document_vault.delete";
+    const documentUnscoped =
+      value.permission === "coordination.document_vault.list" ||
+      value.permission === "coordination.document_vault.upload";
+    if (
+      documentScoped !== Boolean(value.documentId) ||
+      (!documentUnscoped && !documentScoped && value.documentId)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "document_scope_required",
+        path: ["documentId"],
+      });
+    }
     if (!handoff && value.targetActorRef) {
       context.addIssue({
         code: "custom",
@@ -605,6 +634,8 @@ const coordinationMutationPermissions = new Set<CoordinationPermission>([
   "coordination.emergency_contacts.replace",
   "coordination.emergency_plan.draft.save",
   "coordination.emergency_plan.version.review",
+  "coordination.document_vault.upload",
+  "coordination.document_vault.delete",
 ]);
 
 export function isCoordinationMutationPermission(permission: CoordinationPermission): boolean {
@@ -1835,6 +1866,112 @@ export const DashboardProjectionSchema = z
   })
   .strict();
 
+export const DocumentProcessingStateSchema = z.enum([
+  "processing",
+  "ready_unscanned",
+  "rejected",
+  "failed",
+  "integrity_failed",
+]);
+export const DocumentScannerStatusSchema = z.literal("not_configured");
+export const DocumentMalwareStatusSchema = z.literal("not_scanned");
+export const DocumentProcessingEvidenceSchema = z.literal("strict_text_and_integrity_validation");
+export const DocumentAccessPolicySchema = z.literal(
+  "care_recipient_and_current_document_collaborators",
+);
+export const DocumentRetentionPolicySchema = z.literal("retained_until_explicit_delete");
+
+export const UploadDocumentRequestSchema = z
+  .object({
+    uploadReference: OpaqueIdSchema,
+    fileName: z.string().min(1).max(255),
+    declaredType: z.string().min(1).max(80),
+    decodedSizeBytes: z.number().int().min(1).max(300_000),
+    contentBase64: z
+      .string()
+      .min(4)
+      .max(400_000)
+      .regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/),
+  })
+  .strict();
+
+export const DeleteDocumentRequestSchema = z
+  .object({
+    expectedVaultVersion: z.number().int().positive(),
+    expectedDocumentVersion: z.number().int().positive(),
+  })
+  .strict();
+
+export const DocumentProjectionSchema = z
+  .object({
+    documentId: OpaqueIdSchema,
+    uploadReference: OpaqueIdSchema,
+    displayName: z.string().min(1).max(120),
+    verifiedType: z.literal("text/plain"),
+    sizeBytes: z.number().int().min(1).max(262_144),
+    processingState: DocumentProcessingStateSchema,
+    scannerStatus: DocumentScannerStatusSchema,
+    malwareStatus: DocumentMalwareStatusSchema,
+    processingEvidence: DocumentProcessingEvidenceSchema,
+    accessPolicy: DocumentAccessPolicySchema,
+    retentionPolicy: DocumentRetentionPolicySchema,
+    version: z.number().int().positive(),
+    uploadedAt: z.iso.datetime({ offset: true }),
+    processingConfirmedAt: z.iso.datetime({ offset: true }).nullable(),
+  })
+  .strict();
+
+export const DocumentVaultProjectionSchema = z
+  .object({
+    vaultVersion: z.number().int().positive(),
+    documents: z.array(DocumentProjectionSchema).max(25),
+    serverTime: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const DocumentMutationResultSchema = z
+  .object({
+    vaultVersion: z.number().int().positive(),
+    document: DocumentProjectionSchema.nullable(),
+    deletedDocumentId: OpaqueIdSchema.nullable(),
+    confirmedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+
+export const DocumentContentMetadataSchema = z
+  .object({
+    documentId: OpaqueIdSchema,
+    displayName: z.string().min(1).max(120),
+    sizeBytes: z.number().int().min(1).max(262_144),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const DocumentVaultEventSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventType: z.enum([
+      "care.document.upload_accepted.v1",
+      "care.document.processing_state_changed.v1",
+      "care.document.removed.v1",
+    ]),
+    eventVersion: z.literal(1),
+    producer: z.literal("care-coordination"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    occurredAt: z.iso.datetime({ offset: true }),
+    correlationId: CorrelationIdSchema,
+  })
+  .strict();
+
+export type UploadDocumentRequest = z.infer<typeof UploadDocumentRequestSchema>;
+export type DeleteDocumentRequest = z.infer<typeof DeleteDocumentRequestSchema>;
+export type DocumentProjection = z.infer<typeof DocumentProjectionSchema>;
+export type DocumentVaultProjection = z.infer<typeof DocumentVaultProjectionSchema>;
+export type DocumentMutationResult = z.infer<typeof DocumentMutationResultSchema>;
+export type DocumentContentMetadata = z.infer<typeof DocumentContentMetadataSchema>;
+export type DocumentVaultEvent = z.infer<typeof DocumentVaultEventSchema>;
+
 export const ApiErrorCodeSchema = z.enum([
   "TASK_VALIDATION_FAILED",
   "IDEMPOTENCY_KEY_REQUIRED",
@@ -1911,6 +2048,18 @@ export const ApiErrorCodeSchema = z.enum([
   "EMERGENCY_PLAN_REVIEW_REQUIRED",
   "EMERGENCY_PLAN_STATE_CONFLICT",
   "EMERGENCY_RESULT_UNKNOWN",
+  "DOCUMENT_VALIDATION_FAILED",
+  "DOCUMENT_TYPE_UNSUPPORTED",
+  "DOCUMENT_TOO_LARGE",
+  "DOCUMENT_CONTENT_REJECTED",
+  "DOCUMENT_PROCESSING_PENDING",
+  "DOCUMENT_PROCESSING_FAILED",
+  "DOCUMENT_INTEGRITY_FAILED",
+  "DOCUMENT_VERSION_CONFLICT",
+  "DOCUMENT_VAULT_CONFLICT",
+  "DOCUMENT_CAPACITY_REACHED",
+  "DOCUMENT_RESULT_UNKNOWN",
+  "DOCUMENT_STORAGE_UNAVAILABLE",
 ]);
 
 export const ApiErrorSchema = z

@@ -8,6 +8,7 @@ import { AppointmentService } from "./appointment-service.js";
 import { CarePlanService } from "./care-plan-service.js";
 import { CoordinationService } from "./coordination-service.js";
 import { EmergencyReadinessService } from "./emergency-readiness-service.js";
+import { DocumentVaultService } from "./document-vault-service.js";
 import { MedicationReminderService } from "./medication-reminder-service.js";
 import { migrateCareDatabase } from "./migration.js";
 import { buildCareServer } from "./server.js";
@@ -37,6 +38,7 @@ const medicationReminders = new MedicationReminderService(pool);
 const emergencyReadiness = new EmergencyReadinessService(pool, {
   cursorKey: createHash("sha256").update(`${cursorSecret}:emergency-readiness`).digest(),
 });
+const documentVault = new DocumentVaultService(pool);
 const app = buildCareServer(
   care,
   internalToken,
@@ -45,6 +47,7 @@ const app = buildCareServer(
   carePlans,
   medicationReminders,
   emergencyReadiness,
+  documentVault,
 );
 const dispatcher = new OutboxDispatcher(
   care,

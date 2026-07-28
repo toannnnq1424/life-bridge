@@ -150,7 +150,7 @@ export class CareService {
     try {
       const result = await this.pool.query<{ version: number }>(
         `SELECT version FROM care_schema_state
-         WHERE service = 'care-coordination' AND version >= 6`,
+         WHERE service = 'care-coordination' AND version >= 7`,
       );
       return result.rows.length === 1;
     } catch {

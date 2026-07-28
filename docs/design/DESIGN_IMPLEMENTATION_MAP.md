@@ -144,7 +144,7 @@ Component names below are provisional identifiers, not mandatory abstractions. P
 | `LB-020` | Emergency contact list         | F-06                | `/households/:id/emergency-contacts`          | Ordered contacts, freshness, destructive confirmation                                                                    | `TBD: emergency contacts`             | Authorized role plus consent                                 |
 | `LB-021` | Emergency plan                 | F-06                | `/households/:id/emergency-plan`              | Approved plan, stale/offline labels, configured contacts                                                                 | `TBD: emergency plan and cache`       | Authorized role plus consent                                 |
 | `LB-022` | Help request                   | F-07                | `/help/new`                                   | Visibility preview, consent, request lifecycle                                                                           | `TBD: help requests`                  | Requester; explicit disclosure consent                       |
-| `LB-023` | Document vault                 | F-08                | `/households/:id/documents`                   | File picker, upload progress, processing, access, deletion                                                               | `TBD: document storage and scanning`  | Document and action scoped                                   |
+| `LB-023` | Document vault                 | F-08                | `/households/:id/documents`                   | File picker, upload progress, processing, access, deletion                                                               | `P4-S3-v1`; ADR-026; Frozen handoff   | Fresh document/action P2 decision; `document_vault.access`   |
 | `LB-024` | Community directory            | F-07                | `/community`                                  | Search, filters, minimum-data listings                                                                                   | `TBD: directory`                      | Public or account-scoped listing                             |
 | `LB-025` | Volunteer matching             | F-07/F-10           | `/matching`                                   | Match queue/detail and consented disclosure                                                                              | `TBD: matching`                       | Approved volunteer or coordinator scope                      |
 | `LB-026` | Organization dashboard         | F-07/F-10           | `/organization`                               | Scoped queue, capacity, partial errors                                                                                   | `TBD: organization aggregation`       | Organization membership and role                             |
@@ -358,6 +358,17 @@ LB-020, LB-021, and only required read-only LB-032 behavior
 -> four synthetic references generated once and read back directly
 -> corrected redacted handoff Frozen for native semantic implementation
 -> ADR-025 and P4-S2 threat model accepted
+-> generated source rejected; KI-016 and KI-019 retained
+-> native implementation and validation pending
+```
+
+P4-S3 candidate status:
+
+```text
+LB-023
+-> four synthetic desktop/mobile references generated once and read back once
+-> corrected redacted handoff Frozen for native semantic implementation
+-> ADR-026, P4-S3-v1 and the threat model accepted
 -> generated source rejected; KI-016 and KI-019 retained
 -> native implementation and validation pending
 ```

@@ -336,3 +336,38 @@ Same-origin XSS, an unlocked device/profile, weak-passphrase guessing, and the
 residual offline revocation window remain documented risks, not a security or
 compliance claim. Offline writes are blocked and never queued, retried, or
 submitted on reconnect.
+
+## P4-S3 document-vault controls
+
+`docs/security/P4_S3_THREAT_MODEL.md` and ADR-026 govern this slice. The
+`document_vault.access` scope is required in addition to active household
+membership and current subject visibility. Every list/upload/metadata/download/
+delete operation obtains a fresh exact permission; organizer status,
+basic-label consent, prior decisions, local state and possession of an opaque
+ID never grant access.
+
+Only strict UTF-8 `.txt` content declared as `text/plain`, decoded to
+1–262,144 bytes, is accepted. Client validation is advisory. Care rejects
+path/control/bidi/CRLF filenames, type/extension/size mismatch, invalid
+base64/UTF-8 and prohibited content controls; it generates storage identifiers
+and verifies SHA-256 plus object binding before retrieval. Logs, errors, audit,
+tombstones and events never include bytes, filenames, MIME/type, size, digest,
+object key or free-form sensitive payload. The 24-hour owner-local idempotency
+row may duplicate the bounded authorized mutation projection required for exact
+replay, but never stores bytes, storage keys, digests or object bindings.
+Delete atomically replaces the matching upload replay with a content-free
+invalidated marker so the old key neither retains the filename nor resurrects
+the object.
+
+There is no scanner. `ready_unscanned`, `not_configured`, `not_scanned` and
+`strict_text_and_integrity_validation` are the only successful processing
+truth. Content is never previewed or actively rendered; download is a
+no-store, sandboxed, nosniff octet-stream attachment with a sanitized advisory
+filename. Integrity failure closes access and purges active bytes.
+
+Explicit deletion purges active data atomically and has no in-product undo.
+Offline/local state exposes nothing and queues nothing. Denied/missing,
+storage failure and uncertain results are privacy-safe and distinct from empty
+or success. PostgreSQL and backup at-rest encryption, historical-backup
+deletion reconciliation, production RPO/RTO, a malware scanner and manual
+assistive-technology/private-render evidence remain explicit gates and risks.

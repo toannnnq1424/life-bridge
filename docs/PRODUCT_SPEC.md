@@ -393,3 +393,24 @@ hidden and purged. It never claims current permission, current server state,
 contact availability, legal/professional status, diagnosis, treatment,
 urgency ranking, a placed call or automated dispatch. Offline writes are
 blocked and never queued.
+
+### P4-S3 document-vault outcome
+
+At LB-023, an authorized person can choose one synthetic UTF-8 `.txt` file,
+review its exact size/access/retention effect, upload it with real transport
+progress, list authoritative processing truth, download it only as an
+attachment, and delete its active copy. The native file picker is the complete
+keyboard path; drag/drop is optional.
+
+The page always explains that every action checks current document-specific
+permission, household role alone grants nothing, the file is retained until
+explicit deletion, deletion has no LifeBridge undo, and recovery requires the
+user's local original. A successful upload is `ready_unscanned`: the scanner
+is not configured and malware was not scanned. The product never says clean,
+safe, reviewed or clinically valid and never previews or executes content.
+
+Denied/missing, invalid selection, upload/cancel, processing, rejected/failed/
+integrity failure, scanner/storage unavailable, conflict, offline/no queue,
+uncertain result/reconciliation, deletion review/confirmation and recovery are
+truthful VI/EN states. Status does not rely on color, progress is announced,
+focus is preserved, and no protected metadata or bytes persist offline.

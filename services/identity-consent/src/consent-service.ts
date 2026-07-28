@@ -29,6 +29,7 @@ import {
   type GrantConsentRequest,
   type NarrowConsentRequest,
   type PrivacyPreferencesProjection,
+  type RecipientContextDisclosureScope,
   type RevokeConsentRequest,
   type UpdatePrivacyPreferences,
 } from "@lifebridge/contracts";
@@ -404,7 +405,7 @@ export class ConsentService {
   public async governedRecipientContext(input: {
     accountId: string;
     householdId: string;
-    scope: ConsentScope;
+    scope: RecipientContextDisclosureScope;
     correlationId: string;
   }): Promise<GovernedRecipientContextProjection> {
     return this.observed("consent.authorize", input.correlationId, async () => {
@@ -535,6 +536,7 @@ export class ConsentService {
         );
         const privacy = privacyResult.rows[0];
         const decisionTime = this.now();
+        const requiresDocumentScope = request.permission.startsWith("coordination.document_vault.");
 
         const grants = await client.query<{
           grant_id: string;
@@ -549,8 +551,9 @@ export class ConsentService {
              AND effective_at <= $2
              AND revoked_effective_at IS NULL
              AND 'recipient_context.basic_label' = ANY(scopes)
+             AND ($3::boolean = false OR 'document_vault.access' = ANY(scopes))
            ORDER BY effective_at DESC, grant_id`,
-          [subject.subject_id, decisionTime],
+          [subject.subject_id, decisionTime, requiresDocumentScope],
         );
         const grantsByAccount = new Map(grants.rows.map((row) => [row.grantee_account_id, row]));
         const actorGrant = grantsByAccount.get(input.accountId);
@@ -640,6 +643,7 @@ export class ConsentService {
           actor,
           householdId: request.householdId,
           recipientContextId: subject.recipient_context_id,
+          documentId: request.documentId,
           subjectId: subject.subject_id,
           subjectVersion: subject.version,
           grantId: actorGrant?.grant_id ?? null,

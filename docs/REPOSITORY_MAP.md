@@ -135,34 +135,51 @@ proves Care rollback, reapply, preservation and no backfill; artifact-disabled m
 coverage lives in `tests/browser/p4-s2*.spec.ts`; `validate-p4-s2.ps1` owns the
 single cumulative campaign and exact cleanup.
 
+P4-S3 adds Identity migration `004_document_vault_scope.sql`, Care migration
+`007_document_vault.sql`, the Care-owned `DocumentVaultService`, five fresh
+Gateway/Identity permission paths, and native LB-023 at
+`apps/web/src/DocumentVaultApp.tsx`. ADR-026,
+`docs/design/reviews/P4_S3_STITCH_HANDOFF.md` and
+`docs/security/P4_S3_THREAT_MODEL.md` are the redacted authority.
+`p4-s3-migration.ts` proves both owner migrations rollback/reapply/no-backfill;
+`p4-s3-backup-restore.ts` rehearses owner-local pre-delete restore and
+post-delete non-resurrection; artifact-disabled mocked/real Chromium lives in
+`tests/browser/p4-s3*.spec.ts`; `validate-p4-s3.ps1` owns the one cumulative
+campaign and exact cleanup.
+
 ## Commands and generated state
 
-| Command                                     | Behavior                                                                                                       |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `pnpm.cmd run demo:p1`                      | Builds and runs the synthetic P1 loop on local ports `3000`, `3001`, `3101`, `3102`, and PostgreSQL `55432`    |
-| `pnpm.cmd run validate:p1-s1`               | One isolated Level C campaign with PostgreSQL, build/runtime, Chromium, accessibility and security evidence    |
-| `pnpm.cmd run test:p1:integration`          | Targeted real-PostgreSQL service acceptance; requires provisioned database URLs                                |
-| `pnpm.cmd run test:p1:browser`              | Targeted browser acceptance; requires an already running built stack                                           |
-| `pnpm.cmd run test:p2:identity-integration` | Targeted P2 Identity PostgreSQL Level B; requires a provisioned Identity-owned database                        |
-| `pnpm.cmd run test:p2:browser`              | Artifact-disabled P2 UI/accessibility/security browser campaign against a running production web build         |
-| `pnpm.cmd run validate:p2-s1`               | Single cumulative P2 Level C including P1 regression, Identity PostgreSQL, P2 browser and security gates       |
-| `pnpm.cmd run test:p2-s2:browser`           | LB-008–LB-010 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner       |
-| `pnpm.cmd run validate:p2-s2`               | Cumulative P2-S2 Level C with P1/P2-S1 regression, PostgreSQL, built runtime, Chromium and security            |
-| `pnpm.cmd run test:p2-s3:migration`         | Disposable P2-S2 → P2-S3 migration/reapply/no-backfill/preservation check                                      |
-| `pnpm.cmd run test:p2-s3:browser`           | LB-028–LB-031 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner       |
-| `pnpm.cmd run validate:p2-s3`               | Single cumulative P2-S3 Level C with regressions, migration/PostgreSQL, built runtime, Chromium and privacy    |
-| `pnpm.cmd run test:p3-s1:migration`         | Disposable P1 → P3-S1 Care migration rollback/reapply/no-backfill/preservation check                           |
-| `pnpm.cmd run test:p3-s1:integration`       | Real Identity/Care PostgreSQL authority, chronology, race, idempotency and atomicity evidence                  |
-| `pnpm.cmd run test:p3-s1:browser`           | Artifact-disabled LB-012/LB-014 browser campaign; real path enabled by the Level C runner                      |
-| `pnpm.cmd run validate:p3-s1`               | Single cumulative P3-S1 Level C with P1/P2 regressions, owned PostgreSQL, built runtime and privacy/a11y       |
-| `pnpm.cmd run test:p4-s1:integration`       | Care/Notification PostgreSQL authority, recurrence, delivery, concurrency, idempotency and rollback proof      |
-| `pnpm.cmd run test:p4-s1:migration`         | Separate Care/Notification rollback, reapply, preservation and no-backfill proof                               |
-| `pnpm.cmd run test:p4-s1:browser`           | Artifact-disabled mocked and real LB-018/minimum-LB-019 Chromium acceptance                                    |
-| `pnpm.cmd run validate:p4-s1`               | Exactly one cumulative P4-S1 Level C with owned PostgreSQL, runtime, privacy, accessibility and regressions    |
-| `pnpm.cmd run test:p4-s2:integration`       | Care PostgreSQL authority, ordering, review/version, snapshot, concurrency, idempotency and rollback proof     |
-| `pnpm.cmd run test:p4-s2:migration`         | Care migration 006 rollback, repeat apply, preservation and no-backfill proof                                  |
-| `pnpm.cmd run test:p4-s2:browser`           | Artifact-disabled mocked/real LB-020/LB-021/required-LB-032 Chromium acceptance                                |
-| `pnpm.cmd run validate:p4-s2`               | Exactly one cumulative P4-S2 Level C with owned PostgreSQL, real offline runtime, privacy/a11y and regressions |
+| Command                                     | Behavior                                                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `pnpm.cmd run demo:p1`                      | Builds and runs the synthetic P1 loop on local ports `3000`, `3001`, `3101`, `3102`, and PostgreSQL `55432`     |
+| `pnpm.cmd run validate:p1-s1`               | One isolated Level C campaign with PostgreSQL, build/runtime, Chromium, accessibility and security evidence     |
+| `pnpm.cmd run test:p1:integration`          | Targeted real-PostgreSQL service acceptance; requires provisioned database URLs                                 |
+| `pnpm.cmd run test:p1:browser`              | Targeted browser acceptance; requires an already running built stack                                            |
+| `pnpm.cmd run test:p2:identity-integration` | Targeted P2 Identity PostgreSQL Level B; requires a provisioned Identity-owned database                         |
+| `pnpm.cmd run test:p2:browser`              | Artifact-disabled P2 UI/accessibility/security browser campaign against a running production web build          |
+| `pnpm.cmd run validate:p2-s1`               | Single cumulative P2 Level C including P1 regression, Identity PostgreSQL, P2 browser and security gates        |
+| `pnpm.cmd run test:p2-s2:browser`           | LB-008–LB-010 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner        |
+| `pnpm.cmd run validate:p2-s2`               | Cumulative P2-S2 Level C with P1/P2-S1 regression, PostgreSQL, built runtime, Chromium and security             |
+| `pnpm.cmd run test:p2-s3:migration`         | Disposable P2-S2 → P2-S3 migration/reapply/no-backfill/preservation check                                       |
+| `pnpm.cmd run test:p2-s3:browser`           | LB-028–LB-031 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner        |
+| `pnpm.cmd run validate:p2-s3`               | Single cumulative P2-S3 Level C with regressions, migration/PostgreSQL, built runtime, Chromium and privacy     |
+| `pnpm.cmd run test:p3-s1:migration`         | Disposable P1 → P3-S1 Care migration rollback/reapply/no-backfill/preservation check                            |
+| `pnpm.cmd run test:p3-s1:integration`       | Real Identity/Care PostgreSQL authority, chronology, race, idempotency and atomicity evidence                   |
+| `pnpm.cmd run test:p3-s1:browser`           | Artifact-disabled LB-012/LB-014 browser campaign; real path enabled by the Level C runner                       |
+| `pnpm.cmd run validate:p3-s1`               | Single cumulative P3-S1 Level C with P1/P2 regressions, owned PostgreSQL, built runtime and privacy/a11y        |
+| `pnpm.cmd run test:p4-s1:integration`       | Care/Notification PostgreSQL authority, recurrence, delivery, concurrency, idempotency and rollback proof       |
+| `pnpm.cmd run test:p4-s1:migration`         | Separate Care/Notification rollback, reapply, preservation and no-backfill proof                                |
+| `pnpm.cmd run test:p4-s1:browser`           | Artifact-disabled mocked and real LB-018/minimum-LB-019 Chromium acceptance                                     |
+| `pnpm.cmd run validate:p4-s1`               | Exactly one cumulative P4-S1 Level C with owned PostgreSQL, runtime, privacy, accessibility and regressions     |
+| `pnpm.cmd run test:p4-s2:integration`       | Care PostgreSQL authority, ordering, review/version, snapshot, concurrency, idempotency and rollback proof      |
+| `pnpm.cmd run test:p4-s2:migration`         | Care migration 006 rollback, repeat apply, preservation and no-backfill proof                                   |
+| `pnpm.cmd run test:p4-s2:browser`           | Artifact-disabled mocked/real LB-020/LB-021/required-LB-032 Chromium acceptance                                 |
+| `pnpm.cmd run validate:p4-s2`               | Exactly one cumulative P4-S2 Level C with owned PostgreSQL, real offline runtime, privacy/a11y and regressions  |
+| `pnpm.cmd run test:p4-s3:integration`       | Care PostgreSQL upload/list/download/delete, authority, validation, integrity, replay and atomic rollback proof |
+| `pnpm.cmd run test:p4-s3:migration`         | Identity 004 and Care 007 rollback, repeat apply, preservation and explicit no-backfill proof                   |
+| `pnpm.cmd run test:p4-s3:backup-restore`    | Owner-local pre-delete byte/binding restore and post-delete non-resurrection rehearsal                          |
+| `pnpm.cmd run test:p4-s3:browser`           | Artifact-disabled mocked/real LB-023 Chromium, accessibility, privacy and failure-state acceptance              |
+| `pnpm.cmd run validate:p4-s3`               | Single-use cumulative P4-S3 Level C with owned PostgreSQL, restore, runtime, privacy/a11y and regressions       |
 
 Local credentials and logs live only under ignored `.lifebridge-local/`. The
 validation runner creates a PID-scoped Compose project and removes only that
@@ -192,6 +209,12 @@ databases are ignored.
 - P4-S2 migration and browser:
   `tools/quality/src/p4-s2-migration.ts` and artifact-disabled
   `tests/browser/p4-s2*.spec.ts`.
+- P4-S3 Care integration:
+  `services/care-coordination/src/document-vault-service.integration.test.ts`.
+- P4-S3 migrations, restore and browser:
+  `tools/quality/src/p4-s3-migration.ts`,
+  `tools/quality/src/p4-s3-backup-restore.ts`, and artifact-disabled
+  `tests/browser/p4-s3*.spec.ts`.
 - CI aggregate gate: `.github/workflows/ci.yml`.
 - Legacy foundation validator: `tools/quality/src/phase0.ts`.
 
