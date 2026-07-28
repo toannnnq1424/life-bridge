@@ -282,7 +282,8 @@ test("required LB-032 unlocks only a verified, timestamped offline copy", async 
       request.onsuccess = () => resolve(request.result as Record<string, unknown>);
       request.onerror = () => reject(request.error);
     });
-    record.ciphertext = `${String(record.ciphertext).slice(0, -1)}A`;
+    const ciphertext = String(record.ciphertext);
+    record.ciphertext = `${ciphertext[0] === "A" ? "B" : "A"}${ciphertext.slice(1)}`;
     store.put(record);
     await new Promise<void>((resolve, reject) => {
       transaction.oncomplete = () => resolve();

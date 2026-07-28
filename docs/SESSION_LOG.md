@@ -1828,10 +1828,27 @@ blocked another escalated command at its usage limit; the immediately
 preceding successful recovery continuations had already completed and
 reported exact cleanup.
 
+### Hosted promotion continuation
+
+Feature commit `1b28a16cd9f378de3fcc9f57f0c456b07f89b2bb` was pushed without
+force and ready PR #62 was opened to `dev`. Exact-head push run `30356925555`
+passed Windows quality, P4-S2 PostgreSQL/Chromium acceptance and the full
+required gate. Simultaneous PR run `30357031265` passed Windows quality, the
+real runtime journey, Care 6/6, migration 006 and its first three browser
+cases, then exposed a test-only nondeterminism in the mocked LB-032 integrity
+check: replacing the ciphertext's final character with `A` can be a no-op when
+that character is already `A`.
+
+Classified recovery now changes the first ciphertext character between `A`
+and `B`, guaranteeing a same-length mutation before exercising AES-GCM
+integrity failure. Focused formatting passed and the P4-S2 mocked browser suite
+passed 3/3 with the real-runtime case correctly skipped. No second Level C ran.
+The transient port, process and Playwright output were removed.
+
 ### Exact next
 
-Create coherent P4-S2 commits, push without force, open exactly one ready PR
-to `dev`, verify exact-head hosted CI, merge with a merge commit, verify
-post-merge `dev` CI, close issue #13 with bilingual evidence, then make only
-any necessary same-task docs-only canonical correction. Retain
-KI-001/KI-016/KI-019 and do not start P4-S3.
+Commit and push the deterministic hosted recovery, verify replacement
+exact-head hosted CI, merge PR #62 with a merge commit, verify post-merge
+`dev` CI, close issue #13 with bilingual evidence, then make only any necessary
+same-task docs-only canonical correction. Retain KI-001/KI-016/KI-019 and do
+not start P4-S3.
