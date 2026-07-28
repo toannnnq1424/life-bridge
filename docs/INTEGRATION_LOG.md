@@ -781,9 +781,11 @@ failures, not product failures.
   ordered-contact, reviewed-plan, offline-copy freshness and minimum-disclosure
   contracts. Do not invoke another local Level C or start P4-S2 here.
 
-## 2026-07-28 — P4-S2 emergency readiness candidate
+## 2026-07-28 — P4-S2 emergency readiness
 
 - Scope/change: `P4-S2` / `CHG-2026-017`.
+- Status: Integrated; exact-head and post-merge hosted validation passed;
+  issue #13 closed completed.
 - Base/branch: verified live
   `dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e` to
   `phase/4-emergency-contacts-offline-plan`; canonical issue #13 was verified
@@ -794,19 +796,26 @@ failures, not product failures.
 - Design/security: three independent reviews, ADR-025, the P4-S2 threat model,
   four bounded synthetic Stitch references with one direct read-back each,
   and the Frozen redacted native-only handoff precede UI implementation.
-- Candidate paths: LB-020 ordered contacts, LB-021 reviewed plan and only the
+- Delivered paths: LB-020 ordered contacts, LB-021 reviewed plan and only the
   required read-only LB-032 encrypted offline behavior. The service worker is
   limited to the three exact shell assets and emergency-plan navigation;
   online APIs are `no-store`; offline mutations are blocked and never queued.
-- Validation/promotion state: exactly one local `validate:p4-s2` campaign ran.
+- Validation: exactly one local `validate:p4-s2` campaign ran.
   Static/unit/contract/docs/config/secrets/audit/build and cumulative
   integrations through P4-S1 passed before the P4-S2 Care suite exposed an
   explicit timestamptz binding defect and PostgreSQL-integer history
   sentinel. Classified targeted recovery—not a second Level C—proved the
   corrected Care 6/6 suite, migration 006 rollback/reapply/no-backfill, the
   real production-runtime/offline/purge journey, three mocked P4-S2 paths and
-  all cumulative P2–P4-S1 browser regressions. Exact-head hosted CI,
-  merge-commit promotion, post-merge `dev` CI and bilingual issue closeout
-  remain required before integration can be claimed.
+  all cumulative P2–P4-S1 browser regressions.
+- Promotion: feature commit `1b28a16` passed push run `30356925555`. PR run
+  `30357031265` then exposed a test-only no-op ciphertext mutation;
+  deterministic recovery `ea5acf7` passed exact-head PR run `30358335589`.
+  PR #62 merged as `dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`;
+  post-merge run `30359250442` passed all three jobs. Issue #13 received
+  bilingual evidence and closed completed.
 - Deferred: no P4-S3, DATA-S1, P5, Spring, deployment, release, new service or
   new persistence engine. KI-001/KI-016/KI-019 remain.
+- Follow-up: P4-S3 may start only in a fresh task. Freeze document authority,
+  minimum disclosure, retention/deletion, integrity and storage ownership
+  before implementing LB-023.

@@ -1852,3 +1852,57 @@ exact-head hosted CI, merge PR #62 with a merge commit, verify post-merge
 `dev` CI, close issue #13 with bilingual evidence, then make only any necessary
 same-task docs-only canonical correction. Retain KI-001/KI-016/KI-019 and do
 not start P4-S3.
+
+## 2026-07-28 — P4-S2 hosted promotion and canonical closeout
+
+### Immutable promotion evidence
+
+- Feature commit `1b28a16cd9f378de3fcc9f57f0c456b07f89b2bb`
+  passed exact-head push run `30356925555`. Initial PR run `30357031265`
+  retained the test-only ciphertext no-op failure described above.
+- Deterministic recovery
+  `ea5acf761e64ac6718936e262e4b089a5e37b74c` passed replacement exact-head PR
+  run `30358335589`: Windows static/unit/build/security, P4-S2
+  PostgreSQL/Chromium acceptance and the cumulative required gate all passed.
+  The same head's duplicate push run `30358332447` also completed all three
+  jobs successfully.
+- Ready PR #62 merged to `dev` with merge commit
+  `7690a7c584891fbd2bd62de600a5b11bb58a8be7`.
+- Post-merge `dev` run `30359250442` passed all three jobs on that exact merge
+  commit.
+- Canonical issue #13 received verified VI/EN evidence at comment
+  `5104219302` and closed as completed.
+
+### Planned versus actual closeout
+
+- Planned: one stable local Level C, classified recovery only, one ready
+  feature PR, exact-head CI, merge-commit promotion, post-merge `dev` CI and
+  bilingual issue closeout.
+- Actual: exactly one local Level C ran. Its classified PostgreSQL recovery and
+  the later deterministic integrity-test recovery did not repeat the campaign.
+  PR #62 remained the sole ready feature PR and merged only after its exact
+  recovery head passed. The independently triggered replacement PR workflow
+  was decisive; the later-green duplicate push workflow was corroborating
+  evidence and was not used to substitute for that result.
+- This closeout changes only canonical state documents. Application,
+  contract, migration, workflow, dependency and lockfile inputs are unchanged,
+  so no local Level C is repeated. Targeted format/docs/config/secrets/diff
+  checks and the docs-only exact-head hosted gate are the closeout validation.
+- Temporary databases, Compose resources, ports, processes, logs and
+  Playwright outputs from task-owned recovery were removed. The protected
+  `docs/orchestration/reports/STITCH_MCP_CANARY.md` remains user-owned,
+  untouched and excluded.
+- KI-001 remains the deployment credential gate. KI-016 remains the manual
+  assistive-technology evidence gap. KI-019 remains the private-render review
+  limitation; none blocks native P4-S2 integration.
+
+### Exact next handoff
+
+P4-S2 is accepted. After this docs-only canonical correction merges, exact
+next is `P4-S3 — Access-controlled document vault`, only in a fresh
+controller-dispatched task from accepted `dev`. Its first action is to freeze
+document authority, minimum metadata/content disclosure, retention/deletion,
+integrity and storage ownership against accepted P2 audit and P4-S2 offline
+boundaries before selecting storage or implementing LB-023.
+
+P4-S3, DATA-S1, P5, Spring, deployment and release were not started here.
