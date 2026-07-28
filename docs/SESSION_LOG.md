@@ -1707,6 +1707,12 @@ operation; Gateway composes only.
   uncertain-or-duplicate state; lint, typecheck, web build and five repeated
   LB-019 browser/accessibility paths passed. This is a focused hosted fix, not
   another Level C.
+- Replacement exact-head push run `30343304775` and PR run `30343308183`
+  passed on `9a2b7fe9683f548a006c63fc673d294aedd39031`. PR #59 merged by merge
+  commit as `dev@d58660cebd91f46b2deab38a38e7187ec7870804`; post-merge run
+  `30343682227` passed Windows quality, P4-S1 PostgreSQL/Chromium acceptance and
+  the cumulative required gate. Issue #12 received bilingual evidence and is
+  closed completed.
 
 ### Current evidence and exact next
 
@@ -1718,8 +1724,10 @@ delivery/duplicate acknowledgement. Temporary containers, volumes, networks,
 processes, logs and browser output were removed. The protected
 `docs/orchestration/reports/STITCH_MCP_CANARY.md` remains untouched.
 
-Exact next is commit and push the branch, open one ready PR to `dev`, wait
-exact-head CI, merge by merge commit, wait post-merge `dev` CI, close issue #12
-with bilingual evidence, and perform only necessary same-task canonical-memory
-closeout. Do not invoke another local Level C or start P4-S2/P4-S3, DATA-S1,
-P5, Spring, deployment or release.
+P4-S1 is accepted. Exact next is merge only this same-task docs-only canonical
+closeout. After that, `P4-S2 — Emergency contacts and offline-readable plan` is
+the next product slice only in a fresh controller-dispatched task. Its first
+action is to freeze purpose-specific authority, ordered-contact, reviewed-plan,
+offline-copy freshness and minimum-disclosure contracts against accepted
+P2/P3/P4-S1 boundaries. Do not invoke another local Level C or start P4-S2,
+P4-S3, DATA-S1, P5, Spring, deployment or release here.

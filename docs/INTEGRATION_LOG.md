@@ -743,10 +743,10 @@ failures, not product failures.
   freeze non-clinical reminder authority, unit/time-zone, event, Notification
   and failure truth before implementation.
 
-## INT-2026-020 — P4-S1 medication reminder candidate
+## INT-2026-020 — P4-S1 medication reminder
 
 - Date: 2026-07-28
-- Status: Local acceptance complete; hosted promotion pending
+- Status: Integrated; hosted validation passed
 - Source: `phase/4-medication-reminder-acknowledgement` from accepted
   `dev@aaf6113540925b3132a323afc6e1922a902a3e29`
 - Target: `dev`
@@ -763,13 +763,20 @@ failures, not product failures.
   A version-aware migration-runner fix then passed targeted P4 integration,
   runtime readiness, 4/4 P4 browser paths and all cumulative P2/P3 browser
   suites; log scan, diff and cleanup passed.
-- Hosted candidate: exact-head push run `30342664176` passed all three jobs.
+- Hosted promotion: initial exact-head push run `30342664176` passed all three
+  jobs.
   PR run `30342757032` exposed a commit-timing race in the LB-019 duplicate
   status focus while the same rendered state passed on push. Focus now follows
   committed React state; lint/type/build and five repeated affected
-  browser/accessibility paths passed. Replacement exact-head CI is pending.
+  browser/accessibility paths passed. Replacement exact-head push/PR runs
+  `30343304775`/`30343308183` passed on
+  `9a2b7fe9683f548a006c63fc673d294aedd39031`. PR #59 merged into `dev` as
+  `d58660cebd91f46b2deab38a38e7187ec7870804`; post-merge run `30343682227`
+  passed all three jobs. Issue #12 closed completed with bilingual evidence.
 - Conflicts/risks: KI-001/KI-016/KI-019 remain; project-list metadata lag and
   private pixels are not visual approval; no blind Stitch retry
 - Decision/change references: ADR-024 / `CHG-2026-016`
-- Follow-up: one ready PR/exact-head CI/merge/post-merge CI/issue #12 closeout;
-  do not invoke another local Level C
+- Follow-up: merge only this same-task docs-only canonical closeout. P4-S2 may
+  start only in a fresh task and must first freeze purpose-specific authority,
+  ordered-contact, reviewed-plan, offline-copy freshness and minimum-disclosure
+  contracts. Do not invoke another local Level C or start P4-S2 here.
