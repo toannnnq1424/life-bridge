@@ -2297,6 +2297,34 @@ remains historical evidence for its exact candidate; it is not relabeled as
 the final hardening artifact. The interrupted first reproducibility attempt
 was retained as classified local evidence until the completed two-pass proof.
 
+### Hosted exact-head recovery
+
+PR #66 opened ready against `dev` with feature head
+`094f0e8e568f51cf3b1655d12d2b46667d534ba1`. Its push run `30395378226` and
+pull-request run `30395421725` failed before product acceptance: the Windows
+setup action required its exact catalog spelling `25.0.3+9.0.LTS` for the same
+accepted Temurin `25.0.3+9` build, and the Linux exact-SHA checkout returned no
+branch text to a null-unsafe runner expression. No hosted P5 marker/ledger or
+campaign database/browser stage was reached by that Linux failure.
+
+The first harness correction proved the JDK alias on both operating systems,
+but PowerShell on Linux still bound `.Trim()` against null despite a direct
+string cast. Runs `30395651937` and `30395657771` retain that classified
+pre-marker evidence and were superseded/cancelled by the next push. The final
+correction captures native output as an array, joins it to a deterministic
+empty string for detached HEAD, preserves local branch enforcement and still
+requires hosted `EXPECTED_SHA`.
+
+Code-bearing exact head
+`74079f829a4c7f9ad20d9e2451f457e766a05a17` passed hosted push run
+`30395832352` and pull-request run `30395839829`. Both terminal-success runs
+prove exact checkout, checksum-pinned JDK/Maven setup, Windows static/unit/
+build/security, CycloneDX and reproducible package, the hosted P5 campaign,
+PostgreSQL/migration/owner isolation, mixed-runtime and cumulative Chromium,
+cleanup and the final `P1 through P5-S1 full required gate`. PR comments retain
+immutable run links and correction checkpoints. The documentation-only feature
+head created by this record must pass the same exact-head gate before merge.
+
 ### Known issues and exact next
 
 KI-001 remains the deployment-credential retirement gate; KI-016 retains
@@ -2305,13 +2333,10 @@ unavailable private Stitch pixel review; KI-020 remains the production vault
 scanner, encryption, backup/deletion and RPO/RTO gate. None blocks bounded
 P5-S1 integration, and none is claimed resolved.
 
-Local candidate evidence is complete through the classified continuation and
-post-review targeted hardening, but P5-S1 is not accepted or merged yet. Exact
-next is to create coherent
-conventional commit(s), push only
-`phase/5-consented-help-request-directory` without force, open exactly one
-ready PR to `dev`, and require hosted CI whose `head_sha` is the exact feature
-commit. Only after that green gate may the branch merge by merge commit;
-post-merge `dev` CI and bilingual canonical issue #15 closeout remain
-mandatory. Do not run Level C again. Do not begin P5-S2; record it as the
-handoff only after every P5-S1 closeout gate is complete.
+Local candidate evidence and code-head hosted CI are complete through the
+classified continuation, post-review targeted hardening and hosted harness
+recovery. P5-S1 is not accepted or merged yet. Exact next is to require the
+documentation-only PR #66 head to pass hosted exact-head CI, then merge only by
+merge commit. Post-merge `dev` CI and bilingual canonical issue #15 closeout
+remain mandatory. Do not run local Level C again. Do not begin P5-S2; record it
+as the handoff only after every P5-S1 closeout gate is complete.

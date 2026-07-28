@@ -953,17 +953,26 @@ failures, not product failures.
   The first targeted browser attempt was truthfully retained as a locator-only
   harness failure before the corrected 6/6 pass; task-owned resources were
   cleaned.
+- Hosted promotion recovery: PR #66's initial exact head `094f0e8` failed
+  before acceptance because Windows setup-java required the exact hosted alias
+  `25.0.3+9.0.LTS` for the pinned Temurin build and detached Linux checkout
+  produced empty branch text for a null-unsafe guard. The first correction
+  proved the JDK alias but retained the PowerShell binder failure; its runs were
+  superseded. The array/join detached-HEAD correction preserved local branch
+  and hosted exact-SHA guards. Code head `74079f8` then passed push run
+  `30395832352` and PR run `30395839829`, including both owner/cumulative
+  acceptance jobs and the full aggregate gate. The documentation-only head
+  containing this record still requires exact-head CI before merge.
 - Planned versus actual: ADR-019 planned the future greenfield Spring boundary
   and PostgreSQL-first search but deferred exact versions and P5 contracts.
   The official-source review supplied complete supported pins, while
   `P5-S1-v1` narrowed the slice to bounded non-free-form request data, explicit
   purpose/visibility, no matching and content-free evidence. No new engine,
   broker, cache service, object storage or Node rewrite was needed.
-- Remaining acceptance: create coherent conventional commit(s), push the phase
-  branch without force and open exactly one ready PR. Require hosted CI for the
-  exact feature head, then a merge commit, exact post-merge `dev` CI and
-  bilingual issue #15 closeout. The one-shot marker/ledger/transcript remain
-  immutable local evidence; do not invoke another full Level C.
+- Remaining acceptance: require hosted CI for the documentation-only PR #66
+  head, then a merge commit, exact post-merge `dev` CI and bilingual issue #15
+  closeout. The one-shot marker/ledger/transcript remain immutable local
+  evidence; do not invoke another full local Level C.
 - Protected canary/evidence: the Stitch canary belongs to another workstream
   and has no worktree/index diff. No credential, private locator, generated
   source, remote ID or real data is part of P5-S1 evidence.

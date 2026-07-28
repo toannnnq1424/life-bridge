@@ -598,3 +598,30 @@ Classified targeted recovery then passed:
 These are targeted proofs of the changed surfaces, not a replacement or rerun
 of the retained one-shot campaign. Hosted exact-head CI remains the next
 cumulative acceptance gate.
+
+### Hosted exact-head recovery
+
+The first push and pull-request runs for feature head
+`094f0e8e568f51cf3b1655d12d2b46667d534ba1` failed before product acceptance.
+Windows `actions/setup-java` rejected the shorter catalog spelling
+`25.0.3+9` while listing the same accepted Temurin build as
+`25.0.3+9.0.LTS`. The Linux database job then stopped before marker/ledger
+creation because the exact-SHA checkout was detached and the runner called
+`.Trim()` on the empty `git branch --show-current` output. Runs
+`30395378226` and `30395421725` retain those failures.
+
+The hosted catalog alias correction passed JDK setup on the next head, while
+direct string casting still exposed the same PowerShell null-binding behavior.
+Superseding runs `30395651937` and `30395657771` retain that classified
+pre-marker result and were cancelled automatically when the next correction
+was pushed. Capturing native output as an array and joining before trimming
+preserves the local exact-branch guard and permits detached hosted exact-SHA
+validation.
+
+Code-bearing exact head
+`74079f829a4c7f9ad20d9e2451f457e766a05a17` then passed both hosted events:
+push run `30395832352` and pull-request run `30395839829`. The Windows
+static/unit/build/security, checksummed bootstrap, CycloneDX and two-build
+reproducibility job passed; PostgreSQL/mixed-runtime/cumulative Chromium passed;
+and `P1 through P5-S1 full required gate` passed. The final documentation-only
+feature head must pass the same exact-head gate before merge.

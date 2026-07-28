@@ -45,6 +45,11 @@ incomplete `25.0.4` placeholder. Re-check when a complete official Windows x64
 `25.0.4` artifact and checksum appear, and again at P11/security review.
 Upgrading later is a reviewed pin change, never a floating download.
 
+`actions/setup-java` identifies this same accepted Temurin build in its hosted
+Windows catalog as `25.0.3+9.0.LTS`. That catalog alias is used only for the
+pinned hosted setup action; the repository archive URL, checksum, extracted
+runtime and Maven version proof remain exactly Temurin `25.0.3+9`.
+
 The accepted bootstrap downloads only the exact JDK archive, verifies the
 frozen digest before extraction, and places it under ignored
 `.lifebridge-local/toolchains/`. It sets `JAVA_HOME` and `PATH` only for the

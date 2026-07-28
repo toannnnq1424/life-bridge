@@ -60,7 +60,7 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 8        | `P4-S1` Medication reminder             | Validated/merged; PR #59 and CI passed | Exact head `9a2b7fe`; merge `d58660c`; post-merge CI green      | Issue #12 closed completed                       |
 | 9        | `P4-S2` Emergency plan                  | Validated/merged; PR #62 and CI passed | Exact head `ea5acf7`; merge `7690a7c`; post-merge CI green      | Issue #13 closed completed                       |
 | 10       | `P4-S3` Document vault                  | Validated/merged; PR #64 and CI passed | Exact head `3eb4bab`; merge `7b10d62`; post-merge CI green      | Issue #14 closed completed                       |
-| 11       | `P5-S1` Help request/directory          | Candidate; hosted promotion pending    | Local one-shot failure + same-ledger continuation reconciled    | Ready PR, CI, merge and issue #15 closeout       |
+| 11       | `P5-S1` Help request/directory          | PR #66; docs-head promotion pending    | Local recovery + targeted hardening + code-head hosted CI green | Docs CI, merge, post-merge CI and #15 closeout   |
 | 12       | `P5-S2` Match/organization              | Planned                                | P5-S1 Spring Community boundary accepted                        | Extend same minimum-data Community service       |
 | 13       | `P5-S3` Moderation                      | Planned                                | P5-S2 + policy                                                  | Extend same boundary with auditable resolution   |
 | 14       | `P6-S1` Contract rolling compatibility  | Planned                                | P1–P5 service inventory accepted                                | Mixed Node/Spring version compatibility          |
@@ -251,12 +251,13 @@ Late review blockers around replay invalidation, same-key serialization,
 monotonic delete/purge evidence, scheduled retention, revoked/denied mapping
 and accidental geolocation use were corrected. Classified targeted Node,
 PostgreSQL, browser and two-build reproducibility proof is green; Level C was
-not rerun.
+not rerun. Hosted setup-JDK and detached-HEAD guard failures were classified
+before acceptance stages, corrected without weakening exact-SHA/local-branch
+guards, and code head `74079f8` passed both push and PR aggregate CI.
 
-The exact current action is to commit and push the reconciled candidate, open
-one ready PR to `dev`, require exact feature-head hosted CI, merge commit,
-exact post-merge `dev` CI and bilingual issue #15 closeout. The protected
-Stitch canary remains outside this task with no diff.
+The exact current action is to require exact-head CI for the documentation-only
+PR #66 record, merge commit, exact post-merge `dev` CI and bilingual issue #15
+closeout. The protected Stitch canary remains outside this task with no diff.
 
 P5-S2 is the exact next product handoff only after P5-S1 acceptance. Its fresh
 task first freezes match/organization authority, approval, capacity,

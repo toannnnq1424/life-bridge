@@ -11,12 +11,12 @@
   `origin/dev@486a5276ef43d143af8692501064e952a59a4829`.
 - Accepted predecessor evidence: P4-S3 feature and its docs-only canonical
   closeout are present on the accepted base with hosted `dev` CI green.
-- Current action: commit and push the locally evidenced P5-S1 candidate, then
-  promote only `phase/5-consented-help-request-directory` through one ready PR,
-  exact-head/post-merge hosted CI and issue #15 closeout. The single Level C
-  invocation plus classified targeted continuation is complete and must not be
-  repeated. P5-S2, P5-S3, DATA-S1, P6+, deployment and release remain
-  unstarted.
+- Current action: PR #66 is ready and its code-bearing exact head passed hosted
+  push/PR aggregate CI after classified hosted harness recovery. Require the
+  documentation-only head to pass exact-head CI, then merge commit, post-merge
+  `dev` CI and issue #15 closeout. The single local Level C invocation plus
+  classified targeted continuation is complete and must not be repeated.
+  P5-S2, P5-S3, DATA-S1, P6+, deployment and release remain unstarted.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -1652,10 +1652,11 @@ failure at the first static stage; the exact-signature same-invocation targeted
 continuation passed corrected static plus every previously unstarted required
 stage, final privacy/diff/canary checks and cleanup. No second Level C ran.
 
-The immediate action is conventional commit(s), a no-force phase-branch push
-and exactly one ready PR to `dev`, followed by exact-feature-head hosted CI.
-After a merge commit, exact post-merge `dev` CI and bilingual issue #15 closeout
-remain required. P5-S2 is the exact next handoff only after all P5-S1
+PR #66 is ready. Code-bearing head `74079f8` passed exact-head push and PR CI
+after two classified pre-marker hosted harness corrections. The immediate
+action is exact-head CI for the documentation-only record, then a merge commit.
+Exact post-merge `dev` CI and bilingual issue #15 closeout remain required.
+P5-S2 is the exact next handoff only after all P5-S1
 acceptance and closeout gates pass. Its first action will freeze match/
 organization authority, approval, capacity, revocation, minimum disclosure
 and audit/failure truth; do not implement any P5-S2 behavior in this task.
