@@ -471,6 +471,12 @@ export const CoordinationPermissionSchema = z.enum([
   "coordination.appointment.create",
   "coordination.appointment.change",
   "coordination.appointment.cancel",
+  "coordination.medication_reminder.read",
+  "coordination.medication_reminder.create",
+  "coordination.medication_reminder.change",
+  "coordination.medication_reminder.disable",
+  "notification.medication_reminder.read",
+  "notification.medication_reminder.acknowledge",
   "coordination.care_plan.read",
   "coordination.care_plan.history.read",
   "coordination.care_plan.draft.save",
@@ -515,6 +521,8 @@ export const CoordinationAuthorizationRequestSchema = z
     householdId: OpaqueIdSchema,
     taskId: OpaqueIdSchema.optional(),
     appointmentId: OpaqueIdSchema.optional(),
+    medicationReminderId: OpaqueIdSchema.optional(),
+    medicationOccurrenceId: OpaqueIdSchema.optional(),
     targetActorRef: OpaqueIdSchema.optional(),
     requestDigest: z.string().regex(/^[a-f0-9]{64}$/),
   })
@@ -532,6 +540,29 @@ export const CoordinationAuthorizationRequestSchema = z
         code: "custom",
         message: "appointment_scope_required",
         path: ["appointmentId"],
+      });
+    }
+    const medicationMutation =
+      value.permission === "coordination.medication_reminder.change" ||
+      value.permission === "coordination.medication_reminder.disable";
+    const medicationRead = value.permission === "coordination.medication_reminder.read";
+    if (
+      (medicationMutation && !value.medicationReminderId) ||
+      (!medicationMutation && !medicationRead && value.medicationReminderId)
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "medication_reminder_scope_required",
+        path: ["medicationReminderId"],
+      });
+    }
+    const medicationAcknowledgement =
+      value.permission === "notification.medication_reminder.acknowledge";
+    if (medicationAcknowledgement !== Boolean(value.medicationOccurrenceId)) {
+      context.addIssue({
+        code: "custom",
+        message: "medication_occurrence_scope_required",
+        path: ["medicationOccurrenceId"],
       });
     }
     if (!handoff && value.targetActorRef) {
@@ -915,6 +946,290 @@ export const AppointmentReminderIntentEventSchema = z
   })
   .strict();
 
+const SingleLineTextSchema = (maximum: number) =>
+  z
+    .string()
+    .trim()
+    .min(1)
+    .max(maximum)
+    .refine(
+      (value) =>
+        Array.from(value).every((character) => {
+          const codePoint = character.codePointAt(0) ?? 0;
+          return codePoint > 0x1f && codePoint !== 0x7f;
+        }),
+      "single_line_required",
+    );
+
+export const MedicationReminderLabelSchema = SingleLineTextSchema(80);
+export const MedicationReminderAmountSchema = z
+  .string()
+  .regex(/^(?:0\.(?:00[1-9]|0[1-9]\d|[1-9]\d{0,2})|[1-9]\d{0,2}(?:\.\d{1,3})?)$/)
+  .refine((value) => Number(value) >= 0.001 && Number(value) <= 999.999, "amount_range");
+export const MedicationReminderUnitSchema = z.enum([
+  "tablet",
+  "capsule",
+  "millilitre",
+  "drop",
+  "puff",
+  "patch",
+  "application",
+  "unit",
+  "other",
+]);
+export const MedicationReminderStatusSchema = z.enum(["active", "disabled"]);
+export const MedicationOccurrenceStateSchema = z.enum(["current", "superseded", "disabled"]);
+
+export const MedicationReminderRecurrenceSchema = z.discriminatedUnion("frequency", [
+  z.object({ frequency: z.literal("none") }).strict(),
+  z
+    .object({
+      frequency: z.literal("daily"),
+      intervalDays: z.number().int().min(1).max(7),
+      occurrenceCount: z.number().int().min(2).max(31),
+    })
+    .strict(),
+  z
+    .object({
+      frequency: z.literal("weekly"),
+      intervalWeeks: z.number().int().min(1).max(4),
+      occurrenceCount: z.number().int().min(2).max(12),
+    })
+    .strict(),
+]);
+
+export const MedicationReminderScheduleSchema = z
+  .object({
+    localStart: LocalDateTimeSchema,
+    sourceTimeZone: IanaTimeZoneSchema,
+    sourceUtcOffset: UtcOffsetSchema,
+    ambiguousTimePolicy: AppointmentAmbiguousTimePolicySchema.nullable(),
+    recurrence: MedicationReminderRecurrenceSchema,
+  })
+  .strict();
+
+const MedicationReminderFactsSchema = z
+  .object({
+    medicationLabel: MedicationReminderLabelSchema,
+    amount: MedicationReminderAmountSchema,
+    unit: MedicationReminderUnitSchema,
+    otherUnitLabel: SingleLineTextSchema(24).nullable(),
+    schedule: MedicationReminderScheduleSchema,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const other = value.unit === "other";
+    if (other !== Boolean(value.otherUnitLabel)) {
+      context.addIssue({
+        code: "custom",
+        message: other ? "other_unit_required" : "other_unit_not_allowed",
+        path: ["otherUnitLabel"],
+      });
+    }
+  });
+
+export const CreateMedicationReminderRequestSchema = MedicationReminderFactsSchema.extend({
+  operation: z.literal("create_medication_reminder"),
+}).strict();
+
+export const ChangeMedicationReminderRequestSchema = MedicationReminderFactsSchema.extend({
+  operation: z.literal("change_medication_reminder"),
+  expectedVersion: z.number().int().positive(),
+}).strict();
+
+export const DisableMedicationReminderRequestSchema = z
+  .object({
+    operation: z.literal("disable_medication_reminder"),
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict();
+
+export const MedicationReminderOccurrenceProjectionSchema = z
+  .object({
+    occurrenceId: OpaqueIdSchema,
+    reminderId: OpaqueIdSchema,
+    scheduleVersion: z.number().int().positive(),
+    occurrenceNumber: z.number().int().positive(),
+    occurrenceCount: z.number().int().min(1).max(31),
+    sourceLocalStart: LocalDateTimeSchema,
+    sourceTimeZone: IanaTimeZoneSchema,
+    sourceUtcOffset: UtcOffsetSchema,
+    scheduledAtUtc: CanonicalUtcInstantSchema,
+    recurrenceFinalLocalDate: LocalDateSchema,
+    state: MedicationOccurrenceStateSchema,
+    notificationIntent: z.enum(["recorded", "cancelled"]),
+  })
+  .strict()
+  .refine((value) => value.occurrenceNumber <= value.occurrenceCount, {
+    message: "medication_occurrence_invalid",
+    path: ["occurrenceNumber"],
+  });
+
+export const MedicationReminderProjectionSchema = z
+  .object({
+    reminderId: OpaqueIdSchema,
+    householdId: OpaqueIdSchema,
+    recipientContextId: OpaqueIdSchema,
+    medicationLabel: MedicationReminderLabelSchema,
+    amount: MedicationReminderAmountSchema,
+    unit: MedicationReminderUnitSchema,
+    otherUnitLabel: SingleLineTextSchema(24).nullable(),
+    sourceLocalStart: LocalDateTimeSchema,
+    sourceTimeZone: IanaTimeZoneSchema,
+    sourceUtcOffset: UtcOffsetSchema,
+    ambiguousTimePolicy: AppointmentAmbiguousTimePolicySchema.nullable(),
+    recurrence: MedicationReminderRecurrenceSchema,
+    status: MedicationReminderStatusSchema,
+    version: z.number().int().positive(),
+    occurrences: z.array(MedicationReminderOccurrenceProjectionSchema).min(1).max(31),
+    createdAt: CanonicalUtcInstantSchema,
+    updatedAt: CanonicalUtcInstantSchema,
+    disabledAt: CanonicalUtcInstantSchema.nullable(),
+    confirmedAt: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const MedicationReminderListProjectionSchema = z
+  .object({
+    items: z.array(MedicationReminderProjectionSchema).max(50),
+    snapshotAt: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const MedicationReminderIntentEventSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventType: z.literal("care.medication_reminder.intent.v1"),
+    eventVersion: z.literal(1),
+    occurredAt: CanonicalUtcInstantSchema,
+    producer: z.literal("care-coordination"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    correlationId: CorrelationIdSchema,
+    causationId: OpaqueIdSchema,
+    payload: z.discriminatedUnion("intent", [
+      z
+        .object({
+          intent: z.literal("schedule"),
+          reminderId: OpaqueIdSchema,
+          occurrenceId: OpaqueIdSchema,
+          householdId: OpaqueIdSchema,
+          recipientContextId: OpaqueIdSchema,
+          recipientId: OpaqueIdSchema,
+          occurrenceVersion: z.number().int().positive(),
+          scheduledAtUtc: CanonicalUtcInstantSchema,
+          sourceLocalStart: LocalDateTimeSchema,
+          sourceTimeZone: IanaTimeZoneSchema,
+          sourceUtcOffset: UtcOffsetSchema,
+          messageKey: z.literal("notifications.medication_reminder.generic"),
+        })
+        .strict(),
+      z
+        .object({
+          intent: z.literal("cancel"),
+          reminderId: OpaqueIdSchema,
+          occurrenceId: OpaqueIdSchema,
+          householdId: OpaqueIdSchema,
+          recipientContextId: OpaqueIdSchema,
+          recipientId: OpaqueIdSchema,
+          occurrenceVersion: z.number().int().positive(),
+          reason: z.enum(["schedule_changed", "schedule_disabled"]),
+          messageKey: z.literal("notifications.medication_reminder.generic"),
+        })
+        .strict(),
+    ]),
+  })
+  .strict();
+
+export const MedicationReminderIntentStateSchema = z.enum(["pending", "cancelled"]);
+export const MedicationReminderDeliveryStateSchema = z.enum([
+  "pending",
+  "uncertain",
+  "delivered",
+  "failed",
+  "missed",
+  "cancelled",
+]);
+export const MedicationReminderDeliveryEvidenceSchema = z.enum(["none", "in_app_persisted"]);
+export const MedicationReminderAcknowledgementStateSchema = z.enum(["unacknowledged", "seen"]);
+
+export const MedicationReminderNotificationProjectionSchema = z
+  .object({
+    notificationId: OpaqueIdSchema.nullable(),
+    reminderId: OpaqueIdSchema,
+    occurrenceId: OpaqueIdSchema,
+    sourceLocalStart: LocalDateTimeSchema.nullable(),
+    sourceTimeZone: IanaTimeZoneSchema.nullable(),
+    sourceUtcOffset: UtcOffsetSchema.nullable(),
+    scheduledAtUtc: CanonicalUtcInstantSchema.nullable(),
+    messageKey: z.literal("notifications.medication_reminder.generic"),
+    intentState: MedicationReminderIntentStateSchema,
+    deliveryState: MedicationReminderDeliveryStateSchema,
+    deliveryEvidence: MedicationReminderDeliveryEvidenceSchema,
+    attemptCount: z.number().int().nonnegative().max(3),
+    deliveredAt: CanonicalUtcInstantSchema.nullable(),
+    failedAt: CanonicalUtcInstantSchema.nullable(),
+    missedAt: CanonicalUtcInstantSchema.nullable(),
+    acknowledgementState: MedicationReminderAcknowledgementStateSchema,
+    acknowledgedAt: CanonicalUtcInstantSchema.nullable(),
+    version: z.number().int().positive(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const delivered = value.deliveryState === "delivered";
+    if (
+      delivered !== (value.deliveryEvidence === "in_app_persisted" && Boolean(value.deliveredAt))
+    ) {
+      context.addIssue({ code: "custom", message: "delivery_evidence_invalid" });
+    }
+    if ((value.acknowledgementState === "seen") !== Boolean(value.acknowledgedAt)) {
+      context.addIssue({ code: "custom", message: "acknowledgement_evidence_invalid" });
+    }
+  });
+
+export const MedicationReminderNotificationListSchema = z
+  .object({
+    items: z.array(MedicationReminderNotificationProjectionSchema).max(50),
+    snapshotAt: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const AcknowledgeMedicationReminderRequestSchema = z
+  .object({
+    operation: z.literal("acknowledge_medication_reminder"),
+    expectedVersion: z.number().int().positive(),
+  })
+  .strict();
+
+export const MedicationReminderAcknowledgementResultSchema = z
+  .object({
+    result: z.enum(["recorded", "duplicate"]),
+    notification: MedicationReminderNotificationProjectionSchema,
+  })
+  .strict();
+
+export const MedicationReminderSeenEventSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventType: z.literal("notification.medication_reminder.seen.v1"),
+    eventVersion: z.literal(1),
+    occurredAt: CanonicalUtcInstantSchema,
+    producer: z.literal("notification"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    correlationId: CorrelationIdSchema,
+    causationId: OpaqueIdSchema,
+    payload: z
+      .object({
+        reminderId: OpaqueIdSchema,
+        occurrenceId: OpaqueIdSchema,
+        outcome: z.literal("seen"),
+        acknowledgedAt: CanonicalUtcInstantSchema,
+      })
+      .strict(),
+  })
+  .strict();
+
 const CoordinationStatementSchema = z
   .string()
   .trim()
@@ -1182,6 +1497,7 @@ export const CareCoordinationEventSchema = z.union([
   CareTaskCompletedEventSchema,
   CareTaskHandedOffEventSchema,
   AppointmentReminderIntentEventSchema,
+  MedicationReminderIntentEventSchema,
   CarePlanVersionConfirmedEventSchema,
 ]);
 
@@ -1211,6 +1527,8 @@ export const ConsumerAcknowledgementSchema = z
       "suppressed_self",
       "reminder_scheduled",
       "reminder_cancelled",
+      "medication_reminder_scheduled",
+      "medication_reminder_cancelled",
     ]),
     notificationId: OpaqueIdSchema.nullable(),
     processedAt: z.iso.datetime({ offset: true }),
@@ -1279,6 +1597,16 @@ export const ApiErrorCodeSchema = z.enum([
   "APPOINTMENT_STATE_CONFLICT",
   "APPOINTMENT_TIME_CONFLICT",
   "APPOINTMENT_RESULT_UNKNOWN",
+  "MEDICATION_REMINDER_VALIDATION_FAILED",
+  "MEDICATION_REMINDER_LOCAL_TIME_INVALID",
+  "MEDICATION_REMINDER_RECURRENCE_INVALID",
+  "MEDICATION_REMINDER_VERSION_CONFLICT",
+  "MEDICATION_REMINDER_STATE_CONFLICT",
+  "MEDICATION_REMINDER_RESULT_UNKNOWN",
+  "MEDICATION_NOTIFICATION_UNAVAILABLE",
+  "MEDICATION_DELIVERY_STATE_CONFLICT",
+  "MEDICATION_ACKNOWLEDGEMENT_VERSION_CONFLICT",
+  "MEDICATION_ACKNOWLEDGEMENT_STATE_CONFLICT",
   "CARE_PLAN_VALIDATION_FAILED",
   "CARE_PLAN_REVIEW_DATE_INVALID",
   "CARE_PLAN_VERSION_CONFLICT",
@@ -1332,6 +1660,35 @@ export type CalendarQuery = z.infer<typeof CalendarQuerySchema>;
 export type CalendarFilter = z.infer<typeof CalendarFilterSchema>;
 export type CalendarProjection = z.infer<typeof CalendarProjectionSchema>;
 export type AppointmentReminderIntentEvent = z.infer<typeof AppointmentReminderIntentEventSchema>;
+export type MedicationReminderUnit = z.infer<typeof MedicationReminderUnitSchema>;
+export type MedicationReminderRecurrence = z.infer<typeof MedicationReminderRecurrenceSchema>;
+export type MedicationReminderSchedule = z.infer<typeof MedicationReminderScheduleSchema>;
+export type CreateMedicationReminderRequest = z.infer<typeof CreateMedicationReminderRequestSchema>;
+export type ChangeMedicationReminderRequest = z.infer<typeof ChangeMedicationReminderRequestSchema>;
+export type DisableMedicationReminderRequest = z.infer<
+  typeof DisableMedicationReminderRequestSchema
+>;
+export type MedicationReminderOccurrenceProjection = z.infer<
+  typeof MedicationReminderOccurrenceProjectionSchema
+>;
+export type MedicationReminderProjection = z.infer<typeof MedicationReminderProjectionSchema>;
+export type MedicationReminderListProjection = z.infer<
+  typeof MedicationReminderListProjectionSchema
+>;
+export type MedicationReminderIntentEvent = z.infer<typeof MedicationReminderIntentEventSchema>;
+export type MedicationReminderNotificationProjection = z.infer<
+  typeof MedicationReminderNotificationProjectionSchema
+>;
+export type MedicationReminderNotificationList = z.infer<
+  typeof MedicationReminderNotificationListSchema
+>;
+export type AcknowledgeMedicationReminderRequest = z.infer<
+  typeof AcknowledgeMedicationReminderRequestSchema
+>;
+export type MedicationReminderAcknowledgementResult = z.infer<
+  typeof MedicationReminderAcknowledgementResultSchema
+>;
+export type MedicationReminderSeenEvent = z.infer<typeof MedicationReminderSeenEventSchema>;
 export type SaveCarePlanDraftRequest = z.infer<typeof SaveCarePlanDraftRequestSchema>;
 export type ConfirmCarePlanVersionRequest = z.infer<typeof ConfirmCarePlanVersionRequestSchema>;
 export type CarePlanReviewFacts = z.infer<typeof CarePlanReviewFactsSchema>;

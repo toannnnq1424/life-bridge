@@ -7,6 +7,7 @@ import { OutboxDispatcher, httpEventDeliverer } from "./dispatcher.js";
 import { AppointmentService } from "./appointment-service.js";
 import { CarePlanService } from "./care-plan-service.js";
 import { CoordinationService } from "./coordination-service.js";
+import { MedicationReminderService } from "./medication-reminder-service.js";
 import { migrateCareDatabase } from "./migration.js";
 import { buildCareServer } from "./server.js";
 import { CareService } from "./service.js";
@@ -31,7 +32,15 @@ const appointments = new AppointmentService(pool);
 const carePlans = new CarePlanService(pool, {
   cursorKey: createHash("sha256").update(`${cursorSecret}:care-plan`).digest(),
 });
-const app = buildCareServer(care, internalToken, coordination, appointments, carePlans);
+const medicationReminders = new MedicationReminderService(pool);
+const app = buildCareServer(
+  care,
+  internalToken,
+  coordination,
+  appointments,
+  carePlans,
+  medicationReminders,
+);
 const dispatcher = new OutboxDispatcher(
   care,
   httpEventDeliverer(notificationUrl, notificationToken),

@@ -43,6 +43,24 @@ At the end of a slice, run:
 
 Every slice must exercise its success path, relevant denied/invalid input, dependency failure, and truthful error presentation.
 
+For `P4-S1`, exactly one coherent Level C campaign uses:
+
+```powershell
+pnpm.cmd run validate:p4-s1
+```
+
+It cumulatively proves frozen contracts and fresh authority; exact
+amount/unit/IANA/DST/finite recurrence; optimistic schedule conflict and
+digest-only idempotency; minimum-data Care intent; Notification
+pending/uncertain/delivered/failed/missed/cancelled truth; concurrent immutable
+seen acknowledgement; owner-local atomic audit/outbox rollback;
+owner-isolated migration rollback/reapply/no-backfill; privacy-safe logs;
+mocked and real Chromium paths; VI/EN keyboard/focus/320 px reflow/axe,
+forced-colors and reduced-motion CSS; config, secrets, dependency audit,
+builds, diff and cumulative regressions. Browser traces, screenshots and video
+remain disabled. A campaign failure retains proven evidence and permits only a
+classified targeted recovery, never a second full Level C.
+
 For `P3-S2`, exactly one coherent Level C campaign uses:
 
 ```powershell

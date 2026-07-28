@@ -275,3 +275,29 @@ advisory/row locks, idempotency, immutable history, sealed no-total cursors,
 stored IANA-day boundaries, no persistent browser cache, no offline queue, and
 fresh-read uncertain recovery are required. The full matrix is
 `docs/security/P3_S3_THREAT_MODEL.md`.
+
+## P4-S1 reminder security and privacy controls
+
+Every schedule and Notification operation consumes a new exact-purpose P2
+decision. Downstream owners revalidate permission, household, recipient
+context, actor/recipient, request digest, correlation and decision age. An
+organizer or member without the current subject/grant/privacy decision receives
+the same generic response as an absent resource and causes no owner write.
+
+Strict schemas accept only a Care-local label, exact user-entered amount/unit
+and deterministic finite schedule facts. They reject unknown fields, control
+characters, clinical instructions, diagnosis, treatment, recommendation,
+urgency, adherence, missed-dose guidance and arbitrary metadata. Cross-service
+events omit label/amount/unit and use a fixed localized message key. Logs,
+metrics, traces, audit metadata, errors and cursors omit schedule payloads,
+authority bodies, actor references, idempotency material, credentials and raw
+errors.
+
+DST gaps are rejected; overlaps require an explicit policy and matching offset.
+Server time controls due/missed boundaries. Digest-bound idempotency, optimistic
+versions, advisory/row locks, unique occurrence identities, replay-safe inboxes
+and atomic state/audit/outbox transactions address replay, stale and split-write
+risks. Intent, delivered evidence, failed/missed/uncertain delivery and seen
+acknowledgement remain distinct. Offline mutation is blocked; timeouts require a
+fresh authoritative read and never a blind retry. The complete matrix is
+`docs/security/P4_S1_THREAT_MODEL.md`.

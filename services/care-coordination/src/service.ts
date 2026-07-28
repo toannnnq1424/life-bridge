@@ -150,7 +150,7 @@ export class CareService {
     try {
       const result = await this.pool.query<{ version: number }>(
         `SELECT version FROM care_schema_state
-         WHERE service = 'care-coordination' AND version >= 3`,
+         WHERE service = 'care-coordination' AND version >= 5`,
       );
       return result.rows.length === 1;
     } catch {
@@ -604,7 +604,13 @@ export class CareService {
   public async markOutboxAcknowledged(
     eventId: string,
     result:
-      "stored" | "duplicate" | "suppressed_self" | "reminder_scheduled" | "reminder_cancelled",
+      | "stored"
+      | "duplicate"
+      | "suppressed_self"
+      | "reminder_scheduled"
+      | "reminder_cancelled"
+      | "medication_reminder_scheduled"
+      | "medication_reminder_cancelled",
   ): Promise<void> {
     await this.pool.query(
       `UPDATE care_outbox

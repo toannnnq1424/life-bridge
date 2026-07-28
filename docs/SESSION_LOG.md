@@ -1644,3 +1644,75 @@ acknowledgement`, only in a fresh task. Its first action is to freeze
 non-clinical reminder acknowledgement authority, explicit unit/time-zone,
 event, Notification and failure-truth contracts against accepted P2/P3
 boundaries. DATA-S1, P4/P5, Spring, deployment and release were not started here.
+
+## 2026-07-28 — P4-S1 Medication reminder acknowledgement candidate
+
+### Objective and frozen scope
+
+Implement exactly P4-S1 from accepted
+`dev@aaf6113540925b3132a323afc6e1922a902a3e29` on
+`phase/4-medication-reminder-acknowledgement`. An authorized user configures
+only user-provided medication reminder schedule facts with an explicit unit and
+IANA time zone; Notification truthfully records generic in-app delivery and an
+immutable acknowledgement that the reminder was seen. Acknowledgement never
+means taken, skipped or adherence.
+
+Three independent pre-implementation reviews covered
+contract/data/authority/time/threat, Stitch UI/privacy/accessibility, and
+test/CI/operations. Reconciliation froze `P4-S1-v1`: Care owns
+label/amount/unit/time/recurrence; Notification receives no label/amount/unit
+and owns delivery/seen; Identity makes a fresh exact-purpose decision for every
+operation; Gateway composes only.
+
+### Planned versus actual
+
+- Planned: generate/read back synthetic LB-018 and the minimum LB-019 through
+  Stitch, independently review, freeze a redacted handoff, then implement
+  native VI/EN. Actual: four uniquely titled desktop/mobile references were
+  written once and read back directly. Project-list metadata lagged and
+  independent private-pixel inspection was unavailable, so no retry occurred,
+  generated source was rejected, the native-only handoff is Frozen, and KI-019
+  remains truthful.
+- Planned: use accepted services and databases. Actual: no service or engine was
+  added. Care migration 005 and Notification migration 003 remain separately
+  owned; Gateway stores no reminder state; no cross-service SQL, credential or
+  import was introduced.
+- Planned: explicit units, IANA/DST recurrence, optimistic concurrency,
+  idempotency, atomic audit/outbox, missed/failed/uncertain delivery and
+  duplicate acknowledgement. Actual evidence passed 65 unit and 40 contract
+  tests, 8 P4 owner-PostgreSQL tests, owner-isolated
+  rollback/reapply/no-backfill, production builds, 4/4 P4 browser paths and all
+  cumulative P2/P3 browser regressions.
+- Focused deviations: dependency installation initially required the approved
+  host-capable path; one interrupted Notification file write was verified
+  intact; PostgreSQL exposed a timestamp cast and decimal-check escaping defect;
+  disable projection needed the latest schedule version; browser focus and one
+  mocked route matcher required targeted corrections; the first real-runtime
+  harness used a build-time Gateway port mismatch. Each was classified and
+  recovered at the affected scope. None was a Level C invocation.
+- The single `pnpm.cmd run validate:p4-s1` Level C invocation passed every
+  format/lint/type/unit/contract/docs/config/secrets/dependency/build gate, all
+  cumulative integrations, 8 P4 owner integrations and every migration check.
+  It then stopped before browser execution because Notification startup
+  replayed migration 002's older inbox constraint over valid P4 result rows.
+  The proven evidence was retained; no second Level C ran. Notification's
+  migration runner now honors schema version 3, an integration assertion
+  reopens a P4-populated database, and the classified targeted tail passed
+  runtime readiness, 4/4 P4 browser paths and every cumulative P2/P3 browser
+  suite.
+
+### Current evidence and exact next
+
+Current focused evidence proves fresh denial, exact facts, Bangkok/New York
+gap/overlap/DST, content-free intents, delivery-state separation, concurrent
+seen idempotency, injected transaction rollback, no unintended migration
+backfill, artifact-disabled browser accessibility, and real database-backed
+delivery/duplicate acknowledgement. Temporary containers, volumes, networks,
+processes, logs and browser output were removed. The protected
+`docs/orchestration/reports/STITCH_MCP_CANARY.md` remains untouched.
+
+Exact next is commit and push the branch, open one ready PR to `dev`, wait
+exact-head CI, merge by merge commit, wait post-merge `dev` CI, close issue #12
+with bilingual evidence, and perform only necessary same-task canonical-memory
+closeout. Do not invoke another local Level C or start P4-S2/P4-S3, DATA-S1,
+P5, Spring, deployment or release.

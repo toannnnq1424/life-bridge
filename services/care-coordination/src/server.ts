@@ -3,8 +3,10 @@ import {
   CarePlanHistoryQuerySchema,
   CancelAppointmentRequestSchema,
   ChangeAppointmentRequestSchema,
+  ChangeMedicationReminderRequestSchema,
   CoordinationAuthorizationDecisionSchema,
   CreateAppointmentRequestSchema,
+  CreateMedicationReminderRequestSchema,
   ConfirmCarePlanVersionRequestSchema,
   DailyTimelineQuerySchema,
   CompleteTaskRequestSchema,
@@ -12,6 +14,7 @@ import {
   HandoffTaskRequestSchema,
   IdempotencyKeySchema,
   IanaTimeZoneSchema,
+  DisableMedicationReminderRequestSchema,
   SaveCarePlanDraftRequestSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
@@ -22,6 +25,7 @@ import { CareError } from "./errors.js";
 import type { AppointmentService } from "./appointment-service.js";
 import type { CarePlanService } from "./care-plan-service.js";
 import type { CoordinationService } from "./coordination-service.js";
+import type { MedicationReminderService } from "./medication-reminder-service.js";
 import type { CareService } from "./service.js";
 
 function header(request: { headers: Record<string, unknown> }, name: string): unknown {
@@ -34,6 +38,7 @@ export function buildCareServer(
   coordination?: CoordinationService,
   appointments?: AppointmentService,
   carePlans?: CarePlanService,
+  medicationReminders?: MedicationReminderService,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
 
@@ -51,7 +56,94 @@ export function buildCareServer(
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "care_database" }),
   );
-  app.get("/version", async () => ({ service: "care-coordination", contract: "P3-S3-v1" }));
+  app.get("/version", async () => ({ service: "care-coordination", contract: "P4-S1-v1" }));
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/medication-reminders/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireMedicationReminders(medicationReminders).list({
+          householdId: request.params.householdId,
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; reminderId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/medication-reminders/:reminderId/read",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireMedicationReminders(medicationReminders).get({
+          householdId: request.params.householdId,
+          reminderId: request.params.reminderId,
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/medication-reminders",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const result = await requireMedicationReminders(medicationReminders).create({
+        householdId: request.params.householdId,
+        request: CreateMedicationReminderRequestSchema.parse(body.request),
+        idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+        authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+        correlationId,
+      });
+      return reply.code(201).send(successEnvelope(result, correlationId));
+    },
+  );
+
+  app.put<{ Params: { householdId: string; reminderId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/medication-reminders/:reminderId",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireMedicationReminders(medicationReminders).change({
+          householdId: request.params.householdId,
+          reminderId: request.params.reminderId,
+          request: ChangeMedicationReminderRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; reminderId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/medication-reminders/:reminderId/disable",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireMedicationReminders(medicationReminders).disable({
+          householdId: request.params.householdId,
+          reminderId: request.params.reminderId,
+          request: DisableMedicationReminderRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
 
   app.post<{ Params: { householdId: string }; Body: unknown }>(
     "/internal/v1/coordination/households/:householdId/care-plan/read",
@@ -379,25 +471,31 @@ export function buildCareServer(
       errorName === "ZodError" &&
       (request.url.includes("/appointments") || request.url.includes("/calendar"));
     const carePlanValidation = errorName === "ZodError" && request.url.includes("/care-plan");
+    const medicationValidation =
+      errorName === "ZodError" && request.url.includes("/medication-reminders");
     const careError =
       error instanceof CareError
         ? error
         : new CareError(
             errorName === "ZodError" ? 400 : 500,
-            carePlanValidation
-              ? "CARE_PLAN_VALIDATION_FAILED"
-              : appointmentValidation
-                ? "APPOINTMENT_VALIDATION_FAILED"
-                : errorName === "ZodError"
-                  ? "TASK_VALIDATION_FAILED"
-                  : "SERVICE_UNAVAILABLE",
-            carePlanValidation
-              ? "care_plan.validation"
-              : appointmentValidation
-                ? "appointment.validation"
-                : errorName === "ZodError"
-                  ? "errors.task.validation"
-                  : "errors.service.unavailable",
+            medicationValidation
+              ? "MEDICATION_REMINDER_VALIDATION_FAILED"
+              : carePlanValidation
+                ? "CARE_PLAN_VALIDATION_FAILED"
+                : appointmentValidation
+                  ? "APPOINTMENT_VALIDATION_FAILED"
+                  : errorName === "ZodError"
+                    ? "TASK_VALIDATION_FAILED"
+                    : "SERVICE_UNAVAILABLE",
+            medicationValidation
+              ? "medication_reminder.validation"
+              : carePlanValidation
+                ? "care_plan.validation"
+                : appointmentValidation
+                  ? "appointment.validation"
+                  : errorName === "ZodError"
+                    ? "errors.task.validation"
+                    : "errors.service.unavailable",
             errorName !== "ZodError",
           );
     return reply.code(careError.statusCode).send({
@@ -440,6 +538,13 @@ function requireAppointments(service: AppointmentService | undefined): Appointme
 }
 
 function requireCarePlans(service: CarePlanService | undefined): CarePlanService {
+  if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
+  return service;
+}
+
+function requireMedicationReminders(
+  service: MedicationReminderService | undefined,
+): MedicationReminderService {
   if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
   return service;
 }

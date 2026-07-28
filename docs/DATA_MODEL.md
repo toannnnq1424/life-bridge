@@ -397,3 +397,38 @@ redacted audit, digest-only replay, and one suppressed content-free outbox event
 in the same transaction. Failure writes none. Prior versions are never updated
 or deleted. Cross-service SQL, foreign keys, credentials, imports, shared
 writers, a new engine, and Notification plan storage are forbidden.
+
+## P4-S1 medication reminder model
+
+Care Coordination adds owner-local, additive structures:
+
+| Structure                              | Minimum facts                                                                                                                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `care_medication_reminders`            | opaque reminder/household/recipient-context/recipient IDs; Care-only label; exact user amount/unit; local/IANA/offset/ambiguity/finite recurrence; lifecycle; version; timestamps |
+| `care_medication_reminder_occurrences` | stable occurrence identity, schedule version/number/count, source local/IANA/offset, resolved UTC, current/superseded/disabled state                                              |
+| `care_medication_reminder_transitions` | content-free create/change/disable evidence by reminder version                                                                                                                   |
+
+Schedule mutation reuses `care_audit`, `care_idempotency` and `care_outbox`.
+One Care transaction writes the aggregate, deterministic occurrences,
+transition, redacted audit, digest-only replay and minimum structured intents;
+injected failure leaves all unchanged. Change/disable never delete prior
+Notification delivery or acknowledgement evidence.
+
+Notification adds a separate owner-local schema marker and structures:
+
+| Structure                           | Minimum facts                                                                                                                                                           |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `medication_reminder_intents`       | opaque scope/recipient/reminder/occurrence IDs, occurrence version, trigger UTC, source local/IANA/offset, fixed message key, intent/delivery state and current version |
+| `medication_delivery_attempts`      | attempt number, bounded result/reason, started/completed timestamps and evidence class                                                                                  |
+| `medication_reminder_notifications` | one generic in-app item per occurrence, authoritative persisted timestamp and seen acknowledgement fields                                                               |
+| `notification_idempotency`          | operation, actor and key digests, request hash, bounded response and expiry                                                                                             |
+| `notification_audit`                | allowlisted action/result/reason with opaque resource/version and correlation only                                                                                      |
+| `notification_outbox`               | content-free acknowledgement fact for replay-safe downstream evidence                                                                                                   |
+
+`delivered` is valid only with one in-app notification row. `seen` is valid
+only with delivered evidence and one immutable server timestamp. Unique keys and
+owner-local locks make event consume, delivery and acknowledgement duplicate
+safe. No table stores diagnosis, recommendation, treatment, urgency, adherence,
+missed-dose guidance or arbitrary notification text. Notification stores no
+medication label, amount or unit. Migrations add no P4 rows for accepted P1/P3
+data and must reapply safely under their own service credentials.

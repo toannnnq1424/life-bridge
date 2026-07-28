@@ -2,6 +2,7 @@ import { port, requiredSecret, requiredUrl } from "@lifebridge/config";
 import { Pool } from "pg";
 
 import { migrateNotificationDatabase } from "./migration.js";
+import { MedicationReminderNotificationService } from "./medication-reminder-service.js";
 import { buildNotificationServer } from "./server.js";
 import { NotificationService } from "./service.js";
 
@@ -15,9 +16,15 @@ const servicePort = port(process.env.NOTIFICATION_PORT, 3102);
 await migrateNotificationDatabase(databaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
 const service = new NotificationService(pool);
-const app = buildNotificationServer(service, internalToken);
+const medicationReminders = new MedicationReminderNotificationService(pool);
+const app = buildNotificationServer(service, internalToken, medicationReminders);
+const deliveryTimer = setInterval(() => {
+  void medicationReminders.processDue().catch(() => undefined);
+}, 30_000);
+deliveryTimer.unref();
 
 const close = async () => {
+  clearInterval(deliveryTimer);
   await app.close();
   await pool.end();
 };

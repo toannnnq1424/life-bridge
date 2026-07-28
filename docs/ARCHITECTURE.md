@@ -648,3 +648,39 @@ review dates keep validated IANA zones and stored server-resolved half-open UTC
 day bounds. History is reverse-version ordered with sealed bounded cursors and
 no totals. No service, engine, shared database, cross-service SQL, or reminder
 path is introduced.
+
+## P4-S1 medication reminder ownership
+
+P4-S1 extends accepted services and PostgreSQL ownership; it introduces no new
+service or persistence engine.
+
+- Identity & Consent alone evaluates fresh exact-purpose P2 authority for each
+  schedule read/create/change/disable and Notification read/acknowledge.
+- Care Coordination alone owns reminder definitions, finite materialized
+  occurrences, lifecycle/version transitions, redacted audit, digest-only
+  idempotency and schedule/cancel outbox intents.
+- Notification alone owns received structured intents, delivery attempts,
+  authoritative in-app item evidence, generic reminder projections,
+  immutable seen acknowledgements, redacted audit, idempotency and
+  acknowledgement outbox evidence.
+- Gateway strips caller-supplied actor/service headers, binds the complete
+  normalized intent digest, obtains a fresh decision and composes only
+  authoritative owner responses. It stores no reminder state and never treats
+  an intent receipt as delivery.
+
+Care never writes Notification tables and Notification never reads or writes
+Care tables. The event boundary contains opaque scope/recipient identifiers,
+occurrence identity/version, trigger UTC and source local/IANA/offset facts plus
+a fixed message key. Medication label, amount and unit stay in Care because
+they are not necessary to deliver a generic reminder. Cross-service SQL,
+credentials, imports, shared ownership, synchronous dual writes and fabricated
+Gateway state are forbidden.
+
+The Notification in-app due processor uses server time and an injected clock in
+tests. Before the trigger it remains pending. Inside the bounded delivery
+window, an atomically stored in-app item is authoritative delivered evidence.
+At the window boundary without such evidence it becomes missed; explicit
+attempt failure or indeterminate integration result remains failed or
+uncertain. Retry/reconciliation reuses the same intent identity. Acknowledgement
+is a separate Notification transaction permitted only after delivered evidence
+and records only that the reminder was seen.

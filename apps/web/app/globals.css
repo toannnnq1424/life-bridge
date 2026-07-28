@@ -802,6 +802,186 @@ h1 {
   }
 }
 
+/* P4-S1 medication reminders: native implementation from the Frozen handoff. */
+.medication-app {
+  min-height: 100vh;
+  color: #102f3a;
+  background: #f4fbf8;
+}
+
+.medication-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 2px solid #648896;
+  background: #e6f5f5;
+}
+
+.medication-header p {
+  margin: 0.2rem 0 0;
+  color: #405d67;
+}
+
+.medication-header label,
+.medication-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.medication-header select,
+.medication-form input,
+.medication-form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid #648896;
+  border-radius: 8px;
+  color: #102f3a;
+  background: #fff;
+}
+
+.medication-main {
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) 0 5rem;
+}
+
+.medication-intro {
+  max-width: 72ch;
+  color: #405d67;
+}
+
+.medication-app :focus-visible {
+  outline: 4px solid #a34500;
+  outline-offset: 3px;
+}
+
+.medication-state,
+.medication-schedule-list > li,
+.medication-notification-list > li,
+.medication-facts {
+  overflow-wrap: anywhere;
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 2px solid #648896;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.medication-state.warning {
+  border-color: #945600;
+  background: #fff8e8;
+}
+
+.medication-state.danger {
+  border-color: #9c2525;
+  background: #fff1ef;
+}
+
+.medication-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 1rem 2rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 2px solid #648896;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.medication-form > p,
+.medication-form > button {
+  grid-column: 1 / -1;
+}
+
+.medication-schedule-list,
+.medication-notification-list {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.medication-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.medication-facts dt {
+  color: #405d67;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.medication-facts dd {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+}
+
+.secondary-button {
+  color: #174737;
+  background: #fff;
+}
+
+@media (max-width: 30rem) {
+  .medication-header,
+  .medication-form,
+  .medication-app .action-row {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .medication-header,
+  .medication-app .action-row {
+    flex-direction: column;
+  }
+
+  .medication-main {
+    width: min(100% - 1rem, 72rem);
+  }
+
+  .medication-form > *,
+  .medication-form > p,
+  .medication-form > button {
+    grid-column: 1;
+  }
+
+  .medication-form button,
+  .medication-app .action-row button,
+  .medication-app .danger-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medication-app *,
+  .medication-app *::before,
+  .medication-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .medication-header,
+  .medication-state,
+  .medication-form,
+  .medication-schedule-list > li,
+  .medication-notification-list > li,
+  .medication-facts {
+    border: 2px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+}
+
 .privacy-main {
   width: min(72rem, calc(100% - 2rem));
   margin: 0 auto;

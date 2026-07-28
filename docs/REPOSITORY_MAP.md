@@ -2,35 +2,36 @@
 
 Verified: 2026-07-28
 Integrated base: accepted `P3-S3 — Care-plan review`
-(`origin/dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`)
-Active product slice: none; `phase/3-care-plan-review` owns docs-only closeout
+(`origin/dev@aaf6113540925b3132a323afc6e1922a902a3e29`)
+Active product slice: `P4-S1 — Medication reminder acknowledgement` on
+`phase/4-medication-reminder-acknowledgement`
 
-This map reflects the accepted P1/P2/P3 tree through P3-S3. P4 and DATA-S1 are
-not started.
+This map reflects the accepted P1/P2/P3 tree through P3-S3 plus the task-owned
+P4-S1 candidate. P4-S2/P4-S3 and DATA-S1 are not started.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
 
 ## Top-level layout
 
-| Path                          | Responsibility                                                                                           | Key entry points                                                      |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `apps/web/`                   | Native Next.js UI from reviewed Stitch handoffs, VI/EN localization, responsive/accessibility states     | `app/`, `src/CarePlanApp.tsx`, `src/AppointmentApp.tsx`               |
-| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition    | `src/main.ts`, `src/server.ts`                                        |
-| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                         | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts` |
-| `services/care-coordination/` | Task/timeline/appointment plus shared support-plan draft/version/history, audit and transactional outbox | `src/care-plan-service.ts`, `migrations/004_care_plan_review.sql`     |
-| `services/notification/`      | Task notification inbox plus minimum structured appointment reminder-intent receipt                      | `src/service.ts`, `migrations/002_appointment_reminder_intent.sql`    |
-| `packages/contracts/`         | Frozen P1 through P3-S3 authority/time/plan/history/event schemas                                        | `src/index.ts`, `src/care-plan-contract.test.ts`                      |
-| `packages/config/`            | Required runtime configuration and production fixture guard                                              | `src/index.ts`                                                        |
-| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                     | `src/index.ts`                                                        |
-| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                                 | `src/index.ts`                                                        |
-| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                              | `p1-s1.test.ts`                                                       |
-| `tests/browser/`              | Artifact-disabled VI/EN keyboard/focus/reflow/axe plus real governed P3 runtime acceptance               | `p3-s3.spec.ts`, `p3-s3-runtime.spec.ts`                              |
-| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                       | `docker-compose.yml`                                                  |
-| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                           | `start-p1.ps1`, `validate-p3-s2.ps1`, `validate-p3-s3.ps1`            |
-| `tools/quality/`              | Repository validators plus owned database and migration helpers                                          | `src/p3-s2-migration.ts`, `src/p3-s3-migration.ts`                    |
-| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                          | `workflows/ci.yml`                                                    |
-| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory             | documents listed below                                                |
+| Path                          | Responsibility                                                                                          | Key entry points                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `apps/web/`                   | Native Next.js UI from reviewed Stitch handoffs, VI/EN localization, responsive/accessibility states    | `app/`, `src/MedicationReminderApp.tsx`                                                 |
+| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition   | `src/main.ts`, `src/server.ts`                                                          |
+| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                        | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts`                   |
+| `services/care-coordination/` | Task/planning plus Care-owned user-provided medication schedules, audit and transactional intent outbox | `src/medication-reminder-service.ts`, `migrations/005_medication_reminders.sql`         |
+| `services/notification/`      | Generic delivery attempts/evidence and immutable seen-only medication acknowledgement                   | `src/medication-reminder-service.ts`, `migrations/003_medication_reminder_delivery.sql` |
+| `packages/contracts/`         | Frozen P1 through P4-S1 authority/time/reminder/delivery/event schemas                                  | `src/index.ts`, `src/medication-reminder-contract.test.ts`                              |
+| `packages/config/`            | Required runtime configuration and production fixture guard                                             | `src/index.ts`                                                                          |
+| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                    | `src/index.ts`                                                                          |
+| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                                | `src/index.ts`                                                                          |
+| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                             | `p1-s1.test.ts`                                                                         |
+| `tests/browser/`              | Artifact-disabled VI/EN keyboard/focus/reflow/axe plus real governed runtime acceptance                 | `p4-s1.spec.ts`, `p4-s1-runtime.spec.ts`                                                |
+| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                      | `docker-compose.yml`                                                                    |
+| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                          | `start-p1.ps1`, `validate-p4-s1.ps1`                                                    |
+| `tools/quality/`              | Repository validators plus owner-isolated migration helpers                                             | `src/p4-s1-migration.ts`                                                                |
+| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                         | `workflows/ci.yml`                                                                      |
+| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory            | documents listed below                                                                  |
 
 The existing `.ai-orchestrator/`, `.codex/`, `.vscode/`, `data/`, and
 `docs/research/` boundaries remain governed by the Phase 0 rules. P1-S1 does
@@ -111,6 +112,16 @@ authority. Artifact-disabled browser coverage lives in
 rollback/reapply/preservation/no-backfill, and `scripts/validate-p3-s1.ps1`
 owns the one cumulative candidate campaign and exact cleanup.
 
+P4-S1 adds Care migration `005_medication_reminders.sql`, Notification
+migration `003_medication_reminder_delivery.sql`, owner-local schedule and
+delivery/seen services, fresh Gateway authority composition, and native
+`MedicationReminderApp` routes. The redacted design/security authorities are
+`docs/design/reviews/P4_S1_STITCH_HANDOFF.md` and
+`docs/security/P4_S1_THREAT_MODEL.md`. `p4-s1-migration.ts` proves separate
+owner rollback/reapply/no-backfill; artifact-disabled mocked/real Chromium
+coverage lives in `tests/browser/p4-s1*.spec.ts`; `validate-p4-s1.ps1` owns the
+single cumulative campaign and exact cleanup.
+
 ## Commands and generated state
 
 | Command                                     | Behavior                                                                                                    |
@@ -131,6 +142,10 @@ owns the one cumulative candidate campaign and exact cleanup.
 | `pnpm.cmd run test:p3-s1:integration`       | Real Identity/Care PostgreSQL authority, chronology, race, idempotency and atomicity evidence               |
 | `pnpm.cmd run test:p3-s1:browser`           | Artifact-disabled LB-012/LB-014 browser campaign; real path enabled by the Level C runner                   |
 | `pnpm.cmd run validate:p3-s1`               | Single cumulative P3-S1 Level C with P1/P2 regressions, owned PostgreSQL, built runtime and privacy/a11y    |
+| `pnpm.cmd run test:p4-s1:integration`       | Care/Notification PostgreSQL authority, recurrence, delivery, concurrency, idempotency and rollback proof   |
+| `pnpm.cmd run test:p4-s1:migration`         | Separate Care/Notification rollback, reapply, preservation and no-backfill proof                            |
+| `pnpm.cmd run test:p4-s1:browser`           | Artifact-disabled mocked and real LB-018/minimum-LB-019 Chromium acceptance                                 |
+| `pnpm.cmd run validate:p4-s1`               | Exactly one cumulative P4-S1 Level C with owned PostgreSQL, runtime, privacy, accessibility and regressions |
 
 Local credentials and logs live only under ignored `.lifebridge-local/`. The
 validation runner creates a PID-scoped Compose project and removes only that

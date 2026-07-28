@@ -1,14 +1,18 @@
 import { createHash } from "node:crypto";
 
 import {
+  AcknowledgeMedicationReminderRequestSchema,
   CalendarQuerySchema,
   CarePlanHistoryQuerySchema,
   CancelAppointmentRequestSchema,
   ChangeAppointmentRequestSchema,
+  ChangeMedicationReminderRequestSchema,
   CoordinationAuthorizationDecisionSchema,
   ConfirmCarePlanVersionRequestSchema,
   CreateAppointmentRequestSchema,
+  CreateMedicationReminderRequestSchema,
   DailyTimelineQuerySchema,
+  DisableMedicationReminderRequestSchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
   HandoffTaskRequestSchema,
@@ -16,6 +20,7 @@ import {
   IanaTimeZoneSchema,
   SaveCarePlanDraftRequestSchema,
   successEnvelope,
+  type CoordinationPermission,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, SafeLogger } from "@lifebridge/observability";
 import { fixtureMember } from "@lifebridge/test-fixtures";
@@ -142,7 +147,7 @@ export function buildGatewayServer(
   });
 
   app.get("/health/live", async () => ({ status: "live" }));
-  app.get("/version", async () => ({ service: "gateway", contract: "P3-S2-v1" }));
+  app.get("/version", async () => ({ service: "gateway", contract: "P4-S1-v1" }));
   app.get("/health/ready", async (_request, reply) => {
     try {
       const care = await fetcher(`${config.careUrl}/health/ready`, {
@@ -1310,6 +1315,172 @@ export function buildGatewayServer(
     }
   });
 
+  app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/medication-reminders",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.medication_reminder.read",
+        householdId,
+        requestDigest: digestJson({ operation: "medication_reminder.list", householdId }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/medication-reminders/query`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string; reminderId: string } }>(
+    "/api/v1/households/:householdId/medication-reminders/:reminderId",
+    async (request, reply) => {
+      const { householdId, reminderId } = request.params;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.medication_reminder.read",
+        householdId,
+        medicationReminderId: reminderId,
+        requestDigest: digestJson({
+          operation: "medication_reminder.read",
+          householdId,
+          reminderId,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/medication-reminders/${encodeURIComponent(reminderId)}/read`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/medication-reminders",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      const reminderRequest = CreateMedicationReminderRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.medication_reminder.create",
+        householdId,
+        requestDigest: digestJson({
+          operation: "medication_reminder.create",
+          householdId,
+          request: reminderRequest,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/medication-reminders`,
+        method: "POST",
+        idempotencyKey,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: reminderRequest }),
+      });
+    },
+  );
+
+  app.put<{
+    Params: { householdId: string; reminderId: string };
+    Body: unknown;
+  }>("/api/v1/households/:householdId/medication-reminders/:reminderId", async (request, reply) => {
+    const { householdId, reminderId } = request.params;
+    const reminderRequest = ChangeMedicationReminderRequestSchema.parse(request.body);
+    const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+    return authorizeAndForward(request, reply, {
+      permission: "coordination.medication_reminder.change",
+      householdId,
+      medicationReminderId: reminderId,
+      requestDigest: digestJson({
+        operation: "medication_reminder.change",
+        householdId,
+        reminderId,
+        request: reminderRequest,
+      }),
+      dependency: "care",
+      targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/medication-reminders/${encodeURIComponent(reminderId)}`,
+      method: "PUT",
+      idempotencyKey,
+      mutation: true,
+      body: (authorization) => ({ authorization, request: reminderRequest }),
+    });
+  });
+
+  app.post<{
+    Params: { householdId: string; reminderId: string };
+    Body: unknown;
+  }>(
+    "/api/v1/households/:householdId/medication-reminders/:reminderId/disable",
+    async (request, reply) => {
+      const { householdId, reminderId } = request.params;
+      const reminderRequest = DisableMedicationReminderRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.medication_reminder.disable",
+        householdId,
+        medicationReminderId: reminderId,
+        requestDigest: digestJson({
+          operation: "medication_reminder.disable",
+          householdId,
+          reminderId,
+          request: reminderRequest,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/medication-reminders/${encodeURIComponent(reminderId)}/disable`,
+        method: "POST",
+        idempotencyKey,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: reminderRequest }),
+      });
+    },
+  );
+
+  app.get<{ Querystring: { householdId?: string } }>(
+    "/api/v1/notifications/medication-reminders",
+    async (request, reply) => {
+      const householdId = String(request.query.householdId ?? "");
+      return authorizeAndForward(request, reply, {
+        permission: "notification.medication_reminder.read",
+        householdId,
+        requestDigest: digestJson({
+          operation: "medication_notification.list",
+          householdId,
+        }),
+        dependency: "notification",
+        targetUrl: `${config.notificationUrl}/internal/v1/medication-reminders/households/${encodeURIComponent(householdId)}/query`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.post<{
+    Params: { occurrenceId: string };
+    Querystring: { householdId?: string };
+    Body: unknown;
+  }>(
+    "/api/v1/notifications/medication-reminders/:occurrenceId/acknowledgements",
+    async (request, reply) => {
+      const householdId = String(request.query.householdId ?? "");
+      const occurrenceId = request.params.occurrenceId;
+      const acknowledgementRequest = AcknowledgeMedicationReminderRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "notification.medication_reminder.acknowledge",
+        householdId,
+        medicationOccurrenceId: occurrenceId,
+        requestDigest: digestJson({
+          operation: "medication_notification.acknowledge",
+          householdId,
+          occurrenceId,
+          request: acknowledgementRequest,
+        }),
+        dependency: "notification",
+        targetUrl: `${config.notificationUrl}/internal/v1/medication-reminders/households/${encodeURIComponent(householdId)}/occurrences/${encodeURIComponent(occurrenceId)}/acknowledgements`,
+        method: "POST",
+        idempotencyKey,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: acknowledgementRequest }),
+      });
+    },
+  );
+
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
     const idempotencyRequired = error instanceof IdempotencyKeyRequiredError;
@@ -1317,26 +1488,31 @@ export function buildGatewayServer(
     const appointmentValidation =
       validation && (request.url.includes("/appointments") || request.url.includes("/calendar"));
     const carePlanValidation = validation && request.url.includes("/care-plan");
+    const medicationValidation = validation && request.url.includes("/medication-reminders");
     return reply.code(idempotencyRequired || validation ? 400 : 503).send({
       error: {
         code: idempotencyRequired
           ? "IDEMPOTENCY_KEY_REQUIRED"
-          : carePlanValidation
-            ? "CARE_PLAN_VALIDATION_FAILED"
-            : appointmentValidation
-              ? "APPOINTMENT_VALIDATION_FAILED"
-              : validation
-                ? "TASK_VALIDATION_FAILED"
-                : "SERVICE_UNAVAILABLE",
+          : medicationValidation
+            ? "MEDICATION_REMINDER_VALIDATION_FAILED"
+            : carePlanValidation
+              ? "CARE_PLAN_VALIDATION_FAILED"
+              : appointmentValidation
+                ? "APPOINTMENT_VALIDATION_FAILED"
+                : validation
+                  ? "TASK_VALIDATION_FAILED"
+                  : "SERVICE_UNAVAILABLE",
         messageKey: idempotencyRequired
           ? "errors.idempotency.required"
-          : carePlanValidation
-            ? "care_plan.validation"
-            : appointmentValidation
-              ? "appointment.validation"
-              : validation
-                ? "errors.task.validation"
-                : "errors.service.unavailable",
+          : medicationValidation
+            ? "medication_reminder.validation"
+            : carePlanValidation
+              ? "care_plan.validation"
+              : appointmentValidation
+                ? "appointment.validation"
+                : validation
+                  ? "errors.task.validation"
+                  : "errors.service.unavailable",
         retryable: !idempotencyRequired && !validation,
         correlationId,
       },
@@ -1363,6 +1539,71 @@ export function buildGatewayServer(
       return reply.code(response.status).send(response.body);
     } catch {
       return dependencyUnavailable(reply, correlationId, logger, "care");
+    }
+  }
+
+  async function authorizeAndForward(
+    request: {
+      headers: Record<string, unknown>;
+      cookies: Record<string, string | undefined>;
+      ip: string;
+    },
+    reply: { code: (status: number) => { send: (body: unknown) => unknown } },
+    input: {
+      permission: CoordinationPermission;
+      householdId: string;
+      medicationReminderId?: string;
+      medicationOccurrenceId?: string;
+      requestDigest: string;
+      dependency: "care" | "notification";
+      targetUrl: string;
+      method: string;
+      idempotencyKey?: string;
+      mutation?: boolean;
+      body: (authorization: ReturnType<typeof decisionData>) => unknown;
+    },
+  ) {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    if (input.mutation && !validBrowserMutation(request.headers)) {
+      return rejectedBrowserMutation(reply, request.headers);
+    }
+    const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+      correlationId,
+      method: "POST",
+      ...sessionOption(request.cookies[config.sessionCookieName]),
+      ...(input.mutation ? { csrfToken: String(request.headers["x-csrf-token"] ?? "") } : {}),
+      body: {
+        permission: input.permission,
+        householdId: input.householdId,
+        ...(input.medicationReminderId ? { medicationReminderId: input.medicationReminderId } : {}),
+        ...(input.medicationOccurrenceId
+          ? { medicationOccurrenceId: input.medicationOccurrenceId }
+          : {}),
+        requestDigest: input.requestDigest,
+      },
+    });
+    if (!decisionResponse) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    if (decisionResponse.status >= 400) {
+      return reply.code(decisionResponse.status).send(decisionResponse.body);
+    }
+    const authorization = decisionData(decisionResponse);
+    if (!authorization) {
+      return dependencyUnavailable(reply, correlationId, logger, "identity");
+    }
+    try {
+      const response = await dependencyRequest(fetcher, input.targetUrl, {
+        method: input.method,
+        actorId: "",
+        correlationId,
+        token: input.dependency === "care" ? config.careToken : config.notificationToken,
+        ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
+        body: input.body(authorization),
+      });
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return dependencyUnavailable(reply, correlationId, logger, input.dependency);
     }
   }
 

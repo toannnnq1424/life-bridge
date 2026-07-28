@@ -27,6 +27,14 @@ free-form handoff context, totals, false success and offline queueing.
 generated source, runtime, asset URL, remote ID or private locator was imported.
 KI-019 retains the unavailable independent pixel inspection.
 
+P4-S1 uses `docs/design/reviews/P4_S1_STITCH_HANDOFF.md`. Four synthetic
+desktop/mobile LB-018 and minimum LB-019 references were written and read back
+once. The Frozen handoff rejects generated source and any dosage/adherence,
+false-delivery, role-implies-consent, toast-only, offline-queue or inaccessible
+state. `MedicationReminderApp` implements corrected native VI/EN semantic
+routes. No generated source, asset URL, remote ID or private locator is
+persisted. KI-019 retains unavailable independent private-pixel inspection.
+
 ## Source precedence
 
 ```text
