@@ -878,15 +878,15 @@ failures, not product failures.
   start only in a fresh task with official toolchain research and frozen
   Community authority/data/API/event/failure boundaries. Do not start it here.
 
-## INT-2026-023 — P5-S1 Spring Community request and directory candidate
+## INT-2026-023 — P5-S1 Spring Community request and directory
 
 - Date: 2026-07-29
-- Status: local candidate evidence complete through exactly one Level C
-  invocation and classified targeted continuation; hosted promotion pending
+- Status: integrated; local and hosted validation passed
 - Source: `phase/5-consented-help-request-directory` from exact accepted
   `origin/dev@486a5276ef43d143af8692501064e952a59a4829`
-- Target: `dev`; canonical issue #15 remains open and must be verified again
-  before any closeout mutation
+- Target: accepted as
+  `dev@ac663a714b69aace443f712f1d8ee700b5e48636`; canonical issue #15 was
+  verified open immediately before bilingual closeout and is now closed
 - Scope: P5-S1 only; LB-022 `/help/new` and LB-024 `/community`; no P5-S2
   matching, P5-S3 moderation, DATA-S1, P6+, deployment, pilot or release
 - Pre-code control: the contract/toolchain/threat, Stitch privacy/accessibility
@@ -961,24 +961,29 @@ failures, not product failures.
   superseded. The array/join detached-HEAD correction preserved local branch
   and hosted exact-SHA guards. Code head `74079f8` then passed push run
   `30395832352` and PR run `30395839829`, including both owner/cumulative
-  acceptance jobs and the full aggregate gate. The documentation-only head
-  containing this record still requires exact-head CI before merge.
+  acceptance jobs and the full aggregate gate. Final documentation-only
+  feature head `59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head
+  push run `30396846386` and PR run `30396851617`.
 - Planned versus actual: ADR-019 planned the future greenfield Spring boundary
   and PostgreSQL-first search but deferred exact versions and P5 contracts.
   The official-source review supplied complete supported pins, while
   `P5-S1-v1` narrowed the slice to bounded non-free-form request data, explicit
   purpose/visibility, no matching and content-free evidence. No new engine,
   broker, cache service, object storage or Node rewrite was needed.
-- Remaining acceptance: require hosted CI for the documentation-only PR #66
-  head, then a merge commit, exact post-merge `dev` CI and bilingual issue #15
-  closeout. The one-shot marker/ledger/transcript remain immutable local
-  evidence; do not invoke another full local Level C.
+- Promotion evidence: ready PR #66 merged by merge commit as
+  `dev@ac663a714b69aace443f712f1d8ee700b5e48636`; exact post-merge run
+  `30397698495` passed Windows static/build/security, PostgreSQL/mixed-runtime/
+  Chromium and the full aggregate gate. Canonical issue #15 closed with
+  bilingual immutable evidence at comment `5109595055`. The one-shot marker/
+  ledger/transcript remain immutable local evidence; no second full local
+  Level C was invoked.
 - Protected canary/evidence: the Stitch canary belongs to another workstream
   and has no worktree/index diff. No credential, private locator, generated
   source, remote ID or real data is part of P5-S1 evidence.
 - Deferred: KI-001 blocks deployment, KI-016 retains manual AT/device rows,
   KI-019 retains private-render visual review and KI-020 remains scoped to
   P4-S3 document-vault deployment controls.
-- Follow-up: P5-S2 is exact next only after P5-S1 is fully accepted. A new task
+- Follow-up: P5-S2 is exact next in a fresh controller-dispatched task, which
   must first freeze match/organization authority, approval, capacity,
-  revocation, minimum disclosure and audit/failure truth; do not start it here.
+  revocation, minimum disclosure and audit/event/failure truth; do not start
+  it here.

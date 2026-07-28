@@ -66,8 +66,8 @@ This plan distinguishes approved intent from delivered reality. Never rewrite a 
 | `P1` Daily task MVP                   | Prove create/assign/complete/notify/dashboard end to end                       | `P1-S1`                                        | P0 gate; frozen P1 handoff                 | Validated     |
 | `P2` Trust and household              | Replace fixture identity with real access, household, consent, and audit flows | `P2-S1`–`P2-S3`                                | P1 contracts and security review           | Validated     |
 | `P3` Care planning                    | Add handoff timeline, appointments, and care-plan coordination                 | `P3-S1`–`P3-S3`                                | P2 roles/consent                           | Validated     |
-| `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | In progress   |
-| `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | Planned       |
+| `P4` Safety and records               | Add reminder, emergency-plan, and document flows without clinical advice       | `P4-S1`–`P4-S3`                                | P2 consent; P3 time model                  | Validated     |
+| `P5` Community support                | Add consented help requests, matching, organization, and moderation            | `P5-S1`–`P5-S3`                                | P2 trust/audit; reviewed source evidence   | In progress   |
 | `P6` Microservice platform            | Prove independent runtime ownership, versioned compatibility, and isolation    | `P6-S1`–`P6-S3`                                | Accepted P1–P5 service boundaries          | Planned       |
 | `P7` Data and event reliability       | Prove migrations, event recovery, backup/restore, retention, and deletion      | `P7-S1`–`P7-S3`                                | P6 contracts and service ownership         | Planned       |
 | `P8` Security and privacy hardening   | Prove isolation, privacy lifecycle, abuse controls, secrets, and supply chain  | `P8-S1`–`P8-S3`                                | P2 trust; P6/P7 boundaries                 | Planned       |
@@ -771,7 +771,7 @@ Acceptance:
 Dependencies: P2 consent; research source review; ADR-019 Community boundary;
 P5 official toolchain/supply-chain research gate.
 
-Actual candidate boundary (`CHG-2026-011`, acceptance pending):
+Actual accepted boundary (`CHG-2026-011`):
 
 - three independent pre-code reviews reconciled the official toolchain,
   authority/data/API/event/failure contract, native Stitch handoff and one-
@@ -804,9 +804,12 @@ Actual candidate boundary (`CHG-2026-011`, acceptance pending):
   are green without rerunning Level C;
 - exactly one local P5-S1 Level C was invoked. Its immutable static-gate
   formatting failure and successful classified targeted continuation prove all
-  required local stages without a second full campaign. Exact-head feature CI,
-  ready PR/merge commit, post-merge `dev` CI and bilingual issue #15 closeout
-  remain mandatory before this row becomes accepted. P5-S2 is not started.
+  required local stages without a second full campaign. Final feature head
+  `59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head push/PR CI,
+  ready PR #66 merged as
+  `dev@ac663a714b69aace443f712f1d8ee700b5e48636`, post-merge run
+  `30397698495` passed every required job and issue #15 closed with bilingual
+  immutable evidence. P5-S2 is not started.
 
 ### `P5-S2 — Volunteer match and organization coordination`
 
@@ -1302,7 +1305,7 @@ No row means simultaneous implementation. Design generation/review may prepare a
 
 ## CHG-2026-011 — Select the greenfield Spring Community boundary
 
-- State: Local P5-S1 evidence complete; hosted promotion pending
+- State: Integrated; local and hosted validation passed
 - Raised in phase/slice: governance-only amendment during `P2-S1`
 - Planned baseline: Community was a future independently deployable service,
   while the repository operating baseline described a practical TypeScript
@@ -1311,8 +1314,8 @@ No row means simultaneous implementation. Design generation/review may prepare a
   The first Spring Boot service is the greenfield Community boundary beginning
   at P5-S1/issue #15 and available for separately governed extension through
   P5-S2/P5-S3. Existing Gateway, Identity & Consent, Care Coordination and
-  Notification remain Node services; no rewrite is authorized. The P5-S1
-  candidate implements Boot 4.1.0, Community-owned PostgreSQL/Flyway,
+  Notification remain Node services; no rewrite is authorized. P5-S1
+  implements Boot 4.1.0, Community-owned PostgreSQL/Flyway,
   repository-owned Maven wrappers and the frozen language-neutral contract.
 - Reason/evidence: the project owner requires at least one bounded Spring Boot
   backend. Community is future, cohesive and independently owned, so it proves
@@ -1337,22 +1340,27 @@ No row means simultaneous implementation. Design generation/review may prepare a
     reproducible build and mixed-runtime browser proof is green. The one full
     Level C invocation retained its static formatting failure; an exact-
     signature targeted continuation passed every corrected and previously
-    unstarted stage without a second campaign. Hosted promotion is pending. P6
-    retains the wider rolling-compatibility, artifact, authenticated transport
-    and rollback proof.
-  - Phase order/schedule: unchanged; P5 and P6 remain planned behind P2–P4.
+    unstarted stage without a second campaign. Exact-head feature CI,
+    merge-commit promotion and post-merge `dev` CI passed. P6 retains the
+    wider rolling-compatibility, artifact, authenticated transport and rollback
+    proof.
+  - Phase order/schedule: unchanged; P4 is validated, P5 is in progress after
+    accepted P5-S1, and P6 remains planned.
 - Validation actual/required: invocation
   `01d2ea18bc4845f88bf55ceddbfeea44` stopped at generated Maven SBOM
   formatting after toolchain/install passed; its cleanup passed before any
   runtime started. The guarded same-invocation targeted continuation passed
   static through cleanup, including reproducible JAR digest
   `811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`,
-  Community database 9/9 and P5 browser 8/8. Do not run Level C again. Require
-  feature exact-head CI, one ready PR, merge-commit promotion, post-merge `dev`
-  CI and issue #15 closeout.
-- Follow-up owner and exact phase/slice: after P5-S1 acceptance only, a fresh
-  P5-S2 task must freeze match/organization authority, approval, capacity,
-  revocation, minimum disclosure and audit truth before extending Community.
+  Community database 9/9 and P5 browser 8/8. Do not run Level C again. Final
+  feature head `59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head
+  push/PR runs `30396846386`/`30396851617`; PR #66 merged as
+  `dev@ac663a714b69aace443f712f1d8ee700b5e48636`; post-merge run
+  `30397698495` passed every required job; issue #15 closed with bilingual
+  evidence.
+- Follow-up owner and exact phase/slice: a fresh P5-S2 task must freeze
+  match/organization authority, approval, capacity, revocation, minimum
+  disclosure and audit truth before extending Community.
 - Related ADR/integration/session entries: ADR-019, `INT-2026-013`, issue #15,
   and the P2-S1 governance amendment session entry.
 
@@ -1639,26 +1647,23 @@ single Level C, exact-head/post-merge CI and issue #14 closeout are complete.
 
 ## Exact next action
 
-P5-S1 is the active candidate on
-`phase/5-consented-help-request-directory` from accepted
-`origin/dev@486a5276ef43d143af8692501064e952a59a4829`. The three pre-code reviews,
-official toolchain pins, frozen `P5-S1-v1` schemas/hashes/digest vectors,
-redacted four-reference Stitch handoff, Spring Community owner boundary,
-Gateway/Identity integration and native VI/EN LB-022/LB-024 are implemented.
-Focused schema, Node, Spring, owner-isolated migration/PostgreSQL and built
-mixed-runtime browser evidence is green. Exactly one local P5-S1 Level C was
-invoked. Its immutable marker/ledger retains a generated-SBOM formatting
-failure at the first static stage; the exact-signature same-invocation targeted
-continuation passed corrected static plus every previously unstarted required
-stage, final privacy/diff/canary checks and cleanup. No second Level C ran.
+P5-S1 is accepted. Final feature head
+`59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head push/PR runs
+`30396846386`/`30396851617`; ready PR #66 merged by merge commit as
+`dev@ac663a714b69aace443f712f1d8ee700b5e48636`; post-merge `dev` run
+`30397698495` passed Windows static/build/security, PostgreSQL/mixed-runtime/
+Chromium and the aggregate gate; canonical issue #15 closed with bilingual
+immutable evidence.
 
-PR #66 is ready. Code-bearing head `74079f8` passed exact-head push and PR CI
-after two classified pre-marker hosted harness corrections. The immediate
-action is exact-head CI for the documentation-only record, then a merge commit.
-Exact post-merge `dev` CI and bilingual issue #15 closeout remain required.
-P5-S2 is the exact next handoff only after all P5-S1
-acceptance and closeout gates pass. Its first action will freeze match/
-organization authority, approval, capacity, revocation, minimum disclosure
-and audit/failure truth; do not implement any P5-S2 behavior in this task.
-KI-001/KI-016/KI-019 remain, KI-020 remains scoped to the P4-S3 deployment
-boundary, and DATA-S1/P6+/deployment/pilot/release are not started.
+Exactly one local P5-S1 Level C was invoked. Its immutable marker/ledger
+retains the generated-SBOM formatting failure; the same-ledger classified
+continuation passed corrected static plus every previously unstarted required
+stage, final privacy/diff/canary checks and cleanup. No second local Level C
+ran. KI-001/KI-016/KI-019 remain, and KI-020 remains scoped to the P4-S3
+deployment boundary.
+
+The exact next handoff is `P5-S2 — Volunteer match and organization
+coordination` only in a fresh controller-dispatched task. Before code, freeze
+match/organization authority, approval, capacity, revocation, minimum
+disclosure and audit/event/failure truth. P5-S2, DATA-S1, P6+, deployment,
+pilot and release are not started.

@@ -2340,3 +2340,75 @@ documentation-only PR #66 head to pass hosted exact-head CI, then merge only by
 merge commit. Post-merge `dev` CI and bilingual canonical issue #15 closeout
 remain mandatory. Do not run local Level C again. Do not begin P5-S2; record it
 as the handoff only after every P5-S1 closeout gate is complete.
+
+## 2026-07-29 — P5-S1 hosted promotion and canonical closeout
+
+### Planned versus actual promotion
+
+The planned terminal path was one ready feature PR into `dev`, exact-head
+hosted CI, merge-commit promotion, exact post-merge `dev` CI, read-only
+verification and bilingual closure of canonical issue #15, followed only by a
+same-task docs-only canonical correction. That path completed without a force
+push, direct `dev` push, branch deletion, second feature PR or second local
+Level C.
+
+Final feature head `59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head
+push run `30396846386` and pull-request run `30396851617`. Ready feature PR
+#66 merged by merge commit as
+`dev@ac663a714b69aace443f712f1d8ee700b5e48636`. Exact post-merge run
+`30397698495` passed:
+
+- Windows static, unit, build and security with checksum-pinned repository
+  JDK/Maven bootstrap, CycloneDX provenance, reproducible Community package and
+  dependency audit;
+- PostgreSQL migration/ownership, Node↔Spring provider/consumer, mixed-runtime
+  and cumulative Chromium acceptance; and
+- the terminal `P1 through P5-S1 full required gate`.
+
+The hosted cache action emitted only its known non-gating missing-cache-path
+warning; every required job and aggregate gate concluded successfully.
+
+Before any issue mutation, issue #15 was read back as OPEN with exact title
+`[P5-S1] Consented help request and directory`. It then received bilingual
+immutable evidence at comment `5109595055` and closed at
+`2026-07-28T20:57:20Z`.
+
+### Accepted evidence and cleanup truth
+
+Exactly one local P5-S1 Level C invocation exists. Invocation
+`01d2ea18bc4845f88bf55ceddbfeea44` retained its generated-SBOM formatting
+failure and immutable marker/ledger/transcript. The guarded same-ledger
+continuation passed corrected static and every previously unstarted required
+stage; later review-driven hardening used classified targeted proof only. No
+second full local campaign ran.
+
+Final targeted evidence remains Node contracts 18/18, Identity PostgreSQL
+10/10, Community PostgreSQL 11/11, mocked browser 6/6 with zero geolocation
+calls, migration rollback/reapply/no-backfill/owner isolation, exact revoked
+authority, scheduled retention, same-key concurrency, replay invalidation,
+monotonic audit/outbox evidence and two clean reproducible Community packages
+with JAR SHA-256
+`13415e9ec9a8dfec40cb66f79bf16735ef3236ede83565b44330d78239285dbf`.
+Fixtures and Stitch references remain synthetic; no credential, private
+locator, remote Stitch identifier, generated source or real household/care
+data entered the repository.
+
+Task-owned PostgreSQL/Docker resources, P5 ports and generated browser/build
+outputs were cleaned without changing Docker global state. Config, secrets,
+docs, contract checksums, diff scope and repository cleanliness were checked.
+The protected Stitch canary has no worktree or index diff and was never staged.
+
+### Known issues and exact next
+
+KI-001 remains the deployment-credential retirement gate; KI-016 retains
+manual assistive-technology/physical-device evidence; KI-019 retains
+unavailable private Stitch pixel inspection. KI-020 remains scoped to P4-S3
+production vault scanner/encryption/backup/deletion/RPO/RTO controls. None is
+claimed resolved by P5-S1.
+
+P5-S1 is accepted. The exact next handoff is `P5-S2 — Volunteer match and
+organization coordination` only in a fresh controller-dispatched task. Before
+any P5-S2 code, freeze match/organization authority, approval, capacity,
+revocation, minimum disclosure and versioned command/read/event/audit/failure
+truth. P5-S2, P5-S3, DATA-S1, P6+, deployment, pilot and release remain
+unstarted.
