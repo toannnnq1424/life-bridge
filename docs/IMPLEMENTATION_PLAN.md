@@ -6,11 +6,9 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P4 — Safety-critical coordination`; P4-S2 is accepted and
-  no product implementation is active in this docs-only closeout. Exact next
-  is `P4-S3 — Access-controlled document vault` only after fresh controller
-  dispatch.
-- Accepted base: live `dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`.
+- Current phase: `P4 — Safety-critical coordination`; the active vertical
+  slice is `P4-S3 — Access-controlled document vault` only.
+- Accepted base: live `dev@1010aeabf7ae87737019477cb1961404299bf0a8`.
 - Accepted P4-S2 evidence: `P4-S2-v1`/`P4-S2-offline-v1`, Care migration 006,
   ADR-025 and threat model, four synthetic Stitch references, the Frozen
   native-only handoff, native VI/EN LB-020/LB-021/required-LB-032, exactly one
@@ -18,8 +16,9 @@
   `30358335589`, and post-merge `dev` run `30359250442`. Canonical issue
   [#13](https://github.com/toannnnq1424/life-bridge/issues/13) is closed with
   bilingual evidence.
-- Current action: promote only this same-task docs-only canonical correction.
-  P4-S3, DATA-S1, P5, Spring, deployment and release are not started.
+- Current action: promote the locally accepted P4-S3 candidate from
+  `phase/4-document-vault` through one ready feature PR to `dev`. DATA-S1, P5,
+  Spring, deployment and release remain unstarted.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -712,6 +711,32 @@ Acceptance:
 - denied, failed processing, unavailable, audit, backup/restore and browser tests pass.
 
 Dependencies: P2 consent/audit; accepted polyglot/object-storage ADR before adding an engine.
+
+Actual implementation boundary (`CHG-2026-018`):
+
+- ADR-026 keeps bounded metadata and strict UTF-8 `.txt` bytes together in the
+  existing Care PostgreSQL owner; no object store, scanner, crypto scheme,
+  cache or service is introduced.
+- `P4-S3-v1` adds explicit `document_vault.access`; existing grants are not
+  broadened. Every list/upload/metadata/download/delete obtains a fresh exact
+  P2 decision, and household status alone grants nothing.
+- Accepted files are declared `text/plain`, final `.txt`, strict UTF-8, and
+  1–262,144 decoded bytes. Successful state is `ready_unscanned` with scanner
+  `not_configured` and malware `not_scanned`, never a clean/safe claim.
+- Downloads are attachment-only octet streams after fresh authority and
+  digest/object-binding verification. Explicit delete purges active data with
+  no product undo; recovery means re-uploading the user's local original.
+- Four synthetic LB-023 Stitch references were created once and read back
+  once. The corrected redacted handoff is Frozen, generated source is rejected
+  and KI-019 remains because private pixels were unavailable.
+- Exactly one local P4-S3 Level C ran after focused contract/data/UI/test
+  reconciliation and passed without recovery. It proved format/lint/type/unit/
+  contract/docs/config/secrets/audit/build, cumulative integrations, migration
+  rollback/reapply/no-backfill, pre-delete restore, post-delete
+  non-resurrection, real PostgreSQL/Chromium runtime and the complete mocked
+  failure/accessibility matrix; its PID-scoped Docker resources were removed.
+  Exact-head hosted CI, one ready PR to `dev`, merge-commit promotion,
+  post-merge CI and issue #14 bilingual closeout remain required.
 
 ## P5 — Community support
 

@@ -339,3 +339,42 @@ dispatch, manual assistive-technology conformance, or private-render visual
 approval. Re-check on different KDF/AEAD parameters, Web Crypto/browser support,
 multiple offline copies, longer retention, background synchronization, public
 pilot, or a new legal/clinical claim.
+
+## 2026-07-28 — P4-S3 bounded document-vault micro-cycle
+
+Result: `PASS WITH ASSUMPTIONS`; retrieved 2026-07-28. This bounded official-
+source review introduced no real document, PII, care record, credential,
+private locator, malware-clean claim, storage product or scanner engine.
+
+- OWASP Foundation,
+  [File Upload Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html):
+  extension allowlisting, independently checking declared type and content,
+  generated storage names, size bounds, authorization, storage outside active
+  web content, and malware scanning when available are distinct controls.
+- PostgreSQL Global Development Group,
+  [Binary Data Types](https://www.postgresql.org/docs/current/datatype-binary.html),
+  [SQL Dump](https://www.postgresql.org/docs/current/backup-dump.html), and
+  [pg_restore](https://www.postgresql.org/docs/current/app-pgrestore.html):
+  `bytea` stores bounded binary strings; owner-local logical dump/restore can
+  rehearse recovery without creating a new storage owner.
+- IETF, [RFC 6266](https://www.rfc-editor.org/rfc/rfc6266):
+  attachment disposition and carefully encoded, advisory filenames prevent a
+  supplied filename from controlling a local path or active-inline response.
+- WHATWG,
+  [File upload state](<https://html.spec.whatwg.org/multipage/input.html#file-upload-state-(type=file)>):
+  the native file input is the complete keyboard-accessible selection path;
+  optional drag/drop is not required.
+- W3C WAI,
+  [ARIA25: role=status](https://www.w3.org/WAI/WCAG22/Techniques/aria/ARIA25):
+  meaningful upload and reconciliation status changes are announced without
+  moving focus.
+
+Kết luận / Conclusion: ADR-026 selects no new engine. Care stores one
+strict-UTF-8 `.txt` object of 1–262,144 decoded bytes in PostgreSQL, verifies
+digest/object binding, exposes only attachment downloads, and reports
+`ready_unscanned`/`not_configured`/`not_scanned` rather than a clean claim.
+These sources do not prove malware safety, production at-rest or backup
+encryption, historical-backup deletion, RPO/RTO, Viet Nam legal compliance,
+manual assistive-technology conformance or private-render visual approval.
+Re-check when file types, maximum size, scanner, object storage, crypto,
+retention, public exposure or compliance claims change.

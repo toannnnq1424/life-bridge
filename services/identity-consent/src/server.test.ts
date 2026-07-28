@@ -287,6 +287,19 @@ describe("P2-S3 consent internal HTTP boundary", () => {
     });
     expect(governedResponse.statusCode).toBe(400);
     expect(governedResponse.json().error.code).toBe("CONSENT_VALIDATION_FAILED");
+
+    const documentScopeResponse = await app.inject({
+      method: "GET",
+      url: "/internal/v1/households/household_synthetic/recipient-context/scopes/document_vault.access",
+      headers: {
+        "x-internal-service-token": "internal-token-value-123456789",
+        "x-session-token": "s".repeat(43),
+        "x-correlation-id": "corr_p4_s3_non_disclosure_scope",
+      },
+    });
+    expect(documentScopeResponse.statusCode).toBe(400);
+    expect(documentScopeResponse.json().error.code).toBe("CONSENT_VALIDATION_FAILED");
+    expect(consent.grant).not.toHaveBeenCalled();
     await app.close();
   });
 });

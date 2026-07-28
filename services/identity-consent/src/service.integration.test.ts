@@ -714,6 +714,182 @@ integration("P2-S1 identity lifecycle", () => {
     expect(await identity.isReady()).toBe(true);
   });
 
+  it("requires an explicit non-backfilled document scope for every P4-S3 decision", async () => {
+    const subjectFactor = await enroll("document.subject", "Document subject synthetic passphrase");
+    const memberFactor = await enroll("document.member", "Document member synthetic passphrase");
+    clock.value += 30_000;
+    const subjectAccount = await signIn(
+      "document.subject",
+      "Document subject synthetic passphrase",
+      subjectFactor.secret,
+    );
+    const memberAccount = await signIn(
+      "document.member",
+      "Document member synthetic passphrase",
+      memberFactor.secret,
+    );
+    const household = await households.createHousehold({
+      accountId: subjectAccount.projection.accountId,
+      request: { displayLabel: "P4-S3 synthetic household" },
+      idempotencyKey: "p4-s3-household",
+      correlationId: "corr_p4s3_household",
+    });
+    const invitation = await households.createInvitation({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: { inviteeLoginName: "document.member", role: "member" },
+      idempotencyKey: "p4-s3-invitation",
+      correlationId: "corr_p4s3_invitation",
+    });
+    await households.respondToInvitation({
+      accountId: memberAccount.projection.accountId,
+      invitationToken: invitation.invitationToken!,
+      decision: "accepted",
+      correlationId: "corr_p4s3_accept",
+    });
+    const context = await households.upsertRecipientContext({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: {
+        displayLabel: "Synthetic document recipient",
+        relationshipLabel: "Synthetic relationship",
+        expectedVersion: 0,
+      },
+      correlationId: "corr_p4s3_context",
+    });
+    await consent.establishSubject({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: {
+        recipientContextId: context.recipientContextId,
+        displayTimeZone: "Asia/Bangkok",
+      },
+      correlationId: "corr_p4s3_subject",
+    });
+    const privacy = await consent.getPrivacy({
+      accountId: subjectAccount.projection.accountId,
+    });
+    await consent.updatePrivacy({
+      accountId: subjectAccount.projection.accountId,
+      request: {
+        profileVisibility: "household_only",
+        coordinationActivityVisibility: "household_only",
+        accessAlerts: false,
+        expectedVersion: privacy.version,
+        displayTimeZone: "Asia/Bangkok",
+      },
+      correlationId: "corr_p4s3_privacy",
+    });
+    const overview = await consent.overview({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+    });
+    const recipientRef = overview.eligibleRecipients[0]!.recipientRef;
+    const basicGrant = await consent.grant({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: {
+        action: "grant",
+        recipientRef,
+        purpose: "household_coordination",
+        scopes: ["recipient_context.basic_label"],
+        effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+        expectedSubjectVersion: 1,
+      },
+      idempotencyKey: "p4-s3-basic-grant",
+      correlationId: "corr_p4s3_basic_grant",
+    });
+    await expect(
+      consent.authorizeCoordination({
+        accountId: memberAccount.projection.accountId,
+        request: {
+          permission: "coordination.document_vault.list",
+          householdId: household.householdId,
+          requestDigest: "e".repeat(64),
+        },
+        correlationId: "corr_p4s3_basic_denied",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_RESOURCE_NOT_FOUND" });
+    await expect(
+      consent.narrow({
+        accountId: subjectAccount.projection.accountId,
+        householdId: household.householdId,
+        grantId: basicGrant.grantId,
+        request: {
+          action: "narrow",
+          scopes: ["recipient_context.basic_label", "document_vault.access"],
+          effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+          expectedSubjectVersion: 2,
+          expectedGrantVersion: 1,
+        },
+        idempotencyKey: "p4-s3-broadening-rejected",
+        correlationId: "corr_p4s3_broadening_rejected",
+      }),
+    ).rejects.toMatchObject({ code: "CONSENT_SCOPE_BROADENING_REJECTED" });
+
+    clock.value += 1;
+    await consent.revoke({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      grantId: basicGrant.grantId,
+      request: {
+        action: "revoke",
+        effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+        expectedSubjectVersion: 2,
+        expectedGrantVersion: 1,
+      },
+      idempotencyKey: "p4-s3-basic-revoke",
+      correlationId: "corr_p4s3_basic_revoke",
+    });
+    clock.value += 1;
+    const documentGrant = await consent.grant({
+      accountId: subjectAccount.projection.accountId,
+      householdId: household.householdId,
+      request: {
+        action: "grant",
+        recipientRef,
+        purpose: "household_coordination",
+        scopes: ["recipient_context.basic_label", "document_vault.access"],
+        effectiveTime: { mode: "immediate", displayTimeZone: "Asia/Bangkok" },
+        expectedSubjectVersion: 3,
+      },
+      idempotencyKey: "p4-s3-document-grant",
+      correlationId: "corr_p4s3_document_grant",
+    });
+    const listDecision = await consent.authorizeCoordination({
+      accountId: memberAccount.projection.accountId,
+      request: {
+        permission: "coordination.document_vault.list",
+        householdId: household.householdId,
+        requestDigest: "f".repeat(64),
+      },
+      correlationId: "corr_p4s3_list",
+    });
+    expect(listDecision).toMatchObject({
+      permission: "coordination.document_vault.list",
+      grantId: documentGrant.grantId,
+      grantVersion: 1,
+    });
+    expect(listDecision.documentId).toBeUndefined();
+
+    const documentId = "document_p4s3_scope";
+    const contentDecision = await consent.authorizeCoordination({
+      accountId: memberAccount.projection.accountId,
+      request: {
+        permission: "coordination.document_vault.content.download",
+        householdId: household.householdId,
+        documentId,
+        requestDigest: "0".repeat(64),
+      },
+      correlationId: "corr_p4s3_content",
+    });
+    expect(contentDecision).toMatchObject({
+      permission: "coordination.document_vault.content.download",
+      documentId,
+      grantId: documentGrant.grantId,
+    });
+  });
+
   it("bounds decoys and resolves invitation and first-context races without disclosure", async () => {
     const organizerFactor = await enroll("race.organizer", "Organizer race passphrase");
     const realFactor = await enroll("race.real", "Real invitee passphrase");

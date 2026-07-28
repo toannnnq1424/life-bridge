@@ -430,6 +430,43 @@ campaign is classified before only the smallest targeted recovery; a second
 Level C is prohibited. Manual assistive-technology evidence remains KI-016 and
 private Stitch pixel inspection remains KI-019.
 
+## P4-S3 Level C campaign
+
+Exactly one `pnpm.cmd run validate:p4-s3` campaign proves cumulative P1 through
+P4-S3 formatting, lint, type, unit, contract, docs, config, secrets,
+dependency, build, PostgreSQL integration/migration/restore and browser gates.
+The new slice evidence covers:
+
+1. explicit non-backfilled `document_vault.access`, self-bound and granted
+   paths, exact document binding and zero Care calls after denial;
+2. strict filename/type/base64/decoded-size/UTF-8/content validation,
+   randomized identifiers, bounded `bytea`, SHA-256 and object binding;
+3. authoritative processing/failed/rejected/integrity states and
+   `ready_unscanned`/`not_configured`/`not_scanned` truth with no clean claim;
+4. upload/list/metadata/attachment/delete fresh decisions, actual XHR
+   progress, idempotent replay/changed-intent conflict and optimistic delete;
+5. attachment-only octet-stream with sanitized advisory filename, `nosniff`,
+   sandbox and `no-store`; no preview, active render, signed URL or browser
+   persistence;
+6. atomic active-byte/metadata purge, content-free audit/tombstone/suppressed
+   outbox, transaction rollback and injected integrity/storage failure;
+7. Identity 004 and Care 007 forced rollback, repeat apply, legacy
+   preservation and explicit no-backfill;
+8. owner-local `pg_dump`/`pg_restore` before-delete byte/binding recovery and
+   after-delete non-resurrection, without claiming production encryption,
+   historical-backup erasure or RPO/RTO;
+9. mocked and real VI/EN Chromium for empty, invalid, uploading/cancel,
+   processing, available, rejected/failed/integrity, denied, unavailable,
+   conflict, uncertain/reconcile, deletion and offline/no-queue;
+10. native picker/keyboard/dialog/progress semantics, focus recovery, axe,
+    44 px controls, 320 CSS px reflow, forced colors, reduced motion,
+    privacy-safe logs, diff gates and exact task-owned cleanup.
+
+Workers remain one, retries zero, and trace/screenshot/video are off. The
+single-use local marker prevents a second Level C; a failure is classified
+before only the smallest targeted recovery. KI-001/KI-016/KI-019 and KI-020
+remain explicit.
+
 ## P3-S3 Level C campaign
 
 Exactly one `pnpm.cmd run validate:p3-s3` campaign proves cumulative P1 through

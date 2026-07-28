@@ -1906,3 +1906,115 @@ integrity and storage ownership against accepted P2 audit and P4-S2 offline
 boundaries before selecting storage or implementing LB-023.
 
 P4-S3, DATA-S1, P5, Spring, deployment and release were not started here.
+
+## 2026-07-28 — P4-S3 access-controlled document-vault candidate
+
+### Objective
+
+Deliver exactly P4-S3: an authorized user can upload, list, retrieve/download
+and remove a permitted synthetic document at native VI/EN LB-023, with
+truthful access, retention, processing, integrity, deletion and recovery
+feedback.
+
+### Planned versus actual
+
+- Planned: freeze authority/data/storage/processing/deletion contracts after
+  three independent reviews, complete a bounded official-source micro-cycle,
+  freeze a corrected Stitch handoff, implement one owner-isolated vertical
+  slice and invoke exactly one local Level C.
+- Actual: contract/data/authority/threat/ADR, Stitch privacy/accessibility and
+  test/CI/operations reviews completed independently and were reconciled.
+  ADR-026 keeps bounded strict UTF-8 `.txt` content and metadata together in
+  Care-owned PostgreSQL; no object store, scanner, cache, crypto scheme or new
+  service was justified. Four synthetic LB-023 references were generated and
+  read back exactly once; private pixels remained unavailable, generated
+  source was rejected and KI-019 remains.
+- Planned open choice: introduce authoritative malware processing if an
+  accepted scanner boundary existed.
+- Actual: no scanner was introduced. Successful content is explicitly
+  `ready_unscanned` with scanner `not_configured` and malware `not_scanned`.
+  The product never claims content is clean, safe or available before the
+  authoritative Care state permits attachment-only retrieval.
+
+### Completed
+
+- Froze `P4-S3-v1`, exact `document_vault.access`, five request-bound
+  permission decisions, upload/list/metadata/download/delete schemas, errors,
+  idempotency, optimistic concurrency, audit/outbox/tombstone and retention/
+  deletion semantics.
+- Added Identity migration 004 without broadening existing consent. Household
+  organizer/member state does not imply document consent or access.
+- Added Care migration 007 and the document-vault service. Care alone owns
+  bytes, metadata, randomized object key, binding digest, transitions, audit,
+  outbox and replay state. List reads use one repeatable-read snapshot.
+- Added strict `.txt`/`text/plain`, 1–262,144-byte and UTF-8 validation;
+  privacy-safe logging; attachment-only octet-stream download with generic
+  filename, `nosniff` and sandbox CSP; integrity verification; storage and
+  scanner failure truth; atomic active purge; and old-upload-key invalidation
+  after deletion.
+- Added native VI/EN LB-023 at
+  `/households/[householdId]/documents` with the file picker as the complete
+  keyboard path, real upload progress/cancel, volatile same-context
+  reconciliation, explicit deletion review/effect, no offline queue or
+  browser document persistence, semantic states, focus, announcements,
+  reflow, forced colors and reduced motion.
+- Added frozen handoff/threat model/contracts/service/unit/integration/browser
+  tests, owner-isolated migration and backup/restore rehearsals, and hosted CI
+  wiring.
+
+### Files changed
+
+Contracts and Gateway; Identity migration/authorization; Care migration,
+service and HTTP boundary; native web route/component/styles; P4-S3 unit,
+integration, browser, migration and restore tooling; CI; ADR/security/design/
+architecture/data/API/product/test/repository/plan/board/issue memory. The
+protected `docs/orchestration/reports/STITCH_MCP_CANARY.md` was untouched and
+never staged.
+
+### Decisions and Change IDs
+
+`CHG-2026-018`, ADR-026, `P4-S3-v1`, issue #14 and
+`docs/security/P4_S3_THREAT_MODEL.md`. KI-001, KI-016 and KI-019 remain.
+KI-020 explicitly blocks deployment and scanner/clean/safe/complete-erasure/
+production-recovery claims until production encryption, backup lifecycle,
+deletion reconciliation, scanner/stale-processing controls and RPO/RTO are
+researched, accepted and validated.
+
+### Validation performed
+
+- Focused formatting, ESLint, typecheck, 105 contract/HTTP unit assertions,
+  Identity/Care integration work, production builds and mocked Chromium 3/3
+  passed during implementation.
+- Exactly one `pnpm.cmd run validate:p4-s3` invocation started at
+  `2026-07-28T15:42:33.4202137Z` and passed without recovery. It proved all
+  cumulative format gates, repository lint/typecheck, unit 95/95, contracts
+  49/49, docs/config/secrets, dependency audit, all production builds,
+  cumulative PostgreSQL integrations, P4-S3 Care 7/7, migration
+  rollback/reapply/no-backfill, pre-delete owner restore, post-delete
+  non-resurrection, real P4-S3 Chromium 1/1, mocked LB-023 3/3 and all
+  cumulative P2–P4-S2 browser regressions.
+- `git diff --check` passed. The task-owned Level C PostgreSQL container,
+  volume and network were removed; the campaign marker is retained as
+  one-shot evidence.
+
+### Validation intentionally deferred
+
+Exact-head hosted CI, PR merge, post-merge `dev` CI and issue #14 closeout are
+the remaining same-task promotion gates. Manual NVDA/Narrator, physical-device,
+text-spacing and full assistive-technology zoom evidence remain KI-016.
+Independent private Stitch pixel review remains KI-019. Production vault
+controls remain KI-020.
+
+### Known issues
+
+KI-001/KI-016/KI-019/KI-020 remain truthful. The bounded implementation has no
+malware scanner and makes no clean/safe claim; explicit active deletion does
+not promise erasure from historical backups. No deployment occurred.
+
+### Exact next step
+
+Review and commit the exact candidate diff, push
+`phase/4-document-vault` without force, open exactly one ready feature PR to
+`dev`, require green exact-head hosted CI, merge by merge commit, verify
+post-merge `dev` CI and close issue #14 with bilingual evidence. Do not start
+P5-S1, DATA-S1, Spring, deployment or release in this task.

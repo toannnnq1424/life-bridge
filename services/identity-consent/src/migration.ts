@@ -7,6 +7,7 @@ export async function migrateIdentityDatabase(connectionString: string): Promise
     readFile(new URL("../migrations/001_initial.sql", import.meta.url), "utf8"),
     readFile(new URL("../migrations/002_household_authorization.sql", import.meta.url), "utf8"),
     readFile(new URL("../migrations/003_consent_privacy_audit.sql", import.meta.url), "utf8"),
+    readFile(new URL("../migrations/004_document_vault_scope.sql", import.meta.url), "utf8"),
   ]);
   const pool = new Pool({ connectionString, max: 1 });
   try {

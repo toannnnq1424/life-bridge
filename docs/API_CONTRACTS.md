@@ -1178,3 +1178,123 @@ Stable errors are `EMERGENCY_CONTACT_VALIDATION_FAILED`,
 `INTERNAL_CONTRACT_INVALID`. A timeout or 5xx after mutation is an unknown
 outcome: perform a fresh authorized read and never retry blindly or with a new
 key.
+
+## P4-S3 access-controlled document-vault contract (`P4-S3-v1`)
+
+### Authority
+
+Identity & Consent owns the exact-purpose decision. `document_vault.access` is
+an additive `household_coordination` consent scope and is never backfilled into
+an existing grant. Household organizer/member status and
+`recipient_context.basic_label` never imply document authority. The self-bound
+subject may act directly; another active member needs a current matching grant
+containing `document_vault.access` and current subject visibility.
+
+Every online operation requires one fresh, request-bound decision with one of:
+
+```text
+coordination.document_vault.list
+coordination.document_vault.upload
+coordination.document_vault.metadata.read
+coordination.document_vault.content.download
+coordination.document_vault.delete
+```
+
+All decisions bind actor, household, recipient, permission, request digest,
+correlation, subject/grant/privacy versions and a maximum ten-second validity.
+Metadata/download/delete also bind the exact opaque `documentId`; list/upload
+prohibit it. Care rejects expired, wrong-purpose, wrong-resource, stale,
+unbound or malformed decisions before accessing document rows or bytes.
+
+### Gateway commands and reads
+
+```text
+GET    /api/v1/households/:householdId/documents
+POST   /api/v1/households/:householdId/documents
+GET    /api/v1/households/:householdId/documents/:documentId
+GET    /api/v1/households/:householdId/documents/:documentId/content
+DELETE /api/v1/households/:householdId/documents/:documentId
+```
+
+Upload requires CSRF, `Idempotency-Key`, a client-generated opaque
+`uploadReference`, advisory `fileName`, declared `text/plain`, exact
+`decodedSizeBytes`, and canonical base64 `contentBase64`. Decoded content must
+be 1–262,144 bytes, strict UTF-8 text, and use a final `.txt` extension. Care
+independently sanitizes the display basename, decodes and measures content,
+rejects path/control/bidi/CRLF and prohibited content controls, computes
+SHA-256, generates randomized document/object IDs and persists the binding in
+one transaction. Maximum active capacity is 25 documents per recipient.
+
+Delete requires CSRF, `Idempotency-Key`, `expectedVaultVersion`, and
+`expectedDocumentVersion`. Upload and delete serialize on the vault and use
+optimistic versions. The same key and canonical intent replay the stored
+result; a changed intent returns `IDEMPOTENCY_CONFLICT`. A stale expected
+version returns a bounded conflict without applying a mutation; the browser
+then obtains a new authorized vault projection before another review.
+
+The list is a complete, bounded projection ordered by confirmation time and
+opaque ID. It includes `uploadReference` for uncertain-result reconciliation.
+Public metadata is limited to opaque document/upload IDs, sanitized display
+name, verified type and exact byte size, processing/scanner/malware states,
+access/retention policy keys, versions, and server confirmation times. It
+excludes content, storage keys, digests, object bindings, raw headers,
+actor/subject/grant identifiers, hidden totals and download URLs.
+
+### Processing, retrieval and deletion
+
+Authoritative processing states are `processing`, `ready_unscanned`,
+`rejected`, `failed`, and `integrity_failed`. A successful upload is:
+
+```text
+processingState: ready_unscanned
+scannerStatus: not_configured
+malwareStatus: not_scanned
+processingEvidence: strict_text_and_integrity_validation
+accessPolicy: care_recipient_and_current_document_collaborators
+retentionPolicy: retained_until_explicit_delete
+```
+
+This is not a clean, safe, reviewed, clinical-integrity or suitability claim.
+Only `ready_unscanned` is downloadable. Before returning bytes, Care
+recomputes the digest and verifies document/household/recipient/object/size/
+version binding. A mismatch atomically removes active bytes, records
+`integrity_failed` evidence and fails closed.
+
+The content response is `application/octet-stream`, attachment-only with an
+RFC 6266 sanitized advisory filename, `X-Content-Type-Options: nosniff`,
+`Content-Security-Policy: sandbox`, and `Cache-Control: no-store`. It is never
+inline content, preview, viewer, signed URL or trusted active render.
+
+Deletion has no product undo, legal hold or server restore. It atomically
+removes active bytes, filename, digest, binding and readable metadata. An
+opaque content-free transition, tombstone, audit record, suppressed outbox
+fact, invalidated content-free upload replay marker, and bounded delete replay
+result remain. Reusing the deleted upload's old key conflicts and cannot
+resurrect it. Recovery means selecting and re-uploading an original local
+file.
+
+### Events, failures and offline boundary
+
+Owner-local events are `care.document.upload_accepted.v1`,
+`care.document.processing_state_changed.v1`, and
+`care.document.removed.v1`. Payloads contain only opaque aggregate/event IDs,
+schema/version/correlation and timestamps; no bytes, filename, type, size,
+digest, object key, actor, subject or grant. Notification is not a consumer.
+
+Stable errors are `DOCUMENT_VALIDATION_FAILED`,
+`DOCUMENT_TYPE_UNSUPPORTED`, `DOCUMENT_TOO_LARGE`,
+`DOCUMENT_CONTENT_REJECTED`, `DOCUMENT_PROCESSING_PENDING`,
+`DOCUMENT_PROCESSING_FAILED`, `DOCUMENT_INTEGRITY_FAILED`,
+`DOCUMENT_VERSION_CONFLICT`, `DOCUMENT_VAULT_CONFLICT`,
+`DOCUMENT_CAPACITY_REACHED`, `DOCUMENT_RESULT_UNKNOWN`,
+`COORDINATION_RESOURCE_NOT_FOUND`, `COORDINATION_AUTHORITY_REQUIRED`,
+`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_CONFLICT`,
+`IDENTITY_SERVICE_UNAVAILABLE`, `DOCUMENT_STORAGE_UNAVAILABLE`,
+`SERVICE_UNAVAILABLE`, and `INTERNAL_CONTRACT_INVALID`.
+
+Denied and missing are intentionally indistinguishable before protected state
+access. Storage/scanner unavailability is never an empty vault or clean claim.
+A timeout, cancellation or ambiguous 5xx result is uncertain: perform a fresh
+authorized list/status read with the same upload/idempotency context and never
+retry blindly or with a new key. Offline mode stores and reveals no document
+metadata or bytes and queues, replays or auto-submits no operation.

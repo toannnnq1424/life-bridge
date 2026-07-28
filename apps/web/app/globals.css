@@ -428,6 +428,205 @@ h1 {
   }
 }
 
+.document-vault-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: var(--mint);
+}
+
+.document-vault-header label {
+  display: grid;
+  gap: 0.3rem;
+  font-weight: 700;
+}
+
+.document-vault-header select,
+.document-vault-app input[type="file"] {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.document-vault-main {
+  width: min(72rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 5rem;
+}
+
+.source-banner,
+.vault-boundary,
+.vault-panel {
+  margin: 1.25rem 0;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.source-live {
+  border-color: var(--green);
+  background: var(--mint);
+}
+
+.source-offline,
+.vault-boundary {
+  border-style: dashed;
+  background: #fff4e8;
+}
+
+.vault-panel .field {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1rem 0;
+  font-weight: 700;
+}
+
+.selected-file {
+  margin: 1rem 0;
+  border-left: 0.35rem solid var(--green);
+  padding: 0.8rem 1rem;
+  background: var(--mint);
+}
+
+.upload-progress {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 34rem;
+}
+
+.upload-progress progress {
+  width: 100%;
+  min-height: 1.25rem;
+  accent-color: var(--green);
+}
+
+.document-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.document-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  background: #fbfdfc;
+}
+
+.document-card h3 {
+  margin-top: 0;
+  overflow-wrap: anywhere;
+}
+
+.document-state {
+  border-left: 0.35rem solid var(--focus);
+  padding: 0.65rem 0.8rem;
+  background: #fff4e8;
+  font-weight: 700;
+}
+
+.state-ready_unscanned .document-state {
+  border-color: var(--green);
+  background: var(--mint);
+}
+
+.state-rejected .document-state,
+.state-failed .document-state,
+.state-integrity_failed .document-state {
+  border-color: var(--error);
+  background: #fff1f1;
+}
+
+.failure-code {
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  overflow-wrap: anywhere;
+}
+
+.document-vault-app dialog {
+  width: min(36rem, calc(100% - 2rem));
+  border: 3px solid var(--error);
+  border-radius: 12px;
+  padding: 1.5rem;
+  color: var(--text);
+  background: var(--surface);
+}
+
+.document-vault-app dialog::backdrop {
+  background: rgb(21 51 43 / 65%);
+}
+
+.document-name {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.document-vault-footer {
+  border-top: 1px solid var(--border);
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: var(--text);
+  color: #fff;
+}
+
+.document-vault-footer p {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+@media (max-width: 40rem) {
+  .document-vault-header,
+  .document-vault-app .button-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .document-vault-app .button-row button {
+    width: 100%;
+  }
+
+  .document-vault-app .facts {
+    grid-template-columns: 1fr;
+  }
+
+  .document-vault-app .facts dd {
+    margin-bottom: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .document-vault-app *,
+  .document-vault-app *::before,
+  .document-vault-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .document-vault-app .source-banner,
+  .document-vault-app .vault-boundary,
+  .document-vault-app .vault-panel,
+  .document-vault-app .document-card,
+  .document-vault-app .document-state,
+  .document-vault-app dialog {
+    border: 2px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+}
+
 .care-plan-app {
   min-height: 100vh;
 }

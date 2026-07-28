@@ -163,7 +163,7 @@ export class IdentityService {
       const result = await this.pool.query<{ ready: boolean }>(
         `SELECT EXISTS (
            SELECT 1 FROM identity_schema_state
-           WHERE service = 'identity-consent' AND version >= 3
+           WHERE service = 'identity-consent' AND version >= 4
          ) AS ready`,
       );
       return result.rows[0]?.ready === true;

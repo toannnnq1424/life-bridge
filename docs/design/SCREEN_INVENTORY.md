@@ -49,6 +49,14 @@ corrected `P4_S1_STITCH_HANDOFF.md` is Frozen for native semantic
 implementation only. Generated source is rejected, private pixels remain
 unapproved under KI-019, and manual AT remains KI-016.
 
+P4-S3 candidate status on 2026-07-28: four synthetic LB-023 upload,
+validation, access/deletion and recovery desktop/mobile references were
+generated and read back once. `P4_S3_STITCH_HANDOFF.md` is Frozen for native
+semantic implementation only. Care/PostgreSQL ownership, strict text-only
+acceptance and unscanned processing truth replace the former storage/scanner
+TBD. Generated source is rejected, private pixels remain unapproved under
+KI-019, and manual AT remains KI-016.
+
 ## Screen register
 
 | ID       | Screen                       | Primary role                      | Route concept                                                       | Purpose and critical requirements                                                                                                                                                                                                                                                            |

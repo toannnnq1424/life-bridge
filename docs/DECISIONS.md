@@ -708,6 +708,63 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   head and post-merge hosted CI. Do not start P4-S3, DATA-S1, P5, Spring,
   deployment, or release work.
 
+## ADR-026 — Keep bounded document bytes and metadata in Care PostgreSQL
+
+- Status: Accepted for P4-S3 implementation
+- Date: 2026-07-28
+- Change ID: `CHG-2026-018`
+- Context: P4-S3 must upload, list, download and delete a permitted synthetic
+  document while telling the truth about authority, malware processing,
+  integrity, retention, deletion, outages and uncertain results. The accepted
+  architecture has no object-storage or scanner owner, and Gateway may not
+  become a data owner.
+- Decision: Care Coordination owns both document metadata and a maximum
+  262,144-byte strict UTF-8 `.txt` body in its existing PostgreSQL datastore.
+  Identity & Consent adds the explicit `document_vault.access` consent scope
+  and issues one fresh request-bound `P4-S3-v1` decision for every list,
+  upload, metadata read, content download and delete. Existing grants are not
+  broadened or backfilled. Gateway validates and relays bounded JSON uploads
+  and attachment downloads but persists or fabricates nothing. A successful
+  object is `ready_unscanned`, with scanner `not_configured`, malware
+  `not_scanned`, and only strict-text/digest/object-binding processing
+  evidence. Care recomputes SHA-256 and verifies the randomized binding before
+  every download. Explicit deletion atomically purges active bytes and
+  metadata; only opaque content-free audit, tombstone and suppressed-outbox
+  facts remain.
+- Alternatives considered: object storage; a scanner service or fabricated
+  clean state; active-content preview; Gateway ownership; shared tables or
+  credentials; a new encryption scheme; browser persistence/offline queue;
+  signed download URLs; multipart-parser dependency; unrestricted binary
+  types; role/member authority; automatic retention expiry or product undo.
+- Consequences: P4-S3 accepts only one `text/plain` `.txt` file with strict
+  UTF-8 content and decoded size 1–262,144 bytes. Downloads are
+  `application/octet-stream` attachments with sanitized advisory filenames,
+  `nosniff`, sandbox and `no-store`; the UI never previews or actively renders
+  uploaded content. JSON/base64 is bounded at the Gateway and decoded and
+  independently validated by Care. XHR supplies real upload progress.
+  Cancellation, timeout and ambiguous 5xx outcomes reconcile through a fresh
+  authorized read using the same upload/idempotency context. Offline state
+  exposes and queues nothing. PostgreSQL backup/restore rehearsal proves only
+  local owner recovery and post-delete non-resurrection, not production
+  encryption, RPO/RTO or historical-backup erasure.
+- Planned baseline: the roadmap required one owner and authority path, explicit
+  type/size/malware/retention/access/deletion truth, non-execution, failure
+  handling, audit and backup/restore, but did not select storage, consent
+  scope, content boundary, processing semantics, integrity binding or deletion
+  residue.
+- Actual implementation/evidence: three independent reviews converged on the
+  bounded existing Care/PostgreSQL owner, exact P2 scope, strict text-only
+  acceptance, unscanned truth, attachment-only retrieval, active-data purge,
+  content-free evidence and no offline state. Four synthetic LB-023 Stitch
+  references were written once and read back once; generated source was
+  rejected and private pixels remain unavailable under KI-019.
+- Validation and follow-up: implement only P4-S3, invoke exactly one local
+  `validate:p4-s3` Level C after focused evidence, then require exact-head and
+  post-merge hosted CI. KI-001/KI-016/KI-019 remain. Adding another file type,
+  object storage, scanner/clean verdict, application-layer encryption, cache
+  or service requires a new official-source micro-cycle and accepted ADR. Do
+  not start P5-S1, DATA-S1, Spring, deployment or release work.
+
 ## Decision-change template
 
 ```md

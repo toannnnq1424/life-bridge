@@ -729,3 +729,31 @@ ciphertext is purged. Unknown/backward time never appears recent. Local removal
 requires no server. On reconnect, current authority and source versions are
 checked before replacement; writes remain blocked and no request is queued or
 replayed.
+
+## P4-S3 bounded document-vault ownership
+
+P4-S3 extends existing owners only. Care Coordination owns bounded document
+metadata and bytes in its PostgreSQL database. Identity & Consent owns the
+fresh `P4-S3-v1` exact-purpose decision. Gateway composes authorization with
+Care and streams bounded attachment responses but owns no document, locator,
+authority, audit, retry or processing fact. Notification is uninvolved.
+
+The browser sends one bounded JSON/base64 upload through Gateway; Care alone
+decodes, validates strict UTF-8 `.txt` content, hashes, binds and commits it.
+No object store, scanner service, crypto scheme, cache, broker or new runtime
+is added. A successful object is explicitly `ready_unscanned` with no clean
+claim. Every metadata read and download performs another current P2 decision,
+then Care verifies the owner-local object binding and digest before returning
+an attachment-only response.
+
+Browser storage is outside the document data plane: no service worker,
+Cache Storage, IndexedDB, localStorage or sessionStorage contains document
+bytes or metadata. XHR progress is transport evidence only. Cancelled, timed
+out or uncertain mutations reconcile through a new authorized projection and
+the same upload/idempotency identity. Offline mode has no authority, copy,
+queue, replay or automatic submit.
+
+Logical dump/restore is scoped to the Care owner and tests pre-delete byte/
+binding recovery plus post-delete non-resurrection. It does not establish
+production encryption, historical-backup retirement or RPO/RTO. Those remain
+deployment gates.

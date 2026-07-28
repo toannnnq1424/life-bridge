@@ -12,6 +12,7 @@ import {
   CreateAppointmentRequestSchema,
   CreateMedicationReminderRequestSchema,
   DailyTimelineQuerySchema,
+  DeleteDocumentRequestSchema,
   DisableMedicationReminderRequestSchema,
   EmergencyHistoryQuerySchema,
   ReplaceEmergencyContactsRequestSchema,
@@ -23,6 +24,7 @@ import {
   IanaTimeZoneSchema,
   SaveCarePlanDraftRequestSchema,
   SaveEmergencyPlanDraftRequestSchema,
+  UploadDocumentRequestSchema,
   successEnvelope,
   type CoordinationPermission,
 } from "@lifebridge/contracts";
@@ -50,6 +52,14 @@ class DependencyResponse {
   public constructor(
     public readonly status: number,
     public readonly body: unknown,
+  ) {}
+}
+
+class BinaryDependencyResponse {
+  public constructor(
+    public readonly status: number,
+    public readonly bytes: Buffer,
+    public readonly errorBody: unknown,
   ) {}
 }
 
@@ -101,6 +111,39 @@ async function dependencyRequest(
   return new DependencyResponse(response.status, body);
 }
 
+async function binaryDependencyRequest(
+  fetcher: Fetcher,
+  url: string,
+  input: {
+    actorId: string;
+    correlationId: string;
+    token: string;
+    body: unknown;
+  },
+): Promise<BinaryDependencyResponse> {
+  const response = await fetcher(url, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-actor-id": input.actorId,
+      "x-correlation-id": input.correlationId,
+      "x-internal-service-token": input.token,
+    },
+    body: JSON.stringify(input.body),
+    signal: AbortSignal.timeout(2_500),
+  });
+  const bytes = Buffer.from(await response.arrayBuffer());
+  let errorBody: unknown = null;
+  if (response.status >= 400) {
+    try {
+      errorBody = JSON.parse(bytes.toString("utf8"));
+    } catch {
+      errorBody = null;
+    }
+  }
+  return new BinaryDependencyResponse(response.status, bytes, errorBody);
+}
+
 async function identityRequest(
   fetcher: Fetcher,
   url: string,
@@ -143,7 +186,7 @@ export function buildGatewayServer(
   fetcher: Fetcher = fetch,
   logger = new SafeLogger("gateway"),
 ) {
-  const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
+  const app = Fastify({ logger: false, bodyLimit: 512 * 1024 });
   void app.register(cookie);
   app.addHook("onRequest", async (_request, reply) => {
     reply.header("cache-control", "no-store");
@@ -1320,6 +1363,120 @@ export function buildGatewayServer(
   });
 
   app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/documents",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.document_vault.list",
+        householdId,
+        requestDigest: digestJson({ operation: "document_vault.list", householdId }),
+        dependency: "care",
+        unavailableCode: "DOCUMENT_STORAGE_UNAVAILABLE",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/documents/query`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/documents",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      const uploadRequest = UploadDocumentRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.document_vault.upload",
+        householdId,
+        requestDigest: digestJson({
+          operation: "document_vault.upload",
+          householdId,
+          request: uploadRequest,
+        }),
+        dependency: "care",
+        unavailableCode: "DOCUMENT_STORAGE_UNAVAILABLE",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/documents`,
+        method: "POST",
+        idempotencyKey,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: uploadRequest }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string; documentId: string } }>(
+    "/api/v1/households/:householdId/documents/:documentId",
+    async (request, reply) => {
+      const { householdId, documentId } = request.params;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.document_vault.metadata.read",
+        householdId,
+        documentId,
+        requestDigest: digestJson({
+          operation: "document_vault.metadata.read",
+          householdId,
+          documentId,
+        }),
+        dependency: "care",
+        unavailableCode: "DOCUMENT_STORAGE_UNAVAILABLE",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/documents/${encodeURIComponent(documentId)}/read`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string; documentId: string } }>(
+    "/api/v1/households/:householdId/documents/:documentId/content",
+    async (request, reply) => {
+      const { householdId, documentId } = request.params;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.document_vault.content.download",
+        householdId,
+        documentId,
+        requestDigest: digestJson({
+          operation: "document_vault.content.download",
+          householdId,
+          documentId,
+        }),
+        dependency: "care",
+        unavailableCode: "DOCUMENT_STORAGE_UNAVAILABLE",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/documents/${encodeURIComponent(documentId)}/content/read`,
+        method: "POST",
+        binary: true,
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.delete<{
+    Params: { householdId: string; documentId: string };
+    Body: unknown;
+  }>("/api/v1/households/:householdId/documents/:documentId", async (request, reply) => {
+    const { householdId, documentId } = request.params;
+    const deleteRequest = DeleteDocumentRequestSchema.parse(request.body);
+    const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+    return authorizeAndForward(request, reply, {
+      permission: "coordination.document_vault.delete",
+      householdId,
+      documentId,
+      requestDigest: digestJson({
+        operation: "document_vault.delete",
+        householdId,
+        documentId,
+        request: deleteRequest,
+      }),
+      dependency: "care",
+      unavailableCode: "DOCUMENT_STORAGE_UNAVAILABLE",
+      targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/documents/${encodeURIComponent(documentId)}`,
+      method: "DELETE",
+      idempotencyKey,
+      mutation: true,
+      body: (authorization) => ({ authorization, request: deleteRequest }),
+    });
+  });
+
+  app.get<{ Params: { householdId: string } }>(
     "/api/v1/households/:householdId/emergency-contacts",
     async (request, reply) => {
       const householdId = request.params.householdId;
@@ -1654,45 +1811,60 @@ export function buildGatewayServer(
     const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
     const idempotencyRequired = error instanceof IdempotencyKeyRequiredError;
     const validation = error instanceof Error && error.name === "ZodError";
+    const bodyTooLarge =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "FST_ERR_CTP_BODY_TOO_LARGE" &&
+      request.url.includes("/documents");
     const appointmentValidation =
       validation && (request.url.includes("/appointments") || request.url.includes("/calendar"));
     const carePlanValidation = validation && request.url.includes("/care-plan");
     const medicationValidation = validation && request.url.includes("/medication-reminders");
     const emergencyContactValidation = validation && request.url.includes("/emergency-contacts");
     const emergencyPlanValidation = validation && request.url.includes("/emergency-plan");
-    return reply.code(idempotencyRequired || validation ? 400 : 503).send({
+    const documentValidation = validation && request.url.includes("/documents");
+    return reply.code(bodyTooLarge ? 413 : idempotencyRequired || validation ? 400 : 503).send({
       error: {
-        code: idempotencyRequired
-          ? "IDEMPOTENCY_KEY_REQUIRED"
-          : emergencyContactValidation
-            ? "EMERGENCY_CONTACT_VALIDATION_FAILED"
-            : emergencyPlanValidation
-              ? "EMERGENCY_PLAN_VALIDATION_FAILED"
-              : medicationValidation
-                ? "MEDICATION_REMINDER_VALIDATION_FAILED"
-                : carePlanValidation
-                  ? "CARE_PLAN_VALIDATION_FAILED"
-                  : appointmentValidation
-                    ? "APPOINTMENT_VALIDATION_FAILED"
-                    : validation
-                      ? "TASK_VALIDATION_FAILED"
-                      : "SERVICE_UNAVAILABLE",
-        messageKey: idempotencyRequired
-          ? "errors.idempotency.required"
-          : emergencyContactValidation
-            ? "emergency_contacts.validation"
-            : emergencyPlanValidation
-              ? "emergency_plan.validation"
-              : medicationValidation
-                ? "medication_reminder.validation"
-                : carePlanValidation
-                  ? "care_plan.validation"
-                  : appointmentValidation
-                    ? "appointment.validation"
-                    : validation
-                      ? "errors.task.validation"
-                      : "errors.service.unavailable",
-        retryable: !idempotencyRequired && !validation,
+        code: bodyTooLarge
+          ? "DOCUMENT_TOO_LARGE"
+          : idempotencyRequired
+            ? "IDEMPOTENCY_KEY_REQUIRED"
+            : documentValidation
+              ? "DOCUMENT_VALIDATION_FAILED"
+              : emergencyContactValidation
+                ? "EMERGENCY_CONTACT_VALIDATION_FAILED"
+                : emergencyPlanValidation
+                  ? "EMERGENCY_PLAN_VALIDATION_FAILED"
+                  : medicationValidation
+                    ? "MEDICATION_REMINDER_VALIDATION_FAILED"
+                    : carePlanValidation
+                      ? "CARE_PLAN_VALIDATION_FAILED"
+                      : appointmentValidation
+                        ? "APPOINTMENT_VALIDATION_FAILED"
+                        : validation
+                          ? "TASK_VALIDATION_FAILED"
+                          : "SERVICE_UNAVAILABLE",
+        messageKey: bodyTooLarge
+          ? "errors.document.tooLarge"
+          : idempotencyRequired
+            ? "errors.idempotency.required"
+            : documentValidation
+              ? "errors.document.validation"
+              : emergencyContactValidation
+                ? "emergency_contacts.validation"
+                : emergencyPlanValidation
+                  ? "emergency_plan.validation"
+                  : medicationValidation
+                    ? "medication_reminder.validation"
+                    : carePlanValidation
+                      ? "care_plan.validation"
+                      : appointmentValidation
+                        ? "appointment.validation"
+                        : validation
+                          ? "errors.task.validation"
+                          : "errors.service.unavailable",
+        retryable: !bodyTooLarge && !idempotencyRequired && !validation,
         correlationId,
       },
     });
@@ -1733,12 +1905,15 @@ export function buildGatewayServer(
       householdId: string;
       medicationReminderId?: string;
       medicationOccurrenceId?: string;
+      documentId?: string;
       requestDigest: string;
       dependency: "care" | "notification";
       targetUrl: string;
       method: string;
       idempotencyKey?: string;
       mutation?: boolean;
+      binary?: boolean;
+      unavailableCode?: "DOCUMENT_STORAGE_UNAVAILABLE";
       body: (authorization: ReturnType<typeof decisionData>) => unknown;
     },
   ) {
@@ -1758,6 +1933,7 @@ export function buildGatewayServer(
         ...(input.medicationOccurrenceId
           ? { medicationOccurrenceId: input.medicationOccurrenceId }
           : {}),
+        ...(input.documentId ? { documentId: input.documentId } : {}),
         requestDigest: input.requestDigest,
       },
     });
@@ -1772,6 +1948,34 @@ export function buildGatewayServer(
       return dependencyUnavailable(reply, correlationId, logger, "identity");
     }
     try {
+      if (input.binary) {
+        const response = await binaryDependencyRequest(fetcher, input.targetUrl, {
+          actorId: "",
+          correlationId,
+          token: config.careToken,
+          body: input.body(authorization),
+        });
+        if (response.status >= 400) {
+          return response.errorBody
+            ? reply.code(response.status).send(response.errorBody)
+            : dependencyUnavailable(
+                reply,
+                correlationId,
+                logger,
+                input.dependency,
+                input.unavailableCode,
+              );
+        }
+        const binaryReply = reply as typeof reply & {
+          header: (name: string, value: string) => typeof reply;
+        };
+        binaryReply.header("content-type", "application/octet-stream");
+        binaryReply.header("content-disposition", 'attachment; filename="document.txt"');
+        binaryReply.header("x-content-type-options", "nosniff");
+        binaryReply.header("content-security-policy", "sandbox");
+        binaryReply.header("content-length", String(response.bytes.length));
+        return reply.code(response.status).send(response.bytes);
+      }
       const response = await dependencyRequest(fetcher, input.targetUrl, {
         method: input.method,
         actorId: "",
@@ -1782,7 +1986,13 @@ export function buildGatewayServer(
       });
       return reply.code(response.status).send(response.body);
     } catch {
-      return dependencyUnavailable(reply, correlationId, logger, input.dependency);
+      return dependencyUnavailable(
+        reply,
+        correlationId,
+        logger,
+        input.dependency,
+        input.unavailableCode,
+      );
     }
   }
 
@@ -1927,34 +2137,34 @@ function dependencyUnavailable(
   correlationId: string,
   logger: SafeLogger,
   dependency: "care" | "notification" | "identity",
+  overrideCode?: "DOCUMENT_STORAGE_UNAVAILABLE",
 ) {
+  const code =
+    overrideCode ??
+    (dependency === "notification"
+      ? "NOTIFICATION_UNAVAILABLE"
+      : dependency === "identity"
+        ? "IDENTITY_SERVICE_UNAVAILABLE"
+        : "SERVICE_UNAVAILABLE");
   logger.emit({
     level: "warn",
     eventName: `${dependency}.unavailable`,
     operation: "dependency.request",
     result: "failed",
     correlationId,
-    errorCode:
-      dependency === "notification"
-        ? "NOTIFICATION_UNAVAILABLE"
-        : dependency === "identity"
-          ? "IDENTITY_SERVICE_UNAVAILABLE"
-          : "SERVICE_UNAVAILABLE",
+    errorCode: code,
   });
   return reply.code(503).send({
     error: {
-      code:
-        dependency === "notification"
-          ? "NOTIFICATION_UNAVAILABLE"
-          : dependency === "identity"
-            ? "IDENTITY_SERVICE_UNAVAILABLE"
-            : "SERVICE_UNAVAILABLE",
+      code,
       messageKey:
-        dependency === "notification"
-          ? "errors.notification.unavailable"
-          : dependency === "identity"
-            ? "identity.unavailable"
-            : "errors.service.unavailable",
+        overrideCode === "DOCUMENT_STORAGE_UNAVAILABLE"
+          ? "errors.document.storageUnavailable"
+          : dependency === "notification"
+            ? "errors.notification.unavailable"
+            : dependency === "identity"
+              ? "identity.unavailable"
+              : "errors.service.unavailable",
       retryable: true,
       correlationId,
     },

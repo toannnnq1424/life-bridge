@@ -472,3 +472,38 @@ known denial/revocation, `no_plan`, incompatible schema, integrity failure,
 confirmed contact change, or explicit removal. This bounded engineering
 retention is not a legal-compliance claim and cannot discover remote revocation
 while the device is offline.
+
+## P4-S3 document-vault model
+
+Identity migration 004 adds the `document_vault.access` consent scope and
+raises only the allowed scope-count bound. It does not backfill or broaden any
+existing grant; an existing collaborator must be explicitly revoked/regranted
+with the new scope.
+
+Care migration 007 owns:
+
+- `care_document_vaults`: one household/recipient aggregate and monotonic vault
+  version;
+- `care_documents`: randomized document/upload references, sanitized minimum
+  metadata, authoritative processing truth, policy keys and optimistic version;
+- `care_document_blobs`: randomized object ID, bounded `bytea`, SHA-256 digest,
+  exact size and document/household/recipient/version binding;
+- `care_document_transitions`: structured content-free processing history;
+- `care_document_tombstones`: opaque content-free deletion evidence.
+
+Existing Care-owned audit, idempotency and outbox tables remain the only
+supporting stores. No cross-service table, credential, schema, bucket, cache or
+Gateway store is introduced. Upload acceptance inserts metadata and bytes and
+finishes strict text/integrity validation in one owner transaction. Failed or
+rejected processing leaves no temporary bytes.
+
+`retained_until_explicit_delete` is the engineering retention policy. Delete
+atomically removes all active bytes plus filename, digest/object binding and
+readable metadata. There is no automatic expiry, legal hold, product undo or
+server restore. Only opaque content-free transition/audit/tombstone/outbox
+facts, an invalidated upload replay marker and the bounded delete replay result
+survive. Delete strips the filename and other projection metadata from the
+matching upload replay atomically, so its old key cannot resurrect the object.
+A post-delete backup may contain historical residue; production retirement and
+non-resurrection remain an explicit deployment gate, not a completed P4-S3
+claim.

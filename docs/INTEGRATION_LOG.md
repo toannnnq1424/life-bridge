@@ -819,3 +819,53 @@ failures, not product failures.
 - Follow-up: P4-S3 may start only in a fresh task. Freeze document authority,
   minimum disclosure, retention/deletion, integrity and storage ownership
   before implementing LB-023.
+
+## INT-2026-022 — P4-S3 document-vault candidate
+
+- Date: 2026-07-28
+- Status: locally accepted; hosted promotion pending
+- Source: verified clean `phase/4-document-vault` from accepted live
+  `dev@1010aeabf7ae87737019477cb1961404299bf0a8`
+- Target: `dev`
+- Canonical issue: #14 was verified as the existing P4-S3 issue; no duplicate
+  task, branch, issue or PR existed before mutation.
+- Contract/authority: frozen `P4-S3-v1` adds only
+  `document_vault.access`. Gateway requests a fresh request-bound P2 decision
+  for every list, upload, metadata, download and delete; household role,
+  offline state and browser-local state grant no document authority.
+- Ownership/data: Care owns bounded metadata and strict UTF-8 `.txt` bytes in
+  owner-local PostgreSQL migration 007, plus audit, outbox, tombstone,
+  idempotency and optimistic concurrency. Identity owns only scope/grant
+  decision state under migration 004. Gateway stores and fabricates nothing.
+- Processing/security: accepted content remains truthfully
+  `ready_unscanned`/`not_configured`/`not_scanned`; no clean or safe claim is
+  made. Digest/object binding is checked before attachment-only octet-stream
+  retrieval. Delete atomically purges active bytes/metadata and invalidates
+  the original upload replay so an old key cannot resurrect content.
+- Design: four exact synthetic LB-023 states were created once and read back
+  once. The independent reviewer could not inspect private pixels, so KI-019
+  remains. Generated source was rejected; the Frozen redacted native-only
+  handoff governs VI/EN implementation, keyboard file input, progress,
+  recovery, reflow, forced-colors and reduced-motion behavior.
+- Planned versus actual: the accepted baseline allowed an object store or
+  scanner only after research and ADR acceptance. Bounded P4-S3 needs neither,
+  so ADR-026 retains PostgreSQL ownership and explicitly unscanned truth.
+  KI-020 records the deployment gate for production storage encryption,
+  historical-backup retirement, deletion reconciliation, scanner/stale
+  processing controls and RPO/RTO.
+- Local validation: exactly one `pnpm.cmd run validate:p4-s3` campaign ran and
+  passed without recovery: all cumulative format/lint/type/unit/contract/docs/
+  config/secrets/audit/build gates; P1 through P4-S3 integrations; P3/P4
+  migration checks; P4-S3 rollback/reapply/no-backfill; owner-local pre-delete
+  restore and post-delete non-resurrection; real Web→Gateway→Identity→Care→
+  PostgreSQL Chromium path 1/1; mocked LB-023 3/3; and all cumulative P2–P4-S2
+  browser regressions. The PID-scoped container, volume and network were
+  removed.
+- Non-goals: no object store, scanner service/engine, crypto scheme, cache,
+  new service, cross-service SQL/import/credential, real document, P5,
+  DATA-S1, Spring, deployment or release.
+- Decision/change references: issue #14, `CHG-2026-018`, ADR-026,
+  `docs/security/P4_S3_THREAT_MODEL.md`, KI-001/KI-016/KI-019/KI-020.
+- Follow-up: create one ready feature PR to `dev`, require green exact-head
+  hosted CI, merge by merge commit, verify post-merge `dev` CI, then close
+  issue #14 with bilingual evidence. Do not start P5-S1 in this task.
