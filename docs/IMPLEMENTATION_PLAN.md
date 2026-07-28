@@ -6,15 +6,16 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P3 — Care planning`; P3-S2 accepted and merged
+- Current phase: `P3 — Care planning`; P3-S3 locally accepted, promotion pending
 - Most recently integrated slice: `P3-S2 — Calendar and appointment coordination`;
   feature PR #53 merged at
   `dev@142096516533aea7561b1b13a2187047dc726a71`; canonical-memory PR #54
   merged at `dev@ed091b3cc50549c39f456f8ac9e0bb61f4abfef7`
-- Active product slice: none; canonical issue
-  [#10](https://github.com/toannnnq1424/life-bridge/issues/10) closed completed
-- Exact next eligible product slice: `P3-S3 — Care-plan review`, only in a fresh
-  task; not started
+- Active product slice: `P3-S3 — Care-plan review`; canonical issue
+  [#11](https://github.com/toannnnq1424/life-bridge/issues/11), branch
+  `phase/3-care-plan-review`
+- Exact next action: exact-head hosted P3-S3 promotion and issue #11 closeout.
+  Do not start DATA-S1 or P4.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -605,6 +606,20 @@ Acceptance:
 - history, integration, browser, accessibility, and security tests pass.
 
 Dependencies: P2 consent; P3 timeline/time contracts.
+
+Implementation freeze: `P3-S3-v1`, ADR-023 and `CHG-2026-015` keep one
+Care-owned shared draft/current aggregate, immutable confirmed history, fresh
+P2 action authority on every request, stored local-date/IANA UTC day bounds,
+optimistic/idempotent commands and a suppressed content-free confirmation
+event. Organizer/member status never implies consent. The native product term
+is “Kế hoạch hỗ trợ / Support plan”; no clinical recommendation is present.
+Four synthetic LB-017 Stitch references were generated/read back once and the
+corrected handoff is Frozen with KI-019 retained; generated source is rejected.
+The single Level C campaign completed through classified retained-evidence
+continuations: unit 57/57, contracts 24/24, cumulative PostgreSQL integration
+and migrations, mocked LB-017 3/3, real P3-S3 1/1, cumulative browser
+regressions, accessibility, builds, privacy-safe logs and cleanup pass. Hosted
+promotion remains pending.
 
 ## P4 — Safety and records
 
@@ -1402,6 +1417,37 @@ No row means simultaneous implementation. Design generation/review may prepare a
   `docs/security/P3_S2_THREAT_MODEL.md`, future P3-S2 integration/session
   entries, KI-016 and KI-019.
 
+## CHG-2026-015 — Freeze governed shared support-plan versions
+
+- Raised in phase/slice: `P3-S3`
+- Planned: authorized participants create/version goals, preferences,
+  responsibilities and a review date with clear draft/current/history state,
+  consent, concurrency and no clinical recommendation.
+- Actual: `P3-S3-v1` reuses the accepted P2 household-coordination/basic-label
+  grant only through a narrow action mapping. Care owns one shared draft,
+  immutable confirmed versions, stored local-date/IANA UTC bounds, optimistic
+  aggregate/draft/base counters, idempotent commands, sealed no-total history,
+  content-free evidence and suppressed confirmation event. Gateway composes;
+  Notification is not involved. Native LB-017 uses Support plan terminology.
+- Reason: leaving authority reuse, draft topology, version counters, review-day
+  boundaries, history inference and event disposition implicit would permit
+  role-implied consent, last-write-wins, silent time movement or sensitive
+  cross-service payloads.
+- Impact: P3-S3 contracts, migration 004, Identity decision target set,
+  Gateway/Care routes, LB-017, tests, docs and CI only. No service, engine,
+  shared table, cross-service SQL, reminder, clinical scope, DATA, P4/P5,
+  Spring, deployment or release change.
+- Validation actual/required: three independent reviews and official-source
+  micro-cycle converged; four Stitch references were generated/read back once;
+  KI-019 remains because private pixels were unavailable. Exactly one local
+  Level C command was invoked; after its pre-gate Docker startup interruption,
+  direct classified continuations proved static, unit 57/57, contracts 24/24,
+  cumulative integration/migrations, mocked LB-017 3/3, real P3-S3 1/1,
+  cumulative browsers, privacy-safe logs and cleanup. Exact-head hosted CI,
+  merge, post-merge dev CI and issue #11 closeout remain.
+- Follow-up: retain KI-001/KI-016/KI-019. Do not start another product slice in
+  this task; only same-task canonical evidence closeout may follow promotion.
+
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
 until this phase closes. It contains no raw dataset or product fixture. All
@@ -1437,8 +1483,12 @@ LB-015/LB-016 handoff are implemented in native semantics. Exact head
 blocks deployment, KI-016 retains manual assistive-technology evidence, and
 KI-019 retains private-render review before any visual-conformance claim.
 
-After this docs-only canonical closeout merges, P3-S3 is exact next only in a
-fresh task. Its first action is to freeze versioned care-plan review authority,
-command/read/event and time semantics against accepted P2 authority and the
-P3-S2 appointment boundary. DATA-S1, P4/P5, deployment and release remain
-separate and unstarted.
+P3-S3 is now the locally accepted promotion candidate on
+`phase/3-care-plan-review`, based exactly on accepted
+`origin/dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`. `P3-S3-v1`, ADR-023,
+`CHG-2026-015`, migration 004, threat/research records, four-reference Frozen
+corrected LB-017 handoff, native VI/EN route and cumulative tests are present.
+The one local Level C campaign is green after classified targeted recovery; no
+second full command was issued. The exact next action is exact-head hosted
+PR/merge/post-merge/issue #11 evidence and any required same-task canonical
+closeout. DATA-S1, P4/P5, deployment and release remain separate and unstarted.

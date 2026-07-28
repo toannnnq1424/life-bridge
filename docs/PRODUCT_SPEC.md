@@ -351,3 +351,15 @@ Any change to the MVP, non-goals, roles, safety boundary, screen sequencing, or 
 6. update the implementation plan, workstream board, decision log when material, integration log when relevant, and session log.
 
 Chat is not the product record. No future phase may silently redefine what an earlier phase delivered.
+
+### P3-S3 versioned support-plan outcome
+
+An authorized participant can maintain one shared non-clinical Support plan /
+Kế hoạch hỗ trợ with bounded structured goals, preferences, responsibilities,
+and a local review date. Working draft, current confirmed version, immutable
+history, responsible party, change summary, review state, and recovery are
+distinct. Every request uses fresh P2 consent authority; membership or
+organizer status is insufficient. Concurrent edits use optimistic revisions
+and idempotency. The product never diagnoses, recommends treatment, queues an
+offline mutation, claims reminder delivery, exposes hidden history totals, or
+persists sensitive plan content in browser storage.

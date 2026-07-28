@@ -5,6 +5,7 @@ import { Pool } from "pg";
 
 import { OutboxDispatcher, httpEventDeliverer } from "./dispatcher.js";
 import { AppointmentService } from "./appointment-service.js";
+import { CarePlanService } from "./care-plan-service.js";
 import { CoordinationService } from "./coordination-service.js";
 import { migrateCareDatabase } from "./migration.js";
 import { buildCareServer } from "./server.js";
@@ -27,7 +28,10 @@ const coordination = new CoordinationService(pool, {
   cursorKey: createHash("sha256").update(cursorSecret).digest(),
 });
 const appointments = new AppointmentService(pool);
-const app = buildCareServer(care, internalToken, coordination, appointments);
+const carePlans = new CarePlanService(pool, {
+  cursorKey: createHash("sha256").update(`${cursorSecret}:care-plan`).digest(),
+});
+const app = buildCareServer(care, internalToken, coordination, appointments, carePlans);
 const dispatcher = new OutboxDispatcher(
   care,
   httpEventDeliverer(notificationUrl, notificationToken),

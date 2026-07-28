@@ -2,9 +2,11 @@ import { createHash } from "node:crypto";
 
 import {
   CalendarQuerySchema,
+  CarePlanHistoryQuerySchema,
   CancelAppointmentRequestSchema,
   ChangeAppointmentRequestSchema,
   CoordinationAuthorizationDecisionSchema,
+  ConfirmCarePlanVersionRequestSchema,
   CreateAppointmentRequestSchema,
   DailyTimelineQuerySchema,
   CompleteTaskRequestSchema,
@@ -12,6 +14,7 @@ import {
   HandoffTaskRequestSchema,
   IdempotencyKeySchema,
   IanaTimeZoneSchema,
+  SaveCarePlanDraftRequestSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, SafeLogger } from "@lifebridge/observability";
@@ -642,6 +645,234 @@ export function buildGatewayServer(
     );
   });
 
+  app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/care-plan",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      const requestDigest = digestJson({
+        operation: "care_plan.read",
+        householdId: request.params.householdId,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        body: {
+          permission: "coordination.care_plan.read",
+          householdId: request.params.householdId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      if (decisionResponse.status >= 400)
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/care-plan/read`,
+          {
+            method: "POST",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            body: { authorization },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
+  app.get<{ Params: { householdId: string }; Querystring: { limit?: string; cursor?: string } }>(
+    "/api/v1/households/:householdId/care-plan/history",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      const query = CarePlanHistoryQuerySchema.parse(request.query);
+      const requestDigest = digestJson({
+        operation: "care_plan.history.read",
+        householdId: request.params.householdId,
+        query,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        body: {
+          permission: "coordination.care_plan.history.read",
+          householdId: request.params.householdId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      if (decisionResponse.status >= 400)
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/care-plan/history/query`,
+          {
+            method: "POST",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            body: { authorization, query },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
+  app.get<{ Params: { householdId: string; planVersion: string } }>(
+    "/api/v1/households/:householdId/care-plan/versions/:planVersion",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      const planVersion = Number(request.params.planVersion);
+      const requestDigest = digestJson({
+        operation: "care_plan.version.read",
+        householdId: request.params.householdId,
+        planVersion,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        body: {
+          permission: "coordination.care_plan.history.read",
+          householdId: request.params.householdId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      if (decisionResponse.status >= 400)
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/care-plan/versions/${encodeURIComponent(String(planVersion))}/read`,
+          {
+            method: "POST",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            body: { authorization },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
+  app.put<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/care-plan/draft",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      if (!validBrowserMutation(request.headers))
+        return rejectedBrowserMutation(reply, request.headers);
+      const carePlanRequest = SaveCarePlanDraftRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      const requestDigest = digestJson({
+        operation: "care_plan.draft.save",
+        householdId: request.params.householdId,
+        request: carePlanRequest,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+        body: {
+          permission: "coordination.care_plan.draft.save",
+          householdId: request.params.householdId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      if (decisionResponse.status >= 400)
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/care-plan/draft`,
+          {
+            method: "PUT",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            idempotencyKey,
+            body: { authorization, request: carePlanRequest },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/care-plan/current",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      if (!validBrowserMutation(request.headers))
+        return rejectedBrowserMutation(reply, request.headers);
+      const carePlanRequest = ConfirmCarePlanVersionRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      const requestDigest = digestJson({
+        operation: "care_plan.version.confirm",
+        householdId: request.params.householdId,
+        request: carePlanRequest,
+      });
+      const decisionResponse = await callIdentity(request, "/internal/v1/coordination/authorize", {
+        correlationId,
+        method: "POST",
+        ...sessionOption(request.cookies[config.sessionCookieName]),
+        csrfToken: String(request.headers["x-csrf-token"] ?? ""),
+        body: {
+          permission: "coordination.care_plan.version.confirm",
+          householdId: request.params.householdId,
+          requestDigest,
+        },
+      });
+      if (!decisionResponse) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      if (decisionResponse.status >= 400)
+        return reply.code(decisionResponse.status).send(decisionResponse.body);
+      const authorization = decisionData(decisionResponse);
+      if (!authorization) return dependencyUnavailable(reply, correlationId, logger, "identity");
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(request.params.householdId)}/care-plan/current`,
+          {
+            method: "POST",
+            actorId: "",
+            correlationId,
+            token: config.careToken,
+            idempotencyKey,
+            body: { authorization, request: carePlanRequest },
+          },
+        );
+        return reply.code(response.status).send(response.body);
+      } catch {
+        return dependencyUnavailable(reply, correlationId, logger, "care");
+      }
+    },
+  );
+
   app.get<{
     Params: { householdId: string };
     Querystring: {
@@ -1085,22 +1316,27 @@ export function buildGatewayServer(
     const validation = error instanceof Error && error.name === "ZodError";
     const appointmentValidation =
       validation && (request.url.includes("/appointments") || request.url.includes("/calendar"));
+    const carePlanValidation = validation && request.url.includes("/care-plan");
     return reply.code(idempotencyRequired || validation ? 400 : 503).send({
       error: {
         code: idempotencyRequired
           ? "IDEMPOTENCY_KEY_REQUIRED"
-          : appointmentValidation
-            ? "APPOINTMENT_VALIDATION_FAILED"
-            : validation
-              ? "TASK_VALIDATION_FAILED"
-              : "SERVICE_UNAVAILABLE",
+          : carePlanValidation
+            ? "CARE_PLAN_VALIDATION_FAILED"
+            : appointmentValidation
+              ? "APPOINTMENT_VALIDATION_FAILED"
+              : validation
+                ? "TASK_VALIDATION_FAILED"
+                : "SERVICE_UNAVAILABLE",
         messageKey: idempotencyRequired
           ? "errors.idempotency.required"
-          : appointmentValidation
-            ? "appointment.validation"
-            : validation
-              ? "errors.task.validation"
-              : "errors.service.unavailable",
+          : carePlanValidation
+            ? "care_plan.validation"
+            : appointmentValidation
+              ? "appointment.validation"
+              : validation
+                ? "errors.task.validation"
+                : "errors.service.unavailable",
         retryable: !idempotencyRequired && !validation,
         correlationId,
       },

@@ -268,3 +268,37 @@ series-wide mutation request, external calendar synchronization, arbitrary
 reminder audience/channel, tzdb/runtime change, public pilot or accessibility
 claim. Another source would not change the v1 time, recurrence, privacy or
 accessibility decision, so the micro-cycle stopped.
+
+## 2026-07-27 — P3-S3 support-plan review micro-cycle
+
+Result: `PASS WITH ASSUMPTIONS`; retrieved 2026-07-27. This bounded
+official/primary-source review introduced no dataset, person-level fixture,
+clinical claim, diagnosis, treatment, or recommendation.
+
+- WHATWG, global Living Standard updated 20 July 2026,
+  [HTML date state](<https://html.spec.whatwg.org/multipage/input.html#date-state-(type=date)>):
+  a date value is year/month/day with no time zone. LB-017 treats review date
+  and IANA zone as separate facts and never parses a bare date as browser UTC.
+- PostgreSQL Global Development Group, global PostgreSQL 18 official docs,
+  [Date/Time Types](https://www.postgresql.org/docs/18/datatype-datetime.html)
+  and [Explicit Locking](https://www.postgresql.org/docs/18/explicit-locking.html):
+  `date` has no time of day, named zones carry DST rules, and row/advisory locks
+  support the shared-draft and confirmation invariants.
+- OWASP Foundation, global current living guidance,
+  [Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
+  and [Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html):
+  deny by default and authorize every request; keep plan statements out of
+  telemetry, errors, cursors, audit metadata, and events.
+- W3C, global, 2024, [WCAG 2.2](https://www.w3.org/TR/WCAG22/): semantic
+  structure, keyboard access, focus, reflow, status messages, target size, and
+  review/confirmation apply to LB-017.
+
+Kết luận / Conclusion: P3-S3 stores local review date, validated IANA zone, and
+resolved 23/24/25-hour UTC bounds as separate immutable confirmation facts.
+Fresh purpose-scoped P2 authority is checked on every request. Optimistic
+locking and idempotency protect the one shared draft/current aggregate.
+Structured support-plan text stays only in authorized Care reads;
+cross-service evidence is content-free. These sources establish no Viet Nam
+legal or clinical-compliance claim. KI-016 and KI-019 remain. Re-check on a new
+consent scope, multiple drafts, reminders, clinical fields, retention policy,
+or runtime/tzdb change.

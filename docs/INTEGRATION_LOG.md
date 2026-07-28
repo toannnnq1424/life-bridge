@@ -695,3 +695,45 @@ failures, not product failures.
   next only in a fresh task. Its first action is to freeze versioned care-plan
   review authority, command/read/event and time semantics against the accepted
   P2 authority and P3-S2 appointment boundary. This task does not begin it.
+
+## INT-2026-019 — P3-S3 versioned support-plan review local acceptance
+
+- Date: 2026-07-27
+- Source: `phase/3-care-plan-review` from verified clean
+  `origin/dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`
+- Canonical issue: #11 verified open with matching bilingual scope; no duplicate
+  branch, task, issue, or open PR existed before mutation.
+- Scope: `P3-S3-v1`, ADR-023/`CHG-2026-015`, Care migration 004 and one shared
+  draft/current aggregate, fresh Identity decisions, Gateway composition,
+  immutable confirmed history, content-free suppressed event, native LB-017,
+  and cumulative test/CI wiring.
+- Independent reviews: contract/data/authority/time/threat, Stitch
+  privacy/accessibility, and test/CI/operations completed independently and
+  were reconciled before code. Four synthetic private references were generated
+  and read back once; independent pixels remained unavailable, so KI-019 and the
+  corrected native-only handoff remain.
+- Planned versus actual: the planned private-pixel approval was unavailable;
+  generated source remained rejected and stricter native requirements govern.
+  A first mocked browser pass found only a duplicate-text locator; the failed
+  scenario and two not-yet-run scenarios passed classified targeted recovery.
+- Level C actual: the one `pnpm.cmd run validate:p3-s3` invocation stopped before
+  a gate while Docker's Linux engine was unavailable. Direct classified
+  continuations then retained green results and recovered only unproven or
+  dependency-affected gates. Final evidence is format 5/5, unit 57/57,
+  contracts 24/24, P1/P3-S1/P3-S2/P3-S3 integration 6/6 + 14/14 + 5/5 + 2/2,
+  cumulative P3 migrations, mocked LB-017 3/3, real P3-S3 browser 1/1, and
+  cumulative mocked browser P3-S2 5/5 + P3-S1 6/6 + P2-S3 7/7 + P2-S2 6/6 +
+  P2-S1 5/5. Lint/type/docs/config/secrets/audit/build/diff/log-scan and cleanup
+  also passed. No second Level C command was issued.
+- Final review correction: draft reads now redact a newly ineligible responsible
+  actor as `authorization_changed` and block confirmation until an eligible
+  replacement is saved. Affected formatter/lint, contracts 24/24, Gateway unit
+  21/21, typecheck, Care/web builds, P3-S3 integration 2/2, real browser 1/1 and
+  mocked LB-017 3/3 passed; cumulative migrations and older browsers were
+  retained and not rerun.
+- Promotion: local acceptance is green. Exact-head hosted CI, PR merge,
+  post-merge dev CI, bilingual issue closeout, and any same-task canonical
+  closeout remain pending and must replace this local-candidate status.
+- Non-goals preserved: no DATA-S1, P4/P5, Spring, deployment, release, new
+  service/engine, cross-service SQL, clinical advice, reminder delivery, real
+  care record, or canary mutation.

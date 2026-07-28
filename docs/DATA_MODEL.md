@@ -373,3 +373,27 @@ retention purge, legal hold, account deletion and restore/erasure proof remain
 future accepted work. Appointment/idempotency/transition and reminder-intent
 retention are engineering defaults subject to P7/P8 policy, not legal
 compliance claims.
+
+## P3-S3 Care-owned versioned support-plan data
+
+Care migration `004_care_plan_review.sql` advances readiness to v4 and adds
+`care_plan_coverage_started_at DEFAULT CURRENT_TIMESTAMP NOT NULL` so old
+migrations can reapply safely. It does not backfill plans, drafts, versions,
+items, events, timeline, tasks, or appointments.
+
+| Table                     | Essential invariant                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `care_plans`              | one aggregate per household/recipient with optimistic aggregate revision and nullable current pointer |
+| `care_plan_drafts`        | at most one complete shared working copy with distinct draft revision and base current version        |
+| `care_plan_draft_items`   | bounded ordered goal/preference/responsibility items; responsibility actor references only here       |
+| `care_plan_versions`      | immutable confirmed versions with stored local-date/IANA and exact UTC day bounds                     |
+| `care_plan_version_items` | immutable bounded ordered authorized content for one confirmed version                                |
+| `care_plan_transitions`   | content-free draft/confirmation evidence ordered by aggregate revision                                |
+
+Save replaces the draft/items inside one transaction after advisory
+idempotency and aggregate row locks. Confirmation inserts immutable
+version/items, advances current, clears the draft, and writes transition,
+redacted audit, digest-only replay, and one suppressed content-free outbox event
+in the same transaction. Failure writes none. Prior versions are never updated
+or deleted. Cross-service SQL, foreign keys, credentials, imports, shared
+writers, a new engine, and Notification plan storage are forbidden.

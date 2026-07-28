@@ -65,7 +65,7 @@ export function buildIdentityServer(
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "identity_database" }),
   );
-  app.get("/version", async () => ({ service: "identity-consent", contract: "P3-S2-v1" }));
+  app.get("/version", async () => ({ service: "identity-consent", contract: "P3-S3-v1" }));
 
   app.post<{ Body: unknown }>("/internal/v1/account/registrations", async (request, reply) => {
     const correlationId = correlation(request);

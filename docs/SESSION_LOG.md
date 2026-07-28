@@ -1563,3 +1563,64 @@ merges, P3-S3 is exact next only in a fresh task. Its first action is to freeze
 versioned care-plan review authority, command/read/event and time semantics
 against accepted P2 authority and the P3-S2 appointment boundary. P3-S3,
 DATA-S1, P4/P5, deployment and release were not started here.
+
+## 2026-07-27–28 — P3-S3 implementation and local acceptance
+
+Planned: start exactly one P3-S3 task from clean accepted
+`origin/dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`, verify issue/branch/task/PR
+ownership, run three independent reviews, freeze contracts and Stitch handoff,
+implement the Care/Identity/Gateway/native LB-017 vertical slice, invoke one
+Level C, and promote only after exact hosted evidence.
+
+Actual: clean detached start/live dev equality and absence of competing
+P3-S3 ownership were verified before creating `phase/3-care-plan-review`.
+Issue #11 matched scope and remained unmodified. Three reviewers converged on
+`P3-S3-v1`: one shared draft/current aggregate, fresh P2 authority on every
+request, immutable confirmed history, local-date/IANA stored UTC bounds,
+optimistic/idempotent commands, and a content-free suppressed event. Four
+synthetic LB-017 references were generated/read back once. Independent private
+pixels were unavailable; KI-019 remains and the corrected handoff is native
+semantic authority only. Implementation, contract/integration/migration/mocked
+browser tests, root scripts, and CI are present. Type, lint, unit, contracts,
+build, and the three mocked browser scenarios pass. The first browser attempt
+had a test-only strict-locator collision; targeted recovery passed the failed
+scenario and the two serial scenarios that had not run.
+
+The one `pnpm.cmd run validate:p3-s3` Level C invocation stopped before a gate
+because Docker Desktop's Linux engine was unavailable. After the existing
+engine started, direct classified continuations retained green gates instead of
+issuing a second Level C command. The recovered campaign proves five format
+checks, lint, typecheck, unit 57/57, contracts 24/24, docs/config/secrets,
+dependency audit with no vulnerability, all production builds, P1 integration
+6/6, P3-S1 integration 14/14, P3-S2 integration 5/5, P3-S3 integration 2/2,
+P3-S1/P3-S2/P3-S3 migration rollback/reapply/no-backfill checks, and mocked
+LB-017 3/3. Recovery corrected integration SQL parameter typing, excluded
+integration suites from concurrent unit discovery, mapped governed missing
+resources to the generic denial surface, and removed one redundant real-browser
+locale helper. Each affected check was rerun narrowly.
+
+The final observable browser continuation passed real P3-S3 1/1 and cumulative
+mocked P3-S2 5/5, P3-S1 6/6, P2-S3 7/7, P2-S2 6/6, and P2-S1 5/5; the older
+real-runtime cases were intentionally skipped in their mocked configurations.
+The continuation printed `P3-S3 Level C validation passed`, privacy-safe log
+scanning and `git diff --check` passed, and PID-scoped processes, PostgreSQL
+container/volume/network, logs, and Playwright report artifacts were removed.
+
+Final bounded promotion review then found one authority-contract gap: draft
+reads exposed a stale responsible actorRef after eligibility changed, although
+confirmed versions already redacted it. The projection now returns
+`authorization_changed` without actorRef and confirmation remains blocked until
+an eligible actor is saved. Affected-only recovery passed formatter/lint,
+contracts 24/24, Gateway unit 21/21, typecheck, Care/web builds, P3-S3
+integration 2/2, real browser 1/1 and mocked LB-017 3/3. The corrected mocked
+fixture—not product behavior—caused the only targeted browser interruption; its
+failed scenario and two unexecuted serial scenarios then passed. Already-green
+migrations and older browser suites were not rerun.
+
+Deviation `CHG-2026-015`: planned private-pixel inspection could not occur;
+impact is no visual-conformance claim, with KI-019 retained and stricter native
+requirements. No product scope/order, service, engine, Notification delivery,
+clinical content, DATA, P4/P5, Spring, deployment, or release work was added.
+Local P3-S3 acceptance is green. Exact-head CI/PR/merge/post-merge evidence,
+issue #11 closeout, and final exact-next orientation remain pending. The protected
+`docs/orchestration/reports/STITCH_MCP_CANARY.md` is untouched.
