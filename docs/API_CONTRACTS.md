@@ -828,3 +828,72 @@ Stable P3-S2 errors are `APPOINTMENT_VALIDATION_FAILED`,
 `IDEMPOTENCY_CONFLICT`, `IDENTITY_SERVICE_UNAVAILABLE`,
 `APPOINTMENT_RESULT_UNKNOWN`, `SERVICE_UNAVAILABLE` and
 `INTERNAL_CONTRACT_INVALID`.
+
+## P3-S3 versioned support-plan contract (`P3-S3-v1`)
+
+Every route is `Cache-Control: no-store`. Gateway requests a fresh Identity
+decision before every read, history page, version detail, draft save, or
+confirmation. The decision is bound to normalized route intent, household,
+correlation, subject, and current grant/privacy versions. Permissions are
+`coordination.care_plan.read`, `coordination.care_plan.history.read`,
+`coordination.care_plan.draft.save`, and
+`coordination.care_plan.version.confirm`. Organizer/member status alone never
+authorizes access. Care accepts decisions no older than ten seconds and no more
+than two seconds in the future and validates every responsibility actorRef
+against the fresh eligible set.
+
+`GET /api/v1/households/{householdId}/care-plan` returns `state=no_plan` for an
+authorized absence. Otherwise it independently exposes `current|null`,
+`draft|null`, `aggregateRevision`, `coverageStartedAt`, server time,
+`reviewState=not_applicable|upcoming|due_today|overdue`, and `requiresReview`.
+A current version may coexist with a draft. Draft revision, base current
+version, and confirmed plan version are never presented as the same counter.
+
+`PUT /api/v1/households/{householdId}/care-plan/draft` accepts a strict complete
+replacement with `operation=save_care_plan_draft`, expected aggregate/draft/base
+versions, zero to ten ordered goals/preferences/responsibilities, and nullable
+`reviewLocalDate` plus IANA `reviewTimeZone`. Each item has a category enum and
+a trimmed single-line coordination statement of at most 160 Unicode
+characters; a responsibility also has one currently eligible `actorRef`.
+Drafts may be incomplete and return publication readiness, never false current
+state. A fresh read projects an eligible responsibility actor explicitly or
+returns `authorization_changed` without the stale actorRef; reconfirmation stays
+blocked until an authorized draft replacement selects an eligible actor.
+
+`POST /api/v1/households/{householdId}/care-plan/current` accepts only
+`operation=confirm_care_plan_version` plus expected aggregate, draft, and base
+current counters. Confirmation requires at least one goal, one responsibility,
+a valid non-past review date, and all responsibility actors to remain eligible.
+It creates the next immutable plan version, advances the current pointer, and
+clears the draft atomically. Mutation responses contain minimum safe facts;
+the UI performs a fresh read for authoritative content.
+
+The review date is a local calendar date. Care stores the validated IANA zone
+and resolved inclusive `reviewDayStartUtc` and exclusive `reviewDayEndUtc`;
+confirmed versions copy those facts so tzdb updates cannot move history. A
+zero-length/skipped date is invalid. Due/overdue is derived from server time and
+never mutates the version.
+
+`GET .../care-plan/history?limit=1..25&cursor=` returns confirmed versions only
+in `(planVersion DESC)` order. `GET .../care-plan/versions/{version}` returns
+one authorized bounded version. Sealed cursors bind viewer, household,
+recipient, P2 versions, maximum visible version, last version, limit, and
+expiry; no total, hidden count, or page number is exposed. An ineligible former
+responsibility is projected as `authorization_changed` without actorRef.
+
+Only confirmation emits `care.care_plan.version_confirmed.v1`, with content-free
+payload `{ outcome: confirmed, deliveryDisposition: none }`, stored as
+suppressed/no-delivery evidence. Draft saves emit no cross-service event.
+Stable errors are `CARE_PLAN_VALIDATION_FAILED`,
+`CARE_PLAN_REVIEW_DATE_INVALID`, `CARE_PLAN_VERSION_CONFLICT`,
+`CARE_PLAN_STATE_CONFLICT`, `CARE_PLAN_CURSOR_INVALID`,
+`CARE_PLAN_RESULT_UNKNOWN`, `COORDINATION_RESOURCE_NOT_FOUND`,
+`COORDINATION_AUTHORITY_REQUIRED`, `IDEMPOTENCY_KEY_REQUIRED`,
+`IDEMPOTENCY_CONFLICT`, `IDENTITY_SERVICE_UNAVAILABLE`,
+`SERVICE_UNAVAILABLE`, and `INTERNAL_CONTRACT_INVALID`. There is no offline
+queue or blind retry.
+
+V1 rejects diagnosis, condition, treatment, dosage, medication, urgency,
+recommendation, address, URL, contact, attachment, HTML/Markdown objects,
+arbitrary metadata, and clinical workflow. Product copy uses “Kế hoạch hỗ trợ /
+Support plan”; internal routes retain `care-plan`.

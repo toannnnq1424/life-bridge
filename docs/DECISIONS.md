@@ -552,6 +552,57 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   merge-commit promotion, post-merge `dev` CI and issue #10 closeout. KI-001,
   KI-016 and KI-019 remain. P3-S3 begins only in a fresh task.
 
+## ADR-023 — Keep versioned support plans in Care Coordination
+
+- Status: Accepted for P3-S3 local promotion candidate
+- Date: 2026-07-27
+- Change ID: `CHG-2026-015`
+- Context: P3-S3 must let authorized participants prepare and confirm a shared
+  support plan without turning membership, Gateway state, stale consent, or
+  free-form clinical content into authority. Draft and current truth must stay
+  distinct under concurrent edits, and a review date is a local calendar day,
+  not an appointment instant.
+- Decision: extend the existing Care Coordination service and owned PostgreSQL
+  with one aggregate per governed recipient, at most one shared draft, and an
+  immutable sequence of confirmed versions. Identity & Consent issues a fresh
+  action- and digest-scoped P2 decision for every read and command; Gateway
+  only composes. Care validates every responsibility actor against that
+  decision, uses optimistic aggregate/draft/base revisions plus 24-hour
+  idempotency, and commits version, transition, audit, replay, and a
+  content-free suppressed outbox event atomically. Store the selected local
+  review date and IANA zone with Care-resolved inclusive/exclusive UTC day
+  bounds; derive due/overdue from server time without mutating history.
+- Alternatives considered: organizer/member implied authority; subject-only
+  confirmation; per-user drafts; last-write-wins; cached authority; Gateway
+  persistence; browser UTC conversion; offset-only dates; free-form clinical
+  fields; reminder delivery; Notification integration; a new service or
+  persistence engine; destructive version replacement or backfill.
+- Consequences: draft revision, aggregate revision, base current version, and
+  confirmed plan version are different facts. History contains confirmed
+  versions only and exposes no totals. Structured coordination statements stay
+  only in authorized Care reads; audit, event, outbox, errors, cursors, logs,
+  metrics, and traces contain none of that text. Revocation denies the next
+  request, and newly ineligible responsibility actors are redacted on reads and
+  block reconfirmation until a fresh draft is saved.
+- Planned baseline: P3-S3 required goals, preferences, responsibilities,
+  review state, consent, concurrency, history, accessibility, and non-clinical
+  copy but did not freeze authority reuse, draft topology, counters, local-day
+  bounds, event disposition, or history inference controls.
+- Actual implementation/evidence: Care migration 004, Identity decisions,
+  Gateway composition, native VI/EN LB-017 and cumulative tests implement the
+  decision. One Level C command plus classified retained-evidence recovery
+  proves unit 57/57, contracts 24/24, cumulative integration/migrations, mocked
+  LB-017 3/3, real P3-S3 1/1, cumulative browsers, accessibility, security,
+  privacy-safe logs and cleanup. No new service, engine, cross-service SQL,
+  shared writer, Notification claim, or clinical field is authorized.
+- Validation and follow-up: prove direct and delegated authority/revocation,
+  stale/future/wrong-digest decisions, idempotency and all concurrent command
+  pairs, PostgreSQL rollback/reapply/no-backfill, 23/24/25-hour and skipped-day
+  boundaries, immutable bounded history/cursors, atomic failure injection,
+  privacy-safe evidence, VI/EN native browser paths, accessibility, and exact
+  hosted promotion. Local evidence is complete; exact-head and post-merge
+  hosted promotion remain. KI-001, KI-016, and KI-019 remain explicit.
+
 ## Decision-change template
 
 ```md

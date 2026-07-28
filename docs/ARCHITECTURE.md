@@ -628,3 +628,23 @@ calendar, conflicting writes cannot overwrite silently, cancellation cannot
 delete history, and a mutation transport failure cannot become optimistic
 success or blind retry. The full control is
 `docs/security/P3_S2_THREAT_MODEL.md`.
+
+## P3-S3 governed versioned support plan
+
+P3-S3 extends Care Coordination and its owned PostgreSQL only. Identity &
+Consent issues a fresh `read`, `history.read`, `draft.save`, or
+`version.confirm` decision bound to request digest and current P2 versions;
+Gateway relays and composes only. Care rejects wrong/stale/future authority,
+validates responsibility targets, serializes the one shared draft/current
+aggregate, and appends immutable confirmed versions. Save/confirm use expected
+aggregate/draft/base counters and digest-bound 24-hour idempotency.
+
+Confirmation atomically advances current, removes the working draft, preserves
+all prior versions, writes content-free transition/audit/replay evidence, and
+stores `care.care_plan.version_confirmed.v1` as suppressed no-delivery outbox
+evidence. Plan statements and actor references never enter cross-service
+events, Notification, telemetry, cursors, errors, or audit metadata. Local
+review dates keep validated IANA zones and stored server-resolved half-open UTC
+day bounds. History is reverse-version ordered with sealed bounded cursors and
+no totals. No service, engine, shared database, cross-service SQL, or reminder
+path is introduced.

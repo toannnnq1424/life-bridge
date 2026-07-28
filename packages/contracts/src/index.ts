@@ -471,6 +471,10 @@ export const CoordinationPermissionSchema = z.enum([
   "coordination.appointment.create",
   "coordination.appointment.change",
   "coordination.appointment.cancel",
+  "coordination.care_plan.read",
+  "coordination.care_plan.history.read",
+  "coordination.care_plan.draft.save",
+  "coordination.care_plan.version.confirm",
 ]);
 export const CoordinationActorDisplayKeySchema = z.enum([
   "coordination.actor.you",
@@ -911,6 +915,191 @@ export const AppointmentReminderIntentEventSchema = z
   })
   .strict();
 
+const CoordinationStatementSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(160)
+  .refine(
+    (value) =>
+      [...value].every((character) => {
+        const code = character.codePointAt(0) ?? 0;
+        return code > 31 && code !== 127;
+      }),
+    "control_character_rejected",
+  );
+export const CarePlanGoalCategorySchema = z.enum([
+  "daily_routine",
+  "communication",
+  "transport",
+  "community",
+  "other_coordination",
+]);
+export const CarePlanPreferenceCategorySchema = z.enum([
+  "communication",
+  "schedule",
+  "support_style",
+  "privacy",
+  "other_coordination",
+]);
+export const CarePlanResponsibilityCategorySchema = z.enum([
+  "follow_up",
+  "coordination",
+  "transport",
+  "household_support",
+  "other_coordination",
+]);
+export const CarePlanGoalSchema = z
+  .object({ category: CarePlanGoalCategorySchema, statement: CoordinationStatementSchema })
+  .strict();
+export const CarePlanPreferenceSchema = z
+  .object({ category: CarePlanPreferenceCategorySchema, statement: CoordinationStatementSchema })
+  .strict();
+export const CarePlanResponsibilitySchema = z
+  .object({
+    category: CarePlanResponsibilityCategorySchema,
+    statement: CoordinationStatementSchema,
+    actorRef: OpaqueIdSchema,
+  })
+  .strict();
+export const SaveCarePlanDraftRequestSchema = z
+  .object({
+    operation: z.literal("save_care_plan_draft"),
+    expectedAggregateRevision: z.number().int().nonnegative(),
+    expectedDraftRevision: z.number().int().nonnegative().nullable(),
+    baseCurrentVersion: z.number().int().positive().nullable(),
+    goals: z.array(CarePlanGoalSchema).max(10),
+    preferences: z.array(CarePlanPreferenceSchema).max(10),
+    responsibilities: z.array(CarePlanResponsibilitySchema).max(10),
+    reviewLocalDate: LocalDateSchema.nullable(),
+    reviewTimeZone: IanaTimeZoneSchema.nullable(),
+  })
+  .strict()
+  .refine((value) => (value.reviewLocalDate === null) === (value.reviewTimeZone === null), {
+    message: "review_date_zone_pair_required",
+    path: ["reviewTimeZone"],
+  });
+export const ConfirmCarePlanVersionRequestSchema = z
+  .object({
+    operation: z.literal("confirm_care_plan_version"),
+    expectedAggregateRevision: z.number().int().positive(),
+    expectedDraftRevision: z.number().int().positive(),
+    baseCurrentVersion: z.number().int().positive().nullable(),
+  })
+  .strict();
+export const CarePlanReviewFactsSchema = z
+  .object({
+    reviewLocalDate: LocalDateSchema,
+    reviewTimeZone: IanaTimeZoneSchema,
+    reviewDayStartUtc: CanonicalUtcInstantSchema,
+    reviewDayEndUtc: CanonicalUtcInstantSchema,
+    reviewState: z.enum(["upcoming", "due_today", "overdue"]),
+  })
+  .strict();
+export const CarePlanResponsibilityProjectionSchema = z
+  .object({
+    category: CarePlanResponsibilityCategorySchema,
+    statement: CoordinationStatementSchema,
+    actor: z.discriminatedUnion("state", [
+      z.object({ state: z.literal("eligible"), actorRef: OpaqueIdSchema }).strict(),
+      z.object({ state: z.literal("authorization_changed") }).strict(),
+    ]),
+  })
+  .strict();
+export const CarePlanVersionProjectionSchema = z
+  .object({
+    planVersion: z.number().int().positive(),
+    changeGroups: z
+      .array(
+        z.enum([
+          "initial",
+          "goals_changed",
+          "preferences_changed",
+          "responsibilities_changed",
+          "review_date_changed",
+        ]),
+      )
+      .min(1)
+      .max(5),
+    goals: z.array(CarePlanGoalSchema).min(1).max(10),
+    preferences: z.array(CarePlanPreferenceSchema).max(10),
+    responsibilities: z.array(CarePlanResponsibilityProjectionSchema).min(1).max(10),
+    review: CarePlanReviewFactsSchema,
+    confirmedAt: CanonicalUtcInstantSchema,
+    eventRef: OpaqueIdSchema,
+  })
+  .strict();
+export const CarePlanDraftProjectionSchema = z
+  .object({
+    draftRevision: z.number().int().positive(),
+    baseCurrentVersion: z.number().int().positive().nullable(),
+    goals: z.array(CarePlanGoalSchema).max(10),
+    preferences: z.array(CarePlanPreferenceSchema).max(10),
+    responsibilities: z.array(CarePlanResponsibilityProjectionSchema).max(10),
+    reviewLocalDate: LocalDateSchema.nullable(),
+    reviewTimeZone: IanaTimeZoneSchema.nullable(),
+    reviewDayStartUtc: CanonicalUtcInstantSchema.nullable(),
+    reviewDayEndUtc: CanonicalUtcInstantSchema.nullable(),
+    publicationReadiness: z.enum(["incomplete", "ready"]),
+    updatedAt: CanonicalUtcInstantSchema,
+  })
+  .strict();
+export const CarePlanProjectionSchema = z
+  .object({
+    state: z.enum(["no_plan", "plan"]),
+    planId: OpaqueIdSchema.nullable(),
+    aggregateRevision: z.number().int().nonnegative(),
+    current: CarePlanVersionProjectionSchema.nullable(),
+    draft: CarePlanDraftProjectionSchema.nullable(),
+    eligibleResponsibilityActors: z.array(CoordinationActorSchema).max(25),
+    reviewState: z.enum(["not_applicable", "upcoming", "due_today", "overdue"]),
+    requiresReview: z.boolean(),
+    coverageStartedAt: CanonicalUtcInstantSchema,
+    serverTime: CanonicalUtcInstantSchema,
+  })
+  .strict();
+export const CarePlanMutationResultSchema = z
+  .object({
+    planId: OpaqueIdSchema,
+    aggregateRevision: z.number().int().positive(),
+    draftRevision: z.number().int().positive().nullable(),
+    planVersion: z.number().int().positive().nullable(),
+    outcome: z.enum(["draft_saved", "confirmed"]),
+    confirmedAt: CanonicalUtcInstantSchema,
+    review: CarePlanReviewFactsSchema.nullable(),
+    eventRef: OpaqueIdSchema.nullable(),
+  })
+  .strict();
+export const CarePlanHistoryQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(25).default(10),
+    cursor: z.string().max(4096).optional(),
+  })
+  .strict();
+export const CarePlanHistoryProjectionSchema = z
+  .object({
+    versions: z.array(CarePlanVersionProjectionSchema).max(25),
+    nextCursor: z.string().nullable(),
+    coverageStartedAt: CanonicalUtcInstantSchema,
+  })
+  .strict();
+export const CarePlanVersionConfirmedEventSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventType: z.literal("care.care_plan.version_confirmed.v1"),
+    eventVersion: z.literal(1),
+    occurredAt: CanonicalUtcInstantSchema,
+    producer: z.literal("care-coordination"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    correlationId: CorrelationIdSchema,
+    causationId: OpaqueIdSchema,
+    payload: z
+      .object({ outcome: z.literal("confirmed"), deliveryDisposition: z.literal("none") })
+      .strict(),
+  })
+  .strict();
+
 const EventBaseSchema = z
   .object({
     eventId: OpaqueIdSchema,
@@ -993,6 +1182,7 @@ export const CareCoordinationEventSchema = z.union([
   CareTaskCompletedEventSchema,
   CareTaskHandedOffEventSchema,
   AppointmentReminderIntentEventSchema,
+  CarePlanVersionConfirmedEventSchema,
 ]);
 
 export const NotificationSchema = z
@@ -1089,6 +1279,12 @@ export const ApiErrorCodeSchema = z.enum([
   "APPOINTMENT_STATE_CONFLICT",
   "APPOINTMENT_TIME_CONFLICT",
   "APPOINTMENT_RESULT_UNKNOWN",
+  "CARE_PLAN_VALIDATION_FAILED",
+  "CARE_PLAN_REVIEW_DATE_INVALID",
+  "CARE_PLAN_VERSION_CONFLICT",
+  "CARE_PLAN_STATE_CONFLICT",
+  "CARE_PLAN_CURSOR_INVALID",
+  "CARE_PLAN_RESULT_UNKNOWN",
 ]);
 
 export const ApiErrorSchema = z
@@ -1136,6 +1332,16 @@ export type CalendarQuery = z.infer<typeof CalendarQuerySchema>;
 export type CalendarFilter = z.infer<typeof CalendarFilterSchema>;
 export type CalendarProjection = z.infer<typeof CalendarProjectionSchema>;
 export type AppointmentReminderIntentEvent = z.infer<typeof AppointmentReminderIntentEventSchema>;
+export type SaveCarePlanDraftRequest = z.infer<typeof SaveCarePlanDraftRequestSchema>;
+export type ConfirmCarePlanVersionRequest = z.infer<typeof ConfirmCarePlanVersionRequestSchema>;
+export type CarePlanReviewFacts = z.infer<typeof CarePlanReviewFactsSchema>;
+export type CarePlanVersionProjection = z.infer<typeof CarePlanVersionProjectionSchema>;
+export type CarePlanDraftProjection = z.infer<typeof CarePlanDraftProjectionSchema>;
+export type CarePlanProjection = z.infer<typeof CarePlanProjectionSchema>;
+export type CarePlanMutationResult = z.infer<typeof CarePlanMutationResultSchema>;
+export type CarePlanHistoryQuery = z.infer<typeof CarePlanHistoryQuerySchema>;
+export type CarePlanHistoryProjection = z.infer<typeof CarePlanHistoryProjectionSchema>;
+export type CarePlanVersionConfirmedEvent = z.infer<typeof CarePlanVersionConfirmedEventSchema>;
 export type CareTaskCompletedEvent = z.infer<typeof CareTaskCompletedEventSchema>;
 export type CareTaskHandedOffEvent = z.infer<typeof CareTaskHandedOffEventSchema>;
 export type CareCoordinationEvent = z.infer<typeof CareCoordinationEventSchema>;

@@ -257,3 +257,21 @@ authorized Care read projection. Notification carries only an opaque task ID;
 allow-listed telemetry excludes titles, actor references, reason values,
 decisions, cursors, headers, tokens, idempotency material, payloads and raw
 errors. Offline mutation is blocked without queue or reconnect submit.
+
+## P3-S3 support-plan controls
+
+Fresh action-specific P2 authorization is mandatory for aggregate read, every
+history page/detail, draft save, and confirmation. Role alone never grants
+access. Care revalidates decision age, permission, household, recipient,
+correlation, digest, and each responsibility actor. Generic 404 behavior
+prevents existence/consent/history inference.
+
+Strict bounded schemas reject extra fields, markup objects, control characters,
+clinical/medication/treatment/recommendation fields, contacts, locations, and
+arbitrary metadata. Human-entered coordination statements stay only in
+authorized no-store Care reads. Events, audit metadata, outbox, Notification,
+logs, metrics, traces, cursors, and errors are content-free. Optimistic locking,
+advisory/row locks, idempotency, immutable history, sealed no-total cursors,
+stored IANA-day boundaries, no persistent browser cache, no offline queue, and
+fresh-read uncertain recovery are required. The full matrix is
+`docs/security/P3_S3_THREAT_MODEL.md`.

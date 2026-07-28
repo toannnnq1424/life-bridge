@@ -599,8 +599,10 @@ export class ConsentService {
           subject: accountId === subject.account_id,
         });
         const actor = actorFor(input.accountId);
-        const eligibleTargets =
-          request.permission === "coordination.task.handoff"
+        const carePlanPermission = request.permission.startsWith("coordination.care_plan.");
+        const eligibleTargets = carePlanPermission
+          ? eligibleAccounts.map(actorFor)
+          : request.permission === "coordination.task.handoff"
             ? eligibleAccounts.filter((accountId) => accountId !== input.accountId).map(actorFor)
             : [];
         const target = request.targetActorRef

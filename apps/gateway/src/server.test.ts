@@ -769,7 +769,11 @@ function jsonResponse(data: unknown, status = 200): Response {
 }
 
 function coordinationDecision(
-  permission: "coordination.timeline.read" | "coordination.task.handoff",
+  permission:
+    | "coordination.timeline.read"
+    | "coordination.task.handoff"
+    | "coordination.care_plan.read"
+    | "coordination.care_plan.draft.save",
   requestDigest: unknown,
   targetActorRef?: string,
 ) {
@@ -810,3 +814,79 @@ function coordinationDecision(
     requestDigest,
   };
 }
+
+describe("P3-S3 Gateway fresh care-plan authority", () => {
+  it("obtains a fresh read decision and relays only the authoritative Care response", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      calls.push({ url, body });
+      if (url.endsWith("/internal/v1/coordination/authorize")) {
+        return jsonResponse(
+          coordinationDecision("coordination.care_plan.read", body.requestDigest),
+        );
+      }
+      return jsonResponse({
+        state: "no_plan",
+        planId: null,
+        aggregateRevision: 0,
+        current: null,
+        draft: null,
+        eligibleResponsibilityActors: [],
+        reviewState: "not_applicable",
+        requiresReview: false,
+        coverageStartedAt: "2026-07-27T00:00:00.000Z",
+        serverTime: "2026-07-27T12:00:00.000Z",
+      });
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/care-plan",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_p3_contract",
+      },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().data.state).toBe("no_plan");
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?.body.permission).toBe("coordination.care_plan.read");
+    expect(calls[1]?.body).toHaveProperty(
+      "authorization.permission",
+      "coordination.care_plan.read",
+    );
+    await app.close();
+  });
+
+  it("does not call Care when fresh Identity authority is denied", async () => {
+    let calls = 0;
+    const fetcher = (async () => {
+      calls += 1;
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "COORDINATION_RESOURCE_NOT_FOUND",
+            messageKey: "coordination.resource_not_found",
+            retryable: false,
+            correlationId: "corr_p3_contract",
+          },
+        }),
+        { status: 404, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/care-plan",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_p3_contract",
+      },
+    });
+    expect(response.statusCode).toBe(404);
+    expect(calls).toBe(1);
+    await app.close();
+  });
+});

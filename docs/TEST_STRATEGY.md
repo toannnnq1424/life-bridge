@@ -377,3 +377,19 @@ Manual NVDA/Narrator, physical-device, text-spacing, forced-colors and
 200%/400% assistive-technology sessions remain KI-016. Independent inspection
 of private Stitch renders remains KI-019 and cannot be replaced by automated
 visual-parity claims.
+
+## P3-S3 Level C campaign
+
+Exactly one `pnpm.cmd run validate:p3-s3` campaign proves cumulative P1 through
+P3-S3 format/lint/type/unit/contract/docs/config/secrets/dependency/build gates;
+real Care/Identity/Notification PostgreSQL integrations; migration v4 forced
+rollback, repeat apply, legacy migration reapply and no backfill; ordinary,
+23-hour and 25-hour local review-day facts; shared-draft/confirm concurrency and
+idempotency; atomic version/audit/outbox evidence; privacy-safe logs; and
+artifact-disabled Chromium. P3-S3 browser coverage includes mocked VI/EN,
+current plus draft, semantic history, overdue, denied, unavailable, offline,
+conflict, uncertain recovery, axe/reflow/forced-colour/reduced-motion semantics,
+plus a real Gateway→Identity→Care consent/grant/confirm/revoke journey. Workers
+remain one, retries zero, and trace/screenshot/video off. Only classified
+targeted recovery may follow an unproven failure; successful full gates are not
+rerun merely because output detached.

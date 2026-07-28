@@ -35,6 +35,12 @@ corrected native implementation. Native VI/EN routes and automated evidence
 are candidate-complete; local Level C and hosted promotion remain. KI-019
 prevents a private-render visual-conformance claim.
 
+P3-S3 candidate status on 2026-07-27: four synthetic LB-017 current/history,
+draft/review, overdue, and recovery references were generated/read back once.
+The independently corrected `P3_S3_STITCH_HANDOFF.md` is Frozen for native
+semantic implementation only. Product copy uses Support plan / Kế hoạch hỗ
+trợ. Private pixels remain unapproved under KI-019; manual AT remains KI-016.
+
 ## Screen register
 
 | ID       | Screen                       | Primary role                      | Route concept                                 | Purpose and critical requirements                                                                                                                                                                                                                                                   |
