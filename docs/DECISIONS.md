@@ -606,6 +606,56 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   and issue #11 closeout are complete. KI-001, KI-016, and KI-019 remain
   explicit; P4-S1 begins only in a fresh task after docs-only closeout.
 
+## ADR-024 — Split medication schedule, delivery evidence, and seen acknowledgement by owner
+
+- Status: Accepted for P4-S1 candidate; implementation pending
+- Date: 2026-07-28
+- Change ID: `CHG-2026-016`
+- Context: P4-S1 must repeat user-provided medication reminder facts without
+  prescribing, inferencing adherence, or converting Notification intent receipt
+  into a delivery claim. Accepted P2 authority and P3 time boundaries must be
+  consumed without a new service, engine, shared database or Gateway-owned
+  state.
+- Decision: Care Coordination owns the Care-only medication label, exact
+  user-entered amount/unit and finite local/IANA/offset recurrence plus
+  schedule lifecycle. Notification receives no label/amount/unit and owns only
+  generic structured occurrence intent, server-time delivery attempts,
+  atomically persisted in-app evidence and an immutable acknowledgement that
+  the reminder was seen. Identity & Consent issues a fresh exact-purpose
+  decision for every owner operation. Gateway binds the complete request digest
+  and composes authoritative reads only. Intent, pending/uncertain/delivered/
+  failed/missed/cancelled delivery, and unacknowledged/seen states remain
+  distinct. Acknowledgement never represents taken, skipped or adherence.
+- Alternatives considered: store all reminder state in Care; let Notification
+  receive medication content; treat outbox consumption as delivery; store
+  reminder state in Gateway; use organizer/member status; accept arbitrary
+  RRULE/free-form units; infer a default unit/offset; acknowledge taken/skipped;
+  queue offline mutations; add a scheduler service or broker.
+- Consequences: Care and Notification receive additive owner-local migrations
+  and atomic audit/idempotency/outbox evidence. The event boundary contains
+  only opaque scope/recipient/occurrence identifiers, trigger UTC, source
+  local/IANA/offset and a fixed message key. Finite materialization rejects DST
+  gaps and requires explicit overlap resolution. Notification can truthfully
+  expose failed, missed and uncertain state without a clinical implication.
+  In-app delivery uses a fixed product delivery window and injected server clock;
+  external channels, dosage advice, adherence and escalation remain non-goals.
+- Planned baseline: P4-S1 required explicit units/time zone, user-provided
+  schedule facts, delivery/acknowledgement truth and P2/P3/Notification
+  dependencies, but did not assign schedule-versus-delivery ownership or define
+  acknowledgement meaning.
+- Actual implementation/evidence: three independent pre-implementation reviews
+  converged on owner separation, exact-purpose authority and evidence-gated
+  delivery. The UI/privacy and test reviewers required seen-only
+  acknowledgement and removal of medication amount/unit from Notification;
+  those stricter decisions supersede the contract reviewer's broader
+  taken/skipped and Notification-payload suggestions. `P4-S1-v1`,
+  `docs/security/P4_S1_THREAT_MODEL.md` and the bounded research entry freeze
+  the candidate before code. Stitch/native/runtime evidence remains pending.
+- Validation and follow-up: generate/read back the four synthetic LB-018/LB-019
+  references, freeze the redacted handoff, implement one vertical slice, invoke
+  exactly one local `validate:p4-s1` campaign, then require exact-head and
+  post-merge hosted CI. Preserve KI-001/KI-016/KI-019 and do not start P4-S2.
+
 ## Decision-change template
 
 ```md

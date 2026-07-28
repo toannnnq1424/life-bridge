@@ -26,6 +26,18 @@ LifeBridge prioritizes:
 
 LifeBridge is a coordination product, not a clinical decision system.
 
+### P4-S1 non-clinical medication reminder outcome
+
+An authorized user may configure a reminder from only the medication label,
+exact amount string, explicit unit, local minute, IANA time zone, numeric
+offset and finite recurrence they provide. The product does not infer or
+recommend dosage, treatment, diagnosis, urgency, missed-dose action or
+adherence. Schedule confirmation, Notification intent, authoritative in-app
+delivery, failure/missed/uncertain state and immutable acknowledgement that the
+reminder was seen are separate facts. Seen never means taken or skipped.
+Organizer/member status never substitutes for the care recipient's current
+purpose-specific consent.
+
 ## 2. Problem and evidence posture
 
 Care work can be distributed across relatives, paid caregivers, volunteers, and organizations. When responsibility and current state are unclear, work may be missed, duplicated, or handed off without shared context.

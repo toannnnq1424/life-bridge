@@ -8,7 +8,8 @@ Transport: Remote HTTPS MCP
 Tooling canary: PASS WITH CONTROLLED EXCEPTION (CHG-2026-006)
 Approved Stitch projects: 1 private non-production project
 Registered screens: P1 LB-011/LB-013/LB-014/LB-019, P3-S1 LB-012/LB-014,
-P3-S2 LB-015/LB-016, and P3-S3 LB-017 synthetic review references
+P3-S2 LB-015/LB-016, P3-S3 LB-017, and P4-S1 LB-018 plus the minimum
+LB-019 extension synthetic review references
 Imported artifacts: None
 Production UI implementation: P3-S3 native UI is accepted through PR #56 and
 follows the Frozen corrected handoff; generated source remains rejected
@@ -161,6 +162,8 @@ docs/design/reviews/SCREEN_HANDOFF_TEMPLATE.md
 | `LB-015` P3-S2      | `STITCH-P1-001`         | Private aliases `P3S2-LB015-DESKTOP`, `P3S2-LB015-MOBILE`   | 1.0            | Remote references only; generated source not imported         | [`P3_S2_STITCH_HANDOFF.md`](reviews/P3_S2_STITCH_HANDOFF.md) | Frozen        | Corrected native proof; KI-019 retained                | 2026-07-27    |
 | `LB-016` P3-S2      | `STITCH-P1-001`         | Private aliases `P3S2-LB016-DESKTOP`, `P3S2-LB016-MOBILE`   | 1.0            | Remote references only; generated source not imported         | [`P3_S2_STITCH_HANDOFF.md`](reviews/P3_S2_STITCH_HANDOFF.md) | Frozen        | Corrected native proof; KI-019 retained                | 2026-07-27    |
 | `LB-017` P3-S3      | `STITCH-P1-001`         | Private aliases `P3S3-LB017-CURRENT`, `P3S3-LB017-RECOVERY` | 1.0            | Remote references only; generated source not imported         | [`P3_S3_STITCH_HANDOFF.md`](reviews/P3_S3_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-27    |
+| `LB-018` P4-S1      | `STITCH-P1-001`         | Private aliases `P4S1-LB018-CURRENT`, `P4S1-LB018-RECOVERY` | 1.0            | Remote references only; generated source not imported         | [`P4_S1_STITCH_HANDOFF.md`](reviews/P4_S1_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-28    |
+| `LB-019` P4-S1      | `STITCH-P1-001`         | Private aliases `P4S1-LB019-ACK`, `P4S1-LB019-FAILURE`      | 1.0            | Remote references only; generated source not imported         | [`P4_S1_STITCH_HANDOFF.md`](reviews/P4_S1_STITCH_HANDOFF.md) | Frozen        | Native semantic authority only; KI-019 retained        | 2026-07-28    |
 | Other inventory IDs | None                    | None                                                        | None           | None                                                          | Pending                                                      | Not generated | Not reviewed                                           | N/A           |
 
 Allowed design status values:

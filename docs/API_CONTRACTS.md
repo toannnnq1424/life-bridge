@@ -897,3 +897,123 @@ V1 rejects diagnosis, condition, treatment, dosage, medication, urgency,
 recommendation, address, URL, contact, attachment, HTML/Markdown objects,
 arbitrary metadata, and clinical workflow. Product copy uses “Kế hoạch hỗ trợ /
 Support plan”; internal routes retain `care-plan`.
+
+## P4-S1 medication reminder acknowledgement contract (`P4-S1-v1`)
+
+`P4-S1-v1` is a non-clinical coordination contract. Care Coordination owns
+user-provided reminder schedule facts. Notification owns generic in-app
+delivery evidence and immutable acknowledgement that a reminder was seen.
+Identity & Consent makes a fresh decision for every operation; Gateway stores
+no reminder state and composes only owner responses.
+
+Permissions are exact and non-substitutable:
+
+```text
+coordination.medication_reminder.read
+coordination.medication_reminder.create
+coordination.medication_reminder.change
+coordination.medication_reminder.disable
+notification.medication_reminder.read
+notification.medication_reminder.acknowledge
+```
+
+Membership, organizer capability, a prior decision, and client state never
+authorize one of these actions. Each decision binds actor, household,
+recipient context, permission, normalized request digest, correlation and the
+current subject/grant/privacy versions for at most ten seconds. The
+Notification recipient is the authorized creating actor in v1; the client
+cannot target another account.
+
+The strict Care command contains only:
+
+```text
+operation: create_medication_reminder | change_medication_reminder
+expectedVersion: positive integer (change only)
+medicationLabel: one trimmed single line, 1..80 characters, Care-only
+amount: exact positive decimal string, 0.001..999.999, at most 3 decimals
+unit: tablet | capsule | millilitre | drop | puff | patch | application | unit | other
+otherUnitLabel: one trimmed single line, 1..24 characters, only with other
+schedule.localStart: YYYY-MM-DDTHH:mm
+schedule.sourceTimeZone: canonical IANA name
+schedule.sourceUtcOffset: explicit +/-HH:MM
+schedule.ambiguousTimePolicy: null | earlier | later
+schedule.recurrence:
+  { frequency: none }
+  { frequency: daily, intervalDays: 1..7, occurrenceCount: 2..31 }
+  { frequency: weekly, intervalWeeks: 1..4, occurrenceCount: 2..12 }
+```
+
+Disable is `{ operation: "disable_medication_reminder", expectedVersion }`.
+Unknown fields are rejected. The decimal and unit are repeated exactly as
+user-provided facts; they are never converted, defaulted, calculated or
+described as a recommended dose. Diagnosis, indication, route, instructions,
+notes, treatment, urgency, adherence, missed-dose advice and arbitrary
+metadata are not contract fields.
+
+Care resolves a finite occurrence set on the server. Gaps are invalid;
+overlaps require `earlier` or `later` plus the matching explicit offset;
+ordinary local times require `ambiguousTimePolicy: null`. Every occurrence
+stores the source local minute, named IANA zone, resolved numeric offset,
+canonical millisecond UTC instant, stable occurrence number/count and final
+local date. Change creates a new schedule version and new stable occurrence
+identities. Prior delivered or acknowledged Notification evidence remains
+immutable.
+
+Public operations are:
+
+```text
+GET  /api/v1/households/{householdId}/medication-reminders
+GET  /api/v1/households/{householdId}/medication-reminders/{reminderId}
+POST /api/v1/households/{householdId}/medication-reminders
+PUT  /api/v1/households/{householdId}/medication-reminders/{reminderId}
+POST /api/v1/households/{householdId}/medication-reminders/{reminderId}/disable
+GET  /api/v1/notifications/medication-reminders?householdId={householdId}
+POST /api/v1/notifications/medication-reminders/{occurrenceId}/acknowledgements
+```
+
+Care emits `care.medication_reminder.intent.v1` schedule/cancel intents. The
+payload is minimum structured delivery input: opaque reminder, occurrence,
+household, recipient-context and recipient account identifiers; occurrence
+version; scheduled UTC; source local minute/IANA/offset; fixed message key;
+correlation and causation. It excludes medication label, amount, unit, grant,
+decision body, idempotency key and free text.
+
+Notification projects intent and delivery separately:
+
+```text
+intentState: pending | cancelled
+deliveryState: pending | uncertain | delivered | failed | missed | cancelled
+deliveryEvidence: none | in_app_persisted
+acknowledgementState: unacknowledged | seen
+acknowledgementResult: available | recorded | duplicate
+```
+
+`delivered` requires an atomically persisted in-app item. Intent receipt is not
+delivery. `missed` means the fixed delivery window expired without authoritative
+delivery evidence and says nothing about medication use. `failed` and
+`uncertain` are durable non-success facts. Reconciliation may resolve uncertain
+state but cannot erase attempts or fabricate success. Acknowledgement is
+allowed only for a delivered item and means only "reminder seen"; it never
+means taken, skipped, adherent or clinically safe.
+
+The acknowledgement command is
+`{ operation: "acknowledge_medication_reminder", expectedVersion }` plus an
+`Idempotency-Key`. Same key and digest returns the original result; changed
+intent with a reused key is `409 IDEMPOTENCY_CONFLICT`. Concurrent attempts
+produce one immutable acknowledgement. Later attempts return the original
+timestamp as `duplicate` and create no second acknowledgement/audit/outbox.
+Changed state/version conflicts are explicit. A client timeout or 5xx is
+unknown outcome: perform a fresh read and never retry blindly or with a new
+key. Offline mutation is blocked and never queued.
+
+Owner-local state, redacted audit, digest-only idempotency and outbox evidence
+commit atomically. Denied and absent resources use the same bounded response.
+Lists are bounded and expose no hidden totals. Primary errors include
+`MEDICATION_REMINDER_VALIDATION_FAILED`, `MEDICATION_REMINDER_LOCAL_TIME_INVALID`,
+`MEDICATION_REMINDER_RECURRENCE_INVALID`, `MEDICATION_REMINDER_VERSION_CONFLICT`,
+`MEDICATION_REMINDER_STATE_CONFLICT`, `MEDICATION_REMINDER_RESULT_UNKNOWN`,
+`MEDICATION_NOTIFICATION_UNAVAILABLE`, `MEDICATION_DELIVERY_STATE_CONFLICT`,
+`MEDICATION_ACKNOWLEDGEMENT_VERSION_CONFLICT`,
+`MEDICATION_ACKNOWLEDGEMENT_STATE_CONFLICT`, `COORDINATION_AUTHORITY_REQUIRED`,
+`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_CONFLICT`, `SERVICE_UNAVAILABLE` and
+`INTERNAL_CONTRACT_INVALID`.

@@ -773,7 +773,13 @@ function coordinationDecision(
     | "coordination.timeline.read"
     | "coordination.task.handoff"
     | "coordination.care_plan.read"
-    | "coordination.care_plan.draft.save",
+    | "coordination.care_plan.draft.save"
+    | "coordination.medication_reminder.read"
+    | "coordination.medication_reminder.create"
+    | "coordination.medication_reminder.change"
+    | "coordination.medication_reminder.disable"
+    | "notification.medication_reminder.read"
+    | "notification.medication_reminder.acknowledge",
   requestDigest: unknown,
   targetActorRef?: string,
 ) {
@@ -887,6 +893,162 @@ describe("P3-S3 Gateway fresh care-plan authority", () => {
     });
     expect(response.statusCode).toBe(404);
     expect(calls).toBe(1);
+    await app.close();
+  });
+});
+
+describe("P4-S1 Gateway medication reminder authority and ownership", () => {
+  it("gets a fresh create decision and sends medication facts only to Care", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown>; headers: Headers }> = [];
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      const headers = new Headers(init?.headers);
+      calls.push({ url, body, headers });
+      if (url.endsWith("/internal/v1/coordination/authorize")) {
+        return jsonResponse(
+          coordinationDecision("coordination.medication_reminder.create", body.requestDigest),
+        );
+      }
+      expect(url).toBe(
+        "http://care.test/internal/v1/coordination/households/household_synthetic/medication-reminders",
+      );
+      return jsonResponse({ reminderId: "medication_reminder_synthetic" }, 201);
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/households/household_synthetic/medication-reminders",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        origin: config.publicOrigin,
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": "c".repeat(43),
+        "idempotency-key": "p4s1-create-0001",
+        "x-correlation-id": "corr_p3_contract",
+      },
+      payload: {
+        operation: "create_medication_reminder",
+        medicationLabel: "Synthetic reminder A",
+        amount: "1",
+        unit: "tablet",
+        otherUnitLabel: null,
+        schedule: {
+          localStart: "2026-08-03T08:00",
+          sourceTimeZone: "Asia/Bangkok",
+          sourceUtcOffset: "+07:00",
+          ambiguousTimePolicy: null,
+          recurrence: { frequency: "none" },
+        },
+      },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(calls).toHaveLength(2);
+    expect(calls[0]?.body).toMatchObject({
+      permission: "coordination.medication_reminder.create",
+      householdId: "household_synthetic",
+    });
+    expect(calls[1]?.body).toMatchObject({
+      authorization: { permission: "coordination.medication_reminder.create" },
+      request: {
+        medicationLabel: "Synthetic reminder A",
+        amount: "1",
+        unit: "tablet",
+      },
+    });
+    expect(calls[1]?.headers.get("idempotency-key")).toBe("p4s1-create-0001");
+    expect(calls.every((call) => !call.url.startsWith("http://notification.test"))).toBe(true);
+    await app.close();
+  });
+
+  it("binds acknowledgement to the exact occurrence and sends no medication facts to Notification", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      calls.push({ url, body });
+      if (url.endsWith("/internal/v1/coordination/authorize")) {
+        expect(body).toMatchObject({
+          permission: "notification.medication_reminder.acknowledge",
+          householdId: "household_synthetic",
+          medicationOccurrenceId: "occurrence_synthetic",
+        });
+        return jsonResponse(
+          coordinationDecision("notification.medication_reminder.acknowledge", body.requestDigest),
+        );
+      }
+      expect(url).toBe(
+        "http://notification.test/internal/v1/medication-reminders/households/household_synthetic/occurrences/occurrence_synthetic/acknowledgements",
+      );
+      return jsonResponse({
+        result: "recorded",
+        notification: { occurrenceId: "occurrence_synthetic" },
+      });
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/notifications/medication-reminders/occurrence_synthetic/acknowledgements?householdId=household_synthetic",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        origin: config.publicOrigin,
+        "sec-fetch-site": "same-origin",
+        "x-csrf-token": "c".repeat(43),
+        "idempotency-key": "p4s1-ack-0001",
+        "x-correlation-id": "corr_p3_contract",
+      },
+      payload: {
+        operation: "acknowledge_medication_reminder",
+        expectedVersion: 2,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(calls).toHaveLength(2);
+    expect(calls[1]?.body).toMatchObject({
+      authorization: {
+        permission: "notification.medication_reminder.acknowledge",
+      },
+      request: {
+        operation: "acknowledge_medication_reminder",
+        expectedVersion: 2,
+      },
+    });
+    expect(JSON.stringify(calls[1]?.body)).not.toMatch(
+      /medicationLabel|amount|unit|taken|skipped|adherence/i,
+    );
+    await app.close();
+  });
+
+  it("does not call an owner service when a fresh medication decision is denied", async () => {
+    let calls = 0;
+    const fetcher = (async () => {
+      calls += 1;
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "COORDINATION_RESOURCE_NOT_FOUND",
+            messageKey: "coordination.resource_not_found",
+            retryable: false,
+            correlationId: "corr_p3_contract",
+          },
+        }),
+        { status: 404, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/medication-reminders",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_p3_contract",
+      },
+    });
+    expect(response.statusCode).toBe(404);
+    expect(calls).toBe(1);
+    expect(response.body).not.toContain('"items":[]');
     await app.close();
   });
 });

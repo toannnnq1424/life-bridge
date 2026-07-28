@@ -742,3 +742,34 @@ failures, not product failures.
 - Follow-up: after docs-only closeout, P4-S1 is exact next only in a fresh task;
   freeze non-clinical reminder authority, unit/time-zone, event, Notification
   and failure truth before implementation.
+
+## INT-2026-020 — P4-S1 medication reminder candidate
+
+- Date: 2026-07-28
+- Status: Local acceptance complete; hosted promotion pending
+- Source: `phase/4-medication-reminder-acknowledgement` from accepted
+  `dev@aaf6113540925b3132a323afc6e1922a902a3e29`
+- Target: `dev`
+- Scope: P4-S1 only; LB-018 plus minimum LB-019
+- Contracts/data affected: frozen `P4-S1-v1`; fresh six-permission Identity
+  decisions; Care-owned exact schedule/migration 005; minimum-data intent;
+  Notification-owned delivery/seen/migration 003; Gateway composition only
+- Validation: independent three-review freeze, four one-time synthetic Stitch
+  read-backs, Frozen native-only handoff, 65 unit and 40 contract tests, all
+  cumulative static/build/security gates, 8 P4 PostgreSQL integration tests,
+  owner-isolated rollback/reapply/no-backfill and cumulative integrations
+  passed in the single Level C. That invocation stopped at Notification
+  readiness because startup replayed migration 002 over valid P4 inbox rows.
+  A version-aware migration-runner fix then passed targeted P4 integration,
+  runtime readiness, 4/4 P4 browser paths and all cumulative P2/P3 browser
+  suites; log scan, diff and cleanup passed.
+- Hosted candidate: exact-head push run `30342664176` passed all three jobs.
+  PR run `30342757032` exposed a commit-timing race in the LB-019 duplicate
+  status focus while the same rendered state passed on push. Focus now follows
+  committed React state; lint/type/build and five repeated affected
+  browser/accessibility paths passed. Replacement exact-head CI is pending.
+- Conflicts/risks: KI-001/KI-016/KI-019 remain; project-list metadata lag and
+  private pixels are not visual approval; no blind Stitch retry
+- Decision/change references: ADR-024 / `CHG-2026-016`
+- Follow-up: one ready PR/exact-head CI/merge/post-merge CI/issue #12 closeout;
+  do not invoke another local Level C

@@ -6,16 +6,22 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P3 — Care planning`; P3-S3 and its canonical closeout are
-  accepted and merged
+- Current phase: `P4 — Safety-critical coordination`; `P4-S1` is the active
+  candidate on `phase/4-medication-reminder-acknowledgement`
 - Most recently integrated slice: `P3-S3 — Care-plan review`; feature PR #56
   merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`, followed by
   docs-only PR #57 at `dev@98a420f17b6bee7494dd889e325e7401d9ec5068`
-- Active product slice: none; canonical issue
-  [#11](https://github.com/toannnnq1424/life-bridge/issues/11) is closed with
-  bilingual evidence
-- Exact next action: `P4-S1 — Medication reminder acknowledgement`, only in a
-  fresh task. DATA-S1 and P4 implementation have not started here.
+- Active product slice: `P4-S1 — Medication reminder acknowledgement`;
+  canonical issue
+  [#12](https://github.com/toannnnq1424/life-bridge/issues/12) owns the scope.
+  `P4-S1-v1`, four synthetic LB-018/minimum-LB-019 references, the Frozen
+  native-only handoff, owner-isolated persistence, native VI/EN UI and focused
+  validation and the single Level C plus classified targeted runtime recovery
+  are candidate-complete.
+- Exact next action: promote this exact slice through one ready PR to `dev`,
+  wait exact-head and post-merge hosted CI, then close issue #12 with bilingual
+  evidence. Do not start P4-S2, P4-S3, DATA-S1, P5, Spring, deployment or
+  release.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
