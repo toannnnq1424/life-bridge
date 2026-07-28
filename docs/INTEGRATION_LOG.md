@@ -763,6 +763,11 @@ failures, not product failures.
   A version-aware migration-runner fix then passed targeted P4 integration,
   runtime readiness, 4/4 P4 browser paths and all cumulative P2/P3 browser
   suites; log scan, diff and cleanup passed.
+- Hosted candidate: exact-head push run `30342664176` passed all three jobs.
+  PR run `30342757032` exposed a commit-timing race in the LB-019 duplicate
+  status focus while the same rendered state passed on push. Focus now follows
+  committed React state; lint/type/build and five repeated affected
+  browser/accessibility paths passed. Replacement exact-head CI is pending.
 - Conflicts/risks: KI-001/KI-016/KI-019 remain; project-list metadata lag and
   private pixels are not visual approval; no blind Stitch retry
 - Decision/change references: ADR-024 / `CHG-2026-016`

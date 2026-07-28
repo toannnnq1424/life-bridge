@@ -534,6 +534,11 @@ function NotificationCenter({ householdId, locale }: { householdId: string; loca
   }, [householdId, online]);
 
   useEffect(() => void load(), [load]);
+  useEffect(() => {
+    if (failure || uncertainOccurrence || duplicateOccurrence) {
+      requestAnimationFrame(() => stateHeading.current?.focus());
+    }
+  }, [duplicateOccurrence, failure, uncertainOccurrence]);
 
   async function acknowledge(item: MedicationReminderNotificationProjection) {
     if (!online) return;
@@ -559,12 +564,10 @@ function NotificationCenter({ householdId, locale }: { householdId: string; loca
       );
       setDuplicateOccurrence(result.result === "duplicate" ? item.occurrenceId : null);
       setUncertainOccurrence(null);
-      requestAnimationFrame(() => stateHeading.current?.focus());
     } catch (error) {
       const caught = asApiFailure(error);
       if (caught.uncertain) setUncertainOccurrence(item.occurrenceId);
       else setFailure(caught.failure);
-      requestAnimationFrame(() => stateHeading.current?.focus());
     }
   }
 

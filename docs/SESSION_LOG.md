@@ -1700,6 +1700,13 @@ operation; Gateway composes only.
   reopens a P4-populated database, and the classified targeted tail passed
   runtime readiness, 4/4 P4 browser paths and every cumulative P2/P3 browser
   suite.
+- Hosted exact-head push run `30342664176` passed all three jobs. PR run
+  `30342757032` passed Windows quality but exposed one LB-019 focus race:
+  duplicate state rendered, while an event-local animation frame ran before
+  React committed its heading. Focus now follows committed failure,
+  uncertain-or-duplicate state; lint, typecheck, web build and five repeated
+  LB-019 browser/accessibility paths passed. This is a focused hosted fix, not
+  another Level C.
 
 ### Current evidence and exact next
 
