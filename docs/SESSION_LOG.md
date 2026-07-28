@@ -2018,3 +2018,84 @@ Review and commit the exact candidate diff, push
 `dev`, require green exact-head hosted CI, merge by merge commit, verify
 post-merge `dev` CI and close issue #14 with bilingual evidence. Do not start
 P5-S1, DATA-S1, Spring, deployment or release in this task.
+
+## 2026-07-28 — P4-S3 hosted promotion and canonical closeout
+
+### Objective
+
+Promote the locally accepted P4-S3 candidate through the required PR-only
+topology, verify exact-head and post-merge hosted evidence, close canonical
+issue #14 bilingually, and record the exact next handoff without starting it.
+
+### Planned versus actual
+
+- Planned: one ready feature PR to `dev`, exact-head hosted CI, merge commit,
+  post-merge `dev` CI and verified bilingual issue closeout.
+- Actual: feature head `3eb4bab7751a5e311a285adac17b999994f72c99`
+  passed both push and PR workflows. PR #64 remained the sole ready P4-S3
+  feature PR and merged only after all six reported checks were green.
+  Merge-commit `dev@7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`
+  then passed its own complete hosted gate. Issue #14 received VI/EN evidence
+  and closed as completed.
+- This correction changes only canonical state documents. Application,
+  contract, migrations, workflow, dependency and lockfile inputs are
+  unchanged, so the successful one-shot local Level C is not repeated.
+
+### Completed
+
+- Exact-head push run `30375655611` passed Windows quality,
+  P4-S3 PostgreSQL/restore/Chromium acceptance and the aggregate required
+  gate on `3eb4bab7751a5e311a285adac17b999994f72c99`.
+- Exact-head PR run `30375846902` independently passed the same three jobs.
+- Ready PR #64 merged to `dev` through merge commit
+  `7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`, whose parents are accepted
+  `dev@1010aeabf7ae87737019477cb1961404299bf0a8` and the feature head.
+- Post-merge `dev` run `30376359437` passed all three jobs on the exact merge
+  SHA.
+- Canonical issue #14 received bilingual evidence at comment `5106678490`
+  and closed as completed.
+- Task-owned local containers, volumes, networks, services, ports, logs and
+  browser artifacts remained removed. The one-shot marker remains ignored
+  local evidence. The protected Stitch canary remains untouched and unstaged.
+
+### Files changed
+
+Only `docs/IMPLEMENTATION_PLAN.md`, `docs/WORKSTREAM_BOARD.md`,
+`docs/KNOWN_ISSUES.md`, `docs/INTEGRATION_LOG.md` and
+`docs/SESSION_LOG.md` in this canonical correction.
+
+### Decisions and Change IDs
+
+`CHG-2026-018` is integrated with hosted validation passed. ADR-026 and
+`P4-S3-v1` remain unchanged. KI-001, KI-016, KI-019 and KI-020 remain open and
+truthful; successful integration is not deployment or visual-conformance
+approval.
+
+### Validation performed
+
+The immutable feature evidence is the single local P4-S3 Level C plus hosted
+runs `30375655611`, `30375846902` and `30376359437`. For this docs-only
+correction, run only targeted Prettier, docs/config/secrets and diff/canary
+checks, then require the normal docs-only exact-head hosted gate. Do not invoke
+a second local Level C.
+
+### Validation intentionally deferred
+
+Manual assistive-technology rows remain KI-016; independent private Stitch
+pixel review remains KI-019; production storage/scanner/backup/deletion/RPO-
+RTO controls remain KI-020; deployment credential retirement remains KI-001.
+
+### Known issues
+
+KI-001/KI-016/KI-019/KI-020 remain. No deployment, release, DATA-S1, P5 or
+Spring implementation occurred.
+
+### Exact next step
+
+Merge only this same-task docs-only canonical correction through a PR to
+`dev`. After it is accepted, exact next is `P5-S1 — Consented help request and
+directory` only in a fresh controller-dispatched task. Its first action is a
+bounded official-source research gate that pins the supported JDK, Spring Boot
+and Maven wrapper/toolchain and freezes Community service authority, data,
+API/event and failure boundaries before any code. Do not dispatch or start
+P5-S1 here.
