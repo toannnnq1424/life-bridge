@@ -554,8 +554,8 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 
 ## ADR-023 — Keep versioned support plans in Care Coordination
 
-- Status: Accepted for P3-S3 local promotion candidate
-- Date: 2026-07-27
+- Status: Accepted and integrated for P3-S3
+- Date: 2026-07-27–28
 - Change ID: `CHG-2026-015`
 - Context: P3-S3 must let authorized participants prepare and confirm a shared
   support plan without turning membership, Gateway state, stale consent, or
@@ -600,8 +600,11 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   pairs, PostgreSQL rollback/reapply/no-backfill, 23/24/25-hour and skipped-day
   boundaries, immutable bounded history/cursors, atomic failure injection,
   privacy-safe evidence, VI/EN native browser paths, accessibility, and exact
-  hosted promotion. Local evidence is complete; exact-head and post-merge
-  hosted promotion remain. KI-001, KI-016, and KI-019 remain explicit.
+  hosted promotion. Local evidence, exact-head runs
+  `30329456918`/`30329530973`, PR #56 merge
+  `f3576f40779617f0d7bd519ac44b178ccf269e3e`, post-merge run `30329752886`
+  and issue #11 closeout are complete. KI-001, KI-016, and KI-019 remain
+  explicit; P4-S1 begins only in a fresh task after docs-only closeout.
 
 ## Decision-change template
 

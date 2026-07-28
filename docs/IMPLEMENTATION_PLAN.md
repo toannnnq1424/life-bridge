@@ -6,16 +6,14 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P3 — Care planning`; P3-S3 locally accepted, promotion pending
-- Most recently integrated slice: `P3-S2 — Calendar and appointment coordination`;
-  feature PR #53 merged at
-  `dev@142096516533aea7561b1b13a2187047dc726a71`; canonical-memory PR #54
-  merged at `dev@ed091b3cc50549c39f456f8ac9e0bb61f4abfef7`
-- Active product slice: `P3-S3 — Care-plan review`; canonical issue
-  [#11](https://github.com/toannnnq1424/life-bridge/issues/11), branch
-  `phase/3-care-plan-review`
-- Exact next action: exact-head hosted P3-S3 promotion and issue #11 closeout.
-  Do not start DATA-S1 or P4.
+- Current phase: `P3 — Care planning`; P3-S3 accepted, canonical closeout pending
+- Most recently integrated slice: `P3-S3 — Care-plan review`; feature PR #56
+  merged at `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`
+- Active product slice: none; canonical issue
+  [#11](https://github.com/toannnnq1424/life-bridge/issues/11) is closed with
+  bilingual evidence, and `phase/3-care-plan-review` owns docs-only closeout
+- Exact next action: merge the P3-S3 docs-only canonical closeout, then hand off
+  `P4-S1` to a fresh task. Do not start DATA-S1 or P4 here.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -23,11 +21,11 @@
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
 - Latest integration gate:
-  [PR #51](https://github.com/toannnnq1424/life-bridge/pull/51) accepted exact
-  feature head `909c64542ccd4f3db6951e737dd83ef393cdf701` after push run
-  `30216046313` and PR run `30216124915` succeeded. Merge commit
-  `2314ee99eec61ffa1532fead4e5bda3bc6bbae63` is on `dev`, post-merge run
-  `30216314035` succeeded, and issue #9 is closed completed.
+  [PR #56](https://github.com/toannnnq1424/life-bridge/pull/56) accepted exact
+  feature head `9bfd2263625e25e2f4c3bbf7b1d0257a002591c8` after push run
+  `30329456918` and PR run `30329530973` passed all six checks. Merge commit
+  `f3576f40779617f0d7bd519ac44b178ccf269e3e` is on `dev`, post-merge run
+  `30329752886` passed all three jobs, and issue #11 is closed completed.
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -619,7 +617,8 @@ The single Level C campaign completed through classified retained-evidence
 continuations: unit 57/57, contracts 24/24, cumulative PostgreSQL integration
 and migrations, mocked LB-017 3/3, real P3-S3 1/1, cumulative browser
 regressions, accessibility, builds, privacy-safe logs and cleanup pass. Hosted
-promotion remains pending.
+exact-head and post-merge promotion passed; only docs-only canonical closeout is
+pending.
 
 ## P4 — Safety and records
 
@@ -1443,10 +1442,13 @@ No row means simultaneous implementation. Design generation/review may prepare a
   Level C command was invoked; after its pre-gate Docker startup interruption,
   direct classified continuations proved static, unit 57/57, contracts 24/24,
   cumulative integration/migrations, mocked LB-017 3/3, real P3-S3 1/1,
-  cumulative browsers, privacy-safe logs and cleanup. Exact-head hosted CI,
-  merge, post-merge dev CI and issue #11 closeout remain.
-- Follow-up: retain KI-001/KI-016/KI-019. Do not start another product slice in
-  this task; only same-task canonical evidence closeout may follow promotion.
+  cumulative browsers, privacy-safe logs and cleanup. Exact feature head
+  `9bfd2263625e25e2f4c3bbf7b1d0257a002591c8` passed push/PR runs
+  `30329456918`/`30329530973`; PR #56 merged as
+  `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`; post-merge run
+  `30329752886` passed and issue #11 closed with bilingual evidence.
+- Follow-up: retain KI-001/KI-016/KI-019. After docs-only closeout, hand off
+  P4-S1 to a fresh task; do not start it here.
 
 The initial research governance/register is intentionally included in the
 coherent Phase 0 foundation commit because the governed branches do not exist
@@ -1483,12 +1485,16 @@ LB-015/LB-016 handoff are implemented in native semantics. Exact head
 blocks deployment, KI-016 retains manual assistive-technology evidence, and
 KI-019 retains private-render review before any visual-conformance claim.
 
-P3-S3 is now the locally accepted promotion candidate on
-`phase/3-care-plan-review`, based exactly on accepted
-`origin/dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`. `P3-S3-v1`, ADR-023,
-`CHG-2026-015`, migration 004, threat/research records, four-reference Frozen
-corrected LB-017 handoff, native VI/EN route and cumulative tests are present.
-The one local Level C campaign is green after classified targeted recovery; no
-second full command was issued. The exact next action is exact-head hosted
-PR/merge/post-merge/issue #11 evidence and any required same-task canonical
-closeout. DATA-S1, P4/P5, deployment and release remain separate and unstarted.
+P3-S3 is accepted. `P3-S3-v1`, ADR-023, `CHG-2026-015`, migration 004,
+threat/research records, the four-reference Frozen corrected LB-017 handoff,
+native VI/EN route and cumulative tests are integrated at
+`dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`. Feature head `9bfd226` passed
+exact-head push/PR runs `30329456918`/`30329530973`; PR #56 merged, post-merge
+run `30329752886` passed, and issue #11 closed with bilingual evidence.
+
+The exact next action is this same task's docs-only canonical closeout. After it
+merges, `P4-S1 — Medication reminder acknowledgement` is the next product slice
+only in a fresh task. Its first action is to freeze non-clinical reminder
+acknowledgement authority, explicit unit/time-zone, event, Notification and
+failure-truth contracts against accepted P2/P3 boundaries. DATA-S1, P4/P5,
+Spring, deployment and release remain separate and unstarted here.

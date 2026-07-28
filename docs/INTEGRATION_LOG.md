@@ -696,9 +696,9 @@ failures, not product failures.
   review authority, command/read/event and time semantics against the accepted
   P2 authority and P3-S2 appointment boundary. This task does not begin it.
 
-## INT-2026-019 — P3-S3 versioned support-plan review local acceptance
+## INT-2026-019 — P3-S3 versioned support-plan review acceptance
 
-- Date: 2026-07-27
+- Date: 2026-07-27–28
 - Source: `phase/3-care-plan-review` from verified clean
   `origin/dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`
 - Canonical issue: #11 verified open with matching bilingual scope; no duplicate
@@ -731,9 +731,14 @@ failures, not product failures.
   21/21, typecheck, Care/web builds, P3-S3 integration 2/2, real browser 1/1 and
   mocked LB-017 3/3 passed; cumulative migrations and older browsers were
   retained and not rerun.
-- Promotion: local acceptance is green. Exact-head hosted CI, PR merge,
-  post-merge dev CI, bilingual issue closeout, and any same-task canonical
-  closeout remain pending and must replace this local-candidate status.
+- Promotion: feature `9bfd2263625e25e2f4c3bbf7b1d0257a002591c8` passed exact-head
+  push/PR runs `30329456918`/`30329530973`; ready PR #56 merged by merge commit
+  as `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`; post-merge run
+  `30329752886` passed all three jobs. Issue #11 closed with bilingual evidence.
+  Only the same-branch docs-only canonical closeout remains.
 - Non-goals preserved: no DATA-S1, P4/P5, Spring, deployment, release, new
   service/engine, cross-service SQL, clinical advice, reminder delivery, real
   care record, or canary mutation.
+- Follow-up: after docs-only closeout, P4-S1 is exact next only in a fresh task;
+  freeze non-clinical reminder authority, unit/time-zone, event, Notification
+  and failure truth before implementation.

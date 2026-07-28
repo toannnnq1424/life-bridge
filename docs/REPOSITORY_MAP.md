@@ -1,13 +1,12 @@
 # Repository Map
 
-Verified: 2026-07-27
-Integrated base: accepted `P3-S2 — Calendar and appointment coordination`
-(`origin/dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`)
-Active slice: `P3-S3 — Care-plan review`
-(`phase/3-care-plan-review`; implementation candidate, promotion pending)
+Verified: 2026-07-28
+Integrated base: accepted `P3-S3 — Care-plan review`
+(`origin/dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`)
+Active product slice: none; `phase/3-care-plan-review` owns docs-only closeout
 
-This map reflects the accepted P1/P2/P3-S1/P3-S2 tree plus the P3-S3
-candidate structure. P4 and DATA-S1 are not started.
+This map reflects the accepted P1/P2/P3 tree through P3-S3. P4 and DATA-S1 are
+not started.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
