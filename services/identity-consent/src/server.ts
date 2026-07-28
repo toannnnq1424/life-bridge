@@ -1,6 +1,7 @@
 import {
   AuditHistoryQuerySchema,
   CompleteAccountOnboardingSchema,
+  CommunityAuthorizationRequestSchema,
   CreateHouseholdInvitationRequestSchema,
   CreateHouseholdRequestSchema,
   CoordinationAuthorizationRequestSchema,
@@ -395,6 +396,27 @@ export function buildIdentityServer(
       : await identity.requireAccountSession(header(request, "x-session-token"));
     return successEnvelope(
       await service.authorizeCoordination({
+        accountId: account.accountId,
+        request: authorizationRequest,
+        correlationId,
+      }),
+      correlationId,
+    );
+  });
+
+  app.post<{ Body: unknown }>("/internal/v1/community/authorize", async (request) => {
+    const service = requireConsent(consent);
+    const correlationId = correlation(request);
+    const authorizationRequest = CommunityAuthorizationRequestSchema.parse(request.body);
+    const requiresMutationProof = authorizationRequest.permission !== "community.help_request.list";
+    const account = requiresMutationProof
+      ? await identity.requireAccountSession(
+          header(request, "x-session-token"),
+          header(request, "x-csrf-token"),
+        )
+      : await identity.requireAccountSession(header(request, "x-session-token"));
+    return successEnvelope(
+      await service.authorizeCommunity({
         accountId: account.accountId,
         request: authorizationRequest,
         correlationId,

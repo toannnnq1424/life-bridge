@@ -414,3 +414,44 @@ integrity failure, scanner/storage unavailable, conflict, offline/no queue,
 uncertain result/reconciliation, deletion review/confirmation and recovery are
 truthful VI/EN states. Status does not rely on color, progress is announced,
 focus is preserved, and no protected metadata or bytes persist offline.
+
+### P5-S1 consented help-request and community-directory outcome
+
+At LB-022, the self-established care recipient or an account with a current
+exact `community_support` grant can submit one bounded Community request after
+reviewing purpose, minimum fields, visibility, retention/deletion and the
+explicit no-match/no-outcome limitation. Household organizer/member status is
+not consent or subject authority. Every list, submit, reconcile, close and
+delete operation obtains a fresh request-bound Identity decision.
+
+The form accepts only one bounded support category, province/city, optional
+broad day part and explicit unselected disclosure confirmation. It accepts no
+free-form narrative, diagnosis, treatment, medication, urgency, eligibility
+reason, exact time/address/GPS, file, organization or match preference.
+`submitted` means Community confirmed the command. `pending` means only that
+Community durably owns an open request; it never means reviewed, queued for
+matching, matched, accepted, available, safe, eligible, delivered or
+completed. Matching is unavailable in P5-S1.
+
+Draft/validation, authority denied or revoked, exact duplicate, optimistic
+conflict, uncertain result plus fresh reconciliation, pending, closed,
+deleted, Community unavailable and offline-blocked/no-queue states remain
+truthful in VI/EN. Protected request fields do not enter URLs, browser storage,
+telemetry or the public directory cache.
+
+At LB-024, any public or authenticated user can filter reviewed public support
+listings by bounded category, province/city and organization type without an
+Identity call or household/request disclosure. Each listing shows only public
+organization metadata, service area/category/contact, provenance source and
+review time, with explicit stale, availability-not-verified,
+eligibility-not-determined and no-endorsement truth. Location denial leaves
+manual province/city selection available. No results, stale/offline cache,
+search unavailable and Community unavailable are distinct. The page never
+infers need, eligibility, safety, recommendation, match, response, delivery or
+outcome.
+
+The native screens follow the Frozen corrected P5-S1 Stitch handoff, not
+generated source. Automated desktop/mobile keyboard, focus, reflow, axe,
+forced-colors and reduced-motion proof is candidate evidence only; KI-016 and
+KI-019 remain. Exactly one local Level C and hosted promotion remain before
+the slice is accepted.

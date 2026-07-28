@@ -2099,3 +2099,219 @@ bounded official-source research gate that pins the supported JDK, Spring Boot
 and Maven wrapper/toolchain and freezes Community service authority, data,
 API/event and failure boundaries before any code. Do not dispatch or start
 P5-S1 here.
+
+## 2026-07-29 — P5-S1 candidate implementation and pre-Level-C reconciliation
+
+### Objective and authority
+
+Implement only `P5-S1 — Consented help request and directory` on
+`phase/5-consented-help-request-directory`, starting from the accepted live
+canonical base
+`origin/dev@486a5276ef43d143af8692501064e952a59a4829`. The bounded outcome is native
+VI/EN LB-022 `/help/new` plus identity-free LB-024 `/community`; matching,
+organization coordination, moderation, DATA-S1, P5-S2/P5-S3, P6+, deployment
+and release are outside this task.
+
+### Planned versus actual
+
+- Planned: reconcile three independent pre-code reviews, freeze one
+  language-neutral contract and accepted official toolchain, complete the
+  Spring Community owner plus Node Gateway/Identity and native UI, run focused
+  proof, invoke exactly one local Level C, and promote through one ready PR.
+- Actual before code: the contract/toolchain/threat, Stitch privacy/
+  accessibility and test/CI/operations reviews completed and were reconciled.
+  Four bounded synthetic LB-022/LB-024 Stitch references were read back once;
+  generated source was rejected and the redacted handoff is Frozen. Private
+  rendered pixels remain unavailable under KI-019, so no visual-conformance
+  claim is made and Stitch was not regenerated or retried after recovery.
+- Actual candidate: `P5-S1-v1` is frozen as one OpenAPI/JSON Schema tree with
+  `SHA256SUMS` and five shared fixed request-digest vectors. Community is the
+  sole Spring Boot/PostgreSQL request, directory, audit and transactional-
+  outbox owner. Gateway consumes only the schemas, obtains a fresh
+  `community_support` decision for every protected action, and keeps public
+  directory reads separate from Identity and protected context.
+
+### Frozen toolchain and boundary
+
+- Repository-only Windows Temurin `25.0.3+9` and Maven `3.9.16` bytes are
+  checksum-verified; Maven Wrapper is `3.3.4` `only-script`. Spring Boot is
+  `4.1.0`; compiler `3.15.0`, surefire/failsafe `3.5.6`, enforcer `3.6.3` and
+  CycloneDX `2.9.1` are explicit. No system/global Java, Maven, Execution
+  Policy, Registry, Docker or credential configuration changed.
+- The digest is lowercase SHA-256 of uppercase method, exact internal path and
+  recursively key-sorted minified JSON separated by newlines. Node and Java
+  share fixed list/submit/reconcile/close/delete vectors.
+- Protected input is only category, province/city code, nullable broad
+  day-part and explicit `P5-S1-v1` disclosure. There is no free-form request,
+  event or log payload. Organizer/member status alone never grants authority.
+- `COMMUNITY_DATABASE_URL`, `COMMUNITY_DATABASE_USERNAME` and
+  `COMMUNITY_DATABASE_PASSWORD` are service-only configuration; Community and
+  Identity owner credentials remain separate. Browser/Gateway code receives
+  no database credential. Synthetic allowlisted geography and directory
+  fixtures are enabled only in test runtime.
+
+### Candidate implementation
+
+- Spring Community owns its Flyway V1 schema, structured PostgreSQL directory
+  search, pending/closed/deleted request lifecycle, 24-hour idempotency replay,
+  duplicate serialization, optimistic versions, 30-day close/purge windows,
+  365-day content-free evidence and liveness/readiness/version truth.
+- Node Identity adds only the exact `community_support` /
+  `community_help_request.access` pair without backfill. Gateway forwards the
+  minimum digest-bound authorization projection and reports denied/revoked,
+  duplicate/conflict, uncertain reconciliation and dependency failures without
+  false submission or queue claims.
+- Native LB-022 explains purpose, visibility, consent, retention and unavailable
+  matching before submit, blocks protected offline writes rather than queueing,
+  and supports authoritative refresh/reconcile/close/delete. LB-024 uses only
+  reviewed public metadata, bounded structured filters and identity-free
+  five-minute Gateway/session-only 24-hour cache truth.
+- CI retains exact-SHA, cumulative Node/PostgreSQL/browser gates and adds the
+  accepted Java setup, repository wrapper integrity, Node↔Spring contract and
+  mixed-runtime proof, CycloneDX provenance, two-package reproducibility and
+  an `if: always()` P1-through-P5-S1 aggregate gate.
+
+### Focused validation performed
+
+- Frozen integrity passed for all eight JSON artifacts; focused Node contract,
+  Gateway consumer, Identity and observability tests passed 16 assertions in
+  four files. Typecheck, focused ESLint/Prettier and the production workspace
+  build passed with the lockfile unchanged.
+- Community unit/provider proof passed 6/6 with three database tests correctly
+  gated; task-scoped PostgreSQL then passed all 9/9 including replay,
+  concurrency, version conflict, close/delete, stale provenance and
+  content-free audit/outbox. Migration proof passed rollback/reapply,
+  no-backfill and cross-owner isolation.
+- Split JDBC credential configuration was re-proved 9/9 against a fresh scoped
+  PostgreSQL container. Two clean Maven `verify` packages produced identical
+  Community JAR SHA-256
+  `811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`; the
+  validated CycloneDX 1.6 BOM contained 62 components.
+- Artifact-disabled mocked desktop/mobile LB-022/LB-024 passed 6/6. The built
+  Web→Gateway→Identity→Spring Community→PostgreSQL real-runtime path passed and
+  proved public search caused no Identity decision, protected actions used at
+  least four fresh decisions, durable request/audit/outbox/tombstone truth and
+  no protected IDs in browser persistence.
+- One later focused browser command was invoked without a running built web and
+  stopped at `ERR_CONNECTION_REFUSED` before any product assertion. This was a
+  harness/environment classification, not Level C. Exact-PID targeted recovery
+  rebuilt and started only the web process, then the same mocked desktop/mobile
+  suite passed 6/6; its logs and Playwright output were removed after success.
+- Every focused Docker project/container/volume/network and recorded child
+  process was removed after proof. No global Docker state changed. Contract
+  hashes and the protected `docs/orchestration/reports/STITCH_MCP_CANARY.md`
+  remain unchanged.
+
+### Exactly-once Level C and classified targeted continuation
+
+The full command `pnpm.cmd run validate:p5-s1` was invoked exactly once. Its
+immutable marker records invocation
+`01d2ea18bc4845f88bf55ceddbfeea44` and original candidate diff digest
+`0d801063ff24673207878b9facd08e68ca35b93c186dca5f20fc99399643e449`.
+Repository toolchain integrity and the frozen-lockfile install passed. The
+first `static-schema-integrity` command then failed because cumulative
+`format:p1:check` traversed generated Maven output at
+`services/community/target/classes/META-INF/sbom/community-sbom.json`. No
+Docker database, service process or browser runtime had started. The ledger
+records the campaign failure and successful original cleanup; those facts and
+the marker were not rewritten or relabeled as a passing full Level C.
+
+This was a validation-harness classification, not a product/schema defect:
+Maven `target/` is generated build state and the checked CycloneDX SBOM is not
+repository source. The narrow correction adds `**/target/` to
+`.prettierignore`. A later source-hygiene audit also added the same generated
+tree boundary to `.gitignore`, because Maven output was otherwise visible as
+untracked state; that hygiene change did not invoke or claim another campaign.
+The guarded
+`scripts/validate-p5-s1.ps1 -TargetedRecoveryAfterStaticFailure` path verified
+the exact invocation, original failure signature and marker digest before any
+continuation. It reused the same invocation ID, Compose project, append-only
+ledger and transcript, never modified the marker, and appended
+`targeted-candidate` evidence with corrected candidate digest
+`6f234d1361b1707c69c122645521ce42038345f0e878b445c4a3856b5ddd70db`.
+
+The targeted continuation then ran the corrected static gate and every
+previously unstarted required stage. It passed:
+
+- all cumulative P1–P5-S1 format, lint and type checks plus frozen contract
+  integrity and the shared Node/Java digest vectors;
+- Node unit/contracts, Gateway consumer and Spring provider/unit contracts;
+- docs, config, secret, dependency/audit and CycloneDX provenance gates;
+- production Node builds and two identical clean Spring packages with JAR
+  SHA-256
+  `811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`;
+- cumulative P1–P4 PostgreSQL integration/migration/restore regressions;
+- Community rollback/reapply/no-backfill/owner-isolation migration proof and
+  Java database integration 9/9;
+- built Web→Gateway→Identity→Spring Community→PostgreSQL P5 browser proof 8/8
+  across desktop/mobile, followed by every cumulative P2–P4 browser suite;
+- runtime privacy sentinels, protected-canary absence, diff cleanliness and
+  exact task-owned cleanup.
+
+The final append-only ledger record is `targeted-continuation: pass`. All
+recorded PIDs, ports, databases, logs, browser output and the invocation-scoped
+Compose project were released. No task port listens; `docker compose ls` and
+the exact project container/volume/network checks are empty;
+`test-results`/`playwright-report` are absent; and the protected canary diff is
+empty. The marker, ledger and transcript remain ignored local evidence. No
+second full Level C command was invoked.
+
+### Late review reconciliation and targeted hardening
+
+Before promotion, a late independent review found six release blockers not
+covered directly by the passing continuation: old submit/close replay bodies
+could survive deletion; concurrent first use of the same idempotency key was
+not serialized; delete/purge evidence reused the protected row version;
+retention depended only on opportunistic request traffic; Gateway could expose
+a raw Identity denial and lacked a production revoked path; and LB-024 claimed
+no GPS use while invoking browser geolocation.
+
+The candidate now aggregate-links replay rows and invalidates protected replay
+bodies on explicit delete or retention purge, serializes first-use key tuples
+with a transaction advisory lock, consumes the next version for delete/purge
+audit and outbox, enforces unique aggregate/version outbox facts and runs an
+owned scheduled retention sweep with locked rows. Identity proves an active
+synthetic `community_support` grant then exact revocation; Gateway maps exact
+revocation, other authority denial and dependency failure into separate stable
+P5 truth. LB-024 no longer calls geolocation and checks only permission state.
+Direct browser states and focus/axe assertions were added.
+
+No full campaign was rerun. Classified targeted recovery passed:
+
+- Node typecheck/lint and P5 contracts 18/18;
+- PostgreSQL project `lifebridge-p5s1-hardening-29448`, including migration
+  rollback/reapply/no-backfill/owner isolation, Identity 10/10 and Community
+  11/11 with same-key concurrency, revoked authority, scheduled retention,
+  replay invalidation and monotonic outbox versions;
+- production Web build and desktop/mobile mocked browser 6/6 with zero
+  geolocation calls. Its first targeted attempt stopped only on a stale test
+  label locator; the corrected locator passed and task runtime/output was
+  cleaned;
+- two clean Community `verify` builds with valid CycloneDX 1.6 and identical
+  post-hardening JAR SHA-256
+  `13415e9ec9a8dfec40cb66f79bf16735ef3236ede83565b44330d78239285dbf`.
+
+The earlier continuation hash
+`811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`
+remains historical evidence for its exact candidate; it is not relabeled as
+the final hardening artifact. The interrupted first reproducibility attempt
+was retained as classified local evidence until the completed two-pass proof.
+
+### Known issues and exact next
+
+KI-001 remains the deployment-credential retirement gate; KI-016 retains
+manual assistive-technology/physical-device evidence; KI-019 retains
+unavailable private Stitch pixel review; KI-020 remains the production vault
+scanner, encryption, backup/deletion and RPO/RTO gate. None blocks bounded
+P5-S1 integration, and none is claimed resolved.
+
+Local candidate evidence is complete through the classified continuation and
+post-review targeted hardening, but P5-S1 is not accepted or merged yet. Exact
+next is to create coherent
+conventional commit(s), push only
+`phase/5-consented-help-request-directory` without force, open exactly one
+ready PR to `dev`, and require hosted CI whose `head_sha` is the exact feature
+commit. Only after that green gate may the branch merge by merge commit;
+post-merge `dev` CI and bilingual canonical issue #15 closeout remain
+mandatory. Do not run Level C again. Do not begin P5-S2; record it as the
+handoff only after every P5-S1 closeout gate is complete.

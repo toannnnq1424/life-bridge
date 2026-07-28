@@ -1298,3 +1298,130 @@ A timeout, cancellation or ambiguous 5xx result is uncertain: perform a fresh
 authorized list/status read with the same upload/idempotency context and never
 retry blindly or with a new key. Offline mode stores and reveals no document
 metadata or bytes and queues, replays or auto-submits no operation.
+
+## P5-S1 Community request and public-directory contract (`P5-S1-v1`)
+
+The language-neutral source is `contracts/community/p5-s1-v1/openapi.json`
+plus the JSON Schemas and frozen `SHA256SUMS` beside it. Node Gateway consumer
+tests and Spring Community provider tests verify the same bytes and fixed
+request-digest vectors; neither language copy owns the contract.
+
+### Public directory read
+
+```text
+GET /api/v1/community
+  -> GET /internal/v1/community/directory
+```
+
+The public path accepts only optional allowlisted category, province/city code
+and `public_service | nonprofit | community_group` filters. Search is
+parameterized PostgreSQL, limited to 25 and ordered by public name then opaque
+listing ID. Gateway does not call Identity or forward cookies, CSRF,
+household, subject, grant, request or protected filter facts. A listing exposes
+only its opaque ID, public organization name/type, reviewed province/city
+service area, bounded categories, organization-published contact channel,
+optional enumerated accessibility-contact note, source label/URL, review
+times, `current | stale` provenance, `not_verified` availability,
+`not_determined` eligibility and `none` endorsement. Unavailable search is not
+an empty result.
+
+Gateway may cache a public response for five minutes. The browser may retain
+one identity-free response in `sessionStorage` for at most 24 hours and must
+label it offline/stale with source, review and cache times. Protected request
+or household state never enters that cache.
+
+### Protected request operations
+
+```text
+POST   /api/v1/households/:householdId/community/help-requests/query
+POST   /api/v1/households/:householdId/community/help-requests
+POST   /api/v1/households/:householdId/community/help-requests/reconcile
+POST   /api/v1/households/:householdId/community/help-requests/:requestId/close
+DELETE /api/v1/households/:householdId/community/help-requests/:requestId
+```
+
+Each operation requests one fresh Identity decision for purpose
+`community_support`, scope `community_help_request.access` and exactly one of
+`community.help_request.list`, `submit`, `reconcile`, `close` or `delete`.
+Organizer/member status never implies consent or subject authority. Decisions
+bind opaque actor/subject/household/recipient/grant references, permission,
+current versions, decision time, correlation ID and request digest for at most
+ten seconds. Community rejects malformed, expired, future, wrong-purpose,
+wrong-permission, wrong-target, wrong-correlation or wrong-digest decisions
+before protected state access.
+
+The lowercase SHA-256 request digest covers UTF-8 bytes of uppercase method,
+newline, exact concrete internal path, newline and canonical body. Canonical
+JSON is minified, recursively key-sorted, array-order preserving and `{}` for
+bodyless input. The frozen Node/Java vectors prevent serializer or platform
+newline drift.
+
+Submit accepts only:
+
+```text
+submissionReference: opaque client reference
+category: daily_living_support | transport_coordination | household_errand |
+  social_connection | digital_access | accessibility_support
+location: { granularity: province_city, provinceCityCode }
+dayPart: flexible | morning | afternoon | evening | null
+disclosure:
+  purpose: community_support
+  visibility: current_request_collaborators
+  policyVersion: P5-S1-v1
+  confirmed: true
+```
+
+No free text, diagnosis, treatment, medication, urgency, eligibility reason,
+precise time/location/GPS, attachment, organization or matching preference,
+or unknown field is accepted. The lifecycle is `pending -> closed -> deleted`.
+`submitted` is a confirmed command outcome only; `pending` makes no review,
+queue, match, acceptance, availability, delivery, safety, eligibility or
+completion claim. Matching remains `unavailable_in_p5_s1`.
+
+Submit, close and delete require `Idempotency-Key`. Community stores only its
+digest for 24-hour replay. Same actor, operation, key, route and canonical
+intent returns the original authoritative result; changed intent returns
+`IDEMPOTENCY_CONFLICT`. `submissionReference` supports fresh-authority
+reconciliation after an uncertain submit. One pending recipient/category/
+province-city/day-part tuple is allowed. Close/delete require exact
+`expectedVersion`; stale or changed state fails without a write.
+
+First use of the same actor/operation/key/route is serialized by a transaction-
+scoped PostgreSQL advisory lock before the replay row is read or created.
+Every replay row also carries only the digest of its aggregate reference.
+Explicit deletion or retention purge invalidates all earlier submit/close
+replays for that aggregate before retaining only the new minimal delete replay,
+so an old successful response cannot resurrect protected request fields.
+
+Pending requests auto-close after 30 days. Closed protected fields purge
+within 30 additional days; explicit delete purges them immediately and leaves
+a digest-only tombstone. Content-free audit/tombstone/outbox evidence is
+bounded to 365 days. Submit/close/delete commits aggregate, privacy-safe audit,
+idempotency and suppressed outbox atomically. Event types are:
+
+```text
+community.help_request.submitted.v1
+community.help_request.closed.v1
+community.help_request.deleted.v1
+```
+
+Events contain only opaque aggregate/event references, version, enumerated
+lifecycle outcome, UTC time, correlation/causation and
+`suppressed_not_configured`; they never claim queueing, delivery, notification
+or matching. Aggregate versions remain monotonic through explicit delete and
+scheduled auto-close/purge, and `(aggregateId, aggregateVersion)` is unique in
+the owned outbox.
+
+Stable failures are `COMMUNITY_REQUEST_VALIDATION_FAILED`,
+`COMMUNITY_REQUEST_DUPLICATE`, `COMMUNITY_REQUEST_VERSION_CONFLICT`,
+`COMMUNITY_REQUEST_STATE_CONFLICT`, `COMMUNITY_REQUEST_RESULT_UNKNOWN`,
+`COMMUNITY_RESOURCE_NOT_FOUND`, `COMMUNITY_AUTHORITY_REQUIRED`,
+`COMMUNITY_CONSENT_REVOKED`, `IDEMPOTENCY_KEY_REQUIRED`,
+`IDEMPOTENCY_CONFLICT`, `DIRECTORY_VALIDATION_FAILED`,
+`DIRECTORY_SEARCH_UNAVAILABLE`, `IDENTITY_SERVICE_UNAVAILABLE`,
+`COMMUNITY_SERVICE_UNAVAILABLE` and `INTERNAL_CONTRACT_INVALID`. Protected
+offline actions are blocked and never queued or auto-submitted. Gateway never
+forwards a raw Identity failure body: an exact revoked decision becomes
+`COMMUNITY_CONSENT_REVOKED`, other non-enumerating 401/403/404 authority
+failures become `COMMUNITY_AUTHORITY_REQUIRED`, and other Identity failures
+become `IDENTITY_SERVICE_UNAVAILABLE`.

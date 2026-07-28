@@ -1,37 +1,40 @@
 # Repository Map
 
-Verified: 2026-07-28
-Integrated base: accepted live
-`origin/dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`
-Active product slice: none in this docs-only closeout; exact next is P4-S3
-only after fresh controller dispatch.
+Verified: 2026-07-29
+Candidate base: exact accepted live
+`origin/dev@486a5276ef43d143af8692501064e952a59a4829`
+Active product slice: P5-S1 implementation candidate on
+`phase/5-consented-help-request-directory`; one local Level C and promotion
+remain pending.
 
-This map reflects the accepted P1/P2/P3/P4-S1/P4-S2 tree. P4-S3 and DATA-S1
-are not started.
+This map reflects accepted P1–P4 plus the unpromoted P5-S1 candidate. P5-S2,
+P5-S3 and DATA-S1 are not started.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
 
 ## Top-level layout
 
-| Path                          | Responsibility                                                                                         | Key entry points                                                                        |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| `apps/web/`                   | Native Next.js UI plus encrypted shell-only offline plan copy, VI/EN and accessibility/recovery states | `app/`, `src/EmergencyReadinessApp.tsx`, `src/emergency-offline-store.ts`, `public/`    |
-| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition  | `src/main.ts`, `src/server.ts`                                                          |
-| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                       | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts`                   |
-| `services/care-coordination/` | Task/planning plus Care-owned emergency aggregate, immutable versions, audit and content-free outbox   | `src/emergency-readiness-service.ts`, `migrations/006_emergency_readiness.sql`          |
-| `services/notification/`      | Generic delivery attempts/evidence and immutable seen-only medication acknowledgement                  | `src/medication-reminder-service.ts`, `migrations/003_medication_reminder_delivery.sql` |
-| `packages/contracts/`         | Frozen P1 through P4-S2 authority/contact/plan/offline/event schemas                                   | `src/index.ts`, `src/emergency-readiness-contract.test.ts`                              |
-| `packages/config/`            | Required runtime configuration and production fixture guard                                            | `src/index.ts`                                                                          |
-| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                   | `src/index.ts`                                                                          |
-| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                               | `src/index.ts`                                                                          |
-| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                            | `p1-s1.test.ts`                                                                         |
-| `tests/browser/`              | Artifact-disabled VI/EN keyboard/focus/reflow/axe plus real online/offline runtime acceptance          | `p4-s2.spec.ts`, `p4-s2-runtime.spec.ts`                                                |
-| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                     | `docker-compose.yml`                                                                    |
-| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                         | `start-p1.ps1`, `validate-p4-s2.ps1`                                                    |
-| `tools/quality/`              | Repository validators plus owner-isolated migration helpers                                            | `src/p4-s2-migration.ts`                                                                |
-| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                        | `workflows/ci.yml`                                                                      |
-| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory           | documents listed below                                                                  |
+| Path                          | Responsibility                                                                                                      | Key entry points                                                                          |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `apps/web/`                   | Native Next.js UI including protected P5 help request and public directory, VI/EN and accessibility/recovery states | `app/help/`, `app/community/`, `src/CommunityApp.tsx`                                     |
+| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary and Node→Spring Community contract consumer                 | `src/main.ts`, `src/server.ts`, `src/community-routes.ts`                                 |
+| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                                    | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts`                     |
+| `services/care-coordination/` | Task/planning plus Care-owned emergency aggregate, immutable versions, audit and content-free outbox                | `src/emergency-readiness-service.ts`, `migrations/006_emergency_readiness.sql`            |
+| `services/notification/`      | Generic delivery attempts/evidence and immutable seen-only medication acknowledgement                               | `src/medication-reminder-service.ts`, `migrations/003_medication_reminder_delivery.sql`   |
+| `services/community/`         | Greenfield Spring Boot P5-S1 owner for request/directory/search/audit/outbox and owned Flyway schema                | `pom.xml`, `CommunityController.java`, `CommunityService.java`, `V1__p5_s1_community.sql` |
+| `contracts/community/`        | Frozen language-neutral Node↔Spring OpenAPI/JSON Schemas and recorded hashes                                        | `p5-s1-v1/openapi.json`, `p5-s1-v1/SHA256SUMS`, `p5-s1-v1/schemas/`                       |
+| `packages/contracts/`         | Frozen P1–P5 client/service models and Node contract tests                                                          | `src/index.ts`, `src/community-contract.test.ts`                                          |
+| `packages/config/`            | Required runtime configuration and production fixture guard                                                         | `src/index.ts`                                                                            |
+| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                                | `src/index.ts`                                                                            |
+| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                                            | `src/index.ts`                                                                            |
+| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                                         | `p1-s1.test.ts`                                                                           |
+| `tests/browser/`              | Artifact-disabled VI/EN keyboard/focus/reflow/axe plus real online/offline runtime acceptance                       | `p4-s2.spec.ts`, `p4-s2-runtime.spec.ts`                                                  |
+| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                                  | `docker-compose.yml`                                                                      |
+| `scripts/`                    | Windows bootstrap, repository Java/Maven wrapper and cumulative validation entry points                             | `bootstrap-community-toolchain.ps1`, `invoke-maven-wrapper.ps1`, `validate-p5-s1.ps1`     |
+| `tools/quality/`              | Repository validators plus Community contract/database/migration proof                                              | `src/p5-s1-contract-integrity.ts`, `src/p5-s1-database.ts`, `src/p5-s1-migration.ts`      |
+| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                                     | `workflows/ci.yml`                                                                        |
+| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory                        | documents listed below                                                                    |
 
 The existing `.ai-orchestrator/`, `.codex/`, `.vscode/`, `data/`, and
 `docs/research/` boundaries remain governed by the Phase 0 rules. P1-S1 does
@@ -46,6 +49,7 @@ browser
           → services/identity-consent  → owned PostgreSQL database
           → services/care-coordination → owned PostgreSQL database
           → services/notification      → owned PostgreSQL database
+          → services/community         → owned PostgreSQL database
 
 care-coordination local transaction
   → task/timeline/handoff OR appointment OR support-plan draft/version/history + audit + versioned outbox
@@ -53,10 +57,16 @@ care-coordination local transaction
           → notification inbox/dedup + recipient notification OR reminder-intent receipt
 ```
 
-The three services may share one local PostgreSQL engine, but use different
+The four services may share one local PostgreSQL engine, but use different
 databases, owners and credentials. No service imports or writes another
 service's persistence. Gateway composes projections and never fabricates an
 empty Notification success when that dependency is unavailable.
+
+P5-S1 adds a separate public directory path from Gateway to Spring Community
+without an Identity call. Every protected request path first obtains a fresh
+Identity decision and then sends only its minimum projection to Community.
+Node and Spring share only the frozen language-neutral schema bytes and digest
+vectors; they share no business import, SQL, role or credential.
 
 ## Canonical P1-S1 memory
 
@@ -147,6 +157,21 @@ post-delete non-resurrection; artifact-disabled mocked/real Chromium lives in
 `tests/browser/p4-s3*.spec.ts`; `validate-p4-s3.ps1` owns the one cumulative
 campaign and exact cleanup.
 
+P5-S1 adds the frozen `contracts/community/p5-s1-v1` OpenAPI/JSON Schema tree,
+Spring Boot `services/community/`, repository `mvnw.cmd`/`mvnw`, the
+checksum-verified process-local JDK bootstrap and Community Flyway V1.
+Identity migration `005_community_support_scope.sql` adds the non-backfilled
+purpose/scope pair; `apps/gateway/src/community-routes.ts` keeps identity-free
+public search separate from fresh-decision protected requests. Native LB-022/
+LB-024 live in `apps/web/src/CommunityApp.tsx` and their route folders. The
+redacted design/security authorities are
+`docs/design/reviews/P5_S1_STITCH_HANDOFF.md` and
+`docs/security/P5_S1_THREAT_MODEL.md`. Contract/database/migration proof lives
+under `tools/quality/src/p5-s1-*`; artifact-disabled desktop/mobile mocked and
+real mixed-runtime coverage lives in `tests/browser/p5-s1*.spec.ts`.
+`scripts/validate-p5-s1.ps1` is the exactly-once cumulative candidate runner;
+it has not yet been invoked locally.
+
 ## Commands and generated state
 
 | Command                                     | Behavior                                                                                                        |
@@ -180,6 +205,10 @@ campaign and exact cleanup.
 | `pnpm.cmd run test:p4-s3:backup-restore`    | Owner-local pre-delete byte/binding restore and post-delete non-resurrection rehearsal                          |
 | `pnpm.cmd run test:p4-s3:browser`           | Artifact-disabled mocked/real LB-023 Chromium, accessibility, privacy and failure-state acceptance              |
 | `pnpm.cmd run validate:p4-s3`               | Single-use cumulative P4-S3 Level C with owned PostgreSQL, restore, runtime, privacy/a11y and regressions       |
+| `pnpm.cmd run test:p5-s1:contracts`         | Frozen schema-integrity plus Node Gateway consumer proof against the exact P5-S1 contract                       |
+| `pnpm.cmd run test:p5-s1:migration`         | Community PostgreSQL/Flyway rollback, reapply, no-backfill and cross-owner privilege proof                      |
+| `pnpm.cmd run test:p5-s1:browser`           | Artifact-disabled desktop/mobile mocked and mixed Node/Spring LB-022/LB-024 browser acceptance                  |
+| `pnpm.cmd run validate:p5-s1`               | Exactly-once cumulative P5-S1 Level C with repository Java/Maven, Community PostgreSQL and regressions          |
 
 Local credentials and logs live only under ignored `.lifebridge-local/`. The
 validation runner creates a PID-scoped Compose project and removes only that
@@ -215,6 +244,14 @@ databases are ignored.
   `tools/quality/src/p4-s3-migration.ts`,
   `tools/quality/src/p4-s3-backup-restore.ts`, and artifact-disabled
   `tests/browser/p4-s3*.spec.ts`.
+- P5-S1 language-neutral provider/consumer proof:
+  `packages/contracts/src/community-contract.test.ts`,
+  `apps/gateway/src/community-consumer-contract.test.ts` and
+  `services/community/src/test/java/org/lifebridge/community/*Contract*Test.java`.
+- P5-S1 Community PostgreSQL and mixed-runtime proof:
+  `tools/quality/src/p5-s1-migration.ts`,
+  `services/community/src/test/java/org/lifebridge/community/CommunityServiceIntegrationTest.java`
+  and artifact-disabled `tests/browser/p5-s1*.spec.ts`.
 - CI aggregate gate: `.github/workflows/ci.yml`.
 - Legacy foundation validator: `tools/quality/src/phase0.ts`.
 

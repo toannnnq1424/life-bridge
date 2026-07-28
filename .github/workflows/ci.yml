@@ -1,4 +1,4 @@
-name: Integrated P1 through P4-S3 acceptance CI
+name: Integrated P1 through P5-S1 acceptance CI
 
 on:
   pull_request:
@@ -60,6 +60,26 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: Set up accepted Temurin JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9
+          cache: maven
+          cache-dependency-path: |
+            services/community/pom.xml
+            .mvn/wrapper/maven-wrapper.properties
+            mvnw
+            mvnw.cmd
+
+      - name: Bootstrap checksummed repository Java and Maven toolchain
+        shell: powershell
+        run: |
+          if ((git ls-files --stage mvnw).Split()[0] -ne "100755") {
+            throw "The Linux Maven wrapper must be committed executable."
+          }
+          ./scripts/bootstrap-community-toolchain.ps1
+
       - name: Install locked dependencies with narrow build policy
         shell: powershell
         run: pnpm.cmd install --frozen-lockfile
@@ -75,20 +95,43 @@ jobs:
           pnpm.cmd run format:p4-s1:check
           pnpm.cmd run format:p4-s2:check
           pnpm.cmd run format:p4-s3:check
+          pnpm.cmd run format:p5-s1:check
           pnpm.cmd run lint
           pnpm.cmd run typecheck
           pnpm.cmd run test:unit
           pnpm.cmd run validate:docs
           pnpm.cmd run validate:config
           pnpm.cmd run validate:secrets
+          pnpm.cmd run test:p5-s1:contracts
+          node --experimental-strip-types tools/quality/src/p5-s1-contract-integrity.ts
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml clean test
           pnpm.cmd run build
+
+      - name: Verify Java provenance and reproducible Community package
+        shell: powershell
+        run: |
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml clean verify
+          $sbomPath = "services/community/target/classes/META-INF/sbom/community-sbom.json"
+          if (-not (Test-Path $sbomPath)) {
+            throw "Community CycloneDX provenance output is missing."
+          }
+          $sbom = Get-Content $sbomPath -Raw | ConvertFrom-Json
+          if ($sbom.bomFormat -ne "CycloneDX" -or -not $sbom.specVersion) {
+            throw "Community CycloneDX provenance output is invalid."
+          }
+          $first = (Get-FileHash -Algorithm SHA256 services/community/target/lifebridge-community.jar).Hash
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml clean verify
+          $second = (Get-FileHash -Algorithm SHA256 services/community/target/lifebridge-community.jar).Hash
+          if ($first -ne $second) {
+            throw "Community package is not reproducible."
+          }
 
       - name: Audit dependency advisories
         shell: powershell
         run: pnpm.cmd run security:deps
 
   postgres-browser:
-    name: P4-S3 PostgreSQL integration, restore, and Chromium acceptance
+    name: P5-S1 PostgreSQL, mixed-runtime, and cumulative Chromium acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 35
     services:
@@ -129,6 +172,18 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
+      - name: Set up accepted Temurin JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9
+          cache: maven
+          cache-dependency-path: |
+            services/community/pom.xml
+            .mvn/wrapper/maven-wrapper.properties
+            mvnw
+            mvnw.cmd
+
       - name: Install locked dependencies with narrow build policy
         run: pnpm install --frozen-lockfile
 
@@ -141,29 +196,37 @@ jobs:
           $carePassword = [guid]::NewGuid().ToString('N')
           $identityPassword = [guid]::NewGuid().ToString('N')
           $notificationPassword = [guid]::NewGuid().ToString('N')
+          $communityPassword = [guid]::NewGuid().ToString('N')
           Write-Output "::add-mask::$carePassword"
           Write-Output "::add-mask::$identityPassword"
           Write-Output "::add-mask::$notificationPassword"
+          Write-Output "::add-mask::$communityPassword"
           "P1_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
           "P1_CARE_DATABASE_PASSWORD=$carePassword" >> $env:GITHUB_ENV
           "P1_NOTIFICATION_DATABASE_PASSWORD=$notificationPassword" >> $env:GITHUB_ENV
           "P2_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
           "P2_IDENTITY_DATABASE_PASSWORD=$identityPassword" >> $env:GITHUB_ENV
+          "P5_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
+          "P5_COMMUNITY_DATABASE_PASSWORD=$communityPassword" >> $env:GITHUB_ENV
 
       - name: Align database URLs with generated owner credentials
         shell: pwsh
         run: |
           "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
           "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
+          "P5_S1_COMMUNITY_TEST_DATABASE_URL=postgresql://lifebridge_community:$($env:P5_COMMUNITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
+          "COMMUNITY_DATABASE_URL=jdbc:postgresql://127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
+          "COMMUNITY_DATABASE_USERNAME=lifebridge_community" >> $env:GITHUB_ENV
+          "COMMUNITY_DATABASE_PASSWORD=$($env:P5_COMMUNITY_DATABASE_PASSWORD)" >> $env:GITHUB_ENV
 
-      - name: Run the P4-S3 Level C campaign
+      - name: Run the P5-S1 Level C campaign
         shell: pwsh
         env:
-          P4_S3_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
-        run: ./scripts/validate-p4-s3.ps1 -UseExistingDatabase -SkipInstall
+          P5_S1_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: ./scripts/validate-p5-s1.ps1 -UseExistingDatabase -SkipInstall
 
   integrated-gate:
-    name: P1 through P4-S3 full required gate
+    name: P1 through P5-S1 full required gate
     if: always()
     needs:
       - windows-quality

@@ -1,0 +1,44 @@
+server:
+  address: ${COMMUNITY_HOST:127.0.0.1}
+  port: ${COMMUNITY_PORT:3103}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: lifebridge-community
+  main:
+    log-startup-info: false
+  datasource:
+    url: ${COMMUNITY_DATABASE_URL}
+    username: ${COMMUNITY_DATABASE_USERNAME}
+    password: ${COMMUNITY_DATABASE_PASSWORD}
+    hikari:
+      maximum-pool-size: 8
+      minimum-idle: 1
+  flyway:
+    enabled: true
+    validate-migration-naming: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  lifecycle:
+    timeout-per-shutdown-phase: 10s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+community:
+  internal-token: ${COMMUNITY_INTERNAL_TOKEN}
+  allowed-province-city-codes: ${COMMUNITY_ALLOWED_PROVINCE_CITY_CODES:SYN-PC-001,SYN-PC-002}
+  fixtures-enabled: ${COMMUNITY_FIXTURES_ENABLED:false}
+  runtime-mode: ${RUNTIME_MODE:production}

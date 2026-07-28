@@ -7,3 +7,4 @@ docs/design/screenshots/
 docs/design/exports/
 prototypes/
 pnpm-lock.yaml
+**/target/

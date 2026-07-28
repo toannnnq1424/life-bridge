@@ -30,6 +30,7 @@ export type PrivacySafeOperation =
   | "consent.narrow"
   | "consent.revoke"
   | "consent.authorize"
+  | "community.authorize"
   | "coordination.authorize"
   | "audit.read"
   | "privacy.update";

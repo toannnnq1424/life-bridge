@@ -378,3 +378,57 @@ encryption, historical-backup deletion, RPO/RTO, Viet Nam legal compliance,
 manual assistive-technology conformance or private-render visual approval.
 Re-check when file types, maximum size, scanner, object storage, crypto,
 retention, public exposure or compliance claims change.
+
+## 2026-07-28 — P5-S1 Community contract and toolchain micro-cycle
+
+Result: `PASS`; retrieved 2026-07-28 and frozen before Java/product code. This
+bounded official-source review introduced no dataset, real person, care record,
+credential, private locator, generated source, organization claim, exact
+address, diagnosis, treatment, urgency, eligibility, safety or matching fact.
+The complete reconciliation is
+`docs/research/P5_S1_CONTRACT_TOOLCHAIN_REVIEW.md`.
+
+- Eclipse Adoptium official Temurin releases and installation guidance support
+  the complete Windows x64 HotSpot JDK `25.0.3+9`; the accepted archive SHA-256
+  is `709312cd0420296d9b9de917fe6e28a5b979e875ee5ab91783fb79bcd5857235`.
+  The incomplete `25.0.4` placeholder was rejected rather than guessed.
+- Spring official project/system-requirement documentation and the official
+  Spring Boot 4.1.0 dependency BOM support Boot `4.1.0` on Java 25 and pin the
+  accepted Spring-managed PostgreSQL JDBC `42.7.11`, Flyway `12.4.0`, JUnit
+  Jupiter `6.0.3` and Spring Framework `7.0.8` lines. Boot 4's official
+  migration guidance requires the `spring-boot-starter-flyway` integration.
+- Apache Maven official download/release/wrapper documentation supports Maven
+  `3.9.16` and Wrapper `3.3.4` in `only-script` mode. The accepted Maven ZIP
+  SHA-256 is
+  `5af3b743dd8b876b5c45da33b676251e5f1687712644abb4ee519ca56e1d89ce`,
+  derived only after the archive matched Apache's published SHA-512.
+- The accepted explicit plugin pins are compiler `3.15.0`, surefire/failsafe
+  `3.5.6`, enforcer `3.6.3` and CycloneDX `2.9.1`. The repository wrappers and
+  bootstrap verify exact bytes/version and set Java only for the current
+  process/children; they never use system Maven, Registry, `setx`, a package
+  manager, global settings or machine `PATH` changes.
+- PostgreSQL official locking/index/transaction behavior supports the single-
+  owner request aggregate, structured parameterized search, one pending tuple,
+  optimistic/advisory serialization, atomic audit/outbox/replay and
+  transactional migration proof. It does not establish organization
+  eligibility, availability, safety, endorsement or a match.
+- OWASP authorization/logging guidance supports deny-by-default per-request
+  decisions and allowlisted content-free operational evidence. W3C WCAG 2.2
+  supplies the native keyboard/focus/reflow/status/target requirements; it does
+  not replace manual assistive-technology evidence.
+
+Kết luận / Conclusion: `P5-S1-v1` separates identity-free public directory
+reads from fresh-purpose protected request operations; accepts only bounded
+category/province-city/day-part/disclosure fields; freezes digest-bound
+idempotency, duplicate/conflict/uncertain recovery, `pending -> closed ->
+deleted`, 30-day close/purge and 365-day content-free evidence; and keeps
+PostgreSQL as the only search engine. Community is the sole Spring/PostgreSQL
+owner under ADR-019. The four synthetic Stitch references are design input
+only; KI-019 remains.
+
+Re-check on JDK/Spring/Maven/plugin upgrades; new request fields or location
+granularity; eligibility/matching/moderation; public-directory import/crawl;
+Elasticsearch/Redis/broker/object storage/cache/crypto; another Community
+service; production deployment; legal/compliance or accessibility-conformance
+claims. P5-S2 requires a new bounded micro-cycle and may not infer authority
+from this review.

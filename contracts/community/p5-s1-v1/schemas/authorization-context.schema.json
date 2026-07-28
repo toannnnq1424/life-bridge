@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s1-v1/schemas/authorization-context.schema.json",
+  "title": "P5-S1 Community authorization context",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decisionId",
+    "purpose",
+    "permission",
+    "actorRef",
+    "householdId",
+    "recipientContextId",
+    "subjectVersion",
+    "grantId",
+    "grantVersion",
+    "privacyVersion",
+    "requestId",
+    "decidedAt",
+    "correlationId",
+    "requestDigest"
+  ],
+  "properties": {
+    "decisionId": { "$ref": "#/$defs/opaqueId" },
+    "purpose": { "const": "community_support" },
+    "permission": {
+      "enum": [
+        "community.help_request.list",
+        "community.help_request.submit",
+        "community.help_request.reconcile",
+        "community.help_request.close",
+        "community.help_request.delete"
+      ]
+    },
+    "actorRef": { "$ref": "#/$defs/opaqueId" },
+    "householdId": { "$ref": "#/$defs/opaqueId" },
+    "recipientContextId": { "$ref": "#/$defs/opaqueId" },
+    "subjectVersion": { "type": "integer", "minimum": 1 },
+    "grantId": {
+      "oneOf": [{ "$ref": "#/$defs/opaqueId" }, { "type": "null" }]
+    },
+    "grantVersion": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "null" }
+      ]
+    },
+    "privacyVersion": {
+      "oneOf": [
+        { "type": "integer", "minimum": 1 },
+        { "type": "null" }
+      ]
+    },
+    "requestId": {
+      "oneOf": [{ "$ref": "#/$defs/opaqueId" }, { "type": "null" }]
+    },
+    "decidedAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "$ref": "#/$defs/correlationId" },
+    "requestDigest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "$defs": {
+    "opaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    }
+  }
+}

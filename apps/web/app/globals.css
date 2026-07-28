@@ -428,6 +428,250 @@ h1 {
   }
 }
 
+/* P5-S1 consented help request and public directory: corrected native Frozen handoff. */
+.community-app {
+  min-height: 100vh;
+  color: #172b25;
+  background: #f3faf6;
+}
+
+.community-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #849d94;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: #e4f3eb;
+}
+
+.community-header label,
+.community-form label,
+.directory-filters label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.community-header select,
+.community-form select,
+.directory-filters select {
+  width: 100%;
+  min-height: 44px;
+  border: 2px solid #5d756c;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  color: inherit;
+  background: #fff;
+  font: inherit;
+}
+
+.community-main {
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem) 0 4rem;
+}
+
+.community-main > h1 {
+  max-width: 28ch;
+  margin-top: 0;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.08;
+}
+
+.community-main > p,
+.community-boundary {
+  max-width: 76ch;
+}
+
+.community-boundary,
+.community-state,
+.community-form,
+.community-list > li,
+.directory-list > li {
+  overflow-wrap: anywhere;
+  margin-block: 1rem;
+  border: 2px solid #799388;
+  border-radius: 12px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: #fff;
+}
+
+.community-boundary {
+  border-inline-start: 0.55rem solid #176b4b;
+  background: #eaf7f0;
+}
+
+.community-state h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.state-validation,
+.state-denied,
+.state-revoked,
+.state-conflict,
+.state-uncertain,
+.state-unavailable,
+.state-offline,
+.directory-state-unavailable,
+.directory-state-offline-empty {
+  border-color: #9c2828;
+  background: #fff1f1;
+  color: #641c1c;
+}
+
+.state-submitted,
+.state-duplicate,
+.state-closed,
+.state-deleted {
+  border-color: #176b4b;
+  background: #edf9f2;
+}
+
+.directory-state-stale,
+.directory-state-offline-cache,
+.directory-state-location-denied {
+  border-color: #9a5b00;
+  background: #fff8e8;
+}
+
+.community-form,
+.directory-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.directory-filters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-block: 1.5rem;
+}
+
+.community-form > p,
+.community-form > button,
+.community-check,
+.directory-filters .action-row {
+  grid-column: 1 / -1;
+}
+
+.community-check {
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  align-items: start;
+}
+
+.community-check input {
+  width: 1.5rem;
+  min-height: 1.5rem;
+  margin: 0;
+}
+
+.community-app button {
+  min-height: 44px;
+  border: 2px solid #14573f;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  color: #fff;
+  background: #14573f;
+  font: inherit;
+  font-weight: 700;
+}
+
+.community-app button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.community-app .secondary-action {
+  color: #14573f;
+  background: #fff;
+}
+
+.community-list,
+.directory-list {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.community-list dl,
+.directory-list dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.community-list dt,
+.directory-list dt {
+  color: #435d54;
+  font-weight: 700;
+}
+
+.community-list dd,
+.directory-list dd {
+  margin: 0.2rem 0 0;
+}
+
+.community-app :focus-visible {
+  outline: 4px solid #b54708;
+  outline-offset: 3px;
+}
+
+@media (max-width: 42rem) {
+  .community-header,
+  .community-app .action-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .community-main {
+    width: min(100% - 1rem, 72rem);
+  }
+
+  .community-form,
+  .directory-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .community-form > *,
+  .community-form > p,
+  .community-form > button,
+  .community-check,
+  .directory-filters .action-row {
+    grid-column: 1;
+  }
+
+  .community-app button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-app *,
+  .community-app *::before,
+  .community-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .community-header,
+  .community-boundary,
+  .community-state,
+  .community-form,
+  .community-list > li,
+  .directory-list > li {
+    border: 2px solid CanvasText;
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+}
+
 .document-vault-header {
   display: flex;
   align-items: flex-start;
