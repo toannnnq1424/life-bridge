@@ -351,4 +351,15 @@ LB-012 and minimum LB-014 handoff extension
 -> private generated renders are not standalone visual approval (KI-019)
 ```
 
+P4-S2 candidate status:
+
+```text
+LB-020, LB-021, and only required read-only LB-032 behavior
+-> four synthetic references generated once and read back directly
+-> corrected redacted handoff Frozen for native semantic implementation
+-> ADR-025 and P4-S2 threat model accepted
+-> generated source rejected; KI-016 and KI-019 retained
+-> native implementation and validation pending
+```
+
 A screen changes to `Ready for implementation` only after its handoff reaches `Frozen` and every required `TBD` is resolved with repository evidence.

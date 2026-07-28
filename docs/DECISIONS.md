@@ -656,6 +656,58 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   exactly one local `validate:p4-s1` campaign, then require exact-head and
   post-merge hosted CI. Preserve KI-001/KI-016/KI-019 and do not start P4-S2.
 
+## ADR-025 — Keep emergency readiness in Care and encrypt one bounded offline copy
+
+- Status: Accepted for P4-S2 implementation
+- Date: 2026-07-28
+- Change ID: `CHG-2026-017`
+- Context: P4-S2 must let an authorized participant configure ordered emergency
+  contacts and a reviewed plan, then read a minimum safe copy when disconnected.
+  Existing slices prohibit persistent care data in the browser, so a
+  service-worker cache plus passphrase/KDF/AEAD/key lifecycle changes the
+  accepted retention and threat boundary.
+- Decision: Care Coordination owns one versioned emergency-readiness aggregate
+  in its existing PostgreSQL datastore. Identity & Consent supplies a fresh
+  exact-purpose `P4-S2-v1` decision for every online operation; Gateway composes
+  only. A complete contact replacement and plan mutation serialize on the same
+  aggregate; contact changes require re-review before snapshot issuance.
+  Notification is uninvolved. With explicit per-device opt-in, a same-origin
+  native client derives an AES-256-GCM key through PBKDF2-HMAC-SHA-256 with
+  600,000 iterations, a random 16-byte salt, and a random 12-byte nonce from a
+  separate offline passphrase. It stores one authenticated minimum snapshot in
+  IndexedDB. The service worker caches only the versioned non-sensitive shell.
+  Protected HTTP responses stay `no-store`.
+- Alternatives considered: plaintext local/session storage; a persistently
+  stored automatic browser key; Cache Storage/API-response caching; a global
+  service worker; multiple independently fetched plan/contact copies; a new
+  cache/crypto service; Notification ownership; Gateway state; no offline
+  capability; organizer/member authority; an offline write queue.
+- Consequences: The snapshot binds source/schema/scope, plan/contact revisions,
+  review and server confirmation/display-time facts. It is recent through 24
+  hours, explicitly stale through 72 hours, then hidden and purged. Local
+  removal never needs authority. Known logout/account switch/denial/revocation,
+  `no_plan`, source change, schema incompatibility, integrity failure, and
+  expiry purge before render. Offline state never grants authority, claims live
+  permission/currentness, or permits writes. The passphrase/key never leaves
+  page memory or reaches the worker/server. Forgotten passphrase, integrity
+  failure, or wrong scope requires purge and online recreation.
+- Planned baseline: the roadmap required a timestamped stale-aware safe offline
+  copy, minimum disclosure, accepted P2 authority, and a retained cache threat
+  boundary, but did not assign ownership, freeze contact/plan version coupling,
+  select storage/crypto parameters, or bound residual disclosure.
+- Actual implementation/evidence: three independent pre-implementation reviews
+  converged on Care ownership, exact-purpose authority, one transactionally
+  consistent projection, app-shell-only service-worker caching, authenticated
+  passphrase encryption, and fail-closed purge. The product retains the
+  unavoidable inability to learn remote revocation offline, same-origin XSS/
+  unlocked-device exposure, offline passphrase guessing, KI-016 manual AT, and
+  KI-019 private-pixel review as explicit residual risk.
+- Validation and follow-up: generate/read back four synthetic LB-020/LB-021/
+  LB-032 references, freeze a redacted native handoff, implement the vertical
+  slice, invoke exactly one local `validate:p4-s2` campaign, then require exact-
+  head and post-merge hosted CI. Do not start P4-S3, DATA-S1, P5, Spring,
+  deployment, or release work.
+
 ## Decision-change template
 
 ```md

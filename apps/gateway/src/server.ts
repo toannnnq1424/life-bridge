@@ -13,12 +13,16 @@ import {
   CreateMedicationReminderRequestSchema,
   DailyTimelineQuerySchema,
   DisableMedicationReminderRequestSchema,
+  EmergencyHistoryQuerySchema,
+  ReplaceEmergencyContactsRequestSchema,
+  ReviewEmergencyPlanVersionRequestSchema,
   CompleteTaskRequestSchema,
   CreateTaskRequestSchema,
   HandoffTaskRequestSchema,
   IdempotencyKeySchema,
   IanaTimeZoneSchema,
   SaveCarePlanDraftRequestSchema,
+  SaveEmergencyPlanDraftRequestSchema,
   successEnvelope,
   type CoordinationPermission,
 } from "@lifebridge/contracts";
@@ -147,7 +151,7 @@ export function buildGatewayServer(
   });
 
   app.get("/health/live", async () => ({ status: "live" }));
-  app.get("/version", async () => ({ service: "gateway", contract: "P4-S1-v1" }));
+  app.get("/version", async () => ({ service: "gateway", contract: "P4-S2-v1" }));
   app.get("/health/ready", async (_request, reply) => {
     try {
       const care = await fetcher(`${config.careUrl}/health/ready`, {
@@ -1316,6 +1320,171 @@ export function buildGatewayServer(
   });
 
   app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/emergency-contacts",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_contacts.read",
+        householdId,
+        requestDigest: digestJson({ operation: "emergency_contacts.read", householdId }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-contacts/read`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.put<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/emergency-contacts",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      const contactRequest = ReplaceEmergencyContactsRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_contacts.replace",
+        householdId,
+        requestDigest: digestJson({
+          operation: "emergency_contacts.replace",
+          householdId,
+          request: contactRequest,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-contacts`,
+        method: "PUT",
+        idempotencyKey,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: contactRequest }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string }; Querystring: unknown }>(
+    "/api/v1/households/:householdId/emergency-contacts/history",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      const query = EmergencyHistoryQuerySchema.parse(request.query);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_contacts.history.read",
+        householdId,
+        requestDigest: digestJson({
+          operation: "emergency_contacts.history",
+          householdId,
+          query,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-contacts/history/query`,
+        method: "POST",
+        body: (authorization) => ({ authorization, query }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/emergency-plan",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_plan.read",
+        householdId,
+        requestDigest: digestJson({ operation: "emergency_plan.read", householdId }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-plan/read`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.put<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/emergency-plan/draft",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      const draftRequest = SaveEmergencyPlanDraftRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_plan.draft.save",
+        householdId,
+        requestDigest: digestJson({
+          operation: "emergency_plan.draft.save",
+          householdId,
+          request: draftRequest,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-plan/draft`,
+        method: "PUT",
+        idempotencyKey,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: draftRequest }),
+      });
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/emergency-plan/reviews",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      const reviewRequest = ReviewEmergencyPlanVersionRequestSchema.parse(request.body);
+      const idempotencyKey = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_plan.version.review",
+        householdId,
+        requestDigest: digestJson({
+          operation: "emergency_plan.version.review",
+          householdId,
+          request: reviewRequest,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-plan/reviews`,
+        method: "POST",
+        idempotencyKey,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: reviewRequest }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string }; Querystring: unknown }>(
+    "/api/v1/households/:householdId/emergency-plan/history",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      const query = EmergencyHistoryQuerySchema.parse(request.query);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_plan.history.read",
+        householdId,
+        requestDigest: digestJson({
+          operation: "emergency_plan.history",
+          householdId,
+          query,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-plan/history/query`,
+        method: "POST",
+        body: (authorization) => ({ authorization, query }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string } }>(
+    "/api/v1/households/:householdId/emergency-plan/offline-snapshot",
+    async (request, reply) => {
+      const householdId = request.params.householdId;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.emergency_plan.offline_snapshot.read",
+        householdId,
+        requestDigest: digestJson({
+          operation: "emergency_plan.offline_snapshot",
+          householdId,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/coordination/households/${encodeURIComponent(householdId)}/emergency-plan/offline-snapshot/read`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.get<{ Params: { householdId: string } }>(
     "/api/v1/households/:householdId/medication-reminders",
     async (request, reply) => {
       const householdId = request.params.householdId;
@@ -1489,30 +1658,40 @@ export function buildGatewayServer(
       validation && (request.url.includes("/appointments") || request.url.includes("/calendar"));
     const carePlanValidation = validation && request.url.includes("/care-plan");
     const medicationValidation = validation && request.url.includes("/medication-reminders");
+    const emergencyContactValidation = validation && request.url.includes("/emergency-contacts");
+    const emergencyPlanValidation = validation && request.url.includes("/emergency-plan");
     return reply.code(idempotencyRequired || validation ? 400 : 503).send({
       error: {
         code: idempotencyRequired
           ? "IDEMPOTENCY_KEY_REQUIRED"
-          : medicationValidation
-            ? "MEDICATION_REMINDER_VALIDATION_FAILED"
-            : carePlanValidation
-              ? "CARE_PLAN_VALIDATION_FAILED"
-              : appointmentValidation
-                ? "APPOINTMENT_VALIDATION_FAILED"
-                : validation
-                  ? "TASK_VALIDATION_FAILED"
-                  : "SERVICE_UNAVAILABLE",
+          : emergencyContactValidation
+            ? "EMERGENCY_CONTACT_VALIDATION_FAILED"
+            : emergencyPlanValidation
+              ? "EMERGENCY_PLAN_VALIDATION_FAILED"
+              : medicationValidation
+                ? "MEDICATION_REMINDER_VALIDATION_FAILED"
+                : carePlanValidation
+                  ? "CARE_PLAN_VALIDATION_FAILED"
+                  : appointmentValidation
+                    ? "APPOINTMENT_VALIDATION_FAILED"
+                    : validation
+                      ? "TASK_VALIDATION_FAILED"
+                      : "SERVICE_UNAVAILABLE",
         messageKey: idempotencyRequired
           ? "errors.idempotency.required"
-          : medicationValidation
-            ? "medication_reminder.validation"
-            : carePlanValidation
-              ? "care_plan.validation"
-              : appointmentValidation
-                ? "appointment.validation"
-                : validation
-                  ? "errors.task.validation"
-                  : "errors.service.unavailable",
+          : emergencyContactValidation
+            ? "emergency_contacts.validation"
+            : emergencyPlanValidation
+              ? "emergency_plan.validation"
+              : medicationValidation
+                ? "medication_reminder.validation"
+                : carePlanValidation
+                  ? "care_plan.validation"
+                  : appointmentValidation
+                    ? "appointment.validation"
+                    : validation
+                      ? "errors.task.validation"
+                      : "errors.service.unavailable",
         retryable: !idempotencyRequired && !validation,
         correlationId,
       },

@@ -9,6 +9,7 @@ export async function migrateCareDatabase(connectionString: string): Promise<voi
     readFile(new URL("../migrations/003_calendar_appointments.sql", import.meta.url), "utf8"),
     readFile(new URL("../migrations/004_care_plan_review.sql", import.meta.url), "utf8"),
     readFile(new URL("../migrations/005_medication_reminders.sql", import.meta.url), "utf8"),
+    readFile(new URL("../migrations/006_emergency_readiness.sql", import.meta.url), "utf8"),
   ]);
   const pool = new Pool({ connectionString, max: 1 });
   try {

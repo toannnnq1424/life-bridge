@@ -1017,3 +1017,164 @@ Lists are bounded and expose no hidden totals. Primary errors include
 `MEDICATION_ACKNOWLEDGEMENT_STATE_CONFLICT`, `COORDINATION_AUTHORITY_REQUIRED`,
 `IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_CONFLICT`, `SERVICE_UNAVAILABLE` and
 `INTERNAL_CONTRACT_INVALID`.
+
+## P4-S2 emergency readiness contract (`P4-S2-v1`)
+
+Care Coordination owns one emergency-readiness aggregate for each
+household/recipient context. Identity & Consent makes a fresh exact-purpose
+decision for every online operation. Gateway composes owner responses and
+stores no contact, plan, consent, or offline-copy state. Notification is not
+involved.
+
+Permissions are exact and non-substitutable:
+
+```text
+coordination.emergency_contacts.read
+coordination.emergency_contacts.replace
+coordination.emergency_contacts.history.read
+coordination.emergency_plan.read
+coordination.emergency_plan.draft.save
+coordination.emergency_plan.version.review
+coordination.emergency_plan.history.read
+coordination.emergency_plan.offline_snapshot.read
+```
+
+The mapping is frozen as `P4-S2-v1`. Organizer/member/caregiver role, route
+access, an earlier decision, an event, or possession of an offline copy never
+creates authority. A collaborator needs active same-household membership plus
+the current P2 `household_coordination` grant containing
+`recipient_context.basic_label` and `coordinationActivityVisibility =
+household_only`. Each decision binds actor, household, recipient, exact
+permission, normalized request digest, correlation, and current subject/grant/
+privacy versions for at most ten seconds. Care revalidates every bound fact
+before any read or write. Local device purge is always permitted without
+online authority.
+
+The public surface is:
+
+```text
+GET  /api/v1/households/{householdId}/emergency-contacts
+PUT  /api/v1/households/{householdId}/emergency-contacts
+GET  /api/v1/households/{householdId}/emergency-contacts/history
+GET  /api/v1/households/{householdId}/emergency-plan
+PUT  /api/v1/households/{householdId}/emergency-plan/draft
+POST /api/v1/households/{householdId}/emergency-plan/reviews
+GET  /api/v1/households/{householdId}/emergency-plan/history
+GET  /api/v1/households/{householdId}/emergency-plan/offline-snapshot
+```
+
+Contact replacement is a complete ordered command:
+
+```text
+operation: replace_emergency_contacts
+expectedListRevision: non-negative integer
+contacts: 0..10 items in exact projected order
+contacts[].contactId: existing opaque ID or omitted for a new item
+contacts[].expectedVersion: positive integer for an existing item, otherwise omitted
+contacts[].displayLabel: trimmed single line, 1..60 characters
+contacts[].dialString: optional leading + followed by 3..15 digits
+```
+
+Unknown fields, duplicate IDs, non-contiguous order, control characters, markup
+objects, email, address, location, notes, availability, organization,
+professional/legal role, clinical data, and arbitrary metadata are rejected.
+The submitted array is the whole list; create/change/reorder/remove therefore
+commit as one optimistic revision or not at all. The response contains only
+outcome, list revision, opaque item IDs/versions, and server-confirmed UTC.
+Values are returned only by a new authorized read. History is reverse-revision
+ordered, bounded 1..25, cursor-sealed, content-free, and exposes no total,
+removed values, hidden count, actor, or consent body.
+
+Plan states are `no_plan`, `draft_only`, `reviewed`, and `review_required`.
+Draft save is:
+
+```text
+operation: save_emergency_plan_draft
+expectedAggregateRevision: non-negative integer
+expectedDraftRevision: non-negative integer
+basePlanVersion: non-negative integer
+contactListRevision: non-negative integer
+steps: 1..8 ordered items, each a trimmed single line of 1..160 characters
+```
+
+Review is:
+
+```text
+operation: review_emergency_plan_version
+expectedAggregateRevision: non-negative integer
+expectedDraftRevision: positive integer
+basePlanVersion: non-negative integer
+contactListRevision: positive integer
+displayTimeZone: canonical IANA name
+```
+
+Review requires at least one current contact and exact draft/base/contact
+revisions. It creates one immutable participant-reviewed, server-confirmed
+version, clears the draft, and records server UTC plus server-derived local
+display, numeric offset, and IANA facts. It is not professional approval.
+Later contact replacement makes the plan `review_required`; a new offline
+snapshot is unavailable until the participant reviews the plan against the new
+contact revision. `no_plan` is an authorized `200` state, never an error or a
+dependency fallback. History is reverse-version ordered, bounded, sealed,
+content-free, and exposes no total; protected steps appear only in the current
+read.
+
+The online snapshot endpoint returns one transactionally consistent projection
+only when the reviewed plan remains bound to the current contact revision:
+
+```text
+contractVersion: P4-S2-offline-v1
+source: care-coordination
+planVersion
+contactListRevision
+reviewedAtUtc
+lastConfirmedAtUtc
+displayTimeZone
+displayLocalTime
+displayUtcOffset
+freshUntilUtc: lastConfirmedAtUtc + 24 hours
+expiresAtUtc: lastConfirmedAtUtc + 72 hours
+contacts: position, displayLabel, dialString
+steps: position, text
+```
+
+It excludes drafts, history, actor/grant/subject identifiers, authority bodies,
+audit, item versions, hidden counts, arbitrary metadata, and any claim of live
+availability. The response remains `Cache-Control: no-store`. The browser may
+persist only the ADR-025 encrypted snapshot; the service worker may persist
+only the non-sensitive shell. At every offline age the UI says the copy is not
+live and that current permission and updates cannot be checked. Up to 24 hours
+is `offline_recent`; over 24 through 72 hours is `offline_stale`; after 72
+hours is `freshness_expired`, content is hidden, and ciphertext is purged.
+Backward or invalid device time is `freshness_unknown` and never “recent.”
+Every offline write/action is blocked, not queued, replayed, or submitted on
+reconnect.
+
+Contact replacement, draft save, and version review require an
+`Idempotency-Key`. Same key and digest returns the original content-free
+response; changed intent is `409 IDEMPOTENCY_CONFLICT`. Contact/plan state,
+content-free transition, redacted audit, digest-only replay, and content-free
+suppressed outbox evidence commit atomically. Events are:
+
+```text
+care.emergency_contacts.changed.v1
+care.emergency_plan.version_reviewed.v1
+```
+
+They contain only opaque aggregate/version facts, action/outcome, correlation/
+causation, and `deliveryDisposition=none`; never contact values, plan text,
+contact count, consent body, passphrase, cache metadata, or idempotency
+material. Notification does not consume them.
+
+Stable errors are `EMERGENCY_CONTACT_VALIDATION_FAILED`,
+`EMERGENCY_CONTACT_LIST_VERSION_CONFLICT`,
+`EMERGENCY_CONTACT_VERSION_CONFLICT`, `EMERGENCY_PLAN_VALIDATION_FAILED`,
+`EMERGENCY_PLAN_AGGREGATE_CONFLICT`, `EMERGENCY_PLAN_DRAFT_CONFLICT`,
+`EMERGENCY_PLAN_CONTACTS_CHANGED`, `EMERGENCY_PLAN_REVIEW_REQUIRED`,
+`EMERGENCY_PLAN_STATE_CONFLICT`, `EMERGENCY_RESULT_UNKNOWN`,
+`COORDINATION_RESOURCE_NOT_FOUND`, `COORDINATION_AUTHORITY_REQUIRED`,
+`IDEMPOTENCY_KEY_REQUIRED`, `IDEMPOTENCY_CONFLICT`,
+`IDENTITY_SERVICE_UNAVAILABLE`, `SERVICE_UNAVAILABLE`, and
+`INTERNAL_CONTRACT_INVALID`. A timeout or 5xx after mutation is an unknown
+outcome: perform a fresh authorized read and never retry blindly or with a new
+key.

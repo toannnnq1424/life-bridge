@@ -684,3 +684,48 @@ attempt failure or indeterminate integration result remains failed or
 uncertain. Retry/reconciliation reuses the same intent identity. Acknowledgement
 is a separate Notification transaction permitted only after delivered evidence
 and records only that the reminder was seen.
+
+## P4-S2 emergency readiness and bounded offline ownership
+
+P4-S2 extends Care Coordination and the existing Care PostgreSQL owner; it
+introduces no server service, datastore, broker, cross-service SQL, shared
+credential, Gateway state, or Notification path.
+
+- Identity & Consent alone evaluates a fresh `P4-S2-v1` exact-purpose decision
+  for every online contacts, plan, history, and snapshot operation. Household
+  role never substitutes for subject/grant/privacy authority.
+- Care Coordination alone owns the emergency-readiness aggregate, minimum
+  contact projection, shared draft, immutable participant-reviewed versions,
+  optimistic revisions, redacted audit, digest-only idempotency, content-free
+  transitions/outbox, and one version-consistent snapshot projection.
+- Gateway strips caller-supplied actor/service/authority headers, binds the
+  complete normalized request digest, obtains a fresh Identity decision, and
+  stores no emergency state.
+- Notification receives no emergency event or content. P4-S2 never contacts a
+  person, diagnoses, ranks urgency, treats, confirms availability, or
+  dispatches an emergency service.
+
+All contact and plan mutations serialize on the same Care aggregate. A contact
+replacement advances its list revision and invalidates offline issuance until
+the participant reviews a new plan version against that exact revision. The
+snapshot endpoint reads the reviewed plan, current contacts, source revisions,
+and server confirmation/display-time facts in one transaction. It cannot
+fabricate live state, current permission, or external-contact consent.
+
+ADR-025 creates one narrow client-side exception to the default no-persistent-
+care-data rule. After a separate explicit device review, the browser derives a
+non-exportable AES-256-GCM key with PBKDF2-HMAC-SHA-256 and 600,000 iterations
+from a distinct offline passphrase, unique 16-byte salt, and unique 12-byte
+nonce. It stores one authenticated ciphertext in IndexedDB. The passphrase and
+derived key are never sent, logged, persisted, or given to the worker. A
+same-origin service worker with route-bounded behavior caches only versioned
+static shell assets and never API/session/mutation responses or protected HTML.
+
+Every offline render labels the snapshot not live, includes the server
+last-confirmed UTC plus local/IANA/offset facts, and states that current
+permission and updates cannot be checked. The reading window is recent through
+24 hours and stale through 72 hours. At 72 hours content is hidden and the
+ciphertext is purged. Unknown/backward time never appears recent. Local removal
+requires no server. On reconnect, current authority and source versions are
+checked before replacement; writes remain blocked and no request is queued or
+replayed.

@@ -779,7 +779,15 @@ function coordinationDecision(
     | "coordination.medication_reminder.change"
     | "coordination.medication_reminder.disable"
     | "notification.medication_reminder.read"
-    | "notification.medication_reminder.acknowledge",
+    | "notification.medication_reminder.acknowledge"
+    | "coordination.emergency_contacts.read"
+    | "coordination.emergency_contacts.replace"
+    | "coordination.emergency_contacts.history.read"
+    | "coordination.emergency_plan.read"
+    | "coordination.emergency_plan.draft.save"
+    | "coordination.emergency_plan.version.review"
+    | "coordination.emergency_plan.history.read"
+    | "coordination.emergency_plan.offline_snapshot.read",
   requestDigest: unknown,
   targetActorRef?: string,
 ) {
@@ -1049,6 +1057,146 @@ describe("P4-S1 Gateway medication reminder authority and ownership", () => {
     expect(response.statusCode).toBe(404);
     expect(calls).toBe(1);
     expect(response.body).not.toContain('"items":[]');
+    await app.close();
+  });
+});
+
+describe("P4-S2 Gateway exact-purpose emergency authority", () => {
+  const routes = [
+    {
+      method: "GET" as const,
+      url: "/api/v1/households/household_synthetic/emergency-contacts",
+      permission: "coordination.emergency_contacts.read" as const,
+    },
+    {
+      method: "PUT" as const,
+      url: "/api/v1/households/household_synthetic/emergency-contacts",
+      permission: "coordination.emergency_contacts.replace" as const,
+      payload: {
+        operation: "replace_emergency_contacts",
+        expectedListRevision: 0,
+        contacts: [{ displayLabel: "Synthetic contact A", dialString: "+66000000001" }],
+      },
+    },
+    {
+      method: "GET" as const,
+      url: "/api/v1/households/household_synthetic/emergency-contacts/history?limit=10",
+      permission: "coordination.emergency_contacts.history.read" as const,
+    },
+    {
+      method: "GET" as const,
+      url: "/api/v1/households/household_synthetic/emergency-plan",
+      permission: "coordination.emergency_plan.read" as const,
+    },
+    {
+      method: "PUT" as const,
+      url: "/api/v1/households/household_synthetic/emergency-plan/draft",
+      permission: "coordination.emergency_plan.draft.save" as const,
+      payload: {
+        operation: "save_emergency_plan_draft",
+        expectedAggregateRevision: 1,
+        expectedDraftRevision: 0,
+        basePlanVersion: 0,
+        contactListRevision: 1,
+        steps: ["Synthetic step"],
+      },
+    },
+    {
+      method: "POST" as const,
+      url: "/api/v1/households/household_synthetic/emergency-plan/reviews",
+      permission: "coordination.emergency_plan.version.review" as const,
+      payload: {
+        operation: "review_emergency_plan_version",
+        expectedAggregateRevision: 2,
+        expectedDraftRevision: 1,
+        basePlanVersion: 0,
+        contactListRevision: 1,
+        displayTimeZone: "Asia/Bangkok",
+      },
+    },
+    {
+      method: "GET" as const,
+      url: "/api/v1/households/household_synthetic/emergency-plan/history?limit=10",
+      permission: "coordination.emergency_plan.history.read" as const,
+    },
+    {
+      method: "GET" as const,
+      url: "/api/v1/households/household_synthetic/emergency-plan/offline-snapshot",
+      permission: "coordination.emergency_plan.offline_snapshot.read" as const,
+    },
+  ];
+
+  it.each(routes)(
+    "gets fresh $permission authority and forwards only to Care",
+    async ({ method, url, permission, payload }) => {
+      const calls: Array<{ url: string; body: Record<string, unknown>; headers: Headers }> = [];
+      const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+        const target = String(input);
+        const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+        calls.push({ url: target, body, headers: new Headers(init?.headers) });
+        if (target.endsWith("/internal/v1/coordination/authorize")) {
+          expect(body).toMatchObject({ permission, householdId: "household_synthetic" });
+          return jsonResponse(coordinationDecision(permission, body.requestDigest));
+        }
+        expect(target.startsWith("http://care.test/internal/v1/coordination/")).toBe(true);
+        return jsonResponse({ outcome: "synthetic_authoritative_response" });
+      }) as typeof fetch;
+      const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+      const response = await app.inject({
+        method,
+        url,
+        headers: {
+          cookie: "lb_session=synthetic_session",
+          origin: config.publicOrigin,
+          "sec-fetch-site": "same-origin",
+          "x-csrf-token": "c".repeat(43),
+          "idempotency-key": `p4s2-${method.toLowerCase()}-0001`,
+          "x-correlation-id": "corr_p3_contract",
+        },
+        ...(payload ? { payload } : {}),
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(calls).toHaveLength(2);
+      expect(calls[1]?.body).toHaveProperty("authorization.permission", permission);
+      if (payload) {
+        expect(calls[1]?.body.request).toEqual(payload);
+        expect(calls[1]?.headers.get("idempotency-key")).toContain("p4s2-");
+      }
+      expect(calls.every((call) => !call.url.startsWith("http://notification.test"))).toBe(true);
+      await app.close();
+    },
+  );
+
+  it("makes a denied snapshot indistinguishable and performs zero Care calls", async () => {
+    let calls = 0;
+    const fetcher = (async () => {
+      calls += 1;
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "COORDINATION_RESOURCE_NOT_FOUND",
+            messageKey: "coordination.resource_not_found",
+            retryable: false,
+            correlationId: "corr_p3_contract",
+          },
+        }),
+        { status: 404, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/households/household_synthetic/emergency-plan/offline-snapshot",
+      headers: {
+        cookie: "lb_session=synthetic_session",
+        "x-correlation-id": "corr_p3_contract",
+      },
+    });
+    expect(response.statusCode).toBe(404);
+    expect(response.json().error.code).toBe("COORDINATION_RESOURCE_NOT_FOUND");
+    expect(calls).toBe(1);
+    expect(response.body).not.toMatch(/planVersion|contacts|steps|permission/i);
     await app.close();
   });
 });

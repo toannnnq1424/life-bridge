@@ -432,3 +432,43 @@ safe. No table stores diagnosis, recommendation, treatment, urgency, adherence,
 missed-dose guidance or arbitrary notification text. Notification stores no
 medication label, amount or unit. Migrations add no P4 rows for accepted P1/P3
 data and must reapply safely under their own service credentials.
+
+## P4-S2 emergency-readiness model
+
+Care migration `006_emergency_readiness.sql` advances the Care readiness marker
+to version 6 without backfill. It adds only Care-owned PostgreSQL structures:
+
+| Structure                            | Minimum invariant                                                                                                            |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `care_emergency_readiness`           | one household/recipient aggregate; aggregate/contact revisions, current reviewed version, state and timestamps               |
+| `care_emergency_contacts`            | current minimum personal projection; unique contiguous position, opaque item ID, item version, bounded label and dial string |
+| `care_emergency_contact_transitions` | content-free complete-list replacement facts by contact-list revision                                                        |
+| `care_emergency_plan_drafts`         | at most one shared draft with draft/base/contact revisions                                                                   |
+| `care_emergency_plan_draft_steps`    | bounded ordered participant-entered non-clinical guidance                                                                    |
+| `care_emergency_plan_versions`       | immutable reviewed versions with bound contact revision and server-confirmed UTC/local/IANA/offset facts                     |
+| `care_emergency_plan_version_steps`  | immutable bounded ordered guidance for one reviewed version                                                                  |
+| `care_emergency_plan_transitions`    | content-free draft/review facts ordered by aggregate revision                                                                |
+
+All contact and plan mutations lock the same aggregate. A complete contact-list
+replacement therefore serializes with draft save and plan review. A contact
+change makes the current reviewed plan `review_required` rather than copying
+personal contact values into immutable plan rows. Snapshot issuance reads the
+current reviewed version, its bound contact revision, the current contact list,
+and confirmation facts inside one repeatable transaction so a browser never
+receives a torn plan/contact copy.
+
+Mutation reuses `care_audit`, `care_idempotency`, and `care_outbox`. Protected
+contact values and plan steps exist only in current/authorized Care tables and
+reads. Transitions, audit metadata, idempotency responses, outbox, logs,
+metrics, traces, errors, and cursors are content-free. Removing a contact
+deletes its current personal values; only content-free transition history
+remains. No contact/plan rows are created for older P1–P4-S1 data.
+
+ADR-025 permits exactly one client persistence exception: an explicitly saved,
+passphrase-encrypted `P4-S2-offline-v1` snapshot in IndexedDB. Cache Storage
+contains only a versioned non-sensitive shell. The snapshot is recent through
+24 hours, stale through 72 hours, and purged at expiry, logout/account switch,
+known denial/revocation, `no_plan`, incompatible schema, integrity failure,
+confirmed contact change, or explicit removal. This bounded engineering
+retention is not a legal-compliance claim and cannot discover remote revocation
+while the device is offline.

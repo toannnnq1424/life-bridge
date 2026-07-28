@@ -1715,3 +1715,269 @@ h1 {
     background: CanvasText;
   }
 }
+
+.emergency-app {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgb(31 95 74 / 9%), transparent 28rem), var(--canvas);
+}
+
+.emergency-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: var(--surface);
+}
+
+.emergency-header p {
+  max-width: 68ch;
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+}
+
+.emergency-header label,
+.emergency-panel label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.emergency-header select,
+.emergency-panel input,
+.emergency-panel textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.emergency-panel textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.emergency-nav {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem clamp(1rem, 4vw, 3rem);
+  background: var(--mint);
+}
+
+.emergency-nav a {
+  min-height: 44px;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.emergency-nav a[aria-current="page"] {
+  background: var(--green);
+  color: #fff;
+  text-decoration: none;
+}
+
+.emergency-main {
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+}
+
+.emergency-main > h1 {
+  margin-top: 0;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.05;
+}
+
+.source-banner,
+.emergency-safety,
+.emergency-panel,
+.state-panel {
+  margin: 1rem 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.source-banner {
+  border-left: 0.55rem solid var(--green);
+}
+
+.source-banner h2,
+.emergency-safety h2,
+.emergency-panel > h2,
+.state-panel h2 {
+  margin-top: 0;
+}
+
+.source-offline {
+  border-left-color: var(--focus);
+  background: #fff4e8;
+}
+
+.emergency-safety {
+  border-style: dashed;
+  background: #f5f9f7;
+}
+
+.contact-list,
+.step-editor {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-card,
+.step-editor li {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  background: #fbfdfc;
+}
+
+.position {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.button-row,
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.button-row button,
+.contact-actions button {
+  flex: 0 1 auto;
+}
+
+.danger-button {
+  border-color: var(--error);
+  background: transparent;
+  color: var(--error);
+}
+
+.danger-button:hover {
+  background: var(--error);
+  color: #fff;
+}
+
+.warning,
+.field-error,
+.error-summary {
+  border-left: 0.35rem solid var(--focus);
+  padding: 0.75rem 1rem;
+  background: #fff4e8;
+}
+
+.field-error,
+.error-summary,
+.state-conflict,
+.state-uncertain,
+.state-unavailable,
+.state-denied {
+  border-color: var(--error);
+  color: #661c1c;
+  background: #fff1f1;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) 2fr;
+  gap: 0.35rem 1rem;
+}
+
+.facts dt {
+  font-weight: 700;
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.configured-contacts,
+.plan-steps {
+  padding-inline-start: 1.5rem;
+}
+
+.offline-setup {
+  border-width: 2px;
+  border-color: var(--green);
+}
+
+.emergency-footer {
+  border-top: 1px solid var(--border);
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: var(--text);
+  color: #fff;
+}
+
+.emergency-footer p {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+@media (max-width: 40rem) {
+  .emergency-header,
+  .button-row,
+  .contact-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .emergency-header label,
+  .button-row button,
+  .contact-actions button {
+    width: 100%;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+  }
+
+  .facts dd {
+    margin-bottom: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emergency-app *,
+  .emergency-app *::before,
+  .emergency-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .source-banner,
+  .emergency-safety,
+  .emergency-panel,
+  .state-panel,
+  .contact-card,
+  .step-editor li,
+  .emergency-nav a[aria-current="page"] {
+    border: 2px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+}
