@@ -6,23 +6,20 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P4 — Safety-critical coordination`; exactly
-  `P4-S2 — Emergency contacts and offline-readable plan` is the active
-  candidate on `phase/4-emergency-contacts-offline-plan`.
-- Accepted base: live `dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e`;
-  P4-S2 canonical issue #13 was verified before mutation and was not
-  duplicated.
-- Accepted P4-S1 evidence: `P4-S1-v1`, four synthetic
-  LB-018/minimum-LB-019 references, the Frozen native-only handoff,
-  owner-isolated persistence, native VI/EN UI, one local Level C plus
-  classified targeted recovery, replacement exact-head runs
-  `30343304775`/`30343308183`, and post-merge `dev` run `30343682227`.
-  Canonical issue
-  [#12](https://github.com/toannnnq1424/life-bridge/issues/12) is closed with
+- Current phase: `P4 — Safety-critical coordination`; P4-S2 is accepted and
+  no product implementation is active in this docs-only closeout. Exact next
+  is `P4-S3 — Access-controlled document vault` only after fresh controller
+  dispatch.
+- Accepted base: live `dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`.
+- Accepted P4-S2 evidence: `P4-S2-v1`/`P4-S2-offline-v1`, Care migration 006,
+  ADR-025 and threat model, four synthetic Stitch references, the Frozen
+  native-only handoff, native VI/EN LB-020/LB-021/required-LB-032, exactly one
+  local Level C plus classified targeted recovery, exact-head PR run
+  `30358335589`, and post-merge `dev` run `30359250442`. Canonical issue
+  [#13](https://github.com/toannnnq1424/life-bridge/issues/13) is closed with
   bilingual evidence.
-- Current action: finish only the P4-S2 Level C and PR/CI/merge/issue
-  promotion. P4-S3, DATA-S1, P5, Spring, deployment and release are not
-  started.
+- Current action: promote only this same-task docs-only canonical correction.
+  P4-S3, DATA-S1, P5, Spring, deployment and release are not started.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -30,11 +27,11 @@
   `init/research` task
   [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
 - Latest integration gate:
-  [PR #56](https://github.com/toannnnq1424/life-bridge/pull/56) accepted exact
-  feature head `9bfd2263625e25e2f4c3bbf7b1d0257a002591c8` after push run
-  `30329456918` and PR run `30329530973` passed all six checks. Merge commit
-  `f3576f40779617f0d7bd519ac44b178ccf269e3e` is on `dev`, post-merge run
-  `30329752886` passed all three jobs, and issue #11 is closed completed.
+  [PR #62](https://github.com/toannnnq1424/life-bridge/pull/62) accepted exact
+  recovery head `ea5acf761e64ac6718936e262e4b089a5e37b74c` after PR run
+  `30358335589` passed all three jobs. Merge commit
+  `7690a7c584891fbd2bd62de600a5b11bb58a8be7` is on `dev`, post-merge run
+  `30359250442` passed all three jobs, and issue #13 is closed completed.
 - Status source: this document plus `docs/WORKSTREAM_BOARD.md`
 - Evidence source: `docs/SESSION_LOG.md`
 
@@ -661,7 +658,7 @@ Acceptance:
 
 Dependencies: P2 consent; accepted retention/cache threat review.
 
-Actual candidate (`CHG-2026-017`):
+Actual accepted boundary (`CHG-2026-017`):
 
 - Care owns one emergency-readiness aggregate, ordered contacts, working
   draft, immutable reviewed versions/history, audit and content-free
@@ -692,8 +689,14 @@ Actual candidate (`CHG-2026-017`):
   PostgreSQL binding/sentinel defects. Classified targeted recovery—not a
   second Level C—proved the corrected 6/6 Care suite, migration 006, the real
   P4-S2 production-runtime Chromium journey, all three mocked P4-S2 paths and
-  cumulative P2–P4-S1 browser regressions. Promotion remains unclaimed until
-  exact-head and post-merge hosted evidence passes.
+  cumulative P2–P4-S1 browser regressions.
+- Feature commit `1b28a16cd9f378de3fcc9f57f0c456b07f89b2bb`
+  passed exact-head push run `30356925555`. PR run `30357031265` then exposed
+  a test-only no-op ciphertext mutation; deterministic recovery
+  `ea5acf761e64ac6718936e262e4b089a5e37b74c` passed exact-head PR run
+  `30358335589`. PR #62 merged as
+  `dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`, post-merge run
+  `30359250442` passed, and issue #13 closed completed with bilingual evidence.
 
 ### `P4-S3 — Access-controlled document vault`
 
@@ -1544,10 +1547,18 @@ push/PR runs `30343304775`/`30343308183`; PR #59 merged as
 `30343682227` passed all three jobs and issue #12 closed with bilingual
 evidence. Docs-only PR #60 and final `dev` run `30345391688` passed.
 
-P4-S2 is now the single active candidate from the verified live
-`dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e`. Three independent reviews,
-ADR-025, the P4-S2 threat model, frozen contracts, four synthetic Stitch
-references and the Frozen corrected handoff precede implementation. The
-candidate spans Care-owned migration/service state, fresh Identity/Gateway
-authority, native LB-020/LB-021 and only required read-only LB-032 offline
-behavior. P4-S3, DATA-S1, P5, Spring, deployment and release remain unstarted.
+P4-S2 is accepted at
+`dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`. Feature commit
+`1b28a16cd9f378de3fcc9f57f0c456b07f89b2bb` and deterministic recovery
+`ea5acf761e64ac6718936e262e4b089a5e37b74c` are retained in PR #62. Exact-head
+PR run `30358335589`, merge-commit promotion, post-merge run `30359250442`,
+and bilingual issue #13 closeout passed. Its Care-owned aggregate, fresh P2
+authority, ordered contacts, reviewed plan, minimum disclosure and bounded
+encrypted offline-copy contract are the accepted boundary.
+
+Exact next is `P4-S3 — Access-controlled document vault`, only in a fresh
+controller-dispatched task from accepted `dev`. Its first action is to freeze
+document authority, minimum metadata/content disclosure, retention/deletion,
+integrity and storage ownership against accepted P2 audit and P4-S2 offline
+boundaries before selecting storage or implementing LB-023. P4-S3, DATA-S1,
+P5, Spring, deployment and release were not started here.

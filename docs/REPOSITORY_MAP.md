@@ -2,12 +2,12 @@
 
 Verified: 2026-07-28
 Integrated base: accepted live
-`origin/dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e`
-Active product slice: `P4-S2 — Emergency contacts and offline-readable plan`
-on `phase/4-emergency-contacts-offline-plan`
+`origin/dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`
+Active product slice: none in this docs-only closeout; exact next is P4-S3
+only after fresh controller dispatch.
 
-This map reflects the accepted P1/P2/P3/P4-S1 tree plus the task-owned P4-S2
-candidate. P4-S3 and DATA-S1 are not started.
+This map reflects the accepted P1/P2/P3/P4-S1/P4-S2 tree. P4-S3 and DATA-S1
+are not started.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
