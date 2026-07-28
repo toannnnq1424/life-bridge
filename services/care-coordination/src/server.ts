@@ -15,7 +15,11 @@ import {
   IdempotencyKeySchema,
   IanaTimeZoneSchema,
   DisableMedicationReminderRequestSchema,
+  EmergencyHistoryQuerySchema,
+  ReplaceEmergencyContactsRequestSchema,
+  ReviewEmergencyPlanVersionRequestSchema,
   SaveCarePlanDraftRequestSchema,
+  SaveEmergencyPlanDraftRequestSchema,
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
@@ -25,6 +29,7 @@ import { CareError } from "./errors.js";
 import type { AppointmentService } from "./appointment-service.js";
 import type { CarePlanService } from "./care-plan-service.js";
 import type { CoordinationService } from "./coordination-service.js";
+import type { EmergencyReadinessService } from "./emergency-readiness-service.js";
 import type { MedicationReminderService } from "./medication-reminder-service.js";
 import type { CareService } from "./service.js";
 
@@ -39,8 +44,14 @@ export function buildCareServer(
   appointments?: AppointmentService,
   carePlans?: CarePlanService,
   medicationReminders?: MedicationReminderService,
+  emergencyReadiness?: EmergencyReadinessService,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
+
+  app.addHook("onRequest", async (_request, reply) => {
+    reply.header("cache-control", "no-store");
+    reply.header("pragma", "no-cache");
+  });
 
   app.addHook("preHandler", async (request, reply) => {
     if (request.url.startsWith("/internal/")) {
@@ -56,7 +67,143 @@ export function buildCareServer(
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "care_database" }),
   );
-  app.get("/version", async () => ({ service: "care-coordination", contract: "P4-S1-v1" }));
+  app.get("/version", async () => ({ service: "care-coordination", contract: "P4-S2-v1" }));
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-contacts/read",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).readContacts({
+          householdId: request.params.householdId,
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.put<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-contacts",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).replaceContacts({
+          householdId: request.params.householdId,
+          request: ReplaceEmergencyContactsRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-contacts/history/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).contactHistory({
+          householdId: request.params.householdId,
+          query: EmergencyHistoryQuerySchema.parse(body.query),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-plan/read",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).readPlan({
+          householdId: request.params.householdId,
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.put<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-plan/draft",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).saveDraft({
+          householdId: request.params.householdId,
+          request: SaveEmergencyPlanDraftRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-plan/reviews",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).reviewVersion({
+          householdId: request.params.householdId,
+          request: ReviewEmergencyPlanVersionRequestSchema.parse(body.request),
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-plan/history/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).planHistory({
+          householdId: request.params.householdId,
+          query: EmergencyHistoryQuerySchema.parse(body.query),
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/coordination/households/:householdId/emergency-plan/offline-snapshot/read",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      return successEnvelope(
+        await requireEmergencyReadiness(emergencyReadiness).offlineSnapshot({
+          householdId: request.params.householdId,
+          authorization: CoordinationAuthorizationDecisionSchema.parse(body.authorization),
+          correlationId,
+        }),
+        correlationId,
+      );
+    },
+  );
 
   app.post<{ Params: { householdId: string }; Body: unknown }>(
     "/internal/v1/coordination/households/:householdId/medication-reminders/query",
@@ -473,29 +620,41 @@ export function buildCareServer(
     const carePlanValidation = errorName === "ZodError" && request.url.includes("/care-plan");
     const medicationValidation =
       errorName === "ZodError" && request.url.includes("/medication-reminders");
+    const emergencyContactValidation =
+      errorName === "ZodError" && request.url.includes("/emergency-contacts");
+    const emergencyPlanValidation =
+      errorName === "ZodError" && request.url.includes("/emergency-plan");
     const careError =
       error instanceof CareError
         ? error
         : new CareError(
             errorName === "ZodError" ? 400 : 500,
-            medicationValidation
-              ? "MEDICATION_REMINDER_VALIDATION_FAILED"
-              : carePlanValidation
-                ? "CARE_PLAN_VALIDATION_FAILED"
-                : appointmentValidation
-                  ? "APPOINTMENT_VALIDATION_FAILED"
-                  : errorName === "ZodError"
-                    ? "TASK_VALIDATION_FAILED"
-                    : "SERVICE_UNAVAILABLE",
-            medicationValidation
-              ? "medication_reminder.validation"
-              : carePlanValidation
-                ? "care_plan.validation"
-                : appointmentValidation
-                  ? "appointment.validation"
-                  : errorName === "ZodError"
-                    ? "errors.task.validation"
-                    : "errors.service.unavailable",
+            emergencyContactValidation
+              ? "EMERGENCY_CONTACT_VALIDATION_FAILED"
+              : emergencyPlanValidation
+                ? "EMERGENCY_PLAN_VALIDATION_FAILED"
+                : medicationValidation
+                  ? "MEDICATION_REMINDER_VALIDATION_FAILED"
+                  : carePlanValidation
+                    ? "CARE_PLAN_VALIDATION_FAILED"
+                    : appointmentValidation
+                      ? "APPOINTMENT_VALIDATION_FAILED"
+                      : errorName === "ZodError"
+                        ? "TASK_VALIDATION_FAILED"
+                        : "SERVICE_UNAVAILABLE",
+            emergencyContactValidation
+              ? "emergency_contacts.validation"
+              : emergencyPlanValidation
+                ? "emergency_plan.validation"
+                : medicationValidation
+                  ? "medication_reminder.validation"
+                  : carePlanValidation
+                    ? "care_plan.validation"
+                    : appointmentValidation
+                      ? "appointment.validation"
+                      : errorName === "ZodError"
+                        ? "errors.task.validation"
+                        : "errors.service.unavailable",
             errorName !== "ZodError",
           );
     return reply.code(careError.statusCode).send({
@@ -545,6 +704,13 @@ function requireCarePlans(service: CarePlanService | undefined): CarePlanService
 function requireMedicationReminders(
   service: MedicationReminderService | undefined,
 ): MedicationReminderService {
+  if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
+  return service;
+}
+
+function requireEmergencyReadiness(
+  service: EmergencyReadinessService | undefined,
+): EmergencyReadinessService {
   if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
   return service;
 }

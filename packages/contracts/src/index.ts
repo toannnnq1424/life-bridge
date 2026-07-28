@@ -481,6 +481,14 @@ export const CoordinationPermissionSchema = z.enum([
   "coordination.care_plan.history.read",
   "coordination.care_plan.draft.save",
   "coordination.care_plan.version.confirm",
+  "coordination.emergency_contacts.read",
+  "coordination.emergency_contacts.replace",
+  "coordination.emergency_contacts.history.read",
+  "coordination.emergency_plan.read",
+  "coordination.emergency_plan.draft.save",
+  "coordination.emergency_plan.version.review",
+  "coordination.emergency_plan.history.read",
+  "coordination.emergency_plan.offline_snapshot.read",
 ]);
 export const CoordinationActorDisplayKeySchema = z.enum([
   "coordination.actor.you",
@@ -582,6 +590,26 @@ export type CoordinationAuthorizationDecision = z.infer<
 export type CoordinationAuthorizationRequest = z.infer<
   typeof CoordinationAuthorizationRequestSchema
 >;
+
+const coordinationMutationPermissions = new Set<CoordinationPermission>([
+  "coordination.task.handoff",
+  "coordination.appointment.create",
+  "coordination.appointment.change",
+  "coordination.appointment.cancel",
+  "coordination.medication_reminder.create",
+  "coordination.medication_reminder.change",
+  "coordination.medication_reminder.disable",
+  "notification.medication_reminder.acknowledge",
+  "coordination.care_plan.draft.save",
+  "coordination.care_plan.version.confirm",
+  "coordination.emergency_contacts.replace",
+  "coordination.emergency_plan.draft.save",
+  "coordination.emergency_plan.version.review",
+]);
+
+export function isCoordinationMutationPermission(permission: CoordinationPermission): boolean {
+  return coordinationMutationPermissions.has(permission);
+}
 
 export const PrioritySchema = z.enum(["normal", "important", "urgent"]);
 export const TaskStatusSchema = z.enum(["open", "completed"]);
@@ -1415,6 +1443,264 @@ export const CarePlanVersionConfirmedEventSchema = z
   })
   .strict();
 
+export const EmergencyContactInputSchema = z
+  .object({
+    contactId: OpaqueIdSchema.optional(),
+    expectedVersion: z.number().int().positive().optional(),
+    displayLabel: SingleLineTextSchema(60),
+    dialString: z.string().regex(/^\+?\d{3,15}$/),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (Boolean(value.contactId) !== Boolean(value.expectedVersion)) {
+      context.addIssue({
+        code: "custom",
+        message: "contact_version_pair_required",
+        path: ["expectedVersion"],
+      });
+    }
+  });
+
+export const ReplaceEmergencyContactsRequestSchema = z
+  .object({
+    operation: z.literal("replace_emergency_contacts"),
+    expectedListRevision: z.number().int().nonnegative(),
+    contacts: z.array(EmergencyContactInputSchema).max(10),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const identifiers = value.contacts.flatMap((contact) =>
+      contact.contactId ? [contact.contactId] : [],
+    );
+    if (new Set(identifiers).size !== identifiers.length) {
+      context.addIssue({ code: "custom", message: "duplicate_contact_id", path: ["contacts"] });
+    }
+  });
+
+export const EmergencyContactProjectionSchema = z
+  .object({
+    contactId: OpaqueIdSchema,
+    position: z.number().int().positive().max(10),
+    displayLabel: SingleLineTextSchema(60),
+    dialString: z.string().regex(/^\+?\d{3,15}$/),
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const EmergencyContactListProjectionSchema = z
+  .object({
+    state: z.enum(["no_contacts", "configured"]),
+    listRevision: z.number().int().nonnegative(),
+    contacts: z.array(EmergencyContactProjectionSchema).max(10),
+    lastConfirmedAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const EmergencyContactMutationResultSchema = z
+  .object({
+    outcome: z.literal("contacts_replaced"),
+    listRevision: z.number().int().positive(),
+    contacts: z
+      .array(
+        z
+          .object({
+            contactId: OpaqueIdSchema,
+            position: z.number().int().positive().max(10),
+            version: z.number().int().positive(),
+          })
+          .strict(),
+      )
+      .max(10),
+    planState: z.enum(["no_plan", "draft_only", "reviewed", "review_required"]),
+    confirmedAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const EmergencyHistoryQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(25).default(10),
+    cursor: z.string().max(4096).optional(),
+  })
+  .strict();
+
+export const EmergencyContactHistoryProjectionSchema = z
+  .object({
+    revisions: z
+      .array(
+        z
+          .object({
+            listRevision: z.number().int().positive(),
+            action: z.literal("replaced"),
+            occurredAtUtc: CanonicalUtcInstantSchema,
+          })
+          .strict(),
+      )
+      .max(25),
+    nextCursor: z.string().nullable(),
+    coverageStartedAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const SaveEmergencyPlanDraftRequestSchema = z
+  .object({
+    operation: z.literal("save_emergency_plan_draft"),
+    expectedAggregateRevision: z.number().int().nonnegative(),
+    expectedDraftRevision: z.number().int().nonnegative(),
+    basePlanVersion: z.number().int().nonnegative(),
+    contactListRevision: z.number().int().nonnegative(),
+    steps: z.array(SingleLineTextSchema(160)).min(1).max(8),
+  })
+  .strict();
+
+export const ReviewEmergencyPlanVersionRequestSchema = z
+  .object({
+    operation: z.literal("review_emergency_plan_version"),
+    expectedAggregateRevision: z.number().int().nonnegative(),
+    expectedDraftRevision: z.number().int().positive(),
+    basePlanVersion: z.number().int().nonnegative(),
+    contactListRevision: z.number().int().positive(),
+    displayTimeZone: IanaTimeZoneSchema,
+  })
+  .strict();
+
+export const EmergencyPlanStateSchema = z.enum([
+  "no_plan",
+  "draft_only",
+  "reviewed",
+  "review_required",
+]);
+
+export const EmergencyPlanDraftProjectionSchema = z
+  .object({
+    draftRevision: z.number().int().positive(),
+    basePlanVersion: z.number().int().nonnegative(),
+    contactListRevision: z.number().int().nonnegative(),
+    steps: z.array(SingleLineTextSchema(160)).min(1).max(8),
+    updatedAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const EmergencyPlanVersionProjectionSchema = z
+  .object({
+    planVersion: z.number().int().positive(),
+    contactListRevision: z.number().int().positive(),
+    steps: z.array(SingleLineTextSchema(160)).min(1).max(8),
+    reviewedAtUtc: CanonicalUtcInstantSchema,
+    displayTimeZone: IanaTimeZoneSchema,
+    displayLocalTime: z.string().min(1).max(80),
+    displayUtcOffset: UtcOffsetSchema,
+  })
+  .strict();
+
+export const EmergencyPlanProjectionSchema = z
+  .object({
+    state: EmergencyPlanStateSchema,
+    aggregateRevision: z.number().int().nonnegative(),
+    contactListRevision: z.number().int().nonnegative(),
+    current: EmergencyPlanVersionProjectionSchema.nullable(),
+    draft: EmergencyPlanDraftProjectionSchema.nullable(),
+    lastConfirmedAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const EmergencyPlanMutationResultSchema = z
+  .object({
+    outcome: z.enum(["draft_saved", "version_reviewed"]),
+    aggregateRevision: z.number().int().positive(),
+    draftRevision: z.number().int().positive().nullable(),
+    planVersion: z.number().int().positive().nullable(),
+    contactListRevision: z.number().int().nonnegative(),
+    state: EmergencyPlanStateSchema,
+    confirmedAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const EmergencyPlanHistoryProjectionSchema = z
+  .object({
+    versions: z
+      .array(
+        z
+          .object({
+            planVersion: z.number().int().positive(),
+            contactListRevision: z.number().int().positive(),
+            reviewedAtUtc: CanonicalUtcInstantSchema,
+            displayTimeZone: IanaTimeZoneSchema,
+            displayLocalTime: z.string().min(1).max(80),
+            displayUtcOffset: UtcOffsetSchema,
+          })
+          .strict(),
+      )
+      .max(25),
+    nextCursor: z.string().nullable(),
+    coverageStartedAtUtc: CanonicalUtcInstantSchema,
+  })
+  .strict();
+
+export const EmergencyOfflineSnapshotSchema = z
+  .object({
+    contractVersion: z.literal("P4-S2-offline-v1"),
+    source: z.literal("care-coordination"),
+    scopeBinding: z.string().regex(/^[a-f0-9]{64}$/),
+    planVersion: z.number().int().positive(),
+    contactListRevision: z.number().int().positive(),
+    reviewedAtUtc: CanonicalUtcInstantSchema,
+    lastConfirmedAtUtc: CanonicalUtcInstantSchema,
+    displayTimeZone: IanaTimeZoneSchema,
+    displayLocalTime: z.string().min(1).max(80),
+    displayUtcOffset: UtcOffsetSchema,
+    freshUntilUtc: CanonicalUtcInstantSchema,
+    expiresAtUtc: CanonicalUtcInstantSchema,
+    contacts: z
+      .array(EmergencyContactProjectionSchema.omit({ version: true }))
+      .min(1)
+      .max(10),
+    steps: z
+      .array(
+        z
+          .object({
+            position: z.number().int().positive().max(8),
+            text: SingleLineTextSchema(160),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(8),
+  })
+  .strict();
+
+const EmergencyEventBaseSchema = z
+  .object({
+    eventId: OpaqueIdSchema,
+    eventVersion: z.literal(1),
+    occurredAt: CanonicalUtcInstantSchema,
+    producer: z.literal("care-coordination"),
+    aggregateId: OpaqueIdSchema,
+    aggregateVersion: z.number().int().positive(),
+    correlationId: CorrelationIdSchema,
+    causationId: OpaqueIdSchema,
+  })
+  .strict();
+
+const EmergencyEventPayloadSchema = z
+  .object({
+    action: z.enum(["contacts_replaced", "version_reviewed"]),
+    outcome: z.literal("confirmed"),
+    contactListRevision: z.number().int().nonnegative(),
+    planVersion: z.number().int().nonnegative(),
+    deliveryDisposition: z.literal("none"),
+  })
+  .strict();
+
+export const EmergencyContactsChangedEventSchema = EmergencyEventBaseSchema.extend({
+  eventType: z.literal("care.emergency_contacts.changed.v1"),
+  payload: EmergencyEventPayloadSchema,
+}).strict();
+
+export const EmergencyPlanVersionReviewedEventSchema = EmergencyEventBaseSchema.extend({
+  eventType: z.literal("care.emergency_plan.version_reviewed.v1"),
+  payload: EmergencyEventPayloadSchema,
+}).strict();
+
 const EventBaseSchema = z
   .object({
     eventId: OpaqueIdSchema,
@@ -1499,6 +1785,8 @@ export const CareCoordinationEventSchema = z.union([
   AppointmentReminderIntentEventSchema,
   MedicationReminderIntentEventSchema,
   CarePlanVersionConfirmedEventSchema,
+  EmergencyContactsChangedEventSchema,
+  EmergencyPlanVersionReviewedEventSchema,
 ]);
 
 export const NotificationSchema = z
@@ -1613,6 +1901,16 @@ export const ApiErrorCodeSchema = z.enum([
   "CARE_PLAN_STATE_CONFLICT",
   "CARE_PLAN_CURSOR_INVALID",
   "CARE_PLAN_RESULT_UNKNOWN",
+  "EMERGENCY_CONTACT_VALIDATION_FAILED",
+  "EMERGENCY_CONTACT_LIST_VERSION_CONFLICT",
+  "EMERGENCY_CONTACT_VERSION_CONFLICT",
+  "EMERGENCY_PLAN_VALIDATION_FAILED",
+  "EMERGENCY_PLAN_AGGREGATE_CONFLICT",
+  "EMERGENCY_PLAN_DRAFT_CONFLICT",
+  "EMERGENCY_PLAN_CONTACTS_CHANGED",
+  "EMERGENCY_PLAN_REVIEW_REQUIRED",
+  "EMERGENCY_PLAN_STATE_CONFLICT",
+  "EMERGENCY_RESULT_UNKNOWN",
 ]);
 
 export const ApiErrorSchema = z
@@ -1699,6 +1997,30 @@ export type CarePlanMutationResult = z.infer<typeof CarePlanMutationResultSchema
 export type CarePlanHistoryQuery = z.infer<typeof CarePlanHistoryQuerySchema>;
 export type CarePlanHistoryProjection = z.infer<typeof CarePlanHistoryProjectionSchema>;
 export type CarePlanVersionConfirmedEvent = z.infer<typeof CarePlanVersionConfirmedEventSchema>;
+export type EmergencyContactInput = z.infer<typeof EmergencyContactInputSchema>;
+export type ReplaceEmergencyContactsRequest = z.infer<typeof ReplaceEmergencyContactsRequestSchema>;
+export type EmergencyContactProjection = z.infer<typeof EmergencyContactProjectionSchema>;
+export type EmergencyContactListProjection = z.infer<typeof EmergencyContactListProjectionSchema>;
+export type EmergencyContactMutationResult = z.infer<typeof EmergencyContactMutationResultSchema>;
+export type EmergencyHistoryQuery = z.infer<typeof EmergencyHistoryQuerySchema>;
+export type EmergencyContactHistoryProjection = z.infer<
+  typeof EmergencyContactHistoryProjectionSchema
+>;
+export type SaveEmergencyPlanDraftRequest = z.infer<typeof SaveEmergencyPlanDraftRequestSchema>;
+export type ReviewEmergencyPlanVersionRequest = z.infer<
+  typeof ReviewEmergencyPlanVersionRequestSchema
+>;
+export type EmergencyPlanState = z.infer<typeof EmergencyPlanStateSchema>;
+export type EmergencyPlanDraftProjection = z.infer<typeof EmergencyPlanDraftProjectionSchema>;
+export type EmergencyPlanVersionProjection = z.infer<typeof EmergencyPlanVersionProjectionSchema>;
+export type EmergencyPlanProjection = z.infer<typeof EmergencyPlanProjectionSchema>;
+export type EmergencyPlanMutationResult = z.infer<typeof EmergencyPlanMutationResultSchema>;
+export type EmergencyPlanHistoryProjection = z.infer<typeof EmergencyPlanHistoryProjectionSchema>;
+export type EmergencyOfflineSnapshot = z.infer<typeof EmergencyOfflineSnapshotSchema>;
+export type EmergencyContactsChangedEvent = z.infer<typeof EmergencyContactsChangedEventSchema>;
+export type EmergencyPlanVersionReviewedEvent = z.infer<
+  typeof EmergencyPlanVersionReviewedEventSchema
+>;
 export type CareTaskCompletedEvent = z.infer<typeof CareTaskCompletedEventSchema>;
 export type CareTaskHandedOffEvent = z.infer<typeof CareTaskHandedOffEventSchema>;
 export type CareCoordinationEvent = z.infer<typeof CareCoordinationEventSchema>;

@@ -375,3 +375,21 @@ organizer status is insufficient. Concurrent edits use optimistic revisions
 and idempotency. The product never diagnoses, recommends treatment, queues an
 offline mutation, claims reminder delivery, exposes hidden history totals, or
 persists sensitive plan content in browser storage.
+
+### P4-S2 emergency-readiness outcome
+
+An authorized participant can configure one complete ordered list of
+non-clinical emergency contacts, maintain bounded participant-entered plan
+steps, and explicitly review an immutable current version. Contact changes
+make the current plan require a new review. Every online read or action uses a
+fresh exact-purpose P2 authority decision; household role, possession of a
+copy, or a prior decision is insufficient.
+
+The current online view and the encrypted offline copy are visibly different
+sources. The offline copy contains only reviewed steps, contact order/label/
+dial facts and source/version/confirmation/display-time facts. It is recent
+for at most 24 hours, stale and prominently warned through 72 hours, then
+hidden and purged. It never claims current permission, current server state,
+contact availability, legal/professional status, diagnosis, treatment,
+urgency ranking, a placed call or automated dispatch. Offline writes are
+blocked and never queued.

@@ -780,3 +780,33 @@ failures, not product failures.
   start only in a fresh task and must first freeze purpose-specific authority,
   ordered-contact, reviewed-plan, offline-copy freshness and minimum-disclosure
   contracts. Do not invoke another local Level C or start P4-S2 here.
+
+## 2026-07-28 — P4-S2 emergency readiness candidate
+
+- Scope/change: `P4-S2` / `CHG-2026-017`.
+- Base/branch: verified live
+  `dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e` to
+  `phase/4-emergency-contacts-offline-plan`; canonical issue #13 was verified
+  before mutation and no duplicate branch/task/PR existed.
+- Contract: `P4-S2-v1` and `P4-S2-offline-v1`; Care owns the aggregate and
+  migration 006. Identity issues fresh exact-purpose decisions and Gateway
+  forwards only authoritative Care results. Notification is uninvolved.
+- Design/security: three independent reviews, ADR-025, the P4-S2 threat model,
+  four bounded synthetic Stitch references with one direct read-back each,
+  and the Frozen redacted native-only handoff precede UI implementation.
+- Candidate paths: LB-020 ordered contacts, LB-021 reviewed plan and only the
+  required read-only LB-032 encrypted offline behavior. The service worker is
+  limited to the three exact shell assets and emergency-plan navigation;
+  online APIs are `no-store`; offline mutations are blocked and never queued.
+- Validation/promotion state: exactly one local `validate:p4-s2` campaign ran.
+  Static/unit/contract/docs/config/secrets/audit/build and cumulative
+  integrations through P4-S1 passed before the P4-S2 Care suite exposed an
+  explicit timestamptz binding defect and PostgreSQL-integer history
+  sentinel. Classified targeted recovery—not a second Level C—proved the
+  corrected Care 6/6 suite, migration 006 rollback/reapply/no-backfill, the
+  real production-runtime/offline/purge journey, three mocked P4-S2 paths and
+  all cumulative P2–P4-S1 browser regressions. Exact-head hosted CI,
+  merge-commit promotion, post-merge `dev` CI and bilingual issue closeout
+  remain required before integration can be claimed.
+- Deferred: no P4-S3, DATA-S1, P5, Spring, deployment, release, new service or
+  new persistence engine. KI-001/KI-016/KI-019 remain.

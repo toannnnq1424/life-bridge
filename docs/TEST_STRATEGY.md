@@ -396,6 +396,40 @@ Manual NVDA/Narrator, physical-device, text-spacing, forced-colors and
 of private Stitch renders remains KI-019 and cannot be replaced by automated
 visual-parity claims.
 
+## P4-S2 Level C campaign
+
+Exactly one `pnpm.cmd run validate:p4-s2` campaign proves cumulative P1 through
+P4-S2 formatting, lint, type, unit, contract, docs, config, secrets,
+dependency, build, PostgreSQL integration/migration and browser gates. The
+new slice evidence covers:
+
+1. all eight fresh exact-purpose Identity/Gateway/Care authority paths and
+   zero owner calls after denial;
+2. complete ordered-list replacement, per-item and aggregate optimistic
+   revisions, concurrency, idempotency and sealed authority-bound history;
+3. plan no-plan/draft/review-required/reviewed states, immutable versions,
+   contact-revision invalidation and server/IANA confirmation facts;
+4. minimum contact/plan projections, content-free suppressed events,
+   privacy-safe audit/idempotency/log evidence and atomic rollback;
+5. migration 006 forced rollback, repeat apply, retained legacy state and no
+   unintended emergency backfill;
+6. explicit passphrase opt-in, PBKDF2-HMAC-SHA-256 at 600,000 iterations,
+   AES-256-GCM, write/decrypt/read-back verification, route/scope/source/
+   version integrity and online denial/supersession purge;
+7. 24-hour recent, through-72-hour stale, backward-clock unknown and expiry
+   hiding/purge truth; wrong-passphrase and integrity recovery never expose
+   protected content;
+8. shell-only service-worker interception, no API cache/background write
+   retry, mocked and real offline Chromium paths and local cleanup;
+9. native VI/EN keyboard order, review focus, semantic ordered lists,
+   text/icon/colour source distinction, 44 px controls, 320 CSS px reflow,
+   axe, reduced-motion and forced-colours evidence.
+
+Workers remain one, retries zero, and trace/screenshot/video are off. A failed
+campaign is classified before only the smallest targeted recovery; a second
+Level C is prohibited. Manual assistive-technology evidence remains KI-016 and
+private Stitch pixel inspection remains KI-019.
+
 ## P3-S3 Level C campaign
 
 Exactly one `pnpm.cmd run validate:p3-s3` campaign proves cumulative P1 through

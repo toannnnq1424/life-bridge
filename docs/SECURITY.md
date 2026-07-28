@@ -301,3 +301,38 @@ risks. Intent, delivered evidence, failed/missed/uncertain delivery and seen
 acknowledgement remain distinct. Offline mutation is blocked; timeouts require a
 fresh authoritative read and never a blind retry. The complete matrix is
 `docs/security/P4_S1_THREAT_MODEL.md`.
+
+## P4-S2 emergency readiness and offline-copy controls
+
+Every online contact, plan, history, and offline-snapshot request consumes a
+new exact-purpose P2 decision. Gateway binds the complete intent; Care
+revalidates permission, household, recipient, request digest, correlation,
+subject/grant/privacy versions, and decision age before any data access.
+Organizer/member status and a locally stored snapshot are never authority.
+
+Strict schemas accept only a bounded label, one configured phone method, exact
+order, and bounded participant-entered guidance steps. They reject unknown
+fields, markup/control characters, addresses, email, availability,
+professional/legal status, diagnosis, treatment, urgency, dispatch claims, and
+arbitrary metadata. Protected values stay only in authorized Care reads and
+the accepted encrypted snapshot. Events, audit metadata, idempotency responses,
+logs, metrics, traces, cursors, and errors are content-free.
+
+ADR-025 and `docs/security/P4_S2_THREAT_MODEL.md` govern the browser exception:
+explicit per-device opt-in; a distinct non-recoverable offline passphrase;
+PBKDF2-HMAC-SHA-256 with 600,000 iterations; random 16-byte salt; AES-256-GCM
+with a random 12-byte nonce; authenticated scope/schema/source/version/
+confirmation/expiry metadata; one IndexedDB ciphertext; app-shell-only Cache
+Storage; protected HTTP `no-store`; atomic verified replacement; and fail-
+closed purge on integrity/AAD failure. Wrong/forgotten passphrase recovery is
+local removal plus an online fresh-authority recreation.
+
+Remote revocation cannot be discovered while offline. Every offline render
+therefore says it is not live and current permission/updates cannot be checked.
+At known logout, account switch, denial/revocation, `no_plan`, confirmed
+contact/source change, incompatible schema, explicit removal, or 72-hour hard
+expiry, content is hidden and the matching snapshot is purged before render.
+Same-origin XSS, an unlocked device/profile, weak-passphrase guessing, and the
+residual offline revocation window remain documented risks, not a security or
+compliance claim. Offline writes are blocked and never queued, retried, or
+submitted on reconnect.

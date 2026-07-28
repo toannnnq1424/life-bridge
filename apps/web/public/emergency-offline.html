@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <title>Kế hoạch khẩn cấp ngoại tuyến — LifeBridge</title>
+    <link rel="stylesheet" href="/emergency-offline.css" />
+    <script type="module" src="/emergency-offline.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#offline-main">Bỏ qua đến nội dung chính</a>
+    <header class="shell-header">
+      <a class="brand" href="/">LifeBridge</a>
+      <button id="locale-button" type="button">English</button>
+    </header>
+    <main id="offline-main" tabindex="-1">
+      <h1 id="title">Kế hoạch khẩn cấp đã lưu</h1>
+      <section class="source-banner" aria-labelledby="source-title">
+        <h2 id="source-title">Bản sao ngoại tuyến — không trực tiếp</h2>
+        <p id="source-copy">
+          Bản sao ngoại tuyến đã lưu — không phải trạng thái trực tiếp. Không thể kiểm tra quyền
+          hiện tại hoặc cập nhật khi ngoại tuyến.
+        </p>
+      </section>
+      <section class="safety" aria-labelledby="safety-title">
+        <h2 id="safety-title">Giới hạn an toàn</h2>
+        <p id="safety-copy">
+          LifeBridge chỉ hiển thị kế hoạch do người tham gia rà soát và máy chủ xác nhận. Ứng dụng
+          không chẩn đoán, xếp hạng mức độ khẩn cấp, liên hệ bất kỳ ai hoặc điều phối dịch vụ khẩn
+          cấp.
+        </p>
+      </section>
+      <section id="unlock-panel" class="panel" aria-labelledby="unlock-title">
+        <h2 id="unlock-title">Mở bản sao đã mã hóa</h2>
+        <p id="unlock-hint">
+          Cụm mật khẩu ngoại tuyến khác mật khẩu tài khoản, không được gửi đi hoặc có thể khôi phục.
+          Có thể dán từ trình quản lý mật khẩu.
+        </p>
+        <form id="unlock-form">
+          <label for="passphrase">Cụm mật khẩu ngoại tuyến</label>
+          <input
+            id="passphrase"
+            name="passphrase"
+            type="password"
+            minlength="12"
+            maxlength="128"
+            autocomplete="current-password"
+            required
+          />
+          <button id="open-copy" type="submit">Mở bản sao</button>
+        </form>
+      </section>
+      <section id="state-panel" class="state-panel" tabindex="-1" aria-live="polite"></section>
+      <section id="protected-content" hidden></section>
+      <section class="local-actions" aria-labelledby="local-title">
+        <h2 id="local-title">Hành động trên thiết bị</h2>
+        <button id="remove-copy" class="danger" type="button">
+          Xóa bản sao đã lưu khỏi thiết bị
+        </button>
+        <p id="remove-result" role="status"></p>
+      </section>
+    </main>
+    <footer>
+      <p id="footer-copy">
+        Mọi thay đổi đều bị chặn khi ngoại tuyến và không bao giờ được xếp hàng.
+      </p>
+    </footer>
+  </body>
+</html>

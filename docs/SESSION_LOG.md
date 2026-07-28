@@ -1731,3 +1731,124 @@ action is to freeze purpose-specific authority, ordered-contact, reviewed-plan,
 offline-copy freshness and minimum-disclosure contracts against accepted
 P2/P3/P4-S1 boundaries. Do not invoke another local Level C or start P4-S2,
 P4-S3, DATA-S1, P5, Spring, deployment or release here.
+
+## 2026-07-28 — P4-S2 emergency contacts and offline-readable plan candidate
+
+### Scope and verified start
+
+This task owns exactly `P4-S2` / `CHG-2026-017` from accepted live
+`dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e` on
+`phase/4-emergency-contacts-offline-plan`. Before mutation the worktree/index
+were clean, local/live `dev` matched, no other P4-S2 task/branch/PR existed,
+and canonical issue #13 was verified without duplication. P4-S3, DATA-S1, P5,
+Spring, deployment and release were not started. The Stitch canary retained
+no worktree/index change and was never staged.
+
+### Planned versus actual and frozen decisions
+
+- Planned: authorized participants manage ordered contacts and a reviewed
+  plan with a safe offline-readable copy.
+- Actual: Care owns one service-local aggregate, contacts, working draft,
+  immutable versions/history, audit, idempotency and content-free suppressed
+  outbox under migration 006. Identity/Gateway require a fresh request-bound
+  decision for each of eight exact permissions. Organizer/member status,
+  contact possession and offline state confer no authority.
+- Planned open details: purpose binding, concurrency, offline fields,
+  retention, revocation, integrity and recovery.
+- Actual/frozen: complete-list replacement up to 10 contacts; 1–8
+  participant-entered steps; contact changes force `review_required`; sealed
+  authority-bound cursors; optimistic revisions and idempotency; recent
+  through 24 hours, prominently stale through 72 hours, then hidden/purged;
+  backward-clock `freshness_unknown`; online denial/supersession purge;
+  explicit 12–128-character passphrase opt-in; PBKDF2-HMAC-SHA-256 at 600,000
+  iterations; random salt/IV; AES-256-GCM with route/scope/source/version/time
+  AAD; verified pending-to-primary replacement; no passphrase persistence or
+  recovery.
+- Planned design: LB-020/LB-021 and only required read-only LB-032 behavior.
+- Actual: four exact synthetic Stitch titles were each confirmed absent,
+  generated once and directly read back once. Generated source was rejected;
+  no locator/remote ID/pixel/source/real data was persisted. The Frozen
+  corrected native-only handoff precedes VI/EN implementation. KI-019 remains
+  because independent private-pixel inspection was unavailable.
+- Deviation/recovery: the exact shell worker must serve its three cached
+  CSS/JS/HTML assets in addition to intercepting only the bounded plan
+  navigation; otherwise the offline HTML cannot execute. The corrected
+  boundary remains shell-only and never matches API/session/mutation traffic.
+
+### Implementation and evidence
+
+The candidate adds `P4-S2-v1`/`P4-S2-offline-v1`, Identity mutation
+classification, eight Gateway/Care routes, Care migration 006 and
+`EmergencyReadinessService`, native LB-020/LB-021 routes, an encrypted
+IndexedDB envelope, CSP-isolated bilingual unlock page and narrow service
+worker. Online APIs are `no-store`; offline changes are disabled and never
+queued. UI and events make no diagnosis, treatment, urgency, availability,
+professional/legal or automated-dispatch claim.
+
+Exactly one `pnpm.cmd run validate:p4-s2` campaign ran. Before its P4-S2
+integration stop it passed all seven cumulative format gates, repository
+lint/typecheck, unit 78/78, contracts 45/45, docs/config/secrets, dependency
+audit, all production builds, P1 integration 6/6, P3-S1 integration 14/14,
+P3-S2 integration 5/5, P3-S3 integration and P4-S1 integration 8/8. The
+P4-S2 suite then exposed:
+
+1. a missing explicit `timestamptz` cast where one placeholder fed both
+   `created_at` and interval arithmetic; and
+2. a JavaScript max-safe history sentinel outside PostgreSQL `INTEGER`.
+
+The runner stopped and removed its PID-scoped Compose project/volume. No
+second Level C ran. Classified targeted recovery corrected those boundaries
+and proved:
+
+- P4-S2 Care integration 6/6, including exact authority, ordering, no-plan/
+  draft/reviewed/review-required, concurrency, idempotency, history,
+  minimum snapshot, content-free outbox/audit and atomic rollback;
+- migration 006 forced rollback, repeat apply, retained legacy task and no
+  emergency backfill;
+- freshness unit boundaries for recent/stale/backward-clock/expiry/invalid
+  facts, shell/API static inspection, real ciphertext integrity failure and
+  purge;
+- mocked LB-020, LB-021 and required LB-032 Chromium 3/3 with axe, keyboard
+  focus, 320 px reflow, forced colours/reduced motion, denial, unavailable,
+  conflict, offline write blocking and no blind retry;
+- real built Web→Gateway→Identity→Care PostgreSQL flow 1/1 covering contact
+  confirmation, draft/review, minimum persisted state, content-free
+  suppressed events, encrypted offline unlock, server timestamp, contact
+  change, review invalidation and local purge;
+- cumulative mocked browser regressions: P4-S1 3/3, P3-S3 3/3, P3-S2 5/5,
+  P3-S1 6/6, P2-S3 7/7, P2-S2 6/6 and P2-S1 5/5; their real-runtime tests
+  remained correctly skipped in the mocked-only continuation.
+
+Every recovery database, Compose project/volume, runtime process, log and
+Playwright output was removed. Runtime logs passed the P4-S2 sensitive-value
+scan. The repository checkpoint remained on the exact phase branch; canary
+worktree/index diffs were empty and `git diff --check` passed. A later
+combined host listener/container recheck was unavailable because the app
+blocked another escalated command at its usage limit; the immediately
+preceding successful recovery continuations had already completed and
+reported exact cleanup.
+
+### Hosted promotion continuation
+
+Feature commit `1b28a16cd9f378de3fcc9f57f0c456b07f89b2bb` was pushed without
+force and ready PR #62 was opened to `dev`. Exact-head push run `30356925555`
+passed Windows quality, P4-S2 PostgreSQL/Chromium acceptance and the full
+required gate. Simultaneous PR run `30357031265` passed Windows quality, the
+real runtime journey, Care 6/6, migration 006 and its first three browser
+cases, then exposed a test-only nondeterminism in the mocked LB-032 integrity
+check: replacing the ciphertext's final character with `A` can be a no-op when
+that character is already `A`.
+
+Classified recovery now changes the first ciphertext character between `A`
+and `B`, guaranteeing a same-length mutation before exercising AES-GCM
+integrity failure. Focused formatting passed and the P4-S2 mocked browser suite
+passed 3/3 with the real-runtime case correctly skipped. No second Level C ran.
+The transient port, process and Playwright output were removed.
+
+### Exact next
+
+Commit and push the deterministic hosted recovery, verify replacement
+exact-head hosted CI, merge PR #62 with a merge commit, verify post-merge
+`dev` CI, close issue #13 with bilingual evidence, then make only any necessary
+same-task docs-only canonical correction. Retain KI-001/KI-016/KI-019 and do
+not start P4-S3.

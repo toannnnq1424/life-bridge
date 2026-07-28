@@ -23,6 +23,7 @@ import {
   UpdateIdentityPreferencesSchema,
   UpdatePrivacyPreferencesSchema,
   UpsertCareRecipientContextRequestSchema,
+  isCoordinationMutationPermission,
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
@@ -65,7 +66,7 @@ export function buildIdentityServer(
       ? { status: "ready" }
       : reply.code(503).send({ status: "not_ready", dependency: "identity_database" }),
   );
-  app.get("/version", async () => ({ service: "identity-consent", contract: "P3-S3-v1" }));
+  app.get("/version", async () => ({ service: "identity-consent", contract: "P4-S2-v1" }));
 
   app.post<{ Body: unknown }>("/internal/v1/account/registrations", async (request, reply) => {
     const correlationId = correlation(request);
@@ -385,11 +386,7 @@ export function buildIdentityServer(
     const service = requireConsent(consent);
     const correlationId = correlation(request);
     const authorizationRequest = CoordinationAuthorizationRequestSchema.parse(request.body);
-    const requiresMutationProof =
-      authorizationRequest.permission === "coordination.task.handoff" ||
-      authorizationRequest.permission === "coordination.appointment.create" ||
-      authorizationRequest.permission === "coordination.appointment.change" ||
-      authorizationRequest.permission === "coordination.appointment.cancel";
+    const requiresMutationProof = isCoordinationMutationPermission(authorizationRequest.permission);
     const account = requiresMutationProof
       ? await identity.requireAccountSession(
           header(request, "x-session-token"),

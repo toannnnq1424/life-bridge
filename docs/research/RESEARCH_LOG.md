@@ -302,3 +302,40 @@ cross-service evidence is content-free. These sources establish no Viet Nam
 legal or clinical-compliance claim. KI-016 and KI-019 remain. Re-check on a new
 consent scope, multiple drafts, reminders, clinical fields, retention policy,
 or runtime/tzdb change.
+
+## 2026-07-28 — P4-S2 encrypted offline-copy micro-cycle
+
+Result: `PASS WITH ASSUMPTIONS`; retrieved 2026-07-28. This bounded review used
+global official/primary technical guidance and introduced no real contact,
+care-plan, credential, private locator, diagnosis, treatment, or emergency
+claim.
+
+- OWASP Foundation,
+  [HTML5 Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html)
+  and
+  [Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html):
+  sensitive browser persistence needs explicit threat treatment; authenticated
+  encryption is preferred; same-origin script compromise remains a boundary;
+  service-worker cache scope and stored response classes must be narrow.
+- OWASP Foundation,
+  [Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html):
+  PBKDF2-HMAC-SHA-256 at 600,000 iterations is the accepted current
+  FIPS-oriented work factor; P4-S2 uses a random salt and keeps the offline
+  passphrase separate from account authentication.
+- W3C,
+  [Web Cryptography Level 2](https://www.w3.org/TR/WebCryptoAPI/) and
+  [WCAG 2.2](https://www.w3.org/TR/WCAG22/):
+  Web Crypto supplies PBKDF2/AES-GCM primitives; native semantics, keyboard
+  access, focus, reflow, non-color status, target size, and status messaging
+  apply to LB-020/LB-021/LB-032.
+
+Kết luận / Conclusion: ADR-025 accepts one explicitly saved, authenticated
+encrypted snapshot in IndexedDB and only a non-sensitive shell in Cache
+Storage. The copy remains “not live,” is recent through 24 hours, stale through
+72 hours, then hidden and purged. These sources do not prove protection from
+same-origin XSS, an unlocked device, weak-passphrase guessing, unavailable
+remote revocation, Viet Nam legal compliance, clinical correctness, emergency
+dispatch, manual assistive-technology conformance, or private-render visual
+approval. Re-check on different KDF/AEAD parameters, Web Crypto/browser support,
+multiple offline copies, longer retention, background synchronization, public
+pilot, or a new legal/clinical claim.

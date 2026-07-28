@@ -1,37 +1,37 @@
 # Repository Map
 
 Verified: 2026-07-28
-Integrated base: accepted `P3-S3 — Care-plan review`
-(`origin/dev@aaf6113540925b3132a323afc6e1922a902a3e29`)
-Active product slice: `P4-S1 — Medication reminder acknowledgement` on
-`phase/4-medication-reminder-acknowledgement`
+Integrated base: accepted live
+`origin/dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e`
+Active product slice: `P4-S2 — Emergency contacts and offline-readable plan`
+on `phase/4-emergency-contacts-offline-plan`
 
-This map reflects the accepted P1/P2/P3 tree through P3-S3 plus the task-owned
-P4-S1 candidate. P4-S2/P4-S3 and DATA-S1 are not started.
+This map reflects the accepted P1/P2/P3/P4-S1 tree plus the task-owned P4-S2
+candidate. P4-S3 and DATA-S1 are not started.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
 
 ## Top-level layout
 
-| Path                          | Responsibility                                                                                          | Key entry points                                                                        |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `apps/web/`                   | Native Next.js UI from reviewed Stitch handoffs, VI/EN localization, responsive/accessibility states    | `app/`, `src/MedicationReminderApp.tsx`                                                 |
-| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition   | `src/main.ts`, `src/server.ts`                                                          |
-| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                        | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts`                   |
-| `services/care-coordination/` | Task/planning plus Care-owned user-provided medication schedules, audit and transactional intent outbox | `src/medication-reminder-service.ts`, `migrations/005_medication_reminders.sql`         |
-| `services/notification/`      | Generic delivery attempts/evidence and immutable seen-only medication acknowledgement                   | `src/medication-reminder-service.ts`, `migrations/003_medication_reminder_delivery.sql` |
-| `packages/contracts/`         | Frozen P1 through P4-S1 authority/time/reminder/delivery/event schemas                                  | `src/index.ts`, `src/medication-reminder-contract.test.ts`                              |
-| `packages/config/`            | Required runtime configuration and production fixture guard                                             | `src/index.ts`                                                                          |
-| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                    | `src/index.ts`                                                                          |
-| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                                | `src/index.ts`                                                                          |
-| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                             | `p1-s1.test.ts`                                                                         |
-| `tests/browser/`              | Artifact-disabled VI/EN keyboard/focus/reflow/axe plus real governed runtime acceptance                 | `p4-s1.spec.ts`, `p4-s1-runtime.spec.ts`                                                |
-| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                      | `docker-compose.yml`                                                                    |
-| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                          | `start-p1.ps1`, `validate-p4-s1.ps1`                                                    |
-| `tools/quality/`              | Repository validators plus owner-isolated migration helpers                                             | `src/p4-s1-migration.ts`                                                                |
-| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                         | `workflows/ci.yml`                                                                      |
-| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory            | documents listed below                                                                  |
+| Path                          | Responsibility                                                                                         | Key entry points                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `apps/web/`                   | Native Next.js UI plus encrypted shell-only offline plan copy, VI/EN and accessibility/recovery states | `app/`, `src/EmergencyReadinessApp.tsx`, `src/emergency-offline-store.ts`, `public/`    |
+| `apps/gateway/`               | Public BFF, secure Identity cookie/origin/CSRF boundary, legacy fixture guard, dependency composition  | `src/main.ts`, `src/server.ts`                                                          |
+| `services/identity-consent/`  | Account, household, consent, governed-read, privacy and redacted-audit authority                       | `src/consent-service.ts`, `src/household-service.ts`, `src/server.ts`                   |
+| `services/care-coordination/` | Task/planning plus Care-owned emergency aggregate, immutable versions, audit and content-free outbox   | `src/emergency-readiness-service.ts`, `migrations/006_emergency_readiness.sql`          |
+| `services/notification/`      | Generic delivery attempts/evidence and immutable seen-only medication acknowledgement                  | `src/medication-reminder-service.ts`, `migrations/003_medication_reminder_delivery.sql` |
+| `packages/contracts/`         | Frozen P1 through P4-S2 authority/contact/plan/offline/event schemas                                   | `src/index.ts`, `src/emergency-readiness-contract.test.ts`                              |
+| `packages/config/`            | Required runtime configuration and production fixture guard                                            | `src/index.ts`                                                                          |
+| `packages/observability/`     | Allow-listed structured logging, metrics, traces and correlation IDs                                   | `src/index.ts`                                                                          |
+| `packages/test-fixtures/`     | Deterministic synthetic household, actors and time facts                                               | `src/index.ts`                                                                          |
+| `tests/integration/`          | Real PostgreSQL ownership, concurrency, outbox/inbox and restart acceptance                            | `p1-s1.test.ts`                                                                         |
+| `tests/browser/`              | Artifact-disabled VI/EN keyboard/focus/reflow/axe plus real online/offline runtime acceptance          | `p4-s2.spec.ts`, `p4-s2-runtime.spec.ts`                                                |
+| `infra/p1/`                   | Slice-owned local PostgreSQL container definition pinned by digest                                     | `docker-compose.yml`                                                                    |
+| `scripts/`                    | Windows bootstrap, demo and cumulative validation entry points                                         | `start-p1.ps1`, `validate-p4-s2.ps1`                                                    |
+| `tools/quality/`              | Repository validators plus owner-isolated migration helpers                                            | `src/p4-s2-migration.ts`                                                                |
+| `.github/`                    | PR/issue contracts and exact-head Windows/PostgreSQL/browser CI                                        | `workflows/ci.yml`                                                                      |
+| `docs/`                       | Canonical product, architecture, contracts, design, quality, security, deployment and memory           | documents listed below                                                                  |
 
 The existing `.ai-orchestrator/`, `.codex/`, `.vscode/`, `data/`, and
 `docs/research/` boundaries remain governed by the Phase 0 rules. P1-S1 does
@@ -122,30 +122,47 @@ owner rollback/reapply/no-backfill; artifact-disabled mocked/real Chromium
 coverage lives in `tests/browser/p4-s1*.spec.ts`; `validate-p4-s1.ps1` owns the
 single cumulative campaign and exact cleanup.
 
+P4-S2 adds Care migration `006_emergency_readiness.sql`, the Care-owned
+`EmergencyReadinessService`, eight fresh Gateway/Identity authority paths,
+native LB-020/LB-021 routes and the required read-only LB-032 offline shell.
+The redacted design/security authorities are
+`docs/design/reviews/P4_S2_STITCH_HANDOFF.md`, ADR-025 and
+`docs/security/P4_S2_THREAT_MODEL.md`. `emergency-offline-store.ts` writes one
+verified AES-GCM ciphertext envelope to IndexedDB after passphrase opt-in;
+`public/emergency-offline-*` is the network-isolated shell and narrow service
+worker for its three exact assets plus plan navigation. `p4-s2-migration.ts`
+proves Care rollback, reapply, preservation and no backfill; artifact-disabled mocked/real Chromium
+coverage lives in `tests/browser/p4-s2*.spec.ts`; `validate-p4-s2.ps1` owns the
+single cumulative campaign and exact cleanup.
+
 ## Commands and generated state
 
-| Command                                     | Behavior                                                                                                    |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `pnpm.cmd run demo:p1`                      | Builds and runs the synthetic P1 loop on local ports `3000`, `3001`, `3101`, `3102`, and PostgreSQL `55432` |
-| `pnpm.cmd run validate:p1-s1`               | One isolated Level C campaign with PostgreSQL, build/runtime, Chromium, accessibility and security evidence |
-| `pnpm.cmd run test:p1:integration`          | Targeted real-PostgreSQL service acceptance; requires provisioned database URLs                             |
-| `pnpm.cmd run test:p1:browser`              | Targeted browser acceptance; requires an already running built stack                                        |
-| `pnpm.cmd run test:p2:identity-integration` | Targeted P2 Identity PostgreSQL Level B; requires a provisioned Identity-owned database                     |
-| `pnpm.cmd run test:p2:browser`              | Artifact-disabled P2 UI/accessibility/security browser campaign against a running production web build      |
-| `pnpm.cmd run validate:p2-s1`               | Single cumulative P2 Level C including P1 regression, Identity PostgreSQL, P2 browser and security gates    |
-| `pnpm.cmd run test:p2-s2:browser`           | LB-008–LB-010 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner    |
-| `pnpm.cmd run validate:p2-s2`               | Cumulative P2-S2 Level C with P1/P2-S1 regression, PostgreSQL, built runtime, Chromium and security         |
-| `pnpm.cmd run test:p2-s3:migration`         | Disposable P2-S2 → P2-S3 migration/reapply/no-backfill/preservation check                                   |
-| `pnpm.cmd run test:p2-s3:browser`           | LB-028–LB-031 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner    |
-| `pnpm.cmd run validate:p2-s3`               | Single cumulative P2-S3 Level C with regressions, migration/PostgreSQL, built runtime, Chromium and privacy |
-| `pnpm.cmd run test:p3-s1:migration`         | Disposable P1 → P3-S1 Care migration rollback/reapply/no-backfill/preservation check                        |
-| `pnpm.cmd run test:p3-s1:integration`       | Real Identity/Care PostgreSQL authority, chronology, race, idempotency and atomicity evidence               |
-| `pnpm.cmd run test:p3-s1:browser`           | Artifact-disabled LB-012/LB-014 browser campaign; real path enabled by the Level C runner                   |
-| `pnpm.cmd run validate:p3-s1`               | Single cumulative P3-S1 Level C with P1/P2 regressions, owned PostgreSQL, built runtime and privacy/a11y    |
-| `pnpm.cmd run test:p4-s1:integration`       | Care/Notification PostgreSQL authority, recurrence, delivery, concurrency, idempotency and rollback proof   |
-| `pnpm.cmd run test:p4-s1:migration`         | Separate Care/Notification rollback, reapply, preservation and no-backfill proof                            |
-| `pnpm.cmd run test:p4-s1:browser`           | Artifact-disabled mocked and real LB-018/minimum-LB-019 Chromium acceptance                                 |
-| `pnpm.cmd run validate:p4-s1`               | Exactly one cumulative P4-S1 Level C with owned PostgreSQL, runtime, privacy, accessibility and regressions |
+| Command                                     | Behavior                                                                                                       |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `pnpm.cmd run demo:p1`                      | Builds and runs the synthetic P1 loop on local ports `3000`, `3001`, `3101`, `3102`, and PostgreSQL `55432`    |
+| `pnpm.cmd run validate:p1-s1`               | One isolated Level C campaign with PostgreSQL, build/runtime, Chromium, accessibility and security evidence    |
+| `pnpm.cmd run test:p1:integration`          | Targeted real-PostgreSQL service acceptance; requires provisioned database URLs                                |
+| `pnpm.cmd run test:p1:browser`              | Targeted browser acceptance; requires an already running built stack                                           |
+| `pnpm.cmd run test:p2:identity-integration` | Targeted P2 Identity PostgreSQL Level B; requires a provisioned Identity-owned database                        |
+| `pnpm.cmd run test:p2:browser`              | Artifact-disabled P2 UI/accessibility/security browser campaign against a running production web build         |
+| `pnpm.cmd run validate:p2-s1`               | Single cumulative P2 Level C including P1 regression, Identity PostgreSQL, P2 browser and security gates       |
+| `pnpm.cmd run test:p2-s2:browser`           | LB-008–LB-010 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner       |
+| `pnpm.cmd run validate:p2-s2`               | Cumulative P2-S2 Level C with P1/P2-S1 regression, PostgreSQL, built runtime, Chromium and security            |
+| `pnpm.cmd run test:p2-s3:migration`         | Disposable P2-S2 → P2-S3 migration/reapply/no-backfill/preservation check                                      |
+| `pnpm.cmd run test:p2-s3:browser`           | LB-028–LB-031 browser/accessibility/privacy campaign; real runtime path is enabled by the Level C runner       |
+| `pnpm.cmd run validate:p2-s3`               | Single cumulative P2-S3 Level C with regressions, migration/PostgreSQL, built runtime, Chromium and privacy    |
+| `pnpm.cmd run test:p3-s1:migration`         | Disposable P1 → P3-S1 Care migration rollback/reapply/no-backfill/preservation check                           |
+| `pnpm.cmd run test:p3-s1:integration`       | Real Identity/Care PostgreSQL authority, chronology, race, idempotency and atomicity evidence                  |
+| `pnpm.cmd run test:p3-s1:browser`           | Artifact-disabled LB-012/LB-014 browser campaign; real path enabled by the Level C runner                      |
+| `pnpm.cmd run validate:p3-s1`               | Single cumulative P3-S1 Level C with P1/P2 regressions, owned PostgreSQL, built runtime and privacy/a11y       |
+| `pnpm.cmd run test:p4-s1:integration`       | Care/Notification PostgreSQL authority, recurrence, delivery, concurrency, idempotency and rollback proof      |
+| `pnpm.cmd run test:p4-s1:migration`         | Separate Care/Notification rollback, reapply, preservation and no-backfill proof                               |
+| `pnpm.cmd run test:p4-s1:browser`           | Artifact-disabled mocked and real LB-018/minimum-LB-019 Chromium acceptance                                    |
+| `pnpm.cmd run validate:p4-s1`               | Exactly one cumulative P4-S1 Level C with owned PostgreSQL, runtime, privacy, accessibility and regressions    |
+| `pnpm.cmd run test:p4-s2:integration`       | Care PostgreSQL authority, ordering, review/version, snapshot, concurrency, idempotency and rollback proof     |
+| `pnpm.cmd run test:p4-s2:migration`         | Care migration 006 rollback, repeat apply, preservation and no-backfill proof                                  |
+| `pnpm.cmd run test:p4-s2:browser`           | Artifact-disabled mocked/real LB-020/LB-021/required-LB-032 Chromium acceptance                                |
+| `pnpm.cmd run validate:p4-s2`               | Exactly one cumulative P4-S2 Level C with owned PostgreSQL, real offline runtime, privacy/a11y and regressions |
 
 Local credentials and logs live only under ignored `.lifebridge-local/`. The
 validation runner creates a PID-scoped Compose project and removes only that
@@ -170,6 +187,11 @@ databases are ignored.
   and `services/identity-consent/src/service.integration.test.ts`.
 - P3-S1 migration upgrade: `tools/quality/src/p3-s1-migration.ts`.
 - P3 browser/accessibility: artifact-disabled `p3-s1*.spec.ts`.
+- P4-S2 Care integration:
+  `services/care-coordination/src/emergency-readiness-service.integration.test.ts`.
+- P4-S2 migration and browser:
+  `tools/quality/src/p4-s2-migration.ts` and artifact-disabled
+  `tests/browser/p4-s2*.spec.ts`.
 - CI aggregate gate: `.github/workflows/ci.yml`.
 - Legacy foundation validator: `tools/quality/src/phase0.ts`.
 

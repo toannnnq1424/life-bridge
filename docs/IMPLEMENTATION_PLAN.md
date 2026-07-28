@@ -6,13 +6,12 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P4 — Safety-critical coordination`; `P4-S1` is validated and
-  merged, and no later P4 slice is active in this task.
-- Most recently integrated slice:
-  `P4-S1 — Medication reminder acknowledgement`; feature PR #59 merged at
-  `dev@d58660cebd91f46b2deab38a38e7187ec7870804`, followed by docs-only PR
-  #60 at `dev@efad56c5fdcdbdd701ee82344e11f18bb2f08225`; final `dev` run
-  `30345391688` passed.
+- Current phase: `P4 — Safety-critical coordination`; exactly
+  `P4-S2 — Emergency contacts and offline-readable plan` is the active
+  candidate on `phase/4-emergency-contacts-offline-plan`.
+- Accepted base: live `dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e`;
+  P4-S2 canonical issue #13 was verified before mutation and was not
+  duplicated.
 - Accepted P4-S1 evidence: `P4-S1-v1`, four synthetic
   LB-018/minimum-LB-019 references, the Frozen native-only handoff,
   owner-isolated persistence, native VI/EN UI, one local Level C plus
@@ -21,9 +20,9 @@
   Canonical issue
   [#12](https://github.com/toannnnq1424/life-bridge/issues/12) is closed with
   bilingual evidence.
-- Exact next action: `P4-S2 — Emergency contacts and offline-readable plan`,
-  only in a fresh controller-dispatched task. P4-S2, P4-S3, DATA-S1, P5,
-  Spring, deployment and release were not started here.
+- Current action: finish only the P4-S2 Level C and PR/CI/merge/issue
+  promotion. P4-S3, DATA-S1, P5, Spring, deployment and release are not
+  started.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -661,6 +660,40 @@ Acceptance:
 - update conflict, no-plan, denied, offline, security and browser tests pass.
 
 Dependencies: P2 consent; accepted retention/cache threat review.
+
+Actual candidate (`CHG-2026-017`):
+
+- Care owns one emergency-readiness aggregate, ordered contacts, working
+  draft, immutable reviewed versions/history, audit and content-free
+  suppressed outbox. Migration 006 has no backfill and no new service or
+  persistence engine.
+- Every online operation consumes one fresh exact-purpose P2 decision.
+  Organizer/member status, a stored copy, or possession of contact
+  information never grants authority.
+- `P4-S2-v1` freezes complete-list replacement, optimistic revisions,
+  idempotency, sealed authority-bound history cursors, explicit no-plan/
+  review-required/conflict/denied/unavailable truth and minimum projections.
+- `P4-S2-offline-v1` contains only reviewed steps, ordered label/dial facts,
+  opaque source/scope/version facts and server confirmation/display-time
+  facts. It is encrypted only after explicit passphrase opt-in using
+  PBKDF2-HMAC-SHA-256 (600,000 iterations) and AES-256-GCM. Recent is at most
+  24 hours; stale remains clearly labeled through 72 hours; expiry,
+  integrity failure, online denial and superseding source versions purge or
+  replace the local copy.
+- The service worker caches only the static unlock shell, serves only its
+  three exact shell assets, and intercepts only same-origin emergency-plan
+  navigations. Offline writes are blocked and never queued or replayed.
+- Four bounded synthetic Stitch references were generated once, read back
+  once and recorded in the Frozen redacted native-only handoff. Generated
+  source was rejected and KI-019 remains.
+- Exactly one `pnpm.cmd run validate:p4-s2` campaign ran. It passed all
+  format/lint/type/unit/contract/docs/config/secrets/audit/build and
+  cumulative integrations through P4-S1, then stopped at two P4-S2
+  PostgreSQL binding/sentinel defects. Classified targeted recovery—not a
+  second Level C—proved the corrected 6/6 Care suite, migration 006, the real
+  P4-S2 production-runtime Chromium journey, all three mocked P4-S2 paths and
+  cumulative P2–P4-S1 browser regressions. Promotion remains unclaimed until
+  exact-head and post-merge hosted evidence passes.
 
 ### `P4-S3 — Access-controlled document vault`
 
@@ -1509,10 +1542,12 @@ P4-S1 feature and docs-only closeout are accepted and merged at
 push/PR runs `30343304775`/`30343308183`; PR #59 merged as
 `dev@d58660cebd91f46b2deab38a38e7187ec7870804`; post-merge run
 `30343682227` passed all three jobs and issue #12 closed with bilingual
-evidence. Docs-only PR #60 and final `dev` run `30345391688` passed. Exact next
-is `P4-S2 — Emergency contacts and offline-readable plan`, only in a fresh
-controller-dispatched task.
-Its first action is to freeze purpose-specific authority, ordered-contact,
-reviewed-plan, offline-copy freshness and minimum-disclosure contracts against
-the accepted P2/P3/P4-S1 boundaries. DATA-S1, P4-S3, P5, Spring, deployment and
-release were not started here; P4-S2 was not started here either.
+evidence. Docs-only PR #60 and final `dev` run `30345391688` passed.
+
+P4-S2 is now the single active candidate from the verified live
+`dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e`. Three independent reviews,
+ADR-025, the P4-S2 threat model, frozen contracts, four synthetic Stitch
+references and the Frozen corrected handoff precede implementation. The
+candidate spans Care-owned migration/service state, fresh Identity/Gateway
+authority, native LB-020/LB-021 and only required read-only LB-032 offline
+behavior. P4-S3, DATA-S1, P5, Spring, deployment and release remain unstarted.
