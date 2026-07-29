@@ -19,8 +19,8 @@ if (Test-Path -LiteralPath $marker) {
   throw "P5-S3 Level C was already invoked locally; retain evidence and use targeted recovery only."
 }
 
-$branch = (& git branch --show-current).Trim()
-$head = (& git rev-parse HEAD).Trim()
+$branch = (& git branch --show-current | Out-String).Trim()
+$head = (& git rev-parse HEAD | Out-String).Trim()
 $hosted = $env:GITHUB_ACTIONS -eq "true"
 if (-not $hosted -and $branch -ne "phase/5-moderation-resolution") { throw "P5-S3 Level C requires the canonical phase branch." }
 if ($hosted -and $env:EXPECTED_SHA -and $head -ne $env:EXPECTED_SHA) { throw "Hosted checkout does not match EXPECTED_SHA." }
