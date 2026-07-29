@@ -32,7 +32,9 @@ public final class CommunityExceptionHandler {
   ResponseEntity<Map<String, Object>> validation(
       Exception ignored, HttpServletRequest request) {
     String code =
-        request.getRequestURI().contains("/matches/")
+        request.getRequestURI().contains("/moderation")
+            ? "COMMUNITY_MODERATION_VALIDATION_FAILED"
+            : request.getRequestURI().contains("/matches/")
             ? "COMMUNITY_MATCH_VALIDATION_FAILED"
             : request.getRequestURI().contains("/directory")
             ? "DIRECTORY_VALIDATION_FAILED"
@@ -40,7 +42,9 @@ public final class CommunityExceptionHandler {
     return failure(
         HttpStatus.BAD_REQUEST,
         code,
-        code.equals("COMMUNITY_MATCH_VALIDATION_FAILED")
+        code.equals("COMMUNITY_MODERATION_VALIDATION_FAILED")
+            ? "community.moderation.validation"
+            : code.equals("COMMUNITY_MATCH_VALIDATION_FAILED")
             ? "community.match.validation"
             : code.equals("DIRECTORY_VALIDATION_FAILED")
             ? "community.directory.validation"

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s3-v1/schemas/authorization-context.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decisionId",
+    "purpose",
+    "permission",
+    "actorRef",
+    "recipientContextId",
+    "subjectVersion",
+    "grantId",
+    "grantVersion",
+    "privacyVersion",
+    "decidedAt",
+    "expiresAt",
+    "correlationId",
+    "requestDigest"
+  ],
+  "properties": {
+    "decisionId": { "type": "string" },
+    "purpose": { "const": "community_moderation_resolution" },
+    "permission": {
+      "enum": [
+        "community_moderation.queue.read",
+        "community_moderation.case.read",
+        "community_moderation.case.resolve",
+        "community_moderation.case.reconcile"
+      ]
+    },
+    "actorRef": { "type": "string" },
+    "recipientContextId": { "type": "string" },
+    "subjectVersion": { "type": "integer", "minimum": 1 },
+    "grantId": { "type": "string" },
+    "grantVersion": { "type": "integer", "minimum": 1 },
+    "privacyVersion": { "type": "integer", "minimum": 1 },
+    "decidedAt": { "type": "string", "format": "date-time" },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "type": "string" },
+    "requestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

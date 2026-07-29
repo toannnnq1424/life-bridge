@@ -564,3 +564,12 @@ single-scope `community_match_coordination` grants without backfill. No name,
 contact, precise address, diagnosis, narrative or cross-service key is stored.
 Closed/revoked protected projections purge after 30 days; content-free evidence
 is bounded to 365 days.
+
+# P5-S3 Community-owned moderation addendum
+
+Flyway V3 adds only Community-owned moderator enrollment, moderation case,
+bounded evidence, resolution, idempotency, audit, and outbox structures. It
+contains no free-form sensitive column and performs no P5-S1/P5-S2 backfill.
+Protected terminal projections purge within 30 days; content-free integrity
+evidence is capped at 365 days. Identity, Gateway, Care, and Notification do
+not receive Community SQL ownership.

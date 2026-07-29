@@ -2,6 +2,11 @@
 
 Updated: 2026-07-29
 
+P5-S3 note: KI-001 and KI-016 remain unchanged. KI-019 also covers the two
+synthetic LB-027 references; their metadata was read once, but independent
+private-pixel inspection remains unavailable, so no standalone visual-
+conformance claim is made.
+
 | ID     | Severity             | Status                                        | Issue                                                                                                                                                                                                                                                                                                                                                                                  | Impact / next action                                                                                                                                                                                               |
 | ------ | -------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | KI-001 | High; deploy blocker | Open; retirement review unconfirmed           | `CHG-2026-006` authorized one session-scoped use of a disposable non-production Stitch key; repository, configuration, issue, log, and handoff scans contain no credential value                                                                                                                                                                                                       | Confirm retirement/revocation and review provider usage before any deployment; never reuse, persist, or promote it as a production credential                                                                      |

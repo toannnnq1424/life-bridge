@@ -428,6 +428,215 @@ h1 {
   }
 }
 
+/* P5-S3 moderation resolution: corrected native Frozen handoff. */
+.moderation-app {
+  min-height: 100vh;
+  background: #f8fafb;
+  color: #1a1c1e;
+}
+.moderation-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-bottom: 1px solid #bec9c5;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem);
+  background: #fff;
+}
+.moderation-header h1,
+.moderation-header p {
+  margin: 0;
+}
+.moderation-kicker {
+  color: #005247;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.moderation-header label,
+.moderation-fields label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+.moderation-header select,
+.moderation-fields select,
+.moderation-app button {
+  min-height: 3rem;
+}
+.moderation-main {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+.moderation-main > *,
+.moderation-workspace > *,
+.moderation-detail > * {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.moderation-boundary,
+.moderation-state,
+.moderation-detail,
+.moderation-workspace > section,
+.moderation-confirm {
+  border: 1px solid #bec9c5;
+  border-radius: 0.5rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: #fff;
+}
+.moderation-boundary {
+  border-left: 0.5rem solid #005247;
+}
+.moderation-state {
+  border-left: 0.5rem solid #005a9c;
+}
+.moderation-state:not(.state-loading):not(.state-empty) {
+  border-left-color: #ba1a1a;
+}
+.moderation-workspace {
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.8fr) minmax(0, 1.5fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.moderation-list {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+.moderation-list button {
+  display: grid;
+  width: 100%;
+  gap: 0.25rem;
+  border: 1px solid #6f7976;
+  padding: 0.8rem;
+  background: #fff;
+  color: inherit;
+  text-align: start;
+}
+.moderation-list button[aria-pressed="true"] {
+  border: 3px solid #005a9c;
+  background: #eef7ff;
+}
+.moderation-detail {
+  display: grid;
+  gap: 1.25rem;
+}
+.moderation-detail dl,
+.moderation-confirm dl,
+.moderation-result dl {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) 2fr;
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+.moderation-detail dt,
+.moderation-confirm dt,
+.moderation-result dt {
+  font-weight: 800;
+}
+.moderation-detail dd,
+.moderation-confirm dd,
+.moderation-result dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.moderation-evidence {
+  border-left: 0.35rem solid #005a9c;
+  padding: 0.25rem 1rem;
+  background: #f3f7fa;
+}
+.moderation-evidence ul {
+  display: grid;
+  gap: 0.75rem;
+  padding-left: 1.25rem;
+}
+.moderation-evidence li {
+  display: grid;
+  gap: 0.2rem;
+}
+.moderation-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.moderation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.moderation-confirm {
+  position: fixed;
+  z-index: 10;
+  inset: 50% auto auto 50%;
+  width: min(40rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+  transform: translate(-50%, -50%);
+  border: 3px solid #005247;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 55%);
+}
+.moderation-result {
+  border-left: 0.5rem solid #005247;
+  padding: 1rem;
+  background: #f0faf7;
+}
+
+@media (max-width: 48rem) {
+  .moderation-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .moderation-workspace,
+  .moderation-detail dl,
+  .moderation-confirm dl,
+  .moderation-result dl,
+  .moderation-fields {
+    grid-template-columns: 1fr;
+  }
+  .moderation-detail dd,
+  .moderation-confirm dd,
+  .moderation-result dd {
+    margin-bottom: 0.65rem;
+  }
+  .moderation-actions,
+  .moderation-actions button,
+  .moderation-fields select {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moderation-app *,
+  .moderation-app *::before,
+  .moderation-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .moderation-boundary,
+  .moderation-state,
+  .moderation-detail,
+  .moderation-workspace > section,
+  .moderation-list button,
+  .moderation-confirm,
+  .moderation-result {
+    border: 2px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+}
+
 /* P5-S2 volunteer matching and organization coordination */
 .match-app {
   min-height: 100vh;

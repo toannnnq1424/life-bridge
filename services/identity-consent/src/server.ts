@@ -3,6 +3,7 @@ import {
   CompleteAccountOnboardingSchema,
   CommunityAuthorizationRequestSchema,
   CommunityMatchAuthorizationRequestSchema,
+  CommunityModerationAuthorizationRequestSchema,
   CreateHouseholdInvitationRequestSchema,
   CreateHouseholdRequestSchema,
   CoordinationAuthorizationRequestSchema,
@@ -436,6 +437,24 @@ export function buildIdentityServer(
     );
     return successEnvelope(
       await service.authorizeCommunityMatch({
+        accountId: account.accountId,
+        request: authorizationRequest,
+        correlationId,
+      }),
+      correlationId,
+    );
+  });
+
+  app.post<{ Body: unknown }>("/internal/v1/community/moderation/authorize", async (request) => {
+    const service = requireConsent(consent);
+    const correlationId = correlation(request);
+    const authorizationRequest = CommunityModerationAuthorizationRequestSchema.parse(request.body);
+    const account = await identity.requireAccountSession(
+      header(request, "x-session-token"),
+      header(request, "x-csrf-token"),
+    );
+    return successEnvelope(
+      await service.authorizeCommunityModeration({
         accountId: account.accountId,
         request: authorizationRequest,
         correlationId,

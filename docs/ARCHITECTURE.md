@@ -836,3 +836,11 @@ browser/session/CSRF boundary, Identity & Consent remains authority, and
 Gateway↔Community uses only frozen `P5-S2-v1` OpenAPI/JSON Schema. Identity
 authority, Community organization approval/role and Community capacity are
 three independent expiring/revocable evidence planes.
+
+# P5-S3 extension
+
+P5-S3 extends ADR-019's existing Spring Community boundary; it adds no service,
+engine, broker, cache, or cross-service database access. Node Gateway performs
+fresh P2 authority orchestration and schema validation only. Community remains
+authoritative for redacted moderation cases and atomic resolution/audit/outbox
+truth.

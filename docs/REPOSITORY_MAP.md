@@ -1,6 +1,10 @@
 # Repository Map
 
 Verified: 2026-07-29
+Local candidate: P5-S3 adds `contracts/community/p5-s3-v1`, Identity migration
+007, Gateway moderation routes, Spring Community Flyway V3/controller/service,
+LB-027 `/admin/moderation`, and focused Node/Java/browser proof. DATA-S1 and P6+
+remain unstarted.
 Canonical base: accepted
 `origin/dev@f4de48ebf2d84e5e3616963097968399b3287cea`.
 P5-S2 is accepted through PR #68, post-merge run `30406976766` and issue #16

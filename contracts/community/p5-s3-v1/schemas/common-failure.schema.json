@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s3-v1/schemas/common-failure.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "messageKey", "retryable", "correlationId"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^(COMMUNITY_MODERATION_|IDENTITY_SERVICE_UNAVAILABLE|COMMUNITY_SERVICE_UNAVAILABLE|IDEMPOTENCY_|INTERNAL_CONTRACT_INVALID)"
+        },
+        "messageKey": { "type": "string" },
+        "retryable": { "type": "boolean" },
+        "correlationId": { "type": "string" }
+      }
+    }
+  }
+}

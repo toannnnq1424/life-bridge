@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s3-v1/schemas/moderation-result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["cases", "serverTime", "minimumDisclosure"],
+  "properties": {
+    "cases": { "type": "array", "maxItems": 25, "items": { "type": "object" } },
+    "nextCursor": { "type": ["string", "null"] },
+    "serverTime": { "type": "string", "format": "date-time" },
+    "minimumDisclosure": { "const": "P5-S3-v1" }
+  }
+}
