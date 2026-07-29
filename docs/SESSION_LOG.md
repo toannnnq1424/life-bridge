@@ -2496,3 +2496,68 @@ retains manual assistive-technology/physical-device evidence; KI-019 retains
 independent private-render inspection. Exact next is P5-S3 only after a fresh
 controller dispatch in a new task. Do not rerun P5-S2 Level C or begin P5-S3,
 DATA-S1, P6+, deployment, pilot or release here.
+
+## 2026-07-29 — P5-S3 moderation resolution candidate
+
+### Objective
+
+Implement only one scoped moderator review and auditable resolution of one
+redacted Community safety report on LB-027 `/admin/moderation`.
+
+### Planned versus actual
+
+The planned Spring Community extension was retained. Three mandatory
+independent reviews reconciled and froze P5-S3-v1 before product code. Two
+synthetic Stitch references were generated once and read once; generated
+source was rejected and KI-019 remains. No new service/engine, automatic
+moderation, appeal/reopen, external enforcement, DATA-S1, or P6+ work was added.
+
+### Completed
+
+Added language-neutral contracts/digests, four fresh-authority Gateway routes,
+Identity moderation scopes, Community Flyway V3 and atomic moderation service,
+provider/integration tests, and native VI/EN LB-027 with explicit restrictive
+confirmation, anti-enumeration, uncertain reconciliation, and safe focus.
+
+### Validation performed
+
+Node typecheck/lint, 10 contract/consumer/Identity tests and digest integrity
+passed. Repository Temurin 25.0.3+9/Maven 3.9.16 bootstrap passed. Spring
+provider tests passed 3/3. PostgreSQL integration tests compile but skip without
+the isolated database environment. Focused LB-027 Playwright passed 3/3.
+
+### Validation intentionally deferred
+
+The exactly-once P5-S3 Level C, isolated Flyway/PostgreSQL runtime proof,
+exact-head hosted CI, merge/post-merge CI, and issue #17 closeout remain until
+the candidate documentation and validation runner are finalized.
+
+### Known issues
+
+KI-001, KI-016, and KI-019 remain open. The protected Stitch canary is unowned
+and unchanged.
+
+### Exact next step
+
+Run exactly one local P5-S3 Level C, classify/recover only if required, then
+promote through one ready PR into `dev`, verify exact-head/post-merge CI, and
+close issue #17 bilingually. Do not begin DATA-S1 or P6+.
+
+### Exactly-once Level C and targeted recovery update
+
+Exactly one `pnpm.cmd run validate:p5-s3` was invoked. It failed before the
+first stage because the new runner used the unavailable PowerShell 5.1 API
+`SHA256.HashData`. The invocation was classified as a test-runner defect and
+retained under `.lifebridge-local`; Level C was not invoked again. The runner
+was corrected to use `SHA256.Create().ComputeHash()`.
+
+Targeted recovery then passed every unstarted implemented stage: formatting,
+repository lint/typecheck, 10 Node contract/consumer/Identity tests, digest
+integrity, Spring provider 3/3, docs/config/secrets/dependency audit, Node and
+Spring production builds, LB-027 browser 3/3, diff/canary integrity, and
+task-owned cleanup. A uniquely named PostgreSQL 16.8 container on port 56433
+applied Flyway V1/V2/V3 and ran the real Community moderation integration suite
+3/3, including privileged read audit, atomic resolve, replay/conflict, invalid
+pair, stale version, and deterministic concurrent decisions. The container and
+port were removed afterward. The original campaign remains failed truth; the
+targeted recovery is separately passed evidence.

@@ -252,3 +252,10 @@ It first freezes match/organization authority, approval, capacity, revocation,
 minimum disclosure and audit/event/failure truth before code. Do not implement
 P5-S2, P5-S3, DATA-S1, P6+, deployment, pilot or release here. KI-001,
 KI-016 and KI-019 remain; KI-020 remains scoped to P4-S3 deployment controls.
+
+# P5-S3 active candidate — 2026-07-29
+
+Controller dispatch supersedes the stale no-slice-active handoff for P5-S3
+only. Mandatory contract/policy, Stitch UI/privacy/accessibility, and
+test/CI/operations reviews are reconciled and Frozen. Candidate implementation
+exists on `phase/5-moderation-resolution`; local Level C and promotion remain.

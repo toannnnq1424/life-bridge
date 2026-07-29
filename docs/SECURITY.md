@@ -448,3 +448,11 @@ capacity and optimistic aggregate/subordinate versions inside the transaction.
 Same-key first use is serialized; committed state, replay, content-free audit
 and suppressed outbox evidence are atomic. Logs/events exclude request fields,
 recipient/volunteer identifiers, authority bodies and raw idempotency keys.
+
+# P5-S3 moderation controls
+
+The reconciled controls are frozen in `docs/security/P5_S3_THREAT_MODEL.md`:
+fresh exact-purpose authority, independent Community moderator enrollment,
+anti-enumerating missing/denied responses, minimum redaction, explicit
+restrictive confirmation, expected-version concurrency, idempotent replay,
+uncertain-result reconciliation, and atomic audit/outbox rollback.

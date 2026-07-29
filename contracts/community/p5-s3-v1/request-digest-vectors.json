@@ -1,0 +1,14 @@
+{
+  "version": "P5-S3-v1",
+  "algorithm": "sha256(method\\npath\\ncanonical-json)",
+  "vectors": [
+    {
+      "path": "/internal/v1/community/moderation/cases/query",
+      "digest": "43299d40200f594da90018e344fb7389b8ac8baacfb43f9fdadd78d325a5b1ff"
+    },
+    {
+      "path": "/internal/v1/community/moderation/cases/case_synthetic_0001/resolution",
+      "digest": "60de37b16b05c643d8d33de012c99b628e9da88793a7159af145dcd22a600caf"
+    }
+  ]
+}

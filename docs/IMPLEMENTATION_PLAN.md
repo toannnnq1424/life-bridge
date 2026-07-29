@@ -6,6 +6,10 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
+- P5-S3 dispatch status (2026-07-29): local candidate implementation is active
+  from accepted `origin/dev@ed328f6806f1ed082708e7c84367eda6bb1bb2da`.
+  Three independent reviews and the Frozen LB-027 handoff precede code. Only
+  validation and canonical promotion of P5-S3 may proceed in this task.
 - Current phase: `P5 — Community support`; P5-S2 is accepted.
 - Accepted base: `origin/dev@f4de48ebf2d84e5e3616963097968399b3287cea`.
 - Accepted predecessor evidence: P5-S1 feature PR #66 and docs closeout PR #67

@@ -636,3 +636,11 @@ campaign. A failure or detachment permits only classified failed/unstarted
 stage recovery; never invoke the full command twice. Hosted CI must repeat the
 same exact-head and exact post-merge evidence and require the terminal P1
 through P5-S2 gate.
+
+# P5-S3 proof
+
+P5-S3 adds Node schema/consumer/digest tests, Spring provider and PostgreSQL
+integration tests, Flyway V3 lifecycle requirements, and LB-027 Playwright
+coverage at desktop and 320px mobile in VI/EN. The exactly-once local campaign
+is `pnpm.cmd run validate:p5-s3`; a failed campaign is retained and only its
+failed/unstarted stage may receive targeted recovery.

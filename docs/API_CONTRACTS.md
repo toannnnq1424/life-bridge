@@ -1438,3 +1438,13 @@ Approval lasts at most 30 days; an offer at most seven days; capacity is only an
 organization-local service date plus day-part. Stable failures distinguish
 denial/revocation, no capacity, stale/concurrent state, closed/revoked during
 action, dependency unavailable, offline blocked and post-dispatch uncertainty.
+
+# P5-S3 moderation resolution addendum
+
+`P5-S3-v1` is frozen under `docs/security/P5_S3_THREAT_MODEL.md`. Gateway exposes
+four protected POST operations for redacted queue, redacted case detail,
+version-bound resolution, and uncertain-result reconciliation. Each obtains a
+fresh ten-second exact-purpose P2 decision and forwards a closed JSON command
+to Spring Community. Language-neutral artifacts and fixed digest vectors live
+under `contracts/community/p5-s3-v1`; Zod consumer schemas are in
+`packages/contracts/src/p5-s3-community-contract.ts`.

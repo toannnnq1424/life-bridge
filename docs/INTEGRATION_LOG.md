@@ -1003,3 +1003,12 @@ failures, not product failures.
   plus its hard-bound port-conflict continuation; PR #68 exact-head checks 6/6;
   merge commit `f4de48e`; post-merge run `30406976766` green; issue #16 closed
   with bilingual evidence. P5-S3 remains exact-next and unstarted.
+
+# P5-S3 candidate integration — 2026-07-29
+
+- Base: `origin/dev@ed328f6806f1ed082708e7c84367eda6bb1bb2da`.
+- Boundary: Node Gateway/Identity consumer to accepted Spring Community owner;
+  P5-S3-v1 OpenAPI/JSON Schema/digest proof; Community Flyway V3 only.
+- UI: Frozen redacted LB-027 handoff and native `/admin/moderation` candidate.
+- Promotion: not yet accepted; exactly one local Level C, one ready feature PR,
+  exact-head/post-merge CI, and issue #17 closeout remain required.

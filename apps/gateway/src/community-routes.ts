@@ -14,10 +14,15 @@ import {
   CommunityMatchAuthorizationRequestSchema,
   CommunityMatchCommandSchema,
   CommunityMatchResultSchema,
+  CommunityModerationAuthorizationContextSchema,
+  CommunityModerationAuthorizationRequestSchema,
+  CommunityModerationCommandSchema,
+  CommunityModerationResultSchema,
   CommunityPublicDirectoryQuerySchema,
   IdempotencyKeySchema,
   type CommunityPermission,
   type CommunityMatchPermission,
+  type CommunityModerationPermission,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, type SafeLogger } from "@lifebridge/observability";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
@@ -240,6 +245,151 @@ export function registerCommunityRoutes(
         });
       },
     );
+  }
+
+  app.post<{ Body: unknown }>(
+    "/api/v1/community/moderation/cases/query",
+    async (request, reply) => {
+      const body = request.body as JsonRecord;
+      const { householdId, ...intent } = body;
+      return authorizeModerationAndForward(request, reply, {
+        permission: "community_moderation.queue.read",
+        householdId: boundedOpaqueId(String(householdId ?? "")),
+        internalPath: "/internal/v1/community/moderation/cases/query",
+        intentBody: { ...intent, operation: "queue" },
+        commandBody: (authorization) => ({ ...intent, operation: "queue", authorization }),
+      });
+    },
+  );
+
+  app.post<{ Params: { caseId: string }; Body: unknown }>(
+    "/api/v1/community/moderation/cases/:caseId/query",
+    async (request, reply) => {
+      const body = request.body as JsonRecord;
+      const caseId = boundedOpaqueId(request.params.caseId);
+      const { householdId, ...intent } = body;
+      return authorizeModerationAndForward(request, reply, {
+        permission: "community_moderation.case.read",
+        householdId: boundedOpaqueId(String(householdId ?? "")),
+        internalPath: `/internal/v1/community/moderation/cases/${encodeURIComponent(caseId)}/query`,
+        intentBody: { ...intent, caseId, operation: "detail" },
+        commandBody: (authorization) => ({ ...intent, caseId, operation: "detail", authorization }),
+      });
+    },
+  );
+
+  app.post<{ Params: { caseId: string }; Body: unknown }>(
+    "/api/v1/community/moderation/cases/:caseId/resolution",
+    async (request, reply) => {
+      const body = request.body as JsonRecord;
+      const caseId = boundedOpaqueId(request.params.caseId);
+      const { householdId, ...intent } = body;
+      return authorizeModerationAndForward(request, reply, {
+        permission: "community_moderation.case.resolve",
+        householdId: boundedOpaqueId(String(householdId ?? "")),
+        mutation: true,
+        idempotencyKey: requiredIdempotencyKey(request),
+        internalPath: `/internal/v1/community/moderation/cases/${encodeURIComponent(caseId)}/resolution`,
+        intentBody: { ...intent, caseId, operation: "resolve" },
+        commandBody: (authorization) => ({
+          ...intent,
+          caseId,
+          operation: "resolve",
+          authorization,
+        }),
+      });
+    },
+  );
+
+  app.post<{ Body: unknown }>(
+    "/api/v1/community/moderation/cases/reconcile",
+    async (request, reply) => {
+      const body = request.body as JsonRecord;
+      const { householdId, ...intent } = body;
+      return authorizeModerationAndForward(request, reply, {
+        permission: "community_moderation.case.reconcile",
+        householdId: boundedOpaqueId(String(householdId ?? "")),
+        internalPath: "/internal/v1/community/moderation/cases/reconcile",
+        intentBody: { ...intent, operation: "reconcile" },
+        commandBody: (authorization) => ({ ...intent, operation: "reconcile", authorization }),
+      });
+    },
+  );
+
+  async function authorizeModerationAndForward(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    input: {
+      permission: CommunityModerationPermission;
+      householdId: string;
+      internalPath: string;
+      intentBody: unknown;
+      idempotencyKey?: string;
+      mutation?: boolean;
+      commandBody: (
+        authorization: ReturnType<typeof CommunityModerationAuthorizationContextSchema.parse>,
+      ) => unknown;
+    },
+  ) {
+    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+    if (input.mutation && !validBrowserMutation(request, config.publicOrigin))
+      return reply.code(403).send({
+        error: {
+          code: "ORIGIN_REJECTED",
+          messageKey: "origin.rejected",
+          retryable: false,
+          correlationId,
+        },
+      });
+    const requestDigest = communityRequestDigest("POST", input.internalPath, input.intentBody);
+    try {
+      const decision = await callIdentity(
+        fetcher,
+        config,
+        request,
+        correlationId,
+        CommunityModerationAuthorizationRequestSchema.parse({
+          permission: input.permission,
+          householdId: input.householdId,
+          requestDigest,
+        }),
+        "/internal/v1/community/moderation/authorize",
+      );
+      if (decision.status >= 400)
+        return reply.code(403).send({
+          error: {
+            code: "COMMUNITY_MODERATION_AUTHORITY_REQUIRED",
+            messageKey: "community.moderation.authority_required",
+            retryable: false,
+            correlationId,
+          },
+        });
+      const authorization = CommunityModerationAuthorizationContextSchema.parse(
+        (decision.body as { data?: unknown } | null)?.data,
+      );
+      if (
+        authorization.permission !== input.permission ||
+        authorization.requestDigest !== requestDigest
+      )
+        throw new Error("MODERATION_AUTHORITY_MISMATCH");
+      const command = CommunityModerationCommandSchema.parse(input.commandBody(authorization));
+      const response = await callCommunity(
+        fetcher,
+        config,
+        input.internalPath,
+        "POST",
+        correlationId,
+        command,
+        input.idempotencyKey,
+      );
+      if (response.status >= 200 && response.status < 300)
+        return reply
+          .code(response.status)
+          .send(CommunityModerationResultSchema.parse(response.body));
+      return reply.code(response.status).send(response.body);
+    } catch {
+      return unavailable(reply, correlationId, logger, "COMMUNITY_SERVICE_UNAVAILABLE");
+    }
   }
 
   app.post<{

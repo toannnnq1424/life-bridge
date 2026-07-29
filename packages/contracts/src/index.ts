@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export * from "./p5-s3-community-contract.js";
+
 export * from "./p5-s2-community-contract.js";
 
 const opaqueIdPattern = /^[a-z][a-z0-9_-]{2,79}$/;
