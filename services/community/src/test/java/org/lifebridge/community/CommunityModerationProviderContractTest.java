@@ -37,7 +37,7 @@ class CommunityModerationProviderContractTest {
   void exposesQueueAndDetailAsNonCacheableMinimumDisclosure() throws Exception {
     when(service.queue(any(), eq("corr_moderation_provider_1"))).thenReturn(
         new CommunityModerationService.Result(200, Map.of("cases", List.of(), "minimumDisclosure", "P5-S3-v1")));
-    mvc.perform(post("/internal/v1/community/moderation/query").contentType(MediaType.APPLICATION_JSON)
+    mvc.perform(post("/internal/v1/community/moderation/cases/query").contentType(MediaType.APPLICATION_JSON)
             .header("x-correlation-id", "corr_moderation_provider_1").content("{}"))
         .andExpect(status().isOk()).andExpect(header().string("cache-control", "no-store"))
         .andExpect(jsonPath("$.minimumDisclosure").value("P5-S3-v1"));
@@ -45,7 +45,7 @@ class CommunityModerationProviderContractTest {
 
     when(service.detail(eq("case_synthetic_0001"), any(), eq("corr_moderation_provider_2")))
         .thenReturn(new CommunityModerationService.Result(200, Map.of("case", Map.of("caseId", "case_synthetic_0001", "redactionState", "minimum_redacted"))));
-    mvc.perform(post("/internal/v1/community/moderation/case_synthetic_0001/query")
+    mvc.perform(post("/internal/v1/community/moderation/cases/case_synthetic_0001/query")
             .contentType(MediaType.APPLICATION_JSON).header("x-correlation-id", "corr_moderation_provider_2").content("{}"))
         .andExpect(status().isOk()).andExpect(header().string("cache-control", "no-store"))
         .andExpect(jsonPath("$.case.redactionState").value("minimum_redacted"));
@@ -55,7 +55,7 @@ class CommunityModerationProviderContractTest {
   void forwardsResolveHeadersAndReturnsFrozenResult() throws Exception {
     when(service.resolve(eq("case_synthetic_0001"), any(), eq("idem_moderation_0001"), eq("corr_moderation_provider_3")))
         .thenReturn(new CommunityModerationService.Result(200, Map.of("caseId", "case_synthetic_0001", "state", "resolved", "outcome", "no_change", "policyVersion", "P5-S3-v1")));
-    mvc.perform(post("/internal/v1/community/moderation/case_synthetic_0001/resolve")
+    mvc.perform(post("/internal/v1/community/moderation/cases/case_synthetic_0001/resolution")
             .contentType(MediaType.APPLICATION_JSON).header("idempotency-key", "idem_moderation_0001")
             .header("x-correlation-id", "corr_moderation_provider_3").content("{}"))
         .andExpect(status().isOk()).andExpect(header().string("cache-control", "no-store"))
@@ -66,7 +66,7 @@ class CommunityModerationProviderContractTest {
   @Test
   void mapsValidationWithoutEchoingSensitiveInput() throws Exception {
     when(service.queue(any(), eq("bad_corr"))).thenThrow(new IllegalArgumentException("MODERATION_INVALID"));
-    mvc.perform(post("/internal/v1/community/moderation/query").contentType(MediaType.APPLICATION_JSON)
+    mvc.perform(post("/internal/v1/community/moderation/cases/query").contentType(MediaType.APPLICATION_JSON)
             .header("x-correlation-id", "bad_corr").content("{\"sensitiveNarrative\":\"never-echo\"}"))
         .andExpect(status().isBadRequest()).andExpect(header().string("cache-control", "no-store"))
         .andExpect(jsonPath("$.error.code").value("COMMUNITY_MODERATION_VALIDATION_FAILED"))

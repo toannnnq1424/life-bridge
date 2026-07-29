@@ -11,6 +11,24 @@
 The schemas in `packages/contracts` must remain equivalent to this contract.
 Breaking semantics require a new API/event version and accepted change record.
 
+## P6-S1 Gateway to Community compatibility release line
+
+The machine-readable authority is
+`contracts/community/p6-s1/compatibility-policy.json`. The current release is
+`community-v2` and the previous supported release is `community-v1`. Gateway
+selects one explicitly with `x-lifebridge-contract-version`; current Community
+serves both and returns the selected value in the same header. A headerless
+previous Gateway is treated as `community-v1`. Unsupported values fail before
+dispatch with HTTP 406 and `COMMUNITY_CONTRACT_VERSION_UNSUPPORTED`.
+
+Both versions preserve the P5 language-neutral OpenAPI/JSON Schema command,
+authority, idempotency, digest, optimistic concurrency, minimum-disclosure and
+failure semantics. Event v2 is additive to event v1. Previous is supported for
+at least 90 days and through one rollout/rollback cycle; removal requires an
+accepted change, published date, zero consumer inventory and migration proof.
+Ambiguous mutations never fall back across versions and remain unknown until
+reconciled.
+
 ## Conventions
 
 - Public prefix: `/api/v1`.

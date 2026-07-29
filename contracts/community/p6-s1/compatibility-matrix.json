@@ -1,0 +1,29 @@
+{
+  "wireDefaultUntilProviderConvergence": "community-v1",
+  "cells": [
+    {
+      "gateway": "previous",
+      "community": "previous",
+      "selected": "community-v1",
+      "expected": "pass"
+    },
+    {
+      "gateway": "previous",
+      "community": "current",
+      "selected": "community-v1",
+      "expected": "pass"
+    },
+    {
+      "gateway": "current",
+      "community": "previous",
+      "selected": "community-v1",
+      "expected": "pass"
+    },
+    {
+      "gateway": "current",
+      "community": "current",
+      "selected": "community-v2",
+      "expected": "pass"
+    }
+  ]
+}

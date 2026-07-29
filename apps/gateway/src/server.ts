@@ -44,6 +44,7 @@ export interface GatewayConfig {
   identityToken: string;
   notificationToken: string;
   communityToken?: string;
+  communityContractVersion?: "community-v1" | "community-v2";
   fixtureEnabled: boolean;
   publicOrigin: string;
   sessionCookieName: string;
@@ -205,6 +206,9 @@ export function buildGatewayServer(
       identityToken: config.identityToken,
       publicOrigin: config.publicOrigin,
       sessionCookieName: config.sessionCookieName,
+      ...(config.communityContractVersion
+        ? { communityContractVersion: config.communityContractVersion }
+        : {}),
     },
     fetcher,
     logger,

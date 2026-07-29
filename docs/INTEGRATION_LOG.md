@@ -1019,3 +1019,30 @@ failures, not product failures.
   passed 6/6 exact-head checks and merged as canonical
   `dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`; post-merge run
   `30426581895` passed all required jobs.
+
+## INT-2026-026 — P6-S1 local rolling-compatibility candidate
+
+- Date: 2026-07-29
+- State: local candidate ready; owner CI hold; no push, PR, workflow, merge, or
+  issue mutation.
+- Base: accepted
+  `origin/dev@f7a4052f8181f2a0933a5e61884d91ae200b4da9`.
+- Boundary: `community-v2` current and `community-v1` previous on the
+  Gateway↔Spring Community release line; Identity authority and Community
+  PostgreSQL/Flyway/audit/outbox ownership are unchanged.
+- Planned versus actual: three independent reviews froze the 90-day support
+  window, provider-first rollout, consumer-first rollback, four-cell matrix,
+  breaking rules and uncertain-write truth. The implementation also corrected
+  the P5-S3 Spring moderation route mismatch and stale capability response
+  revealed by review. No UI, migration, service, engine, P6-S2 or P6-S3 scope
+  was added.
+- Validation: focused formatting/lint/type, Node 11/11 and Spring 8/8 passed.
+  Exactly one Level C invocation retained a detached-output static-stage
+  failure after toolchain/install passed. The same-invocation classified
+  continuation passed static/contracts, provider, docs/config/secrets/audit,
+  Node/Spring production builds, diff/canary integrity and cleanup. No second
+  Level C invocation occurred. Mocked primary-journey Chromium passed 6/6;
+  two database-backed runtime cases skipped locally and remain required in the
+  hosted PostgreSQL/mixed-runtime gate.
+- Hold: canonical issue #22 remains read-only and open. Exact-head/post-merge
+  hosted gates and acceptance wait for an explicit project-owner wake.

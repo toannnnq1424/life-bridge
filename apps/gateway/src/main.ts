@@ -10,6 +10,10 @@ const runtime = requireFixtureSafeMode(
   gatewayHost,
   publicOrigin,
 );
+const communityContractVersion = process.env.COMMUNITY_CONTRACT_VERSION ?? "community-v2";
+if (!["community-v1", "community-v2"].includes(communityContractVersion)) {
+  throw new Error("COMMUNITY_CONTRACT_VERSION_INVALID");
+}
 const config = {
   careUrl: requiredUrl(process.env.CARE_URL, "CARE_URL"),
   identityUrl: requiredUrl(process.env.IDENTITY_URL, "IDENTITY_URL"),
@@ -22,6 +26,7 @@ const config = {
     "NOTIFICATION_INTERNAL_TOKEN",
   ),
   communityToken: requiredSecret(process.env.COMMUNITY_INTERNAL_TOKEN, "COMMUNITY_INTERNAL_TOKEN"),
+  communityContractVersion: communityContractVersion as "community-v1" | "community-v2",
   fixtureEnabled: runtime.fixtureEnabled,
   publicOrigin,
   sessionCookieName: runtime.mode === "production" ? "__Host-lb_session" : "lb_session",

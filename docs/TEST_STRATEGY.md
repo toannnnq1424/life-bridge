@@ -231,6 +231,22 @@ Each campaign:
 6. batch fixes by root cause, use targeted retests, then run one final Level D
    validation.
 
+## P6-S1 Level C campaign
+
+Exactly one local `pnpm.cmd run validate:p6-s1` invocation records a one-shot
+marker and stage ledger. It proves the machine-readable current/previous
+policy and four-cell matrix, negative breaking-change fixtures, Node consumers
+for both selected versions, Spring dual-version provider behavior, corrected
+Gateway/Community moderation routes, stable unsupported-version truth,
+governance/security, production builds, diff/canary integrity and cleanup.
+A failed or detached campaign retains evidence and permits only classified
+targeted recovery; the full command is never invoked a second time.
+
+Hosted proof after the owner wakes promotion requires literal-head Windows
+quality and the PostgreSQL/mixed-runtime/cumulative Chromium job, followed by
+the `P1 through P6-S1 full required gate`. The local-only hold forbids those
+hosted mutations in this task checkpoint.
+
 ## P2-S1 validation contract
 
 Backend implementation while Stitch is blocked uses only package-scoped Level

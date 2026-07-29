@@ -856,6 +856,12 @@ Dependencies: `P5-S2`; moderation policy and retention decision.
 
 ### `P6-S1 — Versioned contracts and rolling compatibility`
 
+Status: local candidate ready under owner CI hold on 2026-07-29. Three
+independent reviews froze `community-v2` current plus `community-v1` previous,
+a 90-day minimum window, provider-first rollout, consumer-first rollback,
+language-neutral breaking rules and explicit uncertain-result truth. Hosted
+promotion and canonical acceptance remain unclaimed.
+
 Outcome: the primary user journey remains correct while compatible service
 versions are rolled independently.
 

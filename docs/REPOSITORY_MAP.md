@@ -1,6 +1,12 @@
 # Repository Map
 
 Verified: 2026-07-29
+P6-S1 locally adds `contracts/community/p6-s1`, explicit Gateway version
+selection, dual-version Spring capability/filter proof, compatibility tests,
+and one-shot validation. It adds no UI, service, database, or migration.
+Canonical accepted base is
+`origin/dev@f7a4052f8181f2a0933a5e61884d91ae200b4da9`; hosted promotion is held.
+
 Accepted P5-S3 adds `contracts/community/p5-s3-v1`, Identity migration
 007, Gateway moderation routes, Spring Community Flyway V3/controller/service,
 LB-027 `/admin/moderation`, and focused Node/Java/browser proof. DATA-S1 and P6+
