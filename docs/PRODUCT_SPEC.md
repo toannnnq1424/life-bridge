@@ -467,3 +467,21 @@ revoke as the authoritative next-actions permit. No role label creates consent
 or authority; no action infers eligibility, urgency, suitability, availability,
 quality or outcome. The UI confirms success only from authoritative Community
 state and distinguishes unsent offline work from uncertain post-dispatch work.
+
+### P5-S3 moderation resolution outcome
+
+At LB-027 `/admin/moderation`, a moderator with a fresh exact-purpose P2
+decision can review a bounded Community-owned queue/detail projection with
+minimum redacted evidence and submit one structured outcome/reason pair. A
+role label alone grants no authority. Restrictive outcomes require explicit
+confirmation; success, replay, conflict and reconciliation are reported only
+from authoritative Community state with actor/time/policy/retention/redaction
+truth and immutable audit/outbox evidence.
+
+Denied and missing cases remain anti-enumerating. Withdrawn, expired, already
+resolved, stale/concurrent, invalid pair, redaction/retention conflict,
+Identity/Community/audit/outbox failure, offline blocked and uncertain-after-
+dispatch states are distinct. The slice does not infer guilt, validity,
+danger, diagnosis, urgency, eligibility, safety, automated accuracy or any
+external enforcement outcome, and it adds no automatic resolution,
+escalation or suspension.

@@ -6,19 +6,16 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- P5-S3 dispatch status (2026-07-29): local candidate implementation is active
-  from accepted `origin/dev@ed328f6806f1ed082708e7c84367eda6bb1bb2da`.
-  Three independent reviews and the Frozen LB-027 handoff precede code. Only
-  validation and canonical promotion of P5-S3 may proceed in this task.
-- Current phase: `P5 — Community support`; P5-S2 is accepted.
-- Accepted base: `origin/dev@f4de48ebf2d84e5e3616963097968399b3287cea`.
+- P5-S3 status (2026-07-29): accepted through feature PR #70 and narrow
+  post-merge race correction PR #71. Canonical integration is
+  `origin/dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`; post-merge run
+  `30426581895` passed the complete required gate.
+- Current phase: `P5 — Community support`; P5-S3 is accepted.
+- Accepted base: `origin/dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`.
 - Accepted predecessor evidence: P5-S1 feature PR #66 and docs closeout PR #67
   are present; post-merge run `30400564523` is green and issue #15 is closed.
-- Current action: retain the exact-next handoff only. P5-S2 feature PR #68,
-  merge commit `f4de48ebf2d84e5e3616963097968399b3287cea`, post-merge run
-  `30406976766` and bilingual issue #16 closeout are accepted. Do not run local
-  P5-S2 Level C again. P5-S3, DATA-S1, P6+, deployment and release remain
-  unstarted until controller dispatch.
+- Current action: retain the exact-next handoff only. Do not rerun P5-S3 Level
+  C or begin DATA-S1, P6+, deployment, pilot or release in this task.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);
@@ -1657,23 +1654,18 @@ single Level C, exact-head/post-merge CI and issue #14 closeout are complete.
 
 ## Exact next action
 
-P5-S1 is accepted. Final feature head
-`59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head push/PR runs
-`30396846386`/`30396851617`; ready PR #66 merged by merge commit as
-`dev@ac663a714b69aace443f712f1d8ee700b5e48636`; post-merge `dev` run
-`30397698495` passed Windows static/build/security, PostgreSQL/mixed-runtime/
-Chromium and the aggregate gate; canonical issue #15 closed with bilingual
-immutable evidence.
+P5-S3 is accepted at
+`dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`. Feature PR #70 established the
+moderation slice; post-merge run `30425583410` exposed an initialization race.
+The same-task narrow correction PR #71 passed 6/6 exact-head checks, merged as
+`39e5914`, and post-merge run `30426581895` passed Windows, PostgreSQL/
+mixed-runtime/Chromium and the aggregate gate.
 
-Exactly one local P5-S1 Level C was invoked. Its immutable marker/ledger
-retains the generated-SBOM formatting failure; the same-ledger classified
-continuation passed corrected static plus every previously unstarted required
-stage, final privacy/diff/canary checks and cleanup. No second local Level C
-ran. KI-001/KI-016/KI-019 remain, and KI-020 remains scoped to the P4-S3
-deployment boundary.
+Exactly one local P5-S3 Level C was invoked and retained its PowerShell 5.1
+runner failure; classified targeted recovery covered every unstarted stage and
+the runner was corrected without a second Level C invocation. KI-001, KI-016
+and KI-019 remain; KI-020 remains scoped to P4-S3 deployment.
 
-The exact next handoff is `P5-S2 — Volunteer match and organization
-coordination` only in a fresh controller-dispatched task. Before code, freeze
-match/organization authority, approval, capacity, revocation, minimum
-disclosure and audit/event/failure truth. P5-S2, DATA-S1, P6+, deployment,
-pilot and release are not started.
+No subsequent slice begins here. The controller must issue a fresh dispatch
+for the next approved production-plan slice. DATA-S1, P6+, deployment, pilot
+and release remain outside this task.
