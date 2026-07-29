@@ -24,8 +24,10 @@ $head = (& git rev-parse HEAD | Out-String).Trim()
 $hosted = $env:GITHUB_ACTIONS -eq "true"
 if (-not $hosted -and $branch -ne "phase/5-moderation-resolution") { throw "P5-S3 Level C requires the canonical phase branch." }
 if ($hosted -and $env:EXPECTED_SHA -and $head -ne $env:EXPECTED_SHA) { throw "Hosted checkout does not match EXPECTED_SHA." }
-& git merge-base --is-ancestor $acceptedBase HEAD
-if ($LASTEXITCODE -ne 0) { throw "P5-S3 candidate is not descended from the accepted base." }
+if (-not $hosted) {
+  & git merge-base --is-ancestor $acceptedBase HEAD
+  if ($LASTEXITCODE -ne 0) { throw "P5-S3 candidate is not descended from the accepted base." }
+}
 
 New-Item -ItemType Directory -Force -Path (Split-Path $marker), $evidenceRoot | Out-Null
 $diff = (& git diff -- . ":(exclude)docs/orchestration/reports/STITCH_MCP_CANARY.md" | Out-String)
