@@ -2479,3 +2479,20 @@ KI-001, KI-016 and KI-019 remain; KI-020 remains scoped to P4-S3 deployment.
 Finish docs/diff/secrets/canary checks and promote only this slice through one
 ready PR, exact-head/post-merge CI and bilingual issue #16 closeout. Do not run
 local Level C again or start P5-S3 or later work.
+
+## 2026-07-29 — P5-S2 canonical promotion closeout
+
+Feature commit `13fdb2d6dc86c5d6859f500cfc3287775a14f863` was pushed without force and
+promoted through ready PR #68 into `dev` by merge commit
+`f4de48ebf2d84e5e3616963097968399b3287cea`. Both exact-head push and PR runs
+passed all six checks. Post-merge `dev` run `30406976766` passed the Windows,
+PostgreSQL/mixed-runtime and integrated aggregate gates. Canonical issue #16
+was verified read-only before mutation, then closed with bilingual evidence.
+The protected Stitch canary remained untouched and the remote phase branch was
+not deleted.
+
+P5-S2 is accepted. KI-001 remains the deployment-credential gate; KI-016
+retains manual assistive-technology/physical-device evidence; KI-019 retains
+independent private-render inspection. Exact next is P5-S3 only after a fresh
+controller dispatch in a new task. Do not rerun P5-S2 Level C or begin P5-S3,
+DATA-S1, P6+, deployment, pilot or release here.

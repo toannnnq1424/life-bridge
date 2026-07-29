@@ -988,10 +988,10 @@ failures, not product failures.
   revocation, minimum disclosure and audit/event/failure truth; do not start
   it here.
 
-## INT-2026-024 — P5-S2 match coordination candidate
+## INT-2026-024 — P5-S2 match coordination accepted
 
 - Date: 2026-07-29
-- State: candidate; local Level C and hosted promotion pending
+- State: accepted on `dev@f4de48ebf2d84e5e3616963097968399b3287cea`
 - Boundary: Node Gateway↔Identity↔Spring Community through frozen `P5-S2-v1`;
   Community owns PostgreSQL V2/audit/outbox and Identity owns migration 006.
 - Planned versus actual: the planned same-service minimum-data extension was
@@ -999,4 +999,7 @@ failures, not product failures.
   Stitch references preceded implementation. No second service/engine,
   automated dispatch, contact exchange or P5-S3 scope was added.
 - Validation: focused contracts, migration, provider/lifecycle/concurrency,
-  browser/accessibility and build proof; exactly-one Level C remains.
+  browser/accessibility and build proof; exactly one local Level C invocation
+  plus its hard-bound port-conflict continuation; PR #68 exact-head checks 6/6;
+  merge commit `f4de48e`; post-merge run `30406976766` green; issue #16 closed
+  with bilingual evidence. P5-S3 remains exact-next and unstarted.

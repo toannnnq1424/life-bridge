@@ -1,13 +1,12 @@
 # Repository Map
 
 Verified: 2026-07-29
-Candidate base: exact accepted `origin/dev@e56df0f7d36a37f00e3c9750d112464e32cf09a1`.
-Active product slice: P5-S2 candidate on
-`phase/5-volunteer-match-organization-coordination`; one local Level C and
-promotion remain pending.
+Canonical base: accepted
+`origin/dev@f4de48ebf2d84e5e3616963097968399b3287cea`.
+P5-S2 is accepted through PR #68, post-merge run `30406976766` and issue #16
+closeout. No product slice is active in this handoff.
 
-This map reflects accepted P1–P4 plus the unpromoted P5-S1 candidate. P5-S2,
-P5-S3 and DATA-S1 are not started.
+This map reflects accepted P1–P5-S2. P5-S3 and DATA-S1 are not started.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.
