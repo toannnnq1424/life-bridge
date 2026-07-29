@@ -1,16 +1,15 @@
 # Repository Map
 
 Verified: 2026-07-29
-Local candidate: P5-S3 adds `contracts/community/p5-s3-v1`, Identity migration
+Accepted P5-S3 adds `contracts/community/p5-s3-v1`, Identity migration
 007, Gateway moderation routes, Spring Community Flyway V3/controller/service,
 LB-027 `/admin/moderation`, and focused Node/Java/browser proof. DATA-S1 and P6+
 remain unstarted.
 Canonical base: accepted
-`origin/dev@f4de48ebf2d84e5e3616963097968399b3287cea`.
-P5-S2 is accepted through PR #68, post-merge run `30406976766` and issue #16
-closeout. No product slice is active in this handoff.
+`origin/dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde` through PRs #70/#71 and
+post-merge run `30426581895`. No product slice is active in this handoff.
 
-This map reflects accepted P1–P5-S2. P5-S3 and DATA-S1 are not started.
+This map reflects accepted P1–P5-S3. DATA-S1 and P6+ are not started.
 It excludes generated and local-only state such as `node_modules/`, `.next/`, `dist/`,
 `.lifebridge-local/`, Playwright output, coverage, and private design/research
 inputs.

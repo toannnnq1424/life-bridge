@@ -1004,11 +1004,18 @@ failures, not product failures.
   merge commit `f4de48e`; post-merge run `30406976766` green; issue #16 closed
   with bilingual evidence. P5-S3 remains exact-next and unstarted.
 
-# P5-S3 candidate integration — 2026-07-29
+# INT-2026-025 — P5-S3 moderation resolution accepted
 
 - Base: `origin/dev@ed328f6806f1ed082708e7c84367eda6bb1bb2da`.
 - Boundary: Node Gateway/Identity consumer to accepted Spring Community owner;
   P5-S3-v1 OpenAPI/JSON Schema/digest proof; Community Flyway V3 only.
-- UI: Frozen redacted LB-027 handoff and native `/admin/moderation` candidate.
-- Promotion: not yet accepted; exactly one local Level C, one ready feature PR,
-  exact-head/post-merge CI, and issue #17 closeout remain required.
+- UI: Frozen redacted LB-027 handoff and native `/admin/moderation`; KI-019
+  remains because independent private-pixel inspection was unavailable.
+- Validation: exactly one Level C invocation retained its PowerShell 5.1 runner
+  failure; classified targeted recovery passed Node/Java/PostgreSQL/Flyway/
+  browser/security proof without a second Level C invocation.
+- Promotion: feature PR #70 merged as `f92828a`; its post-merge run
+  `30425583410` exposed a UI initialization race. Narrow correction PR #71
+  passed 6/6 exact-head checks and merged as canonical
+  `dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`; post-merge run
+  `30426581895` passed all required jobs.

@@ -2561,3 +2561,41 @@ applied Flyway V1/V2/V3 and ran the real Community moderation integration suite
 pair, stale version, and deterministic concurrent decisions. The container and
 port were removed afterward. The original campaign remains failed truth; the
 targeted recovery is separately passed evidence.
+
+## 2026-07-29 — P5-S3 canonical promotion closeout
+
+### Planned versus actual
+
+The planned single feature promotion completed through PR #70 and merge
+commit `f92828a329e7cffcd5d3169b4951b40131331533`. Its exact-head push/PR runs
+`30424949497` and `30424951440` passed 6/6 checks. Post-merge `dev` run
+`30425583410` then exposed a real LB-027 initialization race: the initial load
+could repeat after CSRF state changed and reset a moderator's structured
+selection. This required one narrow same-task correction rather than treating
+the failed canonical run as infrastructure noise.
+
+Correction commit `714e093ceb2c19cb9da130168919b12e030cf249`
+guards initialization once. Targeted Prettier/ESLint passed; LB-027 passed 3/3
+and the uncertain-after-send case passed three repeated executions. PR #71
+then passed 6/6 exact-head checks, merged as
+`dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`, and canonical post-merge run
+`30426581895` passed Windows static/unit/build/security, PostgreSQL/Flyway/
+mixed-runtime/Chromium, and the `P1 through P5-S3 full required gate`.
+
+### Acceptance and residual truth
+
+P5-S3 is accepted as an integration slice. The exactly-once local Level C
+record remains failed at its PowerShell 5.1 runner defect; no second Level C
+was invoked, and its separately classified targeted recovery remains the
+truthful local evidence. The protected Stitch canary remained untouched.
+KI-001 still blocks deployment, KI-016 retains manual assistive-technology and
+physical-device evidence, and KI-019 retains independent private-render pixel
+review. No diagnosis, urgency, guilt, safety, validity, automated-moderation or
+external-enforcement claim is created by this acceptance.
+
+### Exact next handoff
+
+After this same-task docs-only canonical closeout, issue #17 is to receive the
+bilingual immutable evidence and close. No later slice begins in this task.
+The controller must freshly dispatch the next approved production-plan slice;
+DATA-S1, P6+, deployment, pilot and release remain outside scope.
