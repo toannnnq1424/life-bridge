@@ -60,6 +60,11 @@ try {
     & $maven -B -ntp -f services/community/pom.xml -Dtest=CommunityModerationProviderContractTest test
     if ($UseExistingDatabase) {
       $env:P5_S3_COMMUNITY_INTEGRATION = "1"
+      if ($hosted) {
+        $env:COMMUNITY_DATABASE_URL = "jdbc:postgresql://127.0.0.1:5432/postgres"
+        $env:COMMUNITY_DATABASE_USERNAME = "postgres"
+        $env:COMMUNITY_DATABASE_PASSWORD = ""
+      }
       & $maven -B -ntp -f services/community/pom.xml -Dtest=CommunityModerationServiceIntegrationTest test
     }
   }
