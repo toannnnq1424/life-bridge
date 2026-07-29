@@ -260,6 +260,7 @@ export function ModerationResolutionApp({
   const cancelRef = useRef<HTMLButtonElement>(null);
   const reviewRef = useRef<HTMLButtonElement>(null);
   const resultRef = useRef<HTMLHeadingElement>(null);
+  const initializedRef = useRef(false);
   const text = copy[locale];
 
   const headers = useCallback(
@@ -443,7 +444,11 @@ export function ModerationResolutionApp({
     }
   };
 
-  useEffect(() => void load(), [load]);
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    void load();
+  }, [load]);
   useEffect(() => {
     if (result) resultRef.current?.focus();
   }, [result]);
