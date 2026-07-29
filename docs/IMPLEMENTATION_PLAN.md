@@ -6,17 +6,15 @@
 - Previous baseline: `PLAN-2026-07-25` (`P0`–`P6` compact roadmap)
 - Change authority: `CHG-2026-004`
 - Active plan date: 2026-07-26
-- Current phase: `P5 — Community support`; P5-S2 is locally accepted and is
-  the only active promotion candidate.
-- Accepted base: `origin/dev@e56df0f7d36a37f00e3c9750d112464e32cf09a1`.
+- Current phase: `P5 — Community support`; P5-S2 is accepted.
+- Accepted base: `origin/dev@f4de48ebf2d84e5e3616963097968399b3287cea`.
 - Accepted predecessor evidence: P5-S1 feature PR #66 and docs closeout PR #67
   are present; post-merge run `30400564523` is green and issue #15 is closed.
-- Current action: promote one ready P5-S2 feature PR by exact-head/post-merge
-  CI and close canonical issue #16 with bilingual evidence. The sole local
-  Level C invocation plus its classified continuation are complete; do not run
-  another local Level C.
-  P5-S1 is accepted; P5-S2 is the active candidate. P5-S3, DATA-S1, P6+,
-  deployment and release remain unstarted.
+- Current action: retain the exact-next handoff only. P5-S2 feature PR #68,
+  merge commit `f4de48ebf2d84e5e3616963097968399b3287cea`, post-merge run
+  `30406976766` and bilingual issue #16 closeout are accepted. Do not run local
+  P5-S2 Level C again. P5-S3, DATA-S1, P6+, deployment and release remain
+  unstarted until controller dispatch.
 - GitHub execution:
   completed [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5);
   P1 design record [#3](https://github.com/toannnnq1424/life-bridge/issues/3);

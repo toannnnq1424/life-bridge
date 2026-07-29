@@ -3,14 +3,13 @@
 ## Board control
 
 - Updated: 2026-07-29
-- Accepted P5-S1 product merge:
-  `dev@ac663a714b69aace443f712f1d8ee700b5e48636`.
-- Active product slice: P5-S2 locally accepted candidate on
-  `phase/5-volunteer-match-organization-coordination`; focused proof and the
-  sole Level C evidence chain are complete.
-- Current action: exact-head hosted promotion and canonical issue #16
-  closeout. Do not rerun local Level C. DATA-S1, P5-S3, deployment and release
-  remain unstarted.
+- Accepted P5-S2 product merge:
+  `dev@f4de48ebf2d84e5e3616963097968399b3287cea` through PR #68.
+- Accepted evidence: sole local Level C chain, exact-head checks 6/6,
+  post-merge run `30406976766` and bilingual issue #16 closeout.
+- Current action: exact-next handoff only; do not rerun local P5-S2 Level C or
+  begin P5-S3 without controller dispatch. DATA-S1, P5-S3, deployment and
+  release remain unstarted.
 - Implemented direction: `CHG-2026-011`/ADR-019 assigns the greenfield Spring
   Community owner; accepted Node services remain unchanged in ownership
 - Rule: one conversation owns one phase or one slice
