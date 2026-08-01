@@ -15,6 +15,10 @@ public record CommunityProperties(
     if (internalToken == null || internalToken.length() < 24 || internalToken.length() > 256) {
       throw new IllegalArgumentException("COMMUNITY_INTERNAL_TOKEN_INVALID");
     }
+    previousInternalToken =
+        previousInternalToken == null || previousInternalToken.isBlank()
+            ? null
+            : previousInternalToken;
     if (previousInternalToken != null
         && (previousInternalToken.length() < 24 || previousInternalToken.length() > 256)) {
       throw new IllegalArgumentException("COMMUNITY_INTERNAL_TOKEN_PREVIOUS_INVALID");
