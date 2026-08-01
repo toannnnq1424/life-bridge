@@ -1058,3 +1058,11 @@ service constants were corrected; focused Node 11/11 and Spring provider 5/5
 passed. Local Docker was unavailable, so the superseding exact-head hosted
 PostgreSQL run remains the authoritative recovery proof. No local Level C was
 repeated and no failed run was rerun.
+
+Correction head `c77ec8c` then passed the cumulative P5-S3 PostgreSQL campaign
+in push run `30716848172`, proving the route-digest fix. The subsequent P6
+runner stopped before its first stage because the exact-head checkout was
+shallow and did not contain accepted base `f7a4052`; this is a CI harness
+classification, not a product failure. The PostgreSQL job now fetches full
+ancestry while retaining literal-head verification and the base-ancestor
+guard. A new pushed head must supersede, not rerun, that failed run.

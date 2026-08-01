@@ -2692,3 +2692,11 @@ constants now match the frozen Gateway/OpenAPI/controller contract. Targeted
 Node 11/11 and Spring provider/filter 5/5 passed. Docker Desktop was unavailable
 for a local database retest, so the new exact-head hosted PostgreSQL job must
 prove recovery before merge. Do not invoke local Level C again.
+
+Correction head `c77ec8c` subsequently passed the full cumulative P5-S3
+PostgreSQL stage in push run `30716848172`. P6 validation then stopped in one
+second before stages because the literal-head checkout had depth one and could
+not resolve accepted base `f7a4052` for the ancestor guard. The PostgreSQL job
+now uses `fetch-depth: 0`; exact-head verification and ancestry validation both
+remain mandatory. This harness correction requires a superseding head/run,
+not a rerun of the failed workflow.
