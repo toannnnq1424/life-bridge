@@ -1,0 +1,39 @@
+{
+  "releaseLine": "gateway-community",
+  "current": "community-v2",
+  "previous": "community-v1",
+  "supportWindowDays": 90,
+  "selectionHeader": "x-lifebridge-contract-version",
+  "unsupportedStatus": 406,
+  "unsupportedCode": "COMMUNITY_CONTRACT_VERSION_UNSUPPORTED",
+  "versions": {
+    "community-v1": {
+      "state": "previous",
+      "supportedFrom": "2026-07-29",
+      "removalNotBefore": "2026-10-27",
+      "apiMajor": 1,
+      "eventVersions": [1]
+    },
+    "community-v2": {
+      "state": "current",
+      "supportedFrom": "2026-07-29",
+      "apiMajor": 1,
+      "eventVersions": [1, 2]
+    }
+  },
+  "breakingChanges": [
+    "remove-path-or-method",
+    "remove-required-or-response-field",
+    "add-required-request-field",
+    "narrow-type-or-enum",
+    "change-status-or-failure-retryability",
+    "change-authority-digest-idempotency-or-meaning"
+  ],
+  "retirementRequirements": [
+    "accepted-change",
+    "published-removal-date",
+    "consumer-inventory-zero",
+    "migration-evidence",
+    "rolling-and-rollback-evidence"
+  ]
+}

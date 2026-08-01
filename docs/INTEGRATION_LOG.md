@@ -1019,3 +1019,65 @@ failures, not product failures.
   passed 6/6 exact-head checks and merged as canonical
   `dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`; post-merge run
   `30426581895` passed all required jobs.
+
+## INT-2026-026 — P6-S1 local rolling-compatibility candidate
+
+- Date: 2026-07-29
+- State: local candidate ready; owner CI hold; no push, PR, workflow, merge, or
+  issue mutation.
+- Base: accepted
+  `origin/dev@f7a4052f8181f2a0933a5e61884d91ae200b4da9`.
+- Boundary: `community-v2` current and `community-v1` previous on the
+  Gateway↔Spring Community release line; Identity authority and Community
+  PostgreSQL/Flyway/audit/outbox ownership are unchanged.
+- Planned versus actual: three independent reviews froze the 90-day support
+  window, provider-first rollout, consumer-first rollback, four-cell matrix,
+  breaking rules and uncertain-write truth. The implementation also corrected
+  the P5-S3 Spring moderation route mismatch and stale capability response
+  revealed by review. No UI, migration, service, engine, P6-S2 or P6-S3 scope
+  was added.
+- Validation: focused formatting/lint/type, Node 11/11 and Spring 8/8 passed.
+  Exactly one Level C invocation retained a detached-output static-stage
+  failure after toolchain/install passed. The same-invocation classified
+  continuation passed static/contracts, provider, docs/config/secrets/audit,
+  Node/Spring production builds, diff/canary integrity and cleanup. No second
+  Level C invocation occurred. Mocked primary-journey Chromium passed 6/6;
+  two database-backed runtime cases skipped locally and remain required in the
+  hosted PostgreSQL/mixed-runtime gate.
+- Hold: canonical issue #22 remains read-only and open. Exact-head/post-merge
+  hosted gates and acceptance wait for an explicit project-owner wake.
+
+### Owner wake and first hosted classification — 2026-08-02
+
+The owner removed the CI hold. Branch head `22231d0` was pushed and ready PR
+#73 opened into `dev`. Push run `30716660579` and PR run `30716684220` started
+without manual dispatch. The PostgreSQL job exposed one P6 route-digest defect:
+controllers and tests used canonical `/moderation/cases/...` paths while the
+Community service still verified Identity decisions against old paths. The
+service constants were corrected; focused Node 11/11 and Spring provider 5/5
+passed. Local Docker was unavailable, so the superseding exact-head hosted
+PostgreSQL run remains the authoritative recovery proof. No local Level C was
+repeated and no failed run was rerun.
+
+Correction head `c77ec8c` then passed the cumulative P5-S3 PostgreSQL campaign
+in push run `30716848172`, proving the route-digest fix. The subsequent P6
+runner stopped before its first stage because the exact-head checkout was
+shallow and did not contain accepted base `f7a4052`; this is a CI harness
+classification, not a product failure. The PostgreSQL job now fetches full
+ancestry while retaining literal-head verification and the base-ancestor
+guard. A new pushed head must supersede, not rerun, that failed run.
+
+Head `64561ae` then passed P6 static/contracts, Spring provider, governance,
+security and production builds. Its final P6 step incorrectly launched the
+P5-S1 Playwright command after the preceding cumulative campaign had already
+cleaned every runtime process, so port 3000 correctly refused connections
+before product assertions. The duplicate unprovisioned browser invocation was
+removed. The hosted job retains the cumulative PostgreSQL/mixed-runtime/
+Chromium campaign immediately before P6 current/previous gates.
+
+Head `1014f07` passed every P6 test/build stage and stopped only at final
+candidate-integrity because generic `test-results` from the preceding
+cumulative browser campaign remained in the shared hosted workspace. Workflow
+ownership is now explicit: it removes only `test-results` and
+`playwright-report` between the cumulative runner and P6, while the P6 guard
+continues to fail on any output it creates or leaves itself.

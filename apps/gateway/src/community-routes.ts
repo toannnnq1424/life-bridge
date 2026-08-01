@@ -34,6 +34,7 @@ export interface CommunityGatewayConfig {
   identityToken: string;
   publicOrigin: string;
   sessionCookieName: string;
+  communityContractVersion?: "community-v1" | "community-v2";
 }
 
 type Fetcher = typeof fetch;
@@ -667,6 +668,7 @@ async function callCommunity(
       "content-type": "application/json",
       "x-correlation-id": correlationId,
       "x-internal-service-token": config.communityToken,
+      "x-lifebridge-contract-version": config.communityContractVersion ?? "community-v2",
       ...(idempotencyKey ? { "idempotency-key": idempotencyKey } : {}),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),

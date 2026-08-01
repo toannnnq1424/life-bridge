@@ -112,7 +112,8 @@ public final class CommunityController {
   public Map<String, String> version() {
     return Map.of(
         "service", "community",
-        "contract", "P5-S2-v1");
+        "currentContract", ContractVersionFilter.CURRENT,
+        "previousContract", ContractVersionFilter.PREVIOUS);
   }
 
   @GetMapping("/health/live")

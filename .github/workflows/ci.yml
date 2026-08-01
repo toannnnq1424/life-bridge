@@ -1,4 +1,4 @@
-name: Integrated P1 through P5-S3 acceptance CI
+name: Integrated P1 through P6-S1 acceptance CI
 
 on:
   pull_request:
@@ -99,6 +99,7 @@ jobs:
           pnpm.cmd run format:p4-s3:check
           pnpm.cmd run format:p5-s1:check
           pnpm.cmd run format:p5-s3:check
+          pnpm.cmd run format:p6-s1:check
           pnpm.cmd run lint
           pnpm.cmd run typecheck
           pnpm.cmd run test:unit
@@ -109,6 +110,7 @@ jobs:
           node --experimental-strip-types tools/quality/src/p5-s1-contract-integrity.ts
           pnpm.cmd run test:p5-s3:contracts
           node --experimental-strip-types tools/quality/src/p5-s3-contract-integrity.ts
+          pnpm.cmd run test:p6-s1:contracts
           ./mvnw.cmd -B -ntp -f services/community/pom.xml clean test
           pnpm.cmd run build
 
@@ -136,7 +138,7 @@ jobs:
         run: pnpm.cmd run security:deps
 
   postgres-browser:
-    name: P5-S3 PostgreSQL, mixed-runtime, and cumulative Chromium acceptance
+    name: P6-S1 PostgreSQL, mixed-runtime, and cumulative Chromium acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 35
     services:
@@ -158,6 +160,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Verify exact candidate
@@ -226,14 +229,27 @@ jobs:
           "COMMUNITY_DATABASE_USERNAME=lifebridge_community" >> $env:GITHUB_ENV
           "COMMUNITY_DATABASE_PASSWORD=$($env:P5_COMMUNITY_DATABASE_PASSWORD)" >> $env:GITHUB_ENV
 
-      - name: Run the P5-S3 Level C campaign
+      - name: Run the cumulative P5-S3 database and browser campaign
         shell: pwsh
         env:
           P5_S1_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
         run: ./scripts/validate-p5-s3.ps1 -UseExistingDatabase -SkipInstall
 
+      - name: Remove cumulative browser output before P6 integrity gate
+        shell: pwsh
+        run: |
+          foreach ($path in @("test-results", "playwright-report")) {
+            if (Test-Path -LiteralPath $path) {
+              Remove-Item -Recurse -Force -LiteralPath $path
+            }
+          }
+
+      - name: Run P6-S1 current and previous compatibility gates
+        shell: pwsh
+        run: ./scripts/validate-p6-s1.ps1 -SkipInstall
+
   integrated-gate:
-    name: P1 through P5-S3 full required gate
+    name: P1 through P6-S1 full required gate
     if: always()
     needs:
       - windows-quality

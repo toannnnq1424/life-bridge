@@ -2599,3 +2599,119 @@ After this same-task docs-only canonical closeout, issue #17 is to receive the
 bilingual immutable evidence and close. No later slice begins in this task.
 The controller must freshly dispatch the next approved production-plan slice;
 DATA-S1, P6+, deployment, pilot and release remain outside scope.
+
+## 2026-07-29 — P6-S1 versioned contracts and rolling compatibility
+
+### Objective
+
+Keep the primary Gateway↔Community journey correct while compatible Node and
+Spring versions roll independently, with current and previous API/event
+contracts proven from language-neutral artifacts.
+
+### Planned versus actual
+
+The planned exact P6-S1 boundary was retained. Three independent pre-code
+reviews froze `community-v2` current, `community-v1` previous, a 90-day minimum
+support window, explicit version selection, provider-first rollout,
+consumer-first rollback, a four-cell matrix, breaking-change rules,
+ambiguous-write reconciliation and unchanged Identity/Community ownership.
+Review found that Gateway/OpenAPI moderation paths did not match Spring and
+that `/version` reported stale P5-S2 capability; both were corrected inside
+the compatibility slice. No UI/Stitch work, database migration, service,
+engine, broker, cache, P6-S2 or P6-S3 scope was added.
+
+### Completed
+
+- Added machine-readable policy, matrix, current/previous event schemas and
+  negative compatibility fixtures.
+- Added explicit Gateway wire selection and Spring dual-version filtering with
+  stable 406 incompatibility truth.
+- Made Community capability reporting truthful and aligned Spring moderation
+  routes with the frozen language-neutral contract.
+- Added Node consumer, Spring provider/filter, breaking-change and event
+  compatibility tests plus local/hosted validation wiring.
+- Updated architecture, contracts, decision, plan, board, repository map,
+  integration and test truth.
+
+### Files changed
+
+P6 contracts; Gateway Community configuration/routes/tests; Spring Community
+controllers/filter/provider tests; quality and validation scripts; hosted CI
+wiring; same-slice canonical documentation. The protected Stitch canary and
+orchestration/report files were not changed.
+
+### Decisions and Change IDs
+
+`CHG-2026-004` remains the roadmap authority. ADR-026 records the version-line,
+support, rollout/rollback, ownership and failure-truth decision.
+
+### Validation performed
+
+Focused proof passed Prettier, repository ESLint and TypeScript, Node P6
+contracts 11/11, Spring provider/filter contracts 8/8, and `git diff --check`.
+Exactly one `pnpm.cmd run validate:p6-s1` invocation
+`88716944e71842d79dfb659f8fb85f30` was made. Toolchain and locked install
+passed; the detached command channel caused the static stage to retain failed
+exit truth. A same-invocation classified continuation then passed the exact
+static/contracts, Spring provider, docs/config/secrets/dependency audit,
+production Node and Spring builds, candidate-integrity and cleanup stages.
+No second Level C command was invoked. The added primary-journey browser
+recovery passed six mocked desktop/mobile accessibility and failure-truth cases;
+the two database-backed runtime cases skipped because no isolated P5 database
+environment was supplied. Exact mixed-process proof therefore remains an
+explicit hosted gate, not a local claim.
+
+### Validation intentionally deferred
+
+Under the owner local-only hold: no push, PR, workflow dispatch/re-run, merge,
+issue/project/release mutation, exact-head hosted CI or post-merge CI occurred.
+Canonical issue #22 remains read-only; #18 remains historical/superseded.
+
+### Known issues
+
+KI-001, KI-016 and KI-019 remain unchanged. P6-S1 creates no deployment,
+manual-AT or private-render acceptance claim.
+
+### Exact next step
+
+Stop at `READY_FOR_USER_CI_WAKE`. Only an explicit owner message in this task
+may authorize pushing the local phase branch, opening the one ready PR to
+`dev`, waiting for literal-head Windows and PostgreSQL/mixed-runtime gates,
+merge-commit promotion, post-merge `dev` CI and bilingual issue #22 closeout.
+Do not start P6-S2.
+
+### Owner wake and hosted recovery — 2026-08-02
+
+Owner authorization removed the intentional hold. Exact local head `22231d0`
+was pushed and ready PR #73 opened against `dev`. Automatic push run
+`30716660579` and PR run `30716684220` began; no workflow was manually
+dispatched. Real PostgreSQL proof classified a digest mismatch caused by the
+P6 route correction: `CommunityModerationService` still used the old internal
+paths when validating fresh Identity decisions. The three service path
+constants now match the frozen Gateway/OpenAPI/controller contract. Targeted
+Node 11/11 and Spring provider/filter 5/5 passed. Docker Desktop was unavailable
+for a local database retest, so the new exact-head hosted PostgreSQL job must
+prove recovery before merge. Do not invoke local Level C again.
+
+Correction head `c77ec8c` subsequently passed the full cumulative P5-S3
+PostgreSQL stage in push run `30716848172`. P6 validation then stopped in one
+second before stages because the literal-head checkout had depth one and could
+not resolve accepted base `f7a4052` for the ancestor guard. The PostgreSQL job
+now uses `fetch-depth: 0`; exact-head verification and ancestry validation both
+remain mandatory. This harness correction requires a superseding head/run,
+not a rerun of the failed workflow.
+
+Head `64561ae` passed all P6 static, current/previous consumer/provider,
+governance/security and production-build stages. The final runner stage then
+called raw P5-S1 Playwright after the preceding cumulative campaign had cleaned
+its Web/Gateway/Identity/Community processes; port 3000 refused the navigation
+before any product assertion. The duplicate browser call was removed rather
+than weakening runtime cleanup. Hosted PostgreSQL/mixed-runtime/Chromium proof
+remains in the immediately preceding cumulative job stage.
+
+Head `1014f07` then passed P6 contracts/provider/security/build and failed only
+the terminal cleanup assertion because the preceding cumulative browser stage
+left generic `test-results` in the same hosted workspace. The workflow now
+removes exactly `test-results` and `playwright-report` between those owned
+stages. P6 candidate-integrity remains unchanged and will still reject residue
+created by P6 itself.

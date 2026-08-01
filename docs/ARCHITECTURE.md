@@ -443,6 +443,17 @@ At each slice/phase gate, verify:
 - design handoff and accessibility evidence exist for UI changes;
 - planned versus actual technology is current.
 
+## 16. P6-S1 rolling contract boundary
+
+Gateway and Spring Community share only language-neutral contracts. Current
+Gateway can emit `community-v1` or `community-v2`; current Community serves
+both. Rollout expands Community first, keeps Gateway on previous wire until
+provider convergence, then activates current. Rollback switches Gateway back
+first and removes no schema or data. Identity remains authority and Community
+retains exclusive PostgreSQL/Flyway/audit/outbox ownership. P6-S1 adds no
+migration, cross-service credential, shared business source, or generated
+business code.
+
 ## 16. Change process
 
 An architecture change requires:

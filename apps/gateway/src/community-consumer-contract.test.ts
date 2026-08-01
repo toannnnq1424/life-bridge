@@ -35,6 +35,32 @@ const gatewayConfig = {
 };
 
 describe("P5-S1 Community Gateway consumer", () => {
+  it("can select the previous wire contract during a rolling upgrade", async () => {
+    const calls: Array<RequestInit | undefined> = [];
+    const fetcher = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      calls.push(init);
+      return jsonResponse({
+        data: directoryResult(),
+        meta: { correlationId: "corr_previous_wire" },
+      });
+    }) as unknown as typeof fetch;
+    const app = buildGatewayServer(
+      { ...gatewayConfig, communityContractVersion: "community-v1" },
+      fetcher,
+    );
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/community?provinceCityCode=SYN-PC-002",
+      headers: { "x-correlation-id": "corr_previous_wire" },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const headers = new Headers(calls[0]?.headers);
+    expect(headers.get("x-lifebridge-contract-version")).toBe("community-v1");
+    await app.close();
+  });
+
   it("locks the cross-language canonical JSON and request-digest vectors", () => {
     expect(canonicalJson({ z: 1, a: { y: 2, b: [3, { d: 4, c: 5 }] } })).toBe(
       '{"a":{"b":[3,{"c":5,"d":4}],"y":2},"z":1}',
@@ -98,6 +124,7 @@ describe("P5-S1 Community Gateway consumer", () => {
     expect(headers.has("x-session-token")).toBe(false);
     expect(headers.has("x-csrf-token")).toBe(false);
     expect(headers.has("x-actor-id")).toBe(false);
+    expect(headers.get("x-lifebridge-contract-version")).toBe("community-v2");
     expect(response.headers["cache-control"]).toContain("public");
 
     const cached = await app.inject({

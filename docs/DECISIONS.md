@@ -778,6 +778,36 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   or service requires a new official-source micro-cycle and accepted ADR. Do
   not start P5-S1, DATA-S1, Spring, deployment or release work.
 
+## ADR-026 — Serve current and previous Community contracts concurrently
+
+- Status: Accepted for local P6-S1 candidate; hosted promotion held
+- Date: 2026-07-29
+- Change ID: `CHG-2026-004`
+- Context: P6-S1 requires independent Node/Spring rolling compatibility, while
+  the three P5 contract labels describe different features rather than
+  successive versions. Review also found stale capability reporting and a
+  moderation route mismatch hidden by separate provider/consumer tests.
+- Decision: Introduce `community-v2` current and `community-v1` previous on one
+  release line, selected explicitly by header. Current Community serves both;
+  current Gateway can select both and stays on previous until providers
+  converge. Support previous for at least 90 days and require accepted
+  retirement evidence. Correct Spring moderation routes to the frozen
+  language-neutral contract.
+- Alternatives considered: relabel P5 slices as versions; silently fall back
+  after writes; share generated Java/TypeScript business code; bump the public
+  API path without semantic need.
+- Consequences: breaking changes fail policy fixtures, ambiguous writes
+  reconcile without cross-version replay, and rollout expands provider first
+  while rollback switches consumer first.
+- Planned baseline: current and previous API/event provider/consumer proof and
+  one mixed Node/Spring primary flow.
+- Actual implementation/evidence: machine-readable policy/matrix/event schemas,
+  Node selection tests, Spring dual-version filter/provider tests and one-shot
+  Level C runner are local only. No database or ownership boundary changes.
+- Validation and follow-up: invoke exactly one local P6-S1 Level C, then stop at
+  `READY_FOR_USER_CI_WAKE`; hosted exact-head/post-merge evidence and issue #22
+  remain owner-controlled.
+
 ## Decision-change template
 
 ```md

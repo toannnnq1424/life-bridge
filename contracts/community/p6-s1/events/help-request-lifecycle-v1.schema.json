@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p6-s1/events/help-request-lifecycle-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "aggregateId",
+    "aggregateVersion",
+    "occurredAt",
+    "correlationId"
+  ],
+  "properties": {
+    "eventId": { "type": "string", "minLength": 8, "maxLength": 128 },
+    "eventType": {
+      "enum": [
+        "community.help_request.submitted",
+        "community.help_request.closed",
+        "community.help_request.deleted"
+      ]
+    },
+    "eventVersion": { "const": 1 },
+    "aggregateId": { "type": "string", "minLength": 8, "maxLength": 128 },
+    "aggregateVersion": { "type": "integer", "minimum": 1 },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "type": "string", "minLength": 8, "maxLength": 128 }
+  }
+}
