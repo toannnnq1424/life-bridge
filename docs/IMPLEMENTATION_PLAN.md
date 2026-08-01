@@ -877,11 +877,13 @@ Acceptance:
 
 ### `P6-S2 — Independently runnable service artifacts and ownership`
 
-Status: in progress on
-`phase/6-independently-runnable-service-artifacts-ownership` from accepted
-`dev@fa9807d6a5641a594d3eb1b54d6c3685dce8720d`. `CHG-2026-019` reconciles
-the stale #23 title/body with the accepted P6-S2 plan and adds subordinate
-docs-only CI cost control without changing the product sequence.
+Status: canonical product implementation accepted on
+`dev@2b4c8d46725ed91d8c733cfc8f3177ce3e727d87` through merge-commit PR #75.
+Exact-head push/PR runs `30721320964` and `30721323043`, plus automatic
+post-merge dev run `30721753390`, passed every required job including the six
+isolated images, independent Notification upgrade and stable aggregate gate.
+`CHG-2026-019` also adds subordinate fail-closed docs-only CI cost control;
+its docs-only push/PR/post-merge evidence is recorded in the closeout PR.
 
 Outcome: every deployable can build, start, report health/readiness, and upgrade
 without another service's source tree or datastore credential.
