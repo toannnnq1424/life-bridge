@@ -2824,3 +2824,10 @@ adds its archive through Docker `ADD` with the repository-pinned SHA-256, then
 extracts it using the JDK `jar` tool. No package-manager install or mutable
 toolchain fallback is introduced. The old runs are retained and are not rerun;
 the correction push must produce new literal-head push/PR evidence.
+
+Correction head `7ec9110` then reached the checksum-verified archive and
+extracted Maven, but push/PR runs `30720958312`/`30720960074` failed the same
+Community layer with exit 126 because ZIP extraction does not preserve the
+Unix executable bit on `bin/mvn`. The next correction applies mode `0555` only
+to that verified Maven launcher before execution. The tool version, checksum,
+base image and artifact scope remain unchanged; no old run is rerun.
