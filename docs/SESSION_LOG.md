@@ -2708,3 +2708,10 @@ its Web/Gateway/Identity/Community processes; port 3000 refused the navigation
 before any product assertion. The duplicate browser call was removed rather
 than weakening runtime cleanup. Hosted PostgreSQL/mixed-runtime/Chromium proof
 remains in the immediately preceding cumulative job stage.
+
+Head `1014f07` then passed P6 contracts/provider/security/build and failed only
+the terminal cleanup assertion because the preceding cumulative browser stage
+left generic `test-results` in the same hosted workspace. The workflow now
+removes exactly `test-results` and `playwright-report` between those owned
+stages. P6 candidate-integrity remains unchanged and will still reject residue
+created by P6 itself.

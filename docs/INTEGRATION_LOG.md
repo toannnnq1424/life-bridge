@@ -1074,3 +1074,10 @@ cleaned every runtime process, so port 3000 correctly refused connections
 before product assertions. The duplicate unprovisioned browser invocation was
 removed. The hosted job retains the cumulative PostgreSQL/mixed-runtime/
 Chromium campaign immediately before P6 current/previous gates.
+
+Head `1014f07` passed every P6 test/build stage and stopped only at final
+candidate-integrity because generic `test-results` from the preceding
+cumulative browser campaign remained in the shared hosted workspace. Workflow
+ownership is now explicit: it removes only `test-results` and
+`playwright-report` between the cumulative runner and P6, while the P6 guard
+continues to fail on any output it creates or leaves itself.

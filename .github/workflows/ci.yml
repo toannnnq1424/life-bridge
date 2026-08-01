@@ -235,6 +235,15 @@ jobs:
           P5_S1_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
         run: ./scripts/validate-p5-s3.ps1 -UseExistingDatabase -SkipInstall
 
+      - name: Remove cumulative browser output before P6 integrity gate
+        shell: pwsh
+        run: |
+          foreach ($path in @("test-results", "playwright-report")) {
+            if (Test-Path -LiteralPath $path) {
+              Remove-Item -Recurse -Force -LiteralPath $path
+            }
+          }
+
       - name: Run P6-S1 current and previous compatibility gates
         shell: pwsh
         run: ./scripts/validate-p6-s1.ps1 -SkipInstall
