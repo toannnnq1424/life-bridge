@@ -88,9 +88,6 @@ try {
     & $pnpm run build
     & $maven -B -ntp -f services/community/pom.xml clean verify -DskipTests
   }
-  Invoke-Stage "mixed-runtime-primary-journey" {
-    & $pnpm run test:p5-s1:browser
-  }
   Invoke-Stage "candidate-integrity" {
     git diff --check
     if ((git status --short -- docs/orchestration/reports/STITCH_MCP_CANARY.md)) {

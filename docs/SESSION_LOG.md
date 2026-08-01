@@ -2700,3 +2700,11 @@ not resolve accepted base `f7a4052` for the ancestor guard. The PostgreSQL job
 now uses `fetch-depth: 0`; exact-head verification and ancestry validation both
 remain mandatory. This harness correction requires a superseding head/run,
 not a rerun of the failed workflow.
+
+Head `64561ae` passed all P6 static, current/previous consumer/provider,
+governance/security and production-build stages. The final runner stage then
+called raw P5-S1 Playwright after the preceding cumulative campaign had cleaned
+its Web/Gateway/Identity/Community processes; port 3000 refused the navigation
+before any product assertion. The duplicate browser call was removed rather
+than weakening runtime cleanup. Hosted PostgreSQL/mixed-runtime/Chromium proof
+remains in the immediately preceding cumulative job stage.

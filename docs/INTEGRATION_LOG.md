@@ -1066,3 +1066,11 @@ shallow and did not contain accepted base `f7a4052`; this is a CI harness
 classification, not a product failure. The PostgreSQL job now fetches full
 ancestry while retaining literal-head verification and the base-ancestor
 guard. A new pushed head must supersede, not rerun, that failed run.
+
+Head `64561ae` then passed P6 static/contracts, Spring provider, governance,
+security and production builds. Its final P6 step incorrectly launched the
+P5-S1 Playwright command after the preceding cumulative campaign had already
+cleaned every runtime process, so port 3000 correctly refused connections
+before product assertions. The duplicate unprovisioned browser invocation was
+removed. The hosted job retains the cumulative PostgreSQL/mixed-runtime/
+Chromium campaign immediately before P6 current/previous gates.
