@@ -856,11 +856,13 @@ Dependencies: `P5-S2`; moderation policy and retention decision.
 
 ### `P6-S1 — Versioned contracts and rolling compatibility`
 
-Status: local candidate ready under owner CI hold on 2026-07-29. Three
-independent reviews froze `community-v2` current plus `community-v1` previous,
-a 90-day minimum window, provider-first rollout, consumer-first rollback,
-language-neutral breaking rules and explicit uncertain-result truth. Hosted
-promotion and canonical acceptance remain unclaimed.
+Status: accepted on `dev` on 2026-08-02 through merge-commit PR #73 at
+`f7aab7620d5fcde80c2129a54db1ac9291340489`. Three independent reviews froze
+`community-v2` current plus `community-v1` previous, a 90-day minimum window,
+provider-first rollout, consumer-first rollback, language-neutral breaking
+rules and explicit uncertain-result truth. Literal-head push/PR gates and the
+post-merge `dev` Windows, PostgreSQL/mixed-runtime/Chromium and aggregate gates
+passed. P6-S2 remains unstarted and requires fresh dispatch.
 
 Outcome: the primary user journey remains correct while compatible service
 versions are rolled independently.

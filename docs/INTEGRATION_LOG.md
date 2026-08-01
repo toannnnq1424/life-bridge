@@ -1081,3 +1081,18 @@ cumulative browser campaign remained in the shared hosted workspace. Workflow
 ownership is now explicit: it removes only `test-results` and
 `playwright-report` between the cumulative runner and P6, while the P6 guard
 continues to fail on any output it creates or leaves itself.
+
+### Canonical promotion — 2026-08-02
+
+- Exact candidate: `b36a18109acba574bc05092da0145ca68b3b3415`.
+- Literal-head evidence: automatic push run `30717512095` and PR run
+  `30717514007` both passed Windows quality/build/security,
+  PostgreSQL/mixed-runtime/cumulative Chromium and aggregate P1–P6-S1.
+- Promotion: ready PR #73 merged by merge commit
+  `f7aab7620d5fcde80c2129a54db1ac9291340489` into `dev`.
+- Post-merge evidence: automatic `dev` run `30717962735` passed all required
+  jobs; Windows reported 111+20 tests and mixed-runtime proof reported 10+11
+  tests. Cache-save path warnings were non-blocking and no gate failed.
+- No workflow was manually dispatched or rerun, local Level C was not repeated,
+  and `test`/`main` promotion was not performed. P6-S1 is accepted on `dev`;
+  P6-S2 remains unstarted pending a fresh canonical task.
