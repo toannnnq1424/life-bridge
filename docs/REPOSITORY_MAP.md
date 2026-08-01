@@ -279,3 +279,12 @@ edits inside a mapped boundary do not require a map rewrite.
   `MatchCoordinationApp.tsx`: native Frozen-handoff LB-025/LB-026 UI.
 - `tools/quality/src/p5-s2-*`, `playwright.p5-s2.config.ts` and
   `scripts/validate-p5-s2.ps1`: focused and one-shot acceptance proof.
+
+# P6-S2 additions
+
+- `artifacts/` — six machine-readable deployable owner contracts and isolated
+  multi-stage container definitions.
+- `.dockerignore` — repository build-context exclusion policy.
+- `tools/quality/src/p6-s2-*` — change-classifier, architecture-fitness and
+  artifact-specific SBOM generation/tests.
+- `scripts/validate-p6-s2.ps1` — one-shot Windows P6-S2 slice validation.

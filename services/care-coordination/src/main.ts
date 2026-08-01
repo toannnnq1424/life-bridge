@@ -23,6 +23,7 @@ const notificationToken = requiredSecret(
 );
 const notificationUrl = requiredUrl(process.env.NOTIFICATION_URL, "NOTIFICATION_URL");
 const servicePort = port(process.env.CARE_PORT, 3101);
+const serviceHost = process.env.CARE_HOST ?? "127.0.0.1";
 
 await migrateCareDatabase(databaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
@@ -67,4 +68,4 @@ const close = async () => {
 process.once("SIGINT", () => void close());
 process.once("SIGTERM", () => void close());
 
-await app.listen({ host: "127.0.0.1", port: servicePort });
+await app.listen({ host: serviceHost, port: servicePort });

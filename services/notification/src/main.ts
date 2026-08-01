@@ -12,6 +12,7 @@ const internalToken = requiredSecret(
   "NOTIFICATION_INTERNAL_TOKEN",
 );
 const servicePort = port(process.env.NOTIFICATION_PORT, 3102);
+const serviceHost = process.env.NOTIFICATION_HOST ?? "127.0.0.1";
 
 await migrateNotificationDatabase(databaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
@@ -31,4 +32,4 @@ const close = async () => {
 process.once("SIGINT", () => void close());
 process.once("SIGTERM", () => void close());
 
-await app.listen({ host: "127.0.0.1", port: servicePort });
+await app.listen({ host: serviceHost, port: servicePort });

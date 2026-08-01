@@ -207,3 +207,19 @@ real and mocked artifact-disabled Chromium journeys, and removes only the
 PID-scoped processes, logs and disposable Compose project/volume it created.
 Promotion to `dev` proves integration only. KI-001, KI-016, KI-019 and P8–P11
 still block pilot, deployment or release claims.
+
+# P6-S2 artifact build and runtime
+
+`artifacts/<name>/artifact.json` is the canonical per-deployable contract and
+`artifacts/<name>/Dockerfile` is its isolated multi-stage image build. Node
+services ship bundled application output plus only their production dependency
+closure and owned migrations; Web ships Next standalone output; Community ships
+its executable JAR. Final stages run as non-root and do not copy repository
+source, tests, credentials or another owner's migrations.
+
+Run focused proof with `pnpm.cmd run test:p6-s2:fitness` and generate artifact
+inventories with `pnpm.cmd run sbom:p6-s2`. Run the slice campaign with
+`pnpm.cmd run validate:p6-s2`; `-SkipContainers` is truthful only when Docker is
+unavailable and never satisfies container or upgrade acceptance. Runtime
+orchestration must inject each manifest's allowlisted variables separately and
+must never inject admin/bootstrap credentials.

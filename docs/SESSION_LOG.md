@@ -2733,3 +2733,101 @@ P6-S1 is canonical accepted on `dev`; it has not been promoted to `test` or
 `main`. Issue #22 receives bilingual closeout evidence. Exact next is P6-S2
 only after a fresh controller dispatch in a new canonical task. Do not start
 P6-S2, P6-S3, DATA-S1, deployment, pilot or release in this task.
+
+## 2026-08-02 — P6-S2 independently runnable service artifacts candidate
+
+### Objective
+
+Make all six deployables build/start/probe from owned artifacts without another
+service's source tree or datastore credential, prove one independent upgrade,
+and add safe docs-only CI cost control without weakening branch protection.
+
+### Planned versus actual
+
+The accepted P6-S2 plan is retained. Read-only verification found canonical
+issue #23 OPEN but still titled/scoped for versioned contracts already accepted
+as P6-S1/#22. `CHG-2026-019` records reconciliation of that stale metadata; no
+duplicate issue is created. Three independent pre-code reviews converged on six
+artifact owners, packaged runtime closures, per-artifact SBOMs, non-root images,
+credential/import fitness and a fail-closed always-reported CI gate.
+
+### Completed
+
+Added six manifests and Dockerfiles, build-context exclusions, Web standalone
+output and live/ready routes, configurable container hosts for Identity/Care/
+Notification, classifier fixtures, ownership fitness, per-artifact CycloneDX
+generation, a P6-S2 runner, and CI classifier/bounded-integrity wiring that
+preserves the existing aggregate check name.
+
+### Files changed
+
+`artifacts/**`, `.dockerignore`, Web health/config, three Node service entrypoints,
+P6-S2 quality tools/runner, CI workflow, package scripts, and directly relevant
+architecture/deployment/security/test/state documentation.
+
+### Decisions and Change IDs
+
+`CHG-2026-019` and ADR-027. No UI, new datastore, shared ownership, P6-S3 or P7
+work was introduced.
+
+### Validation performed
+
+Focused P6-S2 classifier/fitness/SBOM suite passed 21/21. Repository TypeScript
+typecheck passed. Formatting identified only that PowerShell has no Prettier
+parser; the P6-S2 formatting scope was corrected rather than suppressing a real
+source-format failure.
+
+The single retained local Level C invocation failed before its first product
+stage when pnpm detected a non-interactive production-mode modules-state change
+and refused to purge `node_modules` without a TTY. It was classified as an
+environment/dependency-state failure and was not invoked again. Read-only
+inspection found no persisted `NODE_ENV`, `CI` or production npm setting. A
+frozen install with invocation-scoped `CI=true` restored dependency state, and
+the checksum-pinned repository toolchain bootstrapped Temurin 25.0.3+9 plus
+Maven 3.9.16 without machine-wide changes.
+
+The targeted continuation then passed every previously unstarted local stage:
+P6-S2 formatting, repository lint and TypeScript; classifier/fitness/SBOM 21/21;
+six artifact SBOM generation; Web standalone production build with both health
+routes; Gateway, Identity, Care and Notification production builds; and
+Community `clean verify` with 23 tests (13 run, 10 database tests truthfully
+skipped without an isolated database) plus a valid CycloneDX 1.6 SBOM. The
+runner now checks every native exit code so a failed pnpm/Maven/Docker command
+cannot print a false terminal pass.
+
+### Validation intentionally deferred
+
+The local Docker Desktop Linux engine is unavailable, so local image runtime and
+upgrade proof are not claimed. Hosted image/upgrade gates, docs-only/non-doc
+push/PR behavior, merge/post-merge CI and #23 closeout remain.
+
+### Known issues
+
+KI-001, KI-016 and KI-019 remain. Docker unavailability is an environment limit
+for local container evidence only; hosted CI must prove the acceptance path.
+
+### Exact next step
+
+Promote the classified candidate through exact-head hosted container/upgrade
+gates, merge-commit it to dev, verify post-merge CI and close #23 with bilingual
+immutable evidence. Do not rerun local Level C or begin P6-S3.
+
+### Hosted exact-head correction
+
+Ready PR #75 opened at exact head `57e0777e382e4775fbe23ff3f65b2a4df1685225`.
+Push run `30720792751` and PR run `30720806541` both passed classification and
+bounded integrity; their container jobs built the five Node/Web images and then
+failed identically before upgrade because the minimal Community JDK builder did
+not contain `curl` for the Maven wrapper. This is a container build defect, not
+an infrastructure retry. The correction keeps the accepted Maven 3.9.16 and
+adds its archive through Docker `ADD` with the repository-pinned SHA-256, then
+extracts it using the JDK `jar` tool. No package-manager install or mutable
+toolchain fallback is introduced. The old runs are retained and are not rerun;
+the correction push must produce new literal-head push/PR evidence.
+
+Correction head `7ec9110` then reached the checksum-verified archive and
+extracted Maven, but push/PR runs `30720958312`/`30720960074` failed the same
+Community layer with exit 126 because ZIP extraction does not preserve the
+Unix executable bit on `bin/mvn`. The next correction applies mode `0555` only
+to that verified Maven launcher before execution. The tool version, checksum,
+base image and artifact scope remain unchanged; no old run is rerun.

@@ -456,3 +456,17 @@ fresh exact-purpose authority, independent Community moderator enrollment,
 anti-enumerating missing/denied responses, minimum redaction, explicit
 restrictive confirmation, expected-version concurrency, idempotent replay,
 uncertain-result reconciliation, and atomic audit/outbox rollback.
+
+# P6-S2 supply-chain and credential isolation
+
+Every deployable has a distinct dependency inventory and final container.
+Build contexts exclude Git metadata, environment files, logs and generated test
+output. Final images run without root and contain no foreign service source or
+migrations. Gateway/Web receive no database credential; each datastore owner
+receives only its own runtime credential. Admin migration/bootstrap credentials
+remain test/operations inputs and are not runtime configuration.
+
+The CI change classifier is intentionally narrow: only root governance Markdown
+and ordinary `docs/**/*.md` can be docs-only. Workflow, source, contract,
+container, package/lock, tooling, script, test, migration, config, hidden and
+protected-canary changes fail closed into the heavy campaign.

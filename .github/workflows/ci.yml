@@ -28,10 +28,80 @@ env:
   EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
 jobs:
+  classify-changes:
+    name: Classify candidate changes
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+    steps:
+      - name: Check out exact candidate with comparison history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Classify exact changed paths fail closed
+        id: classify
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          $head = git rev-parse HEAD
+          if ($head -ne $env:EXPECTED_SHA) { throw "Classifier checkout mismatch." }
+          $base = if ($env:EVENT_NAME -eq "pull_request") { git merge-base $env:PR_BASE_SHA $head } else { $env:EVENT_BEFORE }
+          $docsOnly = "false"
+          if ($base -and $base -notmatch '^0+$') {
+            git cat-file -e "$base^{commit}" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $paths = @(git diff --name-only --diff-filter=ACDMRTUXB $base $head)
+              $listPath = Join-Path $env:RUNNER_TEMP "lifebridge-changed-paths.json"
+              ConvertTo-Json -InputObject $paths -Compress | Set-Content -LiteralPath $listPath -Encoding utf8NoBOM
+              $docsOnly = node --experimental-strip-types tools/quality/src/p6-s2-change-classifier.ts $listPath
+            }
+          }
+          if ($docsOnly -notin @("true", "false")) { throw "Invalid classifier output." }
+          "docs_only=$docsOnly" >> $env:GITHUB_OUTPUT
+
+  bounded-integrity:
+    name: Bounded docs, config, secret, and integrity checks
+    needs: classify-changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          persist-credentials: false
+      - name: Set up pinned pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Run bounded always-applicable checks
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm run validate:docs
+          pnpm run validate:config
+          pnpm run validate:secrets
+          pnpm exec vitest run tools/quality/src/p6-s2-change-classifier.test.ts
+          $canaryStatus = git status --short -- docs/orchestration/reports/STITCH_MCP_CANARY.md
+          if ($canaryStatus) { throw "Protected canary changed." }
+
   windows-quality:
     name: Windows static, unit, build, and security
     runs-on: windows-latest
     timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
 
     steps:
       - name: Check out exact candidate
@@ -100,6 +170,7 @@ jobs:
           pnpm.cmd run format:p5-s1:check
           pnpm.cmd run format:p5-s3:check
           pnpm.cmd run format:p6-s1:check
+          pnpm.cmd run format:p6-s2:check
           pnpm.cmd run lint
           pnpm.cmd run typecheck
           pnpm.cmd run test:unit
@@ -111,6 +182,7 @@ jobs:
           pnpm.cmd run test:p5-s3:contracts
           node --experimental-strip-types tools/quality/src/p5-s3-contract-integrity.ts
           pnpm.cmd run test:p6-s1:contracts
+          pnpm.cmd run test:p6-s2:fitness
           ./mvnw.cmd -B -ntp -f services/community/pom.xml clean test
           pnpm.cmd run build
 
@@ -141,6 +213,8 @@ jobs:
     name: P6-S1 PostgreSQL, mixed-runtime, and cumulative Chromium acceptance
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
     services:
       postgres:
         image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
@@ -248,18 +322,98 @@ jobs:
         shell: pwsh
         run: ./scripts/validate-p6-s1.ps1 -SkipInstall
 
+  artifact-containers:
+    name: P6-S2 isolated containers and independent upgrade
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          persist-credentials: false
+      - name: Build and inspect every owned image
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in web gateway identity-consent care-coordination notification community; do
+            docker build --file "artifacts/$name/Dockerfile" --tag "lifebridge/$name:${EXPECTED_SHA}" .
+            user="$(docker image inspect --format '{{.Config.User}}' "lifebridge/$name:${EXPECTED_SHA}")"
+            test -n "$user"
+            test "$user" != "0"
+          done
+          docker image inspect --format '{{.Id}}' "lifebridge/gateway:${EXPECTED_SHA}" > /tmp/gateway-image-id
+      - name: Replace only Notification and preserve owned datastore
+        shell: bash
+        run: |
+          set -euo pipefail
+          token='synthetic-notification-token-000001'
+          docker run -d --name lifebridge-notification-v1 --read-only --tmpfs /tmp --add-host host.docker.internal:host-gateway \
+            -p 127.0.0.1:33102:3102 \
+            -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e NOTIFICATION_INTERNAL_TOKEN="$token" \
+            "lifebridge/notification:${EXPECTED_SHA}"
+          for attempt in $(seq 1 30); do curl --fail --silent http://127.0.0.1:33102/health/ready && break; sleep 1; done
+          curl --fail --silent http://127.0.0.1:33102/health/ready
+          curl --fail --silent http://127.0.0.1:33102/health/live
+          docker rm --force lifebridge-notification-v1
+          docker build --label org.opencontainers.image.revision="${EXPECTED_SHA}-upgrade" \
+            --file artifacts/notification/Dockerfile --tag lifebridge/notification:p6-s2-upgrade .
+          docker run -d --name lifebridge-notification-v2 --read-only --tmpfs /tmp --add-host host.docker.internal:host-gateway \
+            -p 127.0.0.1:33102:3102 \
+            -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e NOTIFICATION_INTERNAL_TOKEN="$token" \
+            lifebridge/notification:p6-s2-upgrade
+          for attempt in $(seq 1 30); do curl --fail --silent http://127.0.0.1:33102/health/ready && break; sleep 1; done
+          curl --fail --silent http://127.0.0.1:33102/health/ready
+          curl --fail --silent http://127.0.0.1:33102/health/live
+          test "$(docker image inspect --format '{{.Id}}' "lifebridge/gateway:${EXPECTED_SHA}")" = "$(cat /tmp/gateway-image-id)"
+          docker rm --force lifebridge-notification-v2
+
   integrated-gate:
     name: P1 through P6-S1 full required gate
     if: always()
     needs:
+      - classify-changes
+      - bounded-integrity
       - windows-quality
       - postgres-browser
+      - artifact-containers
     runs-on: ubuntu-latest
     steps:
       - name: Require every acceptance job
         env:
           WINDOWS_RESULT: ${{ needs.windows-quality.result }}
           POSTGRES_BROWSER_RESULT: ${{ needs.postgres-browser.result }}
+          ARTIFACT_CONTAINERS_RESULT: ${{ needs.artifact-containers.result }}
+          CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
+          DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
+          BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
         run: |
-          test "$WINDOWS_RESULT" = "success"
-          test "$POSTGRES_BROWSER_RESULT" = "success"
+          test "$CLASSIFIER_RESULT" = "success"
+          test "$BOUNDED_RESULT" = "success"
+          if [ "$DOCS_ONLY" = "true" ]; then
+            test "$WINDOWS_RESULT" = "skipped"
+            test "$POSTGRES_BROWSER_RESULT" = "skipped"
+            test "$ARTIFACT_CONTAINERS_RESULT" = "skipped"
+          else
+            test "$DOCS_ONLY" = "false"
+            test "$WINDOWS_RESULT" = "success"
+            test "$POSTGRES_BROWSER_RESULT" = "success"
+            test "$ARTIFACT_CONTAINERS_RESULT" = "success"
+          fi

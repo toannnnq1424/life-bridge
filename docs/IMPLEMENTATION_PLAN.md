@@ -877,6 +877,12 @@ Acceptance:
 
 ### `P6-S2 — Independently runnable service artifacts and ownership`
 
+Status: in progress on
+`phase/6-independently-runnable-service-artifacts-ownership` from accepted
+`dev@fa9807d6a5641a594d3eb1b54d6c3685dce8720d`. `CHG-2026-019` reconciles
+the stale #23 title/body with the accepted P6-S2 plan and adds subordinate
+docs-only CI cost control without changing the product sequence.
+
 Outcome: every deployable can build, start, report health/readiness, and upgrade
 without another service's source tree or datastore credential.
 
