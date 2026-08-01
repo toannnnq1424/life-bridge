@@ -2831,3 +2831,28 @@ Community layer with exit 126 because ZIP extraction does not preserve the
 Unix executable bit on `bin/mvn`. The next correction applies mode `0555` only
 to that verified Maven launcher before execution. The tool version, checksum,
 base image and artifact scope remain unchanged; no old run is rerun.
+
+Correction head `1e7e50a` made the launcher executable; its container jobs then
+truthfully exposed the final missing build-context input: Community's integrity
+test could not find the checksum-recorded `contracts/community/p5-s1-v1`
+directory. Head `0e10073e7389219913a2fcc1b0e647c9f05208e2` copies only that
+owned, language-neutral contract set into the Community build stage. Focused
+artifact fitness passed 3/3; no local Docker proof or second Level C was claimed.
+
+### Product promotion checkpoint
+
+Exact head `0e10073e7389219913a2fcc1b0e647c9f05208e2` passed automatic push
+run `30721320964` and PR run `30721323043`. Both runs passed classification,
+bounded integrity, Windows, PostgreSQL/mixed-runtime/cumulative Chromium, all
+six isolated image builds/start/probes, independent Notification upgrade and
+the stable `P1 through P6-S1 full required gate` aggregator. Ready PR #75 then
+merged by merge commit `2b4c8d46725ed91d8c733cfc8f3177ce3e727d87`.
+Automatic post-merge dev run `30721753390` passed the same full campaign. No
+workflow was manually dispatched or rerun.
+
+The remaining closeout is deliberately Markdown-only: it records immutable
+product evidence and proves classifier behavior on automatic push, PR and dev
+events. Heavy product jobs must be skipped only after the classifier returns
+docs-only, while bounded integrity and the stable aggregator must still pass.
+After that merge/dev evidence, issue #23 can close bilingually. Exact next is
+P6-S3 in a fresh task; it is not started here.

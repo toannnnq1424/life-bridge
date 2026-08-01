@@ -1118,3 +1118,21 @@ continues to fail on any output it creates or leaves itself.
   remains a hosted acceptance gate, not a local success claim.
 - Promotion: pending coherent commit, exact-head push/PR CI,
   merge-commit, automatic dev CI and bilingual #23 closeout. No P6-S3/P7 work.
+
+### Product promotion evidence
+
+- Exact product head `0e10073e7389219913a2fcc1b0e647c9f05208e2` passed automatic
+  push run `30721320964` and PR run `30721323043`, including six isolated
+  container builds/probes, independent Notification upgrade, Windows,
+  PostgreSQL/mixed-runtime/Chromium, bounded integrity and the stable required
+  aggregator.
+- Ready PR #75 merged to `dev` by merge commit
+  `2b4c8d46725ed91d8c733cfc8f3177ce3e727d87`. Automatic dev run
+  `30721753390` passed the same full non-doc campaign. No workflow was manually
+  dispatched or rerun.
+- The retained hosted corrections were product defects: Maven availability,
+  ZIP launcher mode and the Community artifact's checksum-pinned contract build
+  input. Each old run remains retained; no failed run was cosmetically rerun.
+- Closeout uses only ordinary Markdown state documents so the classifier must
+  prove docs-only push/PR behavior while bounded checks and the aggregator still
+  report a real conclusion. P6-S3 is exact next and has not started.
