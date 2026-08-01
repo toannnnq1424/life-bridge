@@ -7,6 +7,7 @@ import {
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
 import Fastify from "fastify";
+import { verifyServiceAssertion } from "@lifebridge/config";
 
 import {
   type MedicationReminderNotificationService,
@@ -22,12 +23,32 @@ export function buildNotificationServer(
   service: NotificationService,
   internalToken: string,
   medicationReminders?: MedicationReminderNotificationService,
+  enforceServiceIdentity = false,
+  careInternalToken = internalToken,
+  previousInternalToken?: string,
+  previousCareInternalToken?: string,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
 
   app.addHook("preHandler", async (request, reply) => {
     if (request.url.startsWith("/internal/")) {
-      if (header(request, "x-internal-service-token") !== internalToken) {
+      const eventRoute = request.url.startsWith("/internal/v1/events/");
+      const identity = verifyServiceAssertion(header(request, "x-lifebridge-service-identity"), {
+        audience: "notification",
+        scope: eventRoute ? "notification.events" : "notification.read",
+        allowedCallers: eventRoute ? ["care-coordination"] : ["gateway"],
+        keys: eventRoute
+          ? {
+              "care-current": careInternalToken,
+              ...(previousCareInternalToken ? { "care-previous": previousCareInternalToken } : {}),
+            }
+          : {
+              "gateway-current": internalToken,
+              ...(previousInternalToken ? { "gateway-previous": previousInternalToken } : {}),
+            },
+      });
+      const legacy = header(request, "x-internal-service-token") === internalToken;
+      if (!(identity || (!enforceServiceIdentity && legacy))) {
         await reply.code(404).send();
       }
     }

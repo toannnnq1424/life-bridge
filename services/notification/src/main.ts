@@ -11,6 +11,24 @@ const internalToken = requiredSecret(
   process.env.NOTIFICATION_INTERNAL_TOKEN,
   "NOTIFICATION_INTERNAL_TOKEN",
 );
+const careInternalToken = requiredSecret(
+  process.env.RUNTIME_MODE === "production"
+    ? process.env.CARE_NOTIFICATION_INTERNAL_TOKEN
+    : (process.env.CARE_NOTIFICATION_INTERNAL_TOKEN ?? internalToken),
+  "CARE_NOTIFICATION_INTERNAL_TOKEN",
+);
+const previousInternalToken = process.env.NOTIFICATION_INTERNAL_TOKEN_PREVIOUS
+  ? requiredSecret(
+      process.env.NOTIFICATION_INTERNAL_TOKEN_PREVIOUS,
+      "NOTIFICATION_INTERNAL_TOKEN_PREVIOUS",
+    )
+  : undefined;
+const previousCareInternalToken = process.env.CARE_NOTIFICATION_INTERNAL_TOKEN_PREVIOUS
+  ? requiredSecret(
+      process.env.CARE_NOTIFICATION_INTERNAL_TOKEN_PREVIOUS,
+      "CARE_NOTIFICATION_INTERNAL_TOKEN_PREVIOUS",
+    )
+  : undefined;
 const servicePort = port(process.env.NOTIFICATION_PORT, 3102);
 const serviceHost = process.env.NOTIFICATION_HOST ?? "127.0.0.1";
 
@@ -18,7 +36,15 @@ await migrateNotificationDatabase(databaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
 const service = new NotificationService(pool);
 const medicationReminders = new MedicationReminderNotificationService(pool);
-const app = buildNotificationServer(service, internalToken, medicationReminders);
+const app = buildNotificationServer(
+  service,
+  internalToken,
+  medicationReminders,
+  process.env.RUNTIME_MODE !== "local" && process.env.RUNTIME_MODE !== "test",
+  careInternalToken,
+  previousInternalToken,
+  previousCareInternalToken,
+);
 const deliveryTimer = setInterval(() => {
   void medicationReminders.processDue().catch(() => undefined);
 }, 30_000);

@@ -285,12 +285,47 @@ describe("gateway identity boundary", () => {
       new Response(null, {
         status: String(input).includes("identity.test") ? 503 : 200,
       })) as typeof fetch;
-    const app = buildGatewayServer({ ...config, fixtureEnabled: false }, fetcher);
+    const app = buildGatewayServer(
+      {
+        ...config,
+        fixtureEnabled: false,
+        communityUrl: "http://community.test",
+        communityToken: "community_token_value_for_testing",
+      },
+      fetcher,
+    );
 
     const response = await app.inject({ method: "GET", url: "/health/ready" });
 
     expect(response.statusCode).toBe(503);
     expect(response.json()).toEqual({ status: "not_ready", dependency: "identity" });
+    await app.close();
+  });
+
+  it("keeps core readiness truthful when secondary Community and Notification are down", async () => {
+    const fetcher = (async (input: string | URL | Request) =>
+      new Response(null, {
+        status:
+          String(input).includes("community.test") || String(input).includes("notification.test")
+            ? 503
+            : 200,
+      })) as typeof fetch;
+    const app = buildGatewayServer(
+      {
+        ...config,
+        fixtureEnabled: false,
+        communityUrl: "http://community.test",
+        communityToken: "community_token_value_for_testing",
+      },
+      fetcher,
+    );
+    const response = await app.inject({ method: "GET", url: "/health/ready" });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      status: "ready",
+      notification: "degraded",
+      community: "degraded",
+    });
     await app.close();
   });
 

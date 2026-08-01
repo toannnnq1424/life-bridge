@@ -854,3 +854,20 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 - Actual implementation/evidence:
 - Validation and follow-up:
 ```
+
+## ADR-028 — Use scoped short-lived service assertions at owner boundaries
+
+- Status: Accepted for P6-S3 candidate
+- Date: 2026-08-02
+- Context: destination-wide bearer tokens could not distinguish Gateway from
+  Care, constrain route scope, expire, or support safe rolling rotation.
+- Decision: callers sign a maximum-120-second HMAC assertion with key id,
+  caller, audience, scope, issue/expiry times and nonce. Providers verify it
+  before business parsing. Gateway and Care use distinct Notification keys.
+  Current/previous keys overlap only for bounded provider-first rotation;
+  production rejects bearer-only calls and plaintext dependency URLs.
+- Consequences: Node and Spring retain independent verifiers with shared
+  behavior. Minimum unauthenticated health probes remain network-controlled.
+  Platform TLS/secret-manager implementation remains P8/P11 deployment work.
+- Rollback: roll consumers back during overlap, prove the authenticated smoke
+  path, then remove the previous key; never restore broad credentials or HTTP.

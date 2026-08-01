@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createServiceAssertion } from "@lifebridge/config";
 
 import type { ConsentService } from "./consent-service.js";
 import type { HouseholdService } from "./household-service.js";
@@ -6,6 +7,45 @@ import { buildIdentityServer } from "./server.js";
 import type { IdentityService } from "./service.js";
 
 describe("identity internal HTTP boundary", () => {
+  it("requires a valid Gateway identity and exact scope when enforced", async () => {
+    const token = "internal-token-value-123456789";
+    const identity = {
+      isReady: vi.fn(async () => true),
+      beginSignIn: vi.fn(),
+    } as unknown as IdentityService;
+    const app = buildIdentityServer(identity, token, undefined, undefined, true);
+    const base = {
+      caller: "gateway",
+      audience: "identity-consent",
+      keyId: "gateway-current",
+      secret: token,
+      nonce: "synthetic_nonce_0001",
+    } as const;
+    const expired = createServiceAssertion({
+      ...base,
+      scope: "identity.access",
+      now: new Date(Date.now() - 180_000),
+    });
+    const wrongScope = createServiceAssertion({ ...base, scope: "identity.admin" });
+    const valid = createServiceAssertion({ ...base, scope: "identity.access" });
+    for (const assertion of [undefined, expired, wrongScope]) {
+      const response = await app.inject({
+        method: "POST",
+        url: "/internal/v1/account/sessions",
+        headers: assertion ? { "x-lifebridge-service-identity": assertion } : {},
+        payload: {},
+      });
+      expect(response.statusCode).toBe(404);
+    }
+    const accepted = await app.inject({
+      method: "POST",
+      url: "/internal/v1/account/sessions",
+      headers: { "x-lifebridge-service-identity": valid },
+      payload: {},
+    });
+    expect(accepted.statusCode).not.toBe(404);
+    await app.close();
+  });
   it("conceals protected routes from callers without the internal token", async () => {
     const identity = {
       isReady: vi.fn(async () => true),

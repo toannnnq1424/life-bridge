@@ -7,13 +7,22 @@
   "entrypoint": "node dist/main.mjs",
   "port": { "env": "NOTIFICATION_PORT", "default": 3102 },
   "health": { "live": "/health/live", "ready": "/health/ready" },
-  "requiredConfig": ["NOTIFICATION_DATABASE_URL", "NOTIFICATION_INTERNAL_TOKEN"],
+  "requiredConfig": [
+    "NOTIFICATION_DATABASE_URL",
+    "NOTIFICATION_INTERNAL_TOKEN",
+    "CARE_NOTIFICATION_INTERNAL_TOKEN",
+    "RUNTIME_MODE"
+  ],
   "allowedConfig": [
     "NOTIFICATION_HOST",
     "NOTIFICATION_PORT",
     "NOTIFICATION_DATABASE_URL",
     "NOTIFICATION_INTERNAL_TOKEN",
-    "NODE_ENV"
+    "CARE_NOTIFICATION_INTERNAL_TOKEN",
+    "NOTIFICATION_INTERNAL_TOKEN_PREVIOUS",
+    "CARE_NOTIFICATION_INTERNAL_TOKEN_PREVIOUS",
+    "NODE_ENV",
+    "RUNTIME_MODE"
   ],
   "databaseCredential": "NOTIFICATION_DATABASE_URL",
   "migrations": "migrations",

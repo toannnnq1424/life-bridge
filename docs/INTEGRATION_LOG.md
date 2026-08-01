@@ -1136,3 +1136,18 @@ continues to fail on any output it creates or leaves itself.
 - Closeout uses only ordinary Markdown state documents so the classifier must
   prove docs-only push/PR behavior while bounded checks and the aggregator still
   report a real conclusion. P6-S3 is exact next and has not started.
+
+# P6-S3 candidate — 2026-08-02
+
+- Branch: `phase/6-authenticated-service-communication-dependency-isolation`
+  from exact `dev@6d7204d6272d70672a1c1f1429cdc742fd172bc0`.
+- Issue: #24 retained and reconciled in place under `CHG-2026-020`; no duplicate.
+- Contract: ADR-028 scoped short-lived service assertions, distinct
+  Gateway/Care Notification keys, fail-closed production transport, bounded
+  dependency guards and truthful secondary degradation.
+- Local gate: sole Level C `e1a1a5cc1003405ebd44912743befe2c` passed through a
+  classified continuation after Docker engine absence interrupted only the
+  environment-classification line. All five prior stages remained green and
+  were not rerun. Final local result is `passed_with_hosted_container_required`.
+- Promotion: pending one coherent commit, branch push, ready PR to `dev`,
+  literal-head hosted gates and merge-commit/post-merge evidence.

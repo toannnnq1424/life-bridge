@@ -1,6 +1,7 @@
 import type { CareCoordinationEvent, ConsumerAcknowledgement } from "@lifebridge/contracts";
 import { ConsumerAcknowledgementSchema } from "@lifebridge/contracts";
 import { boundedErrorCode, SafeLogger } from "@lifebridge/observability";
+import { createServiceAssertion, DependencyGuard } from "@lifebridge/config";
 
 import type { CareService } from "./service.js";
 
@@ -14,6 +15,8 @@ export class OutboxDispatcher {
     private readonly deliver: EventDeliverer,
     private readonly maxAttempts = 3,
     logger?: SafeLogger,
+    private readonly delay: (milliseconds: number) => Promise<void> = (milliseconds) =>
+      new Promise((resolve) => setTimeout(resolve, milliseconds)),
   ) {
     this.logger = logger ?? new SafeLogger("care-coordination");
   }
@@ -25,6 +28,9 @@ export class OutboxDispatcher {
     }
 
     try {
+      if (claimed.attemptCount > 1) {
+        await this.delay(Math.min(250 * 2 ** (claimed.attemptCount - 2), 1_000));
+      }
       const acknowledgement = ConsumerAcknowledgementSchema.parse(
         await this.deliver(claimed.event),
       );
@@ -57,11 +63,14 @@ export class OutboxDispatcher {
         /^NOTIFICATION_HTTP_(?:400|401|403|404|409|429|500|502|503|504)$/.test(error.message)
           ? boundedErrorCode(error.message, "NOTIFICATION_DELIVERY_FAILED")
           : "NOTIFICATION_DELIVERY_FAILED";
+      const retryable =
+        errorCode === "NOTIFICATION_DELIVERY_FAILED" ||
+        /^NOTIFICATION_HTTP_(?:429|500|502|503|504)$/.test(errorCode);
       await this.care.markOutboxFailed(
         claimed.event.eventId,
         errorCode,
         claimed.attemptCount,
-        this.maxAttempts,
+        retryable ? this.maxAttempts : claimed.attemptCount,
       );
       this.logger.emit({
         level: "warn",
@@ -74,6 +83,10 @@ export class OutboxDispatcher {
         eventType: claimed.event.eventType,
         eventVersion: claimed.event.eventVersion,
         retryCount: claimed.attemptCount,
+        dependency: "notification",
+        failureClass: /^NOTIFICATION_HTTP_(?:400|401|403|404|409)$/.test(errorCode)
+          ? "rejected"
+          : "unavailable",
       });
       return "failed";
     }
@@ -81,21 +94,32 @@ export class OutboxDispatcher {
 }
 
 export function httpEventDeliverer(notificationUrl: string, serviceToken: string): EventDeliverer {
+  const guard = new DependencyGuard({ maxConcurrent: 4, failureThreshold: 3, openMs: 5_000 });
   return async (event) => {
-    const response = await fetch(`${notificationUrl}/internal/v1/events/care-coordination`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-internal-service-token": serviceToken,
-        "x-correlation-id": event.correlationId,
-      },
-      body: JSON.stringify(event),
-      signal: AbortSignal.timeout(2_000),
+    return guard.execute(async () => {
+      const body = JSON.stringify(event);
+      if (Buffer.byteLength(body) > 64 * 1024) throw new Error("NOTIFICATION_PAYLOAD_TOO_LARGE");
+      const response = await fetch(`${notificationUrl}/internal/v1/events/care-coordination`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-internal-service-token": serviceToken,
+          "x-lifebridge-service-identity": createServiceAssertion({
+            caller: "care-coordination",
+            audience: "notification",
+            scope: "notification.events",
+            keyId: "care-current",
+            secret: serviceToken,
+          }),
+          "x-correlation-id": event.correlationId,
+        },
+        body,
+        signal: AbortSignal.timeout(2_000),
+      });
+      if (!response.ok) throw new Error(`NOTIFICATION_HTTP_${response.status}`);
+      const bytes = Buffer.from(await response.arrayBuffer());
+      if (bytes.length > 16 * 1024) throw new Error("NOTIFICATION_RESPONSE_TOO_LARGE");
+      return ConsumerAcknowledgementSchema.parse(JSON.parse(bytes.toString("utf8")));
     });
-    if (!response.ok) {
-      throw new Error(`NOTIFICATION_HTTP_${response.status}`);
-    }
-    const body: unknown = await response.json();
-    return ConsumerAcknowledgementSchema.parse(body);
   };
 }

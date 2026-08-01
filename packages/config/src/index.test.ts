@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { requiredKey, requireFixtureSafeMode } from "./index.js";
+import {
+  createServiceAssertion,
+  DependencyGuard,
+  requiredDependencyUrl,
+  requiredKey,
+  requireFixtureSafeMode,
+  verifyServiceAssertion,
+} from "./index.js";
 
 describe("fixture runtime boundary", () => {
   it("allows fixture identity only in local and test modes", () => {
@@ -28,5 +35,101 @@ describe("fixture runtime boundary", () => {
     expect(() => requiredKey("too-short", "IDENTITY_DATA_KEY")).toThrow(
       "IDENTITY_DATA_KEY_MISSING_OR_INVALID",
     );
+  });
+});
+
+describe("P6-S3 service communication", () => {
+  const secret = "synthetic-service-identity-key-000001";
+  const now = new Date("2026-08-02T00:00:30.000Z");
+
+  it("verifies caller, audience, scope, expiry and rotation key id", () => {
+    const assertion = createServiceAssertion({
+      caller: "gateway",
+      audience: "care-coordination",
+      scope: "care.access",
+      keyId: "current",
+      secret,
+      now,
+      nonce: "synthetic_nonce_0001",
+    });
+    const policy = {
+      audience: "care-coordination",
+      scope: "care.access",
+      allowedCallers: ["gateway"],
+      keys: { current: secret, previous: "synthetic-previous-service-key-0001" },
+      now,
+    };
+    expect(verifyServiceAssertion(assertion, policy)).toBe(true);
+    const previous = createServiceAssertion({
+      caller: "gateway",
+      audience: "care-coordination",
+      scope: "care.access",
+      keyId: "previous",
+      secret: "synthetic-previous-service-key-0001",
+      now,
+      nonce: "synthetic_nonce_0002",
+    });
+    expect(verifyServiceAssertion(previous, policy)).toBe(true);
+    expect(verifyServiceAssertion(previous, { ...policy, keys: { current: secret } })).toBe(false);
+    const oldBinary = createServiceAssertion({
+      caller: "gateway",
+      audience: "care-coordination",
+      scope: "care.access",
+      keyId: "current",
+      secret: "synthetic-previous-service-key-0001",
+      now,
+      nonce: "synthetic_nonce_0003",
+    });
+    expect(verifyServiceAssertion(oldBinary, policy)).toBe(true);
+    expect(verifyServiceAssertion(oldBinary, { ...policy, keys: { current: secret } })).toBe(false);
+    expect(verifyServiceAssertion(assertion, { ...policy, scope: "care.admin" })).toBe(false);
+    expect(verifyServiceAssertion(assertion, { ...policy, audience: "notification" })).toBe(false);
+    expect(
+      verifyServiceAssertion(assertion, { ...policy, now: new Date("2026-08-02T00:02:31Z") }),
+    ).toBe(false);
+    expect(verifyServiceAssertion(`${assertion}x`, policy)).toBe(false);
+  });
+
+  it("fails closed on unprotected non-local dependency URLs", () => {
+    expect(requiredDependencyUrl("http://127.0.0.1:3101", "CARE_URL", "test")).toBe(
+      "http://127.0.0.1:3101",
+    );
+    expect(requiredDependencyUrl("https://care.internal", "CARE_URL", "production")).toBe(
+      "https://care.internal",
+    );
+    expect(() => requiredDependencyUrl("http://care.internal", "CARE_URL", "production")).toThrow(
+      "CARE_URL_TRANSPORT_UNPROTECTED",
+    );
+    expect(() =>
+      requiredDependencyUrl("https://user:secret@care.internal", "CARE_URL", "production"),
+    ).toThrow("CARE_URL_UNSAFE");
+  });
+
+  it("isolates concurrency and opens then recovers a bounded circuit", async () => {
+    let clock = 1_000;
+    const guard = new DependencyGuard({
+      maxConcurrent: 1,
+      failureThreshold: 2,
+      openMs: 500,
+      now: () => clock,
+    });
+    let release!: () => void;
+    const held = guard.execute(() => new Promise<void>((resolve) => (release = resolve)));
+    await expect(guard.execute(async () => undefined)).rejects.toMatchObject({
+      reason: "bulkhead_full",
+    });
+    release();
+    await held;
+    await expect(guard.execute(async () => Promise.reject(new Error("down")))).rejects.toThrow(
+      "down",
+    );
+    await expect(guard.execute(async () => Promise.reject(new Error("down")))).rejects.toThrow(
+      "down",
+    );
+    await expect(guard.execute(async () => undefined)).rejects.toMatchObject({
+      reason: "circuit_open",
+    });
+    clock += 501;
+    await expect(guard.execute(async () => "recovered")).resolves.toBe("recovered");
   });
 });

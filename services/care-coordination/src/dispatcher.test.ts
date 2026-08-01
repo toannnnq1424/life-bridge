@@ -49,12 +49,15 @@ describe("outbox dispatcher", () => {
       markOutboxAcknowledged: vi.fn(),
       markOutboxFailed: vi.fn().mockResolvedValue(undefined),
     };
+    const delay = vi.fn(async () => undefined);
     const dispatcher = new OutboxDispatcher(
       care as unknown as CareService,
       async () => {
         throw new Error("NOTIFICATION_HTTP_503");
       },
       3,
+      undefined,
+      delay,
     );
 
     await expect(dispatcher.dispatchOnce()).resolves.toBe("failed");
@@ -63,6 +66,25 @@ describe("outbox dispatcher", () => {
       "NOTIFICATION_HTTP_503",
       3,
       3,
+    );
+    expect(delay).toHaveBeenCalledWith(500);
+  });
+
+  it("terminalizes permanent dependency rejection without blind retry", async () => {
+    const care = {
+      claimOutbox: vi.fn().mockResolvedValue({ event, attemptCount: 1 }),
+      markOutboxAcknowledged: vi.fn(),
+      markOutboxFailed: vi.fn().mockResolvedValue(undefined),
+    };
+    const dispatcher = new OutboxDispatcher(care as unknown as CareService, async () => {
+      throw new Error("NOTIFICATION_HTTP_403");
+    });
+    await expect(dispatcher.dispatchOnce()).resolves.toBe("failed");
+    expect(care.markOutboxFailed).toHaveBeenCalledWith(
+      event.eventId,
+      "NOTIFICATION_HTTP_403",
+      1,
+      1,
     );
   });
 });

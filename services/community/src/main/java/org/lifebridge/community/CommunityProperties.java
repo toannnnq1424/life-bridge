@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "community")
 public record CommunityProperties(
     String internalToken,
+    String previousInternalToken,
     List<String> allowedProvinceCityCodes,
     boolean fixturesEnabled,
     String runtimeMode) {
@@ -13,6 +14,10 @@ public record CommunityProperties(
   public CommunityProperties {
     if (internalToken == null || internalToken.length() < 24 || internalToken.length() > 256) {
       throw new IllegalArgumentException("COMMUNITY_INTERNAL_TOKEN_INVALID");
+    }
+    if (previousInternalToken != null
+        && (previousInternalToken.length() < 24 || previousInternalToken.length() > 256)) {
+      throw new IllegalArgumentException("COMMUNITY_INTERNAL_TOKEN_PREVIOUS_INVALID");
     }
     allowedProvinceCityCodes = List.copyOf(allowedProvinceCityCodes);
     if (allowedProvinceCityCodes.isEmpty()

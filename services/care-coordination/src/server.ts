@@ -26,6 +26,7 @@ import {
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
 import Fastify from "fastify";
+import { verifyServiceAssertion } from "@lifebridge/config";
 
 import { CareError } from "./errors.js";
 import type { AppointmentService } from "./appointment-service.js";
@@ -49,6 +50,8 @@ export function buildCareServer(
   medicationReminders?: MedicationReminderService,
   emergencyReadiness?: EmergencyReadinessService,
   documentVault?: DocumentVaultService,
+  enforceServiceIdentity = false,
+  previousInternalToken?: string,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 512 * 1024 });
 
@@ -59,7 +62,17 @@ export function buildCareServer(
 
   app.addHook("preHandler", async (request, reply) => {
     if (request.url.startsWith("/internal/")) {
-      if (header(request, "x-internal-service-token") !== internalToken) {
+      const legacy = header(request, "x-internal-service-token") === internalToken;
+      const identity = verifyServiceAssertion(header(request, "x-lifebridge-service-identity"), {
+        audience: "care-coordination",
+        scope: "care.access",
+        allowedCallers: ["gateway"],
+        keys: {
+          "gateway-current": internalToken,
+          ...(previousInternalToken ? { "gateway-previous": previousInternalToken } : {}),
+        },
+      });
+      if (!(identity || (!enforceServiceIdentity && legacy))) {
         await reply.code(404).send();
       }
     }

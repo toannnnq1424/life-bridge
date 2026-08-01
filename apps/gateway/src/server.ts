@@ -29,6 +29,7 @@ import {
   type CoordinationPermission,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, SafeLogger } from "@lifebridge/observability";
+import { createServiceAssertion, DependencyGuard } from "@lifebridge/config";
 import { fixtureMember } from "@lifebridge/test-fixtures";
 import cookie from "@fastify/cookie";
 import Fastify from "fastify";
@@ -52,6 +53,27 @@ export interface GatewayConfig {
 }
 
 type Fetcher = typeof fetch;
+const dependencyGuards = new WeakMap<object, Map<string, DependencyGuard>>();
+
+function guardedFetch(fetcher: Fetcher, dependency: string, url: string, init: RequestInit) {
+  let guards = dependencyGuards.get(fetcher as object);
+  if (!guards) {
+    guards = new Map();
+    dependencyGuards.set(fetcher as object, guards);
+  }
+  let guard = guards.get(dependency);
+  if (!guard) {
+    guard = new DependencyGuard({ maxConcurrent: 16, failureThreshold: 3, openMs: 5_000 });
+    guards.set(dependency, guard);
+  }
+  return guard.execute(async () => {
+    const response = await fetcher(url, init);
+    if (response.status === 429 || response.status >= 500) {
+      throw new Error("DEPENDENCY_RETRYABLE_FAILURE");
+    }
+    return response;
+  });
+}
 
 class DependencyResponse {
   public constructor(
@@ -91,28 +113,32 @@ async function dependencyRequest(
     actorId: string;
     correlationId: string;
     token: string;
+    audience?: string;
+    scope?: string;
     idempotencyKey?: string;
     body?: unknown;
   },
 ): Promise<DependencyResponse> {
-  const response = await fetcher(url, {
+  const response = await guardedFetch(fetcher, input.audience ?? "care-coordination", url, {
     method: input.method ?? "GET",
     headers: {
       "content-type": "application/json",
       "x-actor-id": input.actorId,
       "x-correlation-id": input.correlationId,
       "x-internal-service-token": input.token,
+      "x-lifebridge-service-identity": createServiceAssertion({
+        caller: "gateway",
+        audience: input.audience ?? "care-coordination",
+        scope: input.scope ?? "care.access",
+        keyId: "gateway-current",
+        secret: input.token,
+      }),
       ...(input.idempotencyKey ? { "idempotency-key": input.idempotencyKey } : {}),
     },
     ...(input.body === undefined ? {} : { body: JSON.stringify(input.body) }),
     signal: AbortSignal.timeout(2_500),
   });
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    body = null;
-  }
+  const body = await boundedDependencyJson(response);
   return new DependencyResponse(response.status, body);
 }
 
@@ -123,21 +149,31 @@ async function binaryDependencyRequest(
     actorId: string;
     correlationId: string;
     token: string;
+    audience?: string;
+    scope?: string;
     body: unknown;
   },
 ): Promise<BinaryDependencyResponse> {
-  const response = await fetcher(url, {
+  const response = await guardedFetch(fetcher, input.audience ?? "care-coordination", url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       "x-actor-id": input.actorId,
       "x-correlation-id": input.correlationId,
       "x-internal-service-token": input.token,
+      "x-lifebridge-service-identity": createServiceAssertion({
+        caller: "gateway",
+        audience: input.audience ?? "care-coordination",
+        scope: input.scope ?? "care.access",
+        keyId: "gateway-current",
+        secret: input.token,
+      }),
     },
     body: JSON.stringify(input.body),
     signal: AbortSignal.timeout(2_500),
   });
   const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length > 512 * 1024) throw new Error("DEPENDENCY_RESPONSE_TOO_LARGE");
   let errorBody: unknown = null;
   if (response.status >= 400) {
     try {
@@ -163,12 +199,19 @@ async function identityRequest(
     body?: unknown;
   },
 ): Promise<DependencyResponse> {
-  const response = await fetcher(url, {
+  const response = await guardedFetch(fetcher, "identity-consent", url, {
     method: input.method ?? "GET",
     headers: {
       "content-type": "application/json",
       "x-correlation-id": input.correlationId,
       "x-internal-service-token": input.token,
+      "x-lifebridge-service-identity": createServiceAssertion({
+        caller: "gateway",
+        audience: "identity-consent",
+        scope: "identity.access",
+        keyId: "gateway-current",
+        secret: input.token,
+      }),
       "x-rate-limit-source": input.sourceKey,
       ...(input.sessionToken ? { "x-session-token": input.sessionToken } : {}),
       ...(input.csrfToken ? { "x-csrf-token": input.csrfToken } : {}),
@@ -177,13 +220,22 @@ async function identityRequest(
     ...(input.body === undefined ? {} : { body: JSON.stringify(input.body) }),
     signal: AbortSignal.timeout(2_500),
   });
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    body = null;
-  }
+  const body = await boundedDependencyJson(response);
   return new DependencyResponse(response.status, body);
+}
+
+async function boundedDependencyJson(response: Response): Promise<unknown> {
+  const declared = Number(response.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > 512 * 1024) {
+    throw new Error("DEPENDENCY_RESPONSE_TOO_LARGE");
+  }
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (bytes.length > 512 * 1024) throw new Error("DEPENDENCY_RESPONSE_TOO_LARGE");
+  try {
+    return JSON.parse(bytes.toString("utf8"));
+  } catch {
+    return null;
+  }
 }
 
 export function buildGatewayServer(
@@ -217,42 +269,30 @@ export function buildGatewayServer(
   app.get("/health/live", async () => ({ status: "live" }));
   app.get("/version", async () => ({ service: "gateway", contract: "P5-S1-v1" }));
   app.get("/health/ready", async (_request, reply) => {
-    try {
-      const care = await fetcher(`${config.careUrl}/health/ready`, {
-        signal: AbortSignal.timeout(1_000),
-      });
-      if (!care.ok) {
-        return reply.code(503).send({ status: "not_ready", dependency: "care" });
-      }
-      if (!config.fixtureEnabled) {
-        const identity = await fetcher(`${config.identityUrl}/health/ready`, {
-          signal: AbortSignal.timeout(1_000),
-        });
-        if (!identity.ok) {
-          return reply.code(503).send({ status: "not_ready", dependency: "identity" });
-        }
-      }
-      if (config.communityUrl) {
-        const community = await fetcher(`${config.communityUrl}/health/ready`, {
-          signal: AbortSignal.timeout(1_000),
-        });
-        if (!community.ok) {
-          return reply.code(503).send({ status: "not_ready", dependency: "community" });
-        }
-      }
-      let notification = "available";
+    const probe = async (url: string) => {
       try {
-        const response = await fetcher(`${config.notificationUrl}/health/ready`, {
-          signal: AbortSignal.timeout(1_000),
-        });
-        notification = response.ok ? "available" : "degraded";
+        return (await fetcher(url, { signal: AbortSignal.timeout(1_000) })).ok;
       } catch {
-        notification = "degraded";
+        return false;
       }
-      return { status: "ready", notification };
-    } catch {
+    };
+    const [care, identity, notification, community] = await Promise.all([
+      probe(`${config.careUrl}/health/ready`),
+      config.fixtureEnabled ? Promise.resolve(true) : probe(`${config.identityUrl}/health/ready`),
+      probe(`${config.notificationUrl}/health/ready`),
+      config.communityUrl ? probe(`${config.communityUrl}/health/ready`) : Promise.resolve(true),
+    ]);
+    if (!care) {
       return reply.code(503).send({ status: "not_ready", dependency: "care" });
     }
+    if (!identity) {
+      return reply.code(503).send({ status: "not_ready", dependency: "identity" });
+    }
+    return {
+      status: "ready",
+      notification: notification ? "available" : "degraded",
+      community: community ? "available" : "degraded",
+    };
   });
 
   app.get<{ Params: { householdId: string } }>(
@@ -344,6 +384,8 @@ export function buildGatewayServer(
             actorId: actor,
             correlationId,
             token: config.notificationToken,
+            audience: "notification",
+            scope: "notification.read",
           },
         );
         if (notificationResponse.status >= 400) {
@@ -1002,6 +1044,8 @@ export function buildGatewayServer(
           actorId: "",
           correlationId,
           token: config.careToken,
+          audience: "care-coordination",
+          scope: "care.access",
           body: { authorization, query },
         },
       );
@@ -2010,6 +2054,8 @@ export function buildGatewayServer(
         actorId: "",
         correlationId,
         token: input.dependency === "care" ? config.careToken : config.notificationToken,
+        audience: input.dependency === "care" ? "care-coordination" : "notification",
+        scope: input.dependency === "care" ? "care.access" : "notification.read",
         ...(input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : {}),
         body: input.body(authorization),
       });
@@ -2182,6 +2228,8 @@ function dependencyUnavailable(
     result: "failed",
     correlationId,
     errorCode: code,
+    dependency,
+    failureClass: "unavailable",
   });
   return reply.code(503).send({
     error: {

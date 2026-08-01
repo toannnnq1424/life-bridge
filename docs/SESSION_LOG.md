@@ -2856,3 +2856,71 @@ events. Heavy product jobs must be skipped only after the classifier returns
 docs-only, while bounded integrity and the stable aggregator must still pass.
 After that merge/dev evidence, issue #23 can close bilingually. Exact next is
 P6-S3 in a fresh task; it is not started here.
+
+## 2026-08-02 — P6-S3 authenticated service communication candidate
+
+### Objective
+
+Keep Care-confirmed state authoritative through Notification/Community failure
+and require explicit least-privilege identities for non-local internal calls.
+
+### Planned versus actual
+
+The accepted P6-S3 outcome is unchanged. Stale issue #24 topology metadata was
+reconciled in place through `CHG-2026-020`; no issue, service, datastore or UI
+was added. Three independent pre-code reviews converged on static-token,
+transport, retry/circuit/bulkhead, ambiguity, observability and hosted-topology
+gaps. No official research cycle was needed because all unresolved decisions
+were repository-specific.
+
+### Completed
+
+Added maximum-120-second HMAC service assertions with caller, audience, scope,
+key id, issue/expiry and nonce; Node/Spring receiver enforcement; independent
+Gateway/Care Notification keys; bounded current/previous rotation; production
+HTTPS validation; response/payload ceilings; dependency-specific bulkhead and
+circuit state; permanent/retryable Notification classification and exponential
+backoff; parallel required readiness with truthful optional degradation; and
+allow-listed dependency/failure telemetry. Added cross-runtime tests, manifests,
+ADR/threat model, exactly-once runner and hosted authentication job while
+preserving the P6-S2 classifier and required aggregator display name.
+
+### Files changed
+
+Direct config/observability packages; Gateway clients/readiness; Identity,
+Care, Notification and Community auth/config; Care dispatcher; five artifact
+manifests; P6-S3 tests/runner/CI; direct API/architecture/security/deployment/
+test/change/state documents. The protected Stitch canary was untouched.
+
+### Decisions and Change IDs
+
+`CHG-2026-020` and ADR-028. No P7/P8/DATA-S1 decision was made.
+
+### Validation performed
+
+Focused Node typechecks and 68 P6-S3 contract tests passed; Spring auth/version
+tests passed 3/3; P6-S2 fitness passed 21/21; docs/config/secrets, lint and
+format passed. Sole Level C invocation
+`e1a1a5cc1003405ebd44912743befe2c` passed locked install, static/auth contracts,
+Spring provider, cumulative P6 fitness, dependency audit/SBOM, all production
+builds and integrity. Docker absence raised only during classification; the
+same ledger was continued without rerunning green stages and ended
+`passed_with_hosted_container_required`.
+
+### Validation intentionally deferred
+
+Exact-head hosted six-image valid/missing/wrong-scope auth, independent
+Notification replacement, failure/recovery and aggregate gates; then exact
+post-merge `dev` CI. Local container proof is unavailable under KI-004.
+
+### Known issues
+
+KI-004 is environment-only and requires hosted proof. KI-001/KI-016/KI-019/
+KI-020 remain unchanged and do not authorize deployment claims.
+
+### Exact next step
+
+Review diff/secrets/junk, create one coherent commit, push the canonical branch,
+open one ready PR to `dev`, require literal-head checks, merge with a merge
+commit, verify automatic `dev` CI and close issue #24 bilingually. Do not start
+P7-S1.

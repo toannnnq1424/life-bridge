@@ -1,4 +1,149 @@
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+
 import { z } from "zod";
+
+export type RuntimeMode = "local" | "test" | "production";
+
+export interface ServiceAssertionInput {
+  caller: string;
+  audience: string;
+  scope: string;
+  keyId: string;
+  secret: string;
+  now?: Date;
+  lifetimeSeconds?: number;
+  nonce?: string;
+}
+
+export interface ServiceAssertionPolicy {
+  audience: string;
+  scope: string;
+  allowedCallers: readonly string[];
+  keys: Readonly<Record<string, string>>;
+  now?: Date;
+}
+
+const assertionPart = /^[A-Za-z0-9_.-]{1,128}$/;
+
+export function createServiceAssertion(input: ServiceAssertionInput): string {
+  for (const value of [input.caller, input.audience, input.scope, input.keyId]) {
+    if (!assertionPart.test(value)) throw new Error("SERVICE_IDENTITY_FIELD_INVALID");
+  }
+  requiredSecret(input.secret, "SERVICE_IDENTITY_KEY");
+  const issuedAt = Math.floor((input.now ?? new Date()).getTime() / 1000);
+  const lifetime = Math.min(Math.max(input.lifetimeSeconds ?? 60, 10), 120);
+  const payload = Buffer.from(
+    JSON.stringify({
+      v: 1,
+      kid: input.keyId,
+      iss: input.caller,
+      aud: input.audience,
+      scope: input.scope,
+      iat: issuedAt,
+      exp: issuedAt + lifetime,
+      nonce: input.nonce ?? randomBytes(12).toString("base64url"),
+    }),
+  ).toString("base64url");
+  const signature = createHmac("sha256", input.secret).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+export function verifyServiceAssertion(value: unknown, policy: ServiceAssertionPolicy): boolean {
+  if (typeof value !== "string" || value.length > 1024) return false;
+  const parts = value.split(".");
+  if (parts.length !== 2) return false;
+  try {
+    const payload = JSON.parse(Buffer.from(parts[0]!, "base64url").toString("utf8")) as Record<
+      string,
+      unknown
+    >;
+    if (typeof payload.kid !== "string" || !policy.keys[payload.kid]) return false;
+    const actual = Buffer.from(parts[1]!, "base64url");
+    const signatureValid = Object.values(policy.keys).some((secret) => {
+      const expected = createHmac("sha256", secret).update(parts[0]!).digest();
+      return actual.length === expected.length && timingSafeEqual(actual, expected);
+    });
+    if (!signatureValid) return false;
+    const now = Math.floor((policy.now ?? new Date()).getTime() / 1000);
+    return (
+      payload.v === 1 &&
+      typeof payload.iss === "string" &&
+      policy.allowedCallers.includes(payload.iss) &&
+      payload.aud === policy.audience &&
+      payload.scope === policy.scope &&
+      typeof payload.iat === "number" &&
+      typeof payload.exp === "number" &&
+      payload.iat <= now + 5 &&
+      payload.exp >= now &&
+      payload.exp - payload.iat <= 120 &&
+      typeof payload.nonce === "string" &&
+      /^[A-Za-z0-9_-]{16,64}$/.test(payload.nonce)
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function requiredDependencyUrl(value: unknown, name: string, mode: RuntimeMode): string {
+  const parsed = new URL(requiredUrl(value, name));
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+    throw new Error(`${name}_UNSAFE`);
+  }
+  const loopback = new Set(["127.0.0.1", "localhost", "::1", "[::1]"]);
+  if (parsed.protocol !== "https:" && !(mode !== "production" && loopback.has(parsed.hostname))) {
+    throw new Error(`${name}_TRANSPORT_UNPROTECTED`);
+  }
+  return parsed.toString().replace(/\/$/, "");
+}
+
+export class DependencyUnavailableError extends Error {
+  public constructor(public readonly reason: "circuit_open" | "bulkhead_full") {
+    super(`DEPENDENCY_${reason.toUpperCase()}`);
+    this.name = "DependencyUnavailableError";
+  }
+}
+
+export class DependencyGuard {
+  private active = 0;
+  private failures = 0;
+  private openUntil = 0;
+
+  public constructor(
+    private readonly options: {
+      maxConcurrent: number;
+      failureThreshold: number;
+      openMs: number;
+      now?: () => number;
+    },
+  ) {
+    if (options.maxConcurrent < 1 || options.failureThreshold < 1 || options.openMs < 1) {
+      throw new Error("DEPENDENCY_GUARD_CONFIG_INVALID");
+    }
+  }
+
+  public async execute<T>(operation: () => Promise<T>): Promise<T> {
+    const now = (this.options.now ?? Date.now)();
+    if (now < this.openUntil) throw new DependencyUnavailableError("circuit_open");
+    if (this.active >= this.options.maxConcurrent) {
+      throw new DependencyUnavailableError("bulkhead_full");
+    }
+    this.active += 1;
+    try {
+      const result = await operation();
+      this.failures = 0;
+      this.openUntil = 0;
+      return result;
+    } catch (error) {
+      this.failures += 1;
+      if (this.failures >= this.options.failureThreshold) {
+        this.openUntil = now + this.options.openMs;
+      }
+      throw error;
+    } finally {
+      this.active -= 1;
+    }
+  }
+}
 
 export const RuntimeModeSchema = z.enum(["local", "test", "production"]);
 

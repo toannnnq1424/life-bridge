@@ -870,3 +870,14 @@ Gateway has API credentials but no datastore credential. Care's Notification
 API token is an integration capability, not Notification datastore access.
 Fitness tests fail closed on foreign database variables, cross-deployable source
 imports, broad final-image copies or an incomplete owner inventory.
+
+# P6-S3 authenticated dependency boundaries
+
+ADR-028 makes each receiver authoritative for caller/audience/scope. Gateway
+signs separately for its four dependencies; Care uses an independent
+Notification event key, so Gateway cannot publish Care events. Provider
+current/previous overlap permits consumer-first rollback without broadening
+scope. Each dependency has its own timeout, byte ceilings, bulkhead and circuit.
+Gateway probes required Care/Identity concurrently; Notification and Community
+are truthful degraded states. Telemetry records only allow-listed dependency
+and failure class, never URLs, headers, tokens, bodies or raw idempotency keys.
