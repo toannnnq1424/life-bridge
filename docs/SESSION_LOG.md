@@ -2808,6 +2808,19 @@ for local container evidence only; hosted CI must prove the acceptance path.
 
 ### Exact next step
 
-Finish targeted build/static checks, run exactly one P6-S2 Level C with truthful
-container classification, then promote this branch to dev and close #23 with
-bilingual immutable evidence. Do not begin P6-S3.
+Promote the classified candidate through exact-head hosted container/upgrade
+gates, merge-commit it to dev, verify post-merge CI and close #23 with bilingual
+immutable evidence. Do not rerun local Level C or begin P6-S3.
+
+### Hosted exact-head correction
+
+Ready PR #75 opened at exact head `57e0777e382e4775fbe23ff3f65b2a4df1685225`.
+Push run `30720792751` and PR run `30720806541` both passed classification and
+bounded integrity; their container jobs built the five Node/Web images and then
+failed identically before upgrade because the minimal Community JDK builder did
+not contain `curl` for the Maven wrapper. This is a container build defect, not
+an infrastructure retry. The correction keeps the accepted Maven 3.9.16 and
+adds its archive through Docker `ADD` with the repository-pinned SHA-256, then
+extracts it using the JDK `jar` tool. No package-manager install or mutable
+toolchain fallback is introduced. The old runs are retained and are not rerun;
+the correction push must produce new literal-head push/PR evidence.
