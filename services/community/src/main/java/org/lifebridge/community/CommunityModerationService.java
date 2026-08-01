@@ -20,7 +20,7 @@ public class CommunityModerationService {
 
   @Transactional
   public Result queue(Map<String,Object> body,String correlation){
-    Auth auth=authorize(body,"community_moderation.queue.read","/internal/v1/community/moderation/query"); enrollment(auth.actor());
+    Auth auth=authorize(body,"community_moderation.queue.read","/internal/v1/community/moderation/cases/query"); enrollment(auth.actor());
     List<Map<String,Object>> items=jdbc.query("SELECT case_id,state,evidence_category,provenance,redaction_state,policy_version,version,reported_at,expires_at FROM community_moderation_cases WHERE state='open' ORDER BY reported_at,case_id LIMIT 25",
       (r,n)->projection(r)); audit("moderation.queue_read",CommunityDigest.sha256("queue"),1,auth.actor(),correlation);
     return ok(Map.of("cases",items,"minimumDisclosure","P5-S3-v1","serverTime",Instant.now().toString()));
@@ -28,7 +28,7 @@ public class CommunityModerationService {
 
   @Transactional
   public Result detail(String caseId,Map<String,Object> body,String correlation){
-    Auth auth=authorize(body,"community_moderation.case.read","/internal/v1/community/moderation/"+caseId+"/query"); enrollment(auth.actor());
+    Auth auth=authorize(body,"community_moderation.case.read","/internal/v1/community/moderation/cases/"+caseId+"/query"); enrollment(auth.actor());
     List<Map<String,Object>> rows=jdbc.query("SELECT case_id,state,evidence_category,provenance,redaction_state,policy_version,version,reported_at,expires_at FROM community_moderation_cases WHERE case_id=?",
       (r,n)->projection(r),caseId); if(rows.isEmpty()) throw hidden();
     audit("moderation.case_read",CommunityDigest.sha256(caseId),((Number)rows.getFirst().get("version")).intValue(),auth.actor(),correlation);
@@ -37,7 +37,7 @@ public class CommunityModerationService {
 
   @Transactional
   public Result resolve(String caseId,Map<String,Object> body,String key,String correlation){
-    Auth auth=authorize(body,"community_moderation.resolve","/internal/v1/community/moderation/"+caseId+"/resolve"); enrollment(auth.actor()); validateKey(key);
+    Auth auth=authorize(body,"community_moderation.resolve","/internal/v1/community/moderation/cases/"+caseId+"/resolution"); enrollment(auth.actor()); validateKey(key);
     String intent=json(withoutAuth(body)); String kd=CommunityDigest.sha256(key), ad=CommunityDigest.sha256(auth.actor()), id=CommunityDigest.sha256(intent);
     List<Map<String,Object>> saved=jdbc.queryForList("SELECT intent_digest,response_json::text FROM community_moderation_idempotency WHERE key_digest=? AND actor_ref_digest=? AND operation='resolve' AND expires_at>CURRENT_TIMESTAMP",kd,ad);
     if(!saved.isEmpty()){ if(!id.equals(saved.getFirst().get("intent_digest"))) throw fail(HttpStatus.CONFLICT,"COMMUNITY_MODERATION_IDEMPOTENCY_CONFLICT"); try{return ok(mapper.readValue(String.valueOf(saved.getFirst().get("response_json")),new TypeReference<Map<String,Object>>(){}));}catch(Exception e){throw fail(HttpStatus.SERVICE_UNAVAILABLE,"COMMUNITY_SERVICE_UNAVAILABLE");}}

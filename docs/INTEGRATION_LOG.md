@@ -1046,3 +1046,15 @@ failures, not product failures.
   hosted PostgreSQL/mixed-runtime gate.
 - Hold: canonical issue #22 remains read-only and open. Exact-head/post-merge
   hosted gates and acceptance wait for an explicit project-owner wake.
+
+### Owner wake and first hosted classification — 2026-08-02
+
+The owner removed the CI hold. Branch head `22231d0` was pushed and ready PR
+#73 opened into `dev`. Push run `30716660579` and PR run `30716684220` started
+without manual dispatch. The PostgreSQL job exposed one P6 route-digest defect:
+controllers and tests used canonical `/moderation/cases/...` paths while the
+Community service still verified Identity decisions against old paths. The
+service constants were corrected; focused Node 11/11 and Spring provider 5/5
+passed. Local Docker was unavailable, so the superseding exact-head hosted
+PostgreSQL run remains the authoritative recovery proof. No local Level C was
+repeated and no failed run was rerun.

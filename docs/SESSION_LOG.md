@@ -2679,3 +2679,16 @@ may authorize pushing the local phase branch, opening the one ready PR to
 `dev`, waiting for literal-head Windows and PostgreSQL/mixed-runtime gates,
 merge-commit promotion, post-merge `dev` CI and bilingual issue #22 closeout.
 Do not start P6-S2.
+
+### Owner wake and hosted recovery — 2026-08-02
+
+Owner authorization removed the intentional hold. Exact local head `22231d0`
+was pushed and ready PR #73 opened against `dev`. Automatic push run
+`30716660579` and PR run `30716684220` began; no workflow was manually
+dispatched. Real PostgreSQL proof classified a digest mismatch caused by the
+P6 route correction: `CommunityModerationService` still used the old internal
+paths when validating fresh Identity decisions. The three service path
+constants now match the frozen Gateway/OpenAPI/controller contract. Targeted
+Node 11/11 and Spring provider/filter 5/5 passed. Docker Desktop was unavailable
+for a local database retest, so the new exact-head hosted PostgreSQL job must
+prove recovery before merge. Do not invoke local Level C again.
