@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "name": "web",
+  "owner": "web",
+  "runtime": "node",
+  "build": "pnpm.cmd --filter @lifebridge/web build",
+  "entrypoint": "node apps/web/server.js",
+  "port": { "env": "PORT", "default": 3000 },
+  "health": { "live": "/health/live", "ready": "/health/ready" },
+  "requiredConfig": [],
+  "allowedConfig": ["HOSTNAME", "PORT", "NODE_ENV"],
+  "databaseCredential": null,
+  "migrations": null,
+  "sbom": "sbom/web.cdx.json",
+  "container": "artifacts/web/Dockerfile"
+}

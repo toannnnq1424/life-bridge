@@ -660,3 +660,18 @@ integration tests, Flyway V3 lifecycle requirements, and LB-027 Playwright
 coverage at desktop and 320px mobile in VI/EN. The exactly-once local campaign
 is `pnpm.cmd run validate:p5-s3`; a failed campaign is retained and only its
 failed/unstarted stage may receive targeted recovery.
+
+# P6-S2 artifact and CI cost-control proof
+
+P6-S2 adds fixture-driven docs-only classification tests, exact six-artifact
+inventory checks, cross-source import and foreign-database-variable negatives,
+final-image COPY/non-root checks, and per-artifact CycloneDX isolation tests.
+The Level C runner builds every deployable and, when Docker is available, every
+image. Hosted acceptance must additionally replace one immutable Notification
+artifact while other artifact identities and its owned database remain stable,
+then re-probe health/readiness and the Care-to-Notification contract.
+
+The always-reported required aggregator keeps its existing display name. It
+accepts skipped heavy jobs only when the classifier succeeded with exact
+`docs_only=true` and bounded docs/config/secret/integrity checks succeeded.
+Unknown, empty, invalid-base, cancelled and mixed diffs fail closed.

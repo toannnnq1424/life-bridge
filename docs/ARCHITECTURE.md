@@ -855,3 +855,18 @@ engine, broker, cache, or cross-service database access. Node Gateway performs
 fresh P2 authority orchestration and schema validation only. Community remains
 authoritative for redacted moderation cases and atomic resolution/audit/outbox
 truth.
+
+# P6-S2 deployable ownership contract
+
+The deployable boundary is the six-entry inventory under `artifacts/`: Web,
+Gateway, Identity & Consent, Care Coordination, Notification and Community.
+Each manifest owns its entrypoint, allowed configuration, port, liveness,
+readiness, database credential (if any), migrations, SBOM and container. Shared
+packages may expose language-neutral contracts, configuration primitives and
+redacted observability; deployables never import another deployable's source or
+business package. A service runtime receives only its own database credential.
+
+Gateway has API credentials but no datastore credential. Care's Notification
+API token is an integration capability, not Notification datastore access.
+Fitness tests fail closed on foreign database variables, cross-deployable source
+imports, broad final-image copies or an incomplete owner inventory.

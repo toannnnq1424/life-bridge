@@ -810,6 +810,36 @@ Use an ADR for durable product, architecture, data, security, integration, or op
 
 ## Decision-change template
 
+## ADR-027 — Make deployable artifacts the runtime ownership boundary
+
+- Status: Accepted for P6-S2 candidate
+- Date: 2026-08-02
+- Change ID: `CHG-2026-019`
+- Context: accepted contracts did not make Node outputs independently runnable,
+  Web had no standalone artifact/probes, and CI spent the full mixed-runtime
+  campaign on documentation-only changes.
+- Decision: define six owner manifests and non-root containers; package Node
+  production closures, owned migrations and Web standalone output; retain the
+  Community executable JAR; generate one CycloneDX inventory per artifact; and
+  enforce imports, config/database allowlists and container boundaries. CI uses
+  an always-running fail-closed classifier, bounded integrity job and the
+  unchanged required aggregator name.
+- Alternatives considered: one monolithic runtime image; source-mounted
+  containers; shared datastore credentials; a top-level `paths-ignore`; and
+  treating a skipped required check as success.
+- Consequences: repository-root build context remains necessary for workspace
+  contract resolution, but final images contain only one artifact. Docker must
+  be available for image and upgrade proof; the local Windows host currently
+  lacks the Docker Desktop Linux engine, so hosted evidence is mandatory.
+- Planned baseline: P6-S2 independent artifacts, one independent upgrade,
+  ownership fitness and per-artifact dependency/SBOM/container isolation.
+- Actual implementation/evidence: candidate implementation exists; local
+  static/fitness proof is recorded in the session log and container promotion
+  evidence remains pending.
+- Validation and follow-up: run one Level C, exact-head hosted image/upgrade
+  gates, merge-commit to dev, post-merge gate and bilingual #23 closeout. Do not
+  begin P6-S3.
+
 ```md
 ## ADR-NNN — Decision title
 

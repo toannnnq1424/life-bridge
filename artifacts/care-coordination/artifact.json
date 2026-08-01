@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "name": "care-coordination",
+  "owner": "care-coordination",
+  "runtime": "node",
+  "build": "pnpm.cmd --filter @lifebridge/care-coordination build",
+  "entrypoint": "node dist/main.mjs",
+  "port": { "env": "CARE_PORT", "default": 3101 },
+  "health": { "live": "/health/live", "ready": "/health/ready" },
+  "requiredConfig": [
+    "CARE_DATABASE_URL",
+    "CARE_INTERNAL_TOKEN",
+    "CARE_CURSOR_KEY",
+    "NOTIFICATION_URL",
+    "NOTIFICATION_INTERNAL_TOKEN"
+  ],
+  "allowedConfig": [
+    "CARE_HOST",
+    "CARE_PORT",
+    "CARE_DATABASE_URL",
+    "CARE_INTERNAL_TOKEN",
+    "CARE_CURSOR_KEY",
+    "NOTIFICATION_URL",
+    "NOTIFICATION_INTERNAL_TOKEN",
+    "NODE_ENV"
+  ],
+  "databaseCredential": "CARE_DATABASE_URL",
+  "migrations": "migrations",
+  "sbom": "sbom/care-coordination.cdx.json",
+  "container": "artifacts/care-coordination/Dockerfile"
+}

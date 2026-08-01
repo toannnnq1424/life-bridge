@@ -1096,3 +1096,25 @@ continues to fail on any output it creates or leaves itself.
 - No workflow was manually dispatched or rerun, local Level C was not repeated,
   and `test`/`main` promotion was not performed. P6-S1 is accepted on `dev`;
   P6-S2 remains unstarted pending a fresh canonical task.
+
+## 2026-08-02 — P6-S2 candidate integration contract
+
+- Source/target: `phase/6-independently-runnable-service-artifacts-ownership`
+  from exact accepted `dev@fa9807d6a5641a594d3eb1b54d6c3685dce8720d`, returning
+  to `dev` by ready PR and merge commit only.
+- Planned versus actual: accepted P6-S2 remains the primary artifact/ownership
+  outcome. `CHG-2026-019` reconciles stale canonical issue #23 metadata and adds
+  owner-mandated docs-only CI cost control as a subordinate change.
+- Contract impact: six owner manifests define build/start/config/probes,
+  datastore credential, migrations, SBOM and container. CI adds an always-run
+  classifier and bounded integrity job while preserving required context
+  `P1 through P6-S1 full required gate`.
+- Evidence: three independent pre-code reviews completed. Local focused
+  classifier/fitness/SBOM tests passed 21/21 and the classified continuation
+  passed format/lint/typecheck, all Node/Web builds and Community `clean verify`
+  with CycloneDX. The sole Level C invocation retained its pre-stage
+  non-interactive pnpm modules-state failure and was not rerun. Docker Desktop
+  Linux engine was unavailable locally; image and independent-upgrade proof
+  remains a hosted acceptance gate, not a local success claim.
+- Promotion: pending coherent commit, exact-head push/PR CI,
+  merge-commit, automatic dev CI and bilingual #23 closeout. No P6-S3/P7 work.
