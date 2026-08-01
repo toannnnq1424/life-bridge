@@ -2715,3 +2715,21 @@ left generic `test-results` in the same hosted workspace. The workflow now
 removes exactly `test-results` and `playwright-report` between those owned
 stages. P6 candidate-integrity remains unchanged and will still reject residue
 created by P6 itself.
+
+### Canonical acceptance — 2026-08-02
+
+Exact head `b36a18109acba574bc05092da0145ca68b3b3415` passed automatic push
+run `30717512095` and PR run `30717514007`: Windows quality/build/security,
+PostgreSQL plus mixed Node/Spring and cumulative Chromium, and the aggregate
+P1–P6-S1 gate all succeeded. PR #73 then merged with merge commit
+`f7aab7620d5fcde80c2129a54db1ac9291340489` into `dev`. Automatic post-merge
+run `30717962735` passed the same required jobs (Windows 111+20 tests,
+PostgreSQL/mixed-runtime current/previous 10+11 tests, and aggregate). The two
+cache-path warnings are non-blocking cache-save warnings; no validation or
+acceptance job failed. No manual workflow dispatch/re-run and no second local
+Level C occurred.
+
+P6-S1 is canonical accepted on `dev`; it has not been promoted to `test` or
+`main`. Issue #22 receives bilingual closeout evidence. Exact next is P6-S2
+only after a fresh controller dispatch in a new canonical task. Do not start
+P6-S2, P6-S3, DATA-S1, deployment, pilot or release in this task.
