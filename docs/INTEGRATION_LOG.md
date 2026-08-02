@@ -1237,12 +1237,17 @@ continues to fail on any output it creates or leaves itself.
   including P7-S3 recovery/lifecycle and the terminal aggregator. Phase 7 is
   accepted; only bounded docs-only closeout and bilingual issue closure remain.
 
-# INT-2026-033 — P8-S1 authorization-isolation candidate
+# INT-2026-033 — P8-S1 authorization-isolation acceptance
 
 - Base/branch: exact `dev@a6cd86fd891e30828d04dbbae00a5da1f6922ae6`
   on `phase/8-household-isolation-consent-enforcement`.
 - Boundary: session -> Identity household/consent decision -> owner route;
   P6/P7 service and datastore ownership remain unchanged.
 - Contract: `CHG-2026-022`/ADR-030 and the P8-S1 machine policy default deny.
-- Evidence: three reviews and focused proof pass. Local PostgreSQL is
-  environment-unavailable; Level C/hosted promotion remain pending.
+- Evidence: three reviews, focused proof and sole Level C invocation
+  `3243be5e650649ae8f831ff4c49dfe66` passed. Exact product head
+  `376b88f8eb51ebceb1ad679de2119bca7dc65a39` passed push/PR runs
+  `30735140477`/`30735160950`; PR #85 merged by merge commit
+  `4da952eb97e72dbf8d9a6103a6e83438df292848`; automatic dev run
+  `30735583092` passed Windows, PostgreSQL/mixed-runtime, failure/recovery,
+  P8-S1 and the cumulative P1-through-P8-S1 gate without rerun.

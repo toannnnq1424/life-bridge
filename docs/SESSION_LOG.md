@@ -3174,7 +3174,7 @@ are accepted subject only to this bounded docs-only closeout and bilingual issue
 #27 closure. The exact next phase must be controller-dispatched separately; do
 not begin P8, DATA-S1 or release work here.
 
-# 2026-08-02 — P8-S1 household isolation candidate
+# 2026-08-02 — P8-S1 household isolation acceptance
 
 ### Objective
 
@@ -3212,19 +3212,24 @@ and builds pass. Sole Level C invocation
 `3243be5e650649ae8f831ff4c49dfe66` passed every local stage with final
 `passed_with_hosted_postgres_required`.
 
-### Validation intentionally deferred
+### Hosted acceptance
 
-Local PostgreSQL/mixed-runtime proof because Docker Desktop Linux engine is
-unavailable. Exact-head hosted jobs remain mandatory.
+Exact product head `376b88f8eb51ebceb1ad679de2119bca7dc65a39` passed push
+run `30735140477` and PR run `30735160950`, including Windows,
+PostgreSQL/mixed-runtime, authorization/revocation/failure jobs and both
+P1-through-P8-S1 aggregators. PR #85 merged by merge commit
+`4da952eb97e72dbf8d9a6103a6e83438df292848`; automatic dev run
+`30735583092` passed the same full heavy path. No rerun or second Level C was
+created.
 
 ### Known issues
 
-No product acceptance is claimed before exact-head and post-merge hosted
-evidence. Legal sources informed engineering controls only.
+Docker Desktop Linux-engine absence remains a local environment note only.
+Legal sources informed engineering controls only; no compliance certification
+is claimed.
 
 ### Exact next step
 
-Review/stage one coherent candidate, push only the canonical phase branch,
-open one ready PR to `dev`, require all exact-head gates, merge by merge commit,
-verify automatic `dev` CI, then bounded docs-only closeout and bilingual #28
-closure. Do not start P8-S2.
+Complete this bounded docs-only closeout, close #28 bilingually, and remove the
+phase branch after accepted dev truth is verified. P8-S2 requires a fresh
+controller-dispatched task and is not started here.
