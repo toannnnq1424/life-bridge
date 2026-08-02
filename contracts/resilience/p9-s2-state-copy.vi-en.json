@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "p9-s2-state-copy-v1.vi-en",
+  "states": {
+    "stale": {
+      "vi": "Dữ liệu có thể đã cũ. Hãy tải trạng thái hiện tại trước khi thay đổi.",
+      "en": "This data may be stale. Load current state before changing it."
+    },
+    "queued": {
+      "vi": "Đã giữ yêu cầu trong tab này; chưa gửi và chưa lưu trên máy chủ.",
+      "en": "Held in this tab; not sent and not saved by the server."
+    },
+    "blocked": {
+      "vi": "Đang ngoại tuyến. Thao tác bị chặn và không được tự động gửi lại.",
+      "en": "Offline. This action is blocked and will not be submitted automatically."
+    },
+    "conflicted": {
+      "vi": "Trạng thái đã thay đổi. Không ghi đè; hãy xem phiên bản hiện tại.",
+      "en": "State changed. Nothing was overwritten; review the current version."
+    },
+    "rejected": {
+      "vi": "Yêu cầu không được chấp nhận. Không có thay đổi nào được xác nhận.",
+      "en": "The request was rejected. No change is confirmed."
+    },
+    "dependency_failed": {
+      "vi": "Một dịch vụ cần thiết không khả dụng. Dữ liệu đã xác nhận vẫn được giữ nguyên.",
+      "en": "A required service is unavailable. Confirmed data remains unchanged."
+    },
+    "uncertain": {
+      "vi": "Có thể yêu cầu đã đến máy chủ. Không thử lại; đang cần đối soát.",
+      "en": "The request may have reached the server. Do not retry; reconciliation is required."
+    },
+    "reconciling": {
+      "vi": "Đang đọc trạng thái có thẩm quyền; chưa xác nhận kết quả.",
+      "en": "Reading authoritative state; the result is not yet confirmed."
+    },
+    "confirmed": {
+      "vi": "Máy chủ đã xác nhận thay đổi với phiên bản và thời điểm mới.",
+      "en": "The server confirmed the change with a new version and timestamp."
+    }
+  }
+}

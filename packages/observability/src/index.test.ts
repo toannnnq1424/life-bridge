@@ -130,4 +130,24 @@ describe("safe structured logging", () => {
       durationMs: 8,
     });
   });
+
+  it("keeps truthful P9-S2 results bounded across metrics and spans", () => {
+    const output: string[] = [];
+    const metrics = new SafeMetrics("gateway", (value) => output.push(value));
+    const tracer = new SafeTracer("gateway", (value) => output.push(value));
+    metrics.emit({
+      metricName: "lifebridge_operation_total",
+      operation: "journey.reconcile",
+      result: "queued",
+      value: 1,
+    });
+    tracer.emit({
+      operation: "journey.reconcile",
+      result: "private_result" as never,
+      correlationId: "corr_safe_123",
+      durationMs: 1,
+    });
+    expect(JSON.parse(output[0] ?? "{}").result).toBe("queued");
+    expect(JSON.parse(output[1] ?? "{}").result).toBe("failed");
+  });
 });

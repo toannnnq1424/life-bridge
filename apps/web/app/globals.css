@@ -193,12 +193,44 @@ h1 {
 
 .status-banner,
 .state-panel,
+.truthful-state,
 .error-summary {
   margin: 1rem 0;
   border: 2px solid var(--green);
   border-radius: 8px;
   padding: 1rem;
   background: var(--mint);
+}
+
+.truthful-state {
+  border: 2px solid currentColor;
+  border-radius: 0.75rem;
+  margin-block: 1rem;
+  padding: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.truthful-state h3 {
+  margin-block-start: 0;
+}
+.truthful-state-conflicted,
+.truthful-state-rejected,
+.truthful-state-dependency_failed,
+.truthful-state-uncertain {
+  border-inline-start-width: 0.5rem;
+}
+
+@media (forced-colors: active) {
+  .truthful-state {
+    border-color: CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .truthful-state {
+    transition: none;
+    animation: none;
+  }
 }
 
 .warning {

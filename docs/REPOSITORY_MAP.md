@@ -349,3 +349,17 @@ edits inside a mapped boundary do not require a map rewrite.
 - `services/community/.../SafeTelemetry.java`: Spring parity without cross-runtime business imports.
 - `tools/quality/src/p9-s1-fitness.test.ts` and `scripts/validate-p9-s1.ps1`: focused fitness and single-use Level C entry point.
 - `docs/operations/P9_S1_OBSERVABILITY_RUNBOOK.md`: operator classification, ownership, escalation and recovery procedure.
+
+## P9-S2 resilience additions
+
+- `contracts/resilience/`: exact mutation inventory and bilingual truthful-state
+  copy freeze.
+- `packages/contracts/src/truthful-state.ts`: versioned authoritative evidence,
+  dispatch and transition contract.
+- `apps/web/src/TruthfulStatePanel.tsx`: native reusable accessible state
+  presenter; `CareApp.tsx` owns the sole bounded in-memory task-create hold.
+- `tools/quality/src/p9-s2-fitness.test.ts` and
+  `scripts/validate-p9-s2.ps1`: fail-closed inventory/contract proof and the
+  single-use local Level C entry point.
+- `docs/operations/P9_S2_RESILIENCE_RUNBOOK.md`: outage, reconnect,
+  reconciliation, revocation and partial-dependency operation.

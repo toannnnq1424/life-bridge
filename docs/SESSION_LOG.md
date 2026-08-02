@@ -3353,3 +3353,46 @@ start P9.
 Started from exact accepted `origin/dev@c93be641fd1a828e16aef060c70f5f9feb4c4f36` in the clean task worktree and canonical `phase/9-redacted-observability-slo-baseline` branch. Three independent architecture/operations, security/privacy and validation/reliability reviews converged on trusted Gateway roots, post-auth internal continuation, baggage prohibition, runtime allowlists, Spring parity, state-safe failure injection and synthetic-only SLO truth. Official W3C, OpenTelemetry, OWASP and NIST research is recorded without a compliance claim.
 
 The candidate adds executable inventory/dashboard/negative fixtures, strict fail-safe Node signals, Gateway spoof prevention, Java parity, focused fitness, one-shot Level C and P9 hosted/cumulative gates. Focused and adjacent proof passed 65/65; Java parity 2/2, typecheck/format/build/docs/config/secrets passed. Sole Level C `091f8d49c2734571ac1c934357b80b87` passed every stage and was not rerun. Initial push run `30741099773` retained the unsupported Windows service-container topology failure. Correction head `40613d4b9413c3ddda8f821432dec0558417d71a` superseded it automatically and passed all 30 PR checks. PR #91 merged by merge commit `bd4386fc34ac1421fc14d19423072d94bd56f680`; automatic `dev` run `30741641848` passed in 11m37s. This bounded docs-only closeout must pass its classifier/aggregator, after which #31 closes bilingually and the phase branch/residue are removed. P9-S2 requires a fresh task and remains unstarted.
+
+# 2026-08-02 — P9-S2 local truthful degradation checkpoint
+
+Started from exact accepted `origin/dev@eb8a85aafafa6de83d5b0caa9c9f5cd0b434e66c`
+on `phase/9-offline-conflict-graceful-degradation`. Three independent reviews
+froze contract/authority, UI/privacy/accessibility/bilingual and test/operations
+requirements. Current RFC/MDN/W3C research is engineering evidence only. Two
+synthetic Stitch references were read back and independently accepted as
+`PASS WITH CORRECTIONS — FROZEN` for native-only implementation; generated
+source/assets and private locators are absent, KI-016/KI-019 remain.
+
+`CHG-2026-026`/ADR-033 adds the exact machine-readable Gateway mutation
+inventory, `P9-S2-truthful-state-v1`, bilingual state copy, lossless redacted
+P9-S1 result labels and a native accessible presenter. Offline mutation is
+default blocked/no-queue. Only task create may hold an undispatched intent in
+current-tab memory for one hour; reconnect never sends automatically and actor/
+session/household/revocation/expiry purges it. Task completion now uses the
+P8 household-scoped route. No provider, persistence engine, service owner,
+migration, shared table or P9-S3 work was added.
+
+Focused P9-S2 fitness passed 14/14, native mocked browser 2/2, typecheck and
+production build passed. A preliminary browser command without its required
+local server was classified as harness invocation evidence only; the bounded
+P9-S2 web-server config then passed. Sole Level C
+`03e53b5753f24cc0b7fc9658ade654c0` passed format, lint, typecheck, P9-S2 14/14,
+P9-S1 65/65, P8 52/52, P7 replay 44/44, browser 2/2, build and diff integrity;
+terminal result is `passed_with_hosted_postgres_mixed_runtime_required`. It was
+not rerun. `next-env.d.ts` generated drift was restored to canonical content;
+the protected Stitch canary is untouched.
+
+Post-Level-C diff review found one runtime-hardening defect: metrics/spans typed
+their result union but did not fail closed against a forged runtime label. A
+targeted continuation now maps unknown results to `failed` while preserving all
+P9-S2 values; focused P9-S2/observability proof passes 15/15 plus type/lint/
+format. The Level C wrapper was not invoked again.
+
+Issue #18 was verified read-only open with correct bilingual title, labels and
+milestone, but its body still says Planned/NOT STARTED and needs later
+reconciliation. Owner GitHub cost hold forbids that mutation, PR and hosted CI.
+Exact next in this task: finalize docs/diff/secret checks, create a local HEAD
+commit containing `[skip ci]`, re-audit workflows and official skip semantics,
+push exactly once only if no run can be created, verify remote/no-run, and stop
+at `READY_FOR_USER_CI_WAKE`. This is not canonical P9-S2 acceptance.

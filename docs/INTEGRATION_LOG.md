@@ -1282,3 +1282,19 @@ continues to fail on any output it creates or leaves itself.
 # 2026-08-02 — P9-S1 candidate integration
 
 `CHG-2026-025` preserves the accepted service/data/auth/recovery boundaries and adds exporter-neutral trusted context, strict allowlisted structured signals, Spring parity, machine dashboard/SLO inventory, negative leakage/spoof/cardinality fixtures, a one-shot Level C runner and exact-head cumulative CI. No collector, SaaS, shared datastore, business import or cross-service credential was added. Sole Level C `091f8d49c2734571ac1c934357b80b87` passed. Correction head `40613d4b9413c3ddda8f821432dec0558417d71a` passed all 30 PR checks; PR #91 merged by merge commit `bd4386fc34ac1421fc14d19423072d94bd56f680`, and automatic `dev` run `30741641848` passed in 11m37s without a rerun.
+
+# 2026-08-02 — P9-S2 intentional local-only checkpoint
+
+Exact base `dev@eb8a85aafafa6de83d5b0caa9c9f5cd0b434e66c`; branch
+`phase/9-offline-conflict-graceful-degradation`. `CHG-2026-026`/ADR-033 preserves
+P6 artifact/auth compatibility, P7 migration/replay/recovery, P8 isolation/
+privacy/supply-chain/abuse and P9-S1 redacted telemetry. No datastore/provider
+is added. Owner Actions-cost hold forbids issue #18 reconciliation, PR, hosted
+CI and dev mutation. The only allowed remote action is one final skip-CI branch
+push after local Level C and workflow re-audit; it is not promotion or acceptance.
+
+Sole local Level C `03e53b5753f24cc0b7fc9658ade654c0` passed format, lint,
+typecheck, P9-S2 14/14, P9-S1 65/65, P8 52/52, P7 replay 44/44,
+native mocked browser 2/2, production build and candidate integrity. Terminal
+classification is `passed_with_hosted_postgres_mixed_runtime_required`; it was
+not rerun.

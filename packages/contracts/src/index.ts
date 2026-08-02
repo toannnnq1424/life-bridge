@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export * from "./truthful-state.js";
+
 export * from "./p5-s3-community-contract.js";
 
 export * from "./p5-s2-community-contract.js";

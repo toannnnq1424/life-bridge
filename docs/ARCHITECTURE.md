@@ -1,5 +1,20 @@
 # LifeBridge Architecture
 
+## P9-S2 offline and reconciliation boundary
+
+The browser is not an authority or shared datastore. Generic mutations are
+blocked offline. The only allowlisted task-create hold is current-tab memory,
+at most ten items/one hour, purged by actor/session/household change, cancel,
+expiry or revocation. Reconnect is a hint and never dispatches. Explicit send
+reacquires CSRF/session and Identity authority before the owning service checks
+idempotency/version. No service worker, durable browser queue, new engine or
+cross-service write owns mutation state.
+
+P7 durable outbox/inbox/result evidence remains authoritative for event-backed
+reconciliation. P8 household/consent isolation is rechecked at dispatch. P9-S1
+trusted correlation/redaction gains bounded result labels only; telemetry
+failure never changes core state.
+
 ## P7-S2 durable event recovery boundary
 
 The transport remains brokerless: Care claims its PostgreSQL outbox and calls

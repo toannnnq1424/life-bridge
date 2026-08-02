@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
 import { type Locale, type MessageKey, translate } from "./i18n";
+import { TruthfulStatePanel, type TruthfulUiState } from "./TruthfulStatePanel";
 
 type View = "dashboard" | "tasks" | "detail" | "notifications";
 
@@ -44,16 +45,23 @@ async function api<T>(
   schema: { parse: (value: unknown) => T },
   init?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      "content-type": "application/json",
-      "x-fixture-actor-id": actorId,
-      "x-correlation-id": `web_${crypto.randomUUID().replaceAll("-", "")}`,
-      ...init?.headers,
-    },
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      headers: {
+        "content-type": "application/json",
+        "x-fixture-actor-id": actorId,
+        "x-correlation-id": `web_${crypto.randomUUID().replaceAll("-", "")}`,
+        ...init?.headers,
+      },
+    });
+  } catch {
+    throw new ClientApiError({ code: "NETWORK_RESULT_UNCERTAIN" });
+  }
+  const body: unknown = await response.json().catch(() => {
+    throw new ClientApiError({ code: "DEPENDENCY_RESPONSE_INVALID" });
   });
-  const body: unknown = await response.json();
   if (!response.ok) {
     const error = (body as { error?: ApiFailure }).error;
     throw new ClientApiError(error ?? { code: "SERVICE_UNAVAILABLE" });
@@ -282,6 +290,7 @@ export function CareApp({ view, householdId, taskId }: CareAppProps) {
                 actor={actor}
                 members={members}
                 online={online}
+                locale={locale}
                 t={t}
                 onCreated={(created) => {
                   setTasks((current) => [created, ...current]);
@@ -318,7 +327,7 @@ export function CareApp({ view, householdId, taskId }: CareAppProps) {
     setError(null);
     try {
       const completed = await api(
-        `/api/v1/tasks/${encodeURIComponent(selected.taskId)}`,
+        `/api/v1/households/${encodeURIComponent(householdId)}/tasks/${encodeURIComponent(selected.taskId)}`,
         actor,
         TaskProjectionSchema,
         {
@@ -408,6 +417,7 @@ function TaskForm({
   actor,
   members,
   online,
+  locale,
   t,
   onCreated,
 }: {
@@ -415,6 +425,7 @@ function TaskForm({
   actor: string;
   members: Member[];
   online: boolean;
+  locale: Locale;
   t: (key: MessageKey) => string;
   onCreated: (task: TaskProjection) => void;
 }) {
@@ -425,8 +436,42 @@ function TaskForm({
   const [priority, setPriority] = useState<"normal" | "important" | "urgent">("normal");
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [truthfulState, setTruthfulState] = useState<TruthfulUiState | null>(null);
+  const [queueExpiresAt, setQueueExpiresAt] = useState<string | null>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
+  const stateHeadingRef = useRef<HTMLHeadingElement>(null);
   const hasInput = title.length > 0 || description.length > 0;
+
+  useEffect(() => {
+    setTruthfulState(null);
+    setQueueExpiresAt(null);
+  }, [actor, householdId]);
+
+  useEffect(() => {
+    if (
+      truthfulState &&
+      ["conflicted", "rejected", "dependency_failed", "uncertain", "confirmed"].includes(
+        truthfulState,
+      )
+    ) {
+      requestAnimationFrame(() => stateHeadingRef.current?.focus());
+    }
+  }, [truthfulState]);
+
+  useEffect(() => {
+    if (truthfulState !== "queued" || !queueExpiresAt) return;
+    const remaining = new Date(queueExpiresAt).getTime() - Date.now();
+    if (remaining <= 0) {
+      setQueueExpiresAt(null);
+      setTruthfulState("rejected");
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setQueueExpiresAt(null);
+      setTruthfulState("rejected");
+    }, remaining);
+    return () => window.clearTimeout(timer);
+  }, [queueExpiresAt, truthfulState]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -438,7 +483,13 @@ function TaskForm({
       requestAnimationFrame(() => summaryRef.current?.focus());
       return;
     }
+    if (!online) {
+      setTruthfulState("queued");
+      setQueueExpiresAt(new Date(Date.now() + 60 * 60 * 1_000).toISOString());
+      return;
+    }
     setSaving(true);
+    setTruthfulState("reconciling");
     setFieldErrors({});
     try {
       const created = await api(
@@ -460,12 +511,23 @@ function TaskForm({
         },
       );
       onCreated(created);
+      setTruthfulState("confirmed");
+      setQueueExpiresAt(null);
       setTitle("");
       setDescription("");
     } catch (caught) {
       const failure =
         caught instanceof ClientApiError ? caught.failure : { code: "SERVICE_UNAVAILABLE" };
       setFieldErrors(failure.fieldErrors ?? { form: failure.code });
+      setTruthfulState(
+        failure.code === "NETWORK_RESULT_UNCERTAIN"
+          ? "uncertain"
+          : failure.code.includes("CONFLICT")
+            ? "conflicted"
+            : failure.code === "SERVICE_UNAVAILABLE"
+              ? "dependency_failed"
+              : "rejected",
+      );
       requestAnimationFrame(() => summaryRef.current?.focus());
     } finally {
       setSaving(false);
@@ -496,6 +558,39 @@ function TaskForm({
             {fieldErrors.form ? <li>{t("error")}</li> : null}
           </ul>
         </div>
+      ) : null}
+      {truthfulState ? (
+        <TruthfulStatePanel
+          state={truthfulState}
+          locale={locale}
+          headingRef={stateHeadingRef}
+          details={
+            truthfulState === "queued" && queueExpiresAt
+              ? `${locale === "vi-VN" ? "Hết hạn" : "Expires"}: ${new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(queueExpiresAt))}`
+              : undefined
+          }
+        >
+          {truthfulState === "queued" ? (
+            <div className="button-row">
+              <button
+                type="button"
+                onClick={() => {
+                  setTruthfulState(null);
+                  setQueueExpiresAt(null);
+                }}
+              >
+                {locale === "vi-VN" ? "Hủy yêu cầu đang giữ" : "Cancel held request"}
+              </button>
+              {online ? (
+                <p>
+                  {locale === "vi-VN"
+                    ? "Hãy xem lại biểu mẫu rồi chọn Tạo công việc; không tự động gửi lại."
+                    : "Review the form, then choose Create task; it will not be auto-submitted."}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </TruthfulStatePanel>
       ) : null}
       <form onSubmit={submit} noValidate>
         <div className="field">
@@ -573,8 +668,14 @@ function TaskForm({
         </div>
         {hasInput ? <p className="unsaved-note">{t("notSaved")}</p> : null}
         <div className="sticky-actions">
-          <button type="submit" disabled={!online || saving}>
-            {saving ? t("creating") : t("create")}
+          <button type="submit" disabled={saving}>
+            {saving
+              ? t("creating")
+              : !online
+                ? locale === "vi-VN"
+                  ? "Giữ trong tab này"
+                  : "Hold in this tab"
+                : t("create")}
           </button>
         </div>
       </form>

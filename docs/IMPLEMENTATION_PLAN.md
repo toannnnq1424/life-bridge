@@ -1089,9 +1089,20 @@ Acceptance:
 
 ### `P9-S2 — Offline, conflict, and graceful degradation`
 
+Status (2026-08-02): local candidate on
+`phase/9-offline-conflict-graceful-degradation` under `CHG-2026-026`/ADR-033.
+The exact route-derived inventory, versioned truthful-state contract, corrected
+Frozen Stitch handoff, bounded in-memory task-create hold, shared native state
+presenter and P9-S1 telemetry mapping are implemented locally. Sole Level C
+`03e53b5753f24cc0b7fc9658ade654c0` passed all static, focused, cumulative,
+browser and build stages with hosted PostgreSQL/mixed-runtime still required.
+Owner GitHub cost hold remains
+absolute: no hosted CI, PR, issue mutation or canonical acceptance is claimed.
+The task stops only at `READY_FOR_USER_CI_WAKE` after one skip-CI branch push.
+
 Outcome: release flows truthfully distinguish stale, queued, blocked,
-conflicted, rejected, dependency-failed, and confirmed state through outage and
-reconnect.
+conflicted, rejected, dependency-failed, uncertain/reconciling, and confirmed
+state through outage and reconnect.
 
 Acceptance:
 

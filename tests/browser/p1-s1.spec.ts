@@ -77,15 +77,21 @@ test("keyboard validation focus, 320px reflow, and automated accessibility check
   expect(results.violations).toEqual([]);
 });
 
-test("offline mutation is blocked without clearing entered data", async ({ context, page }) => {
+test("offline task creation is held in-tab without dispatch or automatic replay", async ({
+  context,
+  page,
+}) => {
   await page.goto("/households/hh_minh_an/tasks");
   await page.getByLabel("Tên công việc").fill("Bản nháp ngoại tuyến");
   await context.setOffline(true);
 
   await expect(page.getByRole("status").filter({ hasText: "Đang ngoại tuyến" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Tạo công việc" })).toBeDisabled();
+  await page.getByRole("button", { name: "Giữ trong tab này" }).click();
+  await expect(page.locator(".truthful-state-queued")).toContainText("chưa gửi");
   await expect(page.getByLabel("Tên công việc")).toHaveValue("Bản nháp ngoại tuyến");
   await context.setOffline(false);
+  await expect(page.locator(".truthful-state-queued")).toContainText("không tự động gửi lại");
+  await expect(page.getByLabel("Tên công việc")).toHaveValue("Bản nháp ngoại tuyến");
 });
 
 test("dashboard exposes Notification degradation without fabricating an empty success", async ({

@@ -1,5 +1,20 @@
 # API Contracts
 
+## P9-S2 truthful mutation outcome envelope
+
+`P9-S2-truthful-state-v1` is the reusable interpretation contract for stale,
+queued, blocked, conflicted, rejected, dependency-failed, uncertain,
+reconciling and confirmed outcomes. `confirmed` is invalid without an owning-
+service version, observed time, provenance and bounded receipt. `queued` is
+undispatched and bounded; possible dispatch is `uncertain` and must name an
+authorized reconciliation read before retry. Per-route behavior is frozen in
+`contracts/resilience/p9-s2-mutation-inventory.json`.
+
+HTTP success confirms only the owning core write described by its projection.
+Notification/event/document processing remains separate. Gateway transport or
+dependency errors never authorize blind replay; existing service-specific
+conflict projections remain authoritative current state.
+
 ## P7-S2 internal recovery contract
 
 `GET /internal/v1/event-recovery/events/{eventId}` requires the

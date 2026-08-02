@@ -1,5 +1,18 @@
 # LifeBridge Test Strategy
 
+## P9-S2 local candidate
+
+Fitness tests fail closed on inventory uniqueness/required fields,
+create/update/delete/acknowledge/upload/event representatives, queue allowlisting
+and long VI/EN copy. Contract tests reject false confirmation, unbounded/
+dispatched queue items and uncertainty without reconciliation. The synthetic
+native browser test proves zero offline POST, explicit cancel/reconnect, actor
+purge, axe and 320 px reflow without a database. Existing document, medication,
+community, P7, P8 and P9-S1 tests retain blocked/conflict/replay/isolation/
+telemetry coverage. Exactly one P9-S2 Level C runs focused static/contract/
+browser proof, inherited boundary regressions and production build. Hosted
+PostgreSQL/mixed-runtime proof is deferred by the explicit Actions cost hold.
+
 ## P7-S2 failure proof
 
 The PostgreSQL harness forces lease expiry, stale-worker completion, concurrent

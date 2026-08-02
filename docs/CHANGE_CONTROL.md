@@ -335,3 +335,24 @@ link the change identifier.
   PR #89 merged as `adf0bad`; dev run `30739630918` passed Phase 8.
 - Follow-up: merge docs-only closeout, close #30 and remove the phase branch.
 - Decision state: accepted at `dev@adf0bad67a43d9dac73b0ce7cc540b60f7bb8ee8`.
+
+# CHG-2026-026 — P9-S2 truthful offline/conflict/degradation contract
+
+- Planned baseline: P9-S2 required a frozen journey inventory and truthful
+  reusable outage/conflict states but did not select queue authority/storage or
+  a cross-journey confirmation envelope.
+- Actual: freeze every actual Gateway mutation; default block offline writes;
+  allow only bounded current-tab task-create intent; add authoritative evidence,
+  dispatch uncertainty and deterministic reconcile semantics; retain P7/P8/P9-S1
+  boundaries and corrected Frozen Stitch native states.
+- Reason/evidence: three independent reviews plus current RFC/MDN/W3C evidence
+  found that connectivity hints, retryable 503s and duplicated UI states cannot
+  prove dispatch, authority or confirmation.
+- Impact: shared contracts/telemetry, Care task-create UI, cumulative browser
+  expectation, resilience inventory/tests/runbook and state docs. No service
+  owner, table, migration, provider, persistence engine or P9-S3 work.
+- Validation: focused contract/fitness/type/lint/browser/build, then exactly one
+  local P9-S2 Level C. Hosted evidence is intentionally deferred by owner hold.
+- Follow-up: one `[skip ci]` branch push, verify no run, stop at
+  `READY_FOR_USER_CI_WAKE`; later owner wake handles #18/PR/hosted gates.
+- Decision state: accepted local candidate; not canonical acceptance.

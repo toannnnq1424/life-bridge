@@ -3,7 +3,19 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { CorrelationIdSchema } from "@lifebridge/contracts";
 
 export type LogLevel = "info" | "warn" | "error";
-export type LogResult = "success" | "denied" | "conflict" | "failed" | "pending";
+export type LogResult =
+  | "success"
+  | "denied"
+  | "conflict"
+  | "failed"
+  | "pending"
+  | "queued"
+  | "blocked"
+  | "rejected"
+  | "dependency_failed"
+  | "uncertain"
+  | "reconciling"
+  | "confirmed";
 export type FailureClass =
   | "validation"
   | "authorization"
@@ -64,7 +76,24 @@ export type PrivacySafeOperation =
   | "journey.reconcile"
   | "dependency.call"
   | "storage.operation";
-export type TelemetryResult = "success" | "denied" | "conflict" | "failed";
+export type TelemetryResult = LogResult;
+
+const telemetryResults: readonly TelemetryResult[] = [
+  "success",
+  "denied",
+  "conflict",
+  "failed",
+  "pending",
+  "queued",
+  "blocked",
+  "rejected",
+  "dependency_failed",
+  "uncertain",
+  "reconciling",
+  "confirmed",
+];
+const safeTelemetryResult = (value: unknown): TelemetryResult =>
+  telemetryResults.includes(value as TelemetryResult) ? (value as TelemetryResult) : "failed";
 
 const SAFE_TOKEN = /^[a-zA-Z][a-zA-Z0-9_.-]{0,63}$/;
 const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-(0[01])$/;
@@ -100,9 +129,22 @@ export class SafeLogger {
       level: (["info", "warn", "error"] as unknown[]).includes(event.level) ? event.level : "error",
       eventName: token(event.eventName, "telemetry.invalid"),
       operation: token(event.operation, "unknown"),
-      result: (["success", "denied", "conflict", "failed", "pending"] as unknown[]).includes(
-        event.result,
-      )
+      result: (
+        [
+          "success",
+          "denied",
+          "conflict",
+          "failed",
+          "pending",
+          "queued",
+          "blocked",
+          "rejected",
+          "dependency_failed",
+          "uncertain",
+          "reconciling",
+          "confirmed",
+        ] as unknown[]
+      ).includes(event.result)
         ? event.result
         : "failed",
       correlationId: correlation(event.correlationId),
@@ -179,7 +221,7 @@ export class SafeMetrics {
         service: token(this.service, "unknown-service"),
         metricName: event.metricName,
         operation: event.operation,
-        result: event.result,
+        result: safeTelemetryResult(event.result),
         value,
       } satisfies SafeMetricEvent),
     );
@@ -244,7 +286,7 @@ export class SafeTracer {
       service: token(this.service, "unknown-service"),
       spanName: "lifebridge.operation",
       operation: event.operation,
-      result: event.result,
+      result: safeTelemetryResult(event.result),
       correlationId: correlation(event.correlationId),
       durationMs,
     };

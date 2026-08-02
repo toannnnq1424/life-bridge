@@ -910,3 +910,23 @@ datastore or shared business owner is introduced.
 - Decision: the public Gateway creates a new random W3C-compatible trace root and correlation identifier; it never treats caller correlation, trace flags, tracestate or baggage as authoritative. An internal deployable may continue a strictly parsed trace only after existing service authentication. Node and Spring own their implementations against one language-neutral inventory; no service imports another service's business code or credentials and no shared telemetry database is introduced.
 - Privacy/operations: runtime schemas construct allowlisted output field by field, exclude stable person/household/resource identifiers and care content, bound numbers/tokens/cardinality and swallow exporter failure. Current stdout/CI retention and access inherit their environment and are not represented as legally enforced. The initial SLO is synthetic measured evidence, not a production promise.
 - Consequences: exact-head hosted Windows/PostgreSQL/Node/Spring proof and negative leakage/spoof/cardinality/failure fixtures are required. A production collector, SaaS, retention policy, signing or compliance claim requires a later owner decision.
+
+# ADR-033 — Undispatched bounded intent and authoritative reconciliation
+
+- Status: accepted for the local P9-S2 candidate, 2026-08-02.
+- Change ID: `CHG-2026-026`.
+- Decision: default-deny offline mutation queueing. Only task creation may hold
+  up to ten intents for one hour in current-tab memory. A held intent is bound
+  to session/actor/household/operation/digest, is undispatched, cancellable and
+  never auto-replayed. Dispatch reacquires current CSRF/session and authority.
+  All other mutations remain blocked/no-queue.
+- Authority: owning service version/evidence is the only confirmation. Possible
+  dispatch becomes uncertain and must reconcile before retry. Confirmed core
+  state remains confirmed while downstream event/notification state is
+  separately pending or failed.
+- Alternatives rejected: service-worker/background replay, IndexedDB/local
+  storage generic queue, optimistic “saved”, destructive client merge, blind
+  retry and a new persistence/provider dependency.
+- Consequences: a reload intentionally loses held intent; the UI says so. This
+  minimizes device/session disclosure while retaining a bounded reconnect path.
+  A future durable queue requires a new ADR and owner decision.

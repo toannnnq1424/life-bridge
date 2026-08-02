@@ -1,5 +1,23 @@
 # Known Issues
 
+## P9-S2 local checkpoint notes — 2026-08-02
+
+- Issue #18 was verified read-only as open with the exact canonical bilingual
+  title and labels `frontend`, `backend`, `accessibility`, `operations`, and
+  `reliability`. Its body still says Planned/NOT STARTED and omits the accepted
+  uncertain/reconciling vocabulary and current Level C command. Reconcile it
+  only after an explicit owner CI wake; the GitHub cost hold forbids mutation.
+- KI-016/KI-019 remain unchanged: synthetic Stitch metadata and automated
+  browser/axe/reflow/forced-color intent do not prove private pixels, manual
+  screen-reader, physical-device, text-spacing or full WCAG conformance.
+- The sole task-create hold is intentionally current-tab memory and disappears
+  on reload/session/context change. This is truthful minimum-retention behavior,
+  not a durable offline guarantee. All other mutations remain no-queue.
+- Sole Level C `03e53b5753f24cc0b7fc9658ade654c0` passed locally and classified
+  hosted PostgreSQL/mixed-runtime evidence as still required. The owner cost
+  hold intentionally defers that evidence; local success is not canonical
+  acceptance.
+
 ## P8-S3 local validation note — 2026-08-02
 
 The sole Level C command failed before runner initialization because an extra
