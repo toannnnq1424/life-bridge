@@ -103,7 +103,6 @@
     "security:deps": "pnpm audit --audit-level high"
   },
   "devDependencies": {
-    "@lifebridge/migrations": "workspace:*",
     "@axe-core/playwright": "4.12.1",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.62.0",

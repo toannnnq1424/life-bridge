@@ -2981,6 +2981,14 @@ classified unavailable and the same ledger ended
 Hosted PostgreSQL/Flyway/mixed-runtime proof, PR/merge/dev CI and issue closeout
 remain. Local Docker/PostgreSQL is unavailable; Level C will not be rerun.
 
+The first automatic push run `30727684488` retained a P6-S2 artifact build
+failure before runtime: the root quality-only workspace dependency made every
+partial Docker build context require `packages/migrations`, including Gateway.
+The targeted correction removes that unnecessary root dependency and imports
+the package source directly from the P7 quality tool. Service-owned package
+dependencies and Docker copies remain. TypeScript, P6-S2 fitness 21/21, P7
+ledger fitness 4/4 and diff integrity passed; the old run is not rerun.
+
 ### Known issues
 
 Existing release/environment issues remain; P7-S2/P7-S3 are not started.

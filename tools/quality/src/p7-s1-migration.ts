@@ -1,9 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-import { migrateOwnedDatabase, type MigrationHealth } from "@lifebridge/migrations";
 import { Pool } from "pg";
 
+import {
+  migrateOwnedDatabase,
+  type MigrationHealth,
+} from "../../../packages/migrations/src/index.js";
 import { migrateCareDatabase } from "../../../services/care-coordination/src/migration.js";
 import { migrateIdentityDatabase } from "../../../services/identity-consent/src/migration.js";
 import { migrateNotificationDatabase } from "../../../services/notification/src/migration.js";

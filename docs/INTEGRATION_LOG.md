@@ -1167,3 +1167,7 @@ continues to fail on any output it creates or leaves itself.
   aggregator name remain; one P7 non-doc job is added.
 - Promotion awaits the sole local Level C, exact-head gates, one ready PR to
   dev, merge commit, automatic dev CI and bilingual #25 closeout.
+- First push run `30727684488` exposed a partial Docker build-context defect:
+  root quality tooling unnecessarily depended on the new workspace package.
+  Targeted correction uses a relative quality import while service artifacts
+  retain owned dependencies/copies; the failed run is retained, not rerun.
