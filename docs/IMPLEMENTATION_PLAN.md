@@ -1023,12 +1023,15 @@ Acceptance:
 
 ### `P8-S2 — Secrets, encryption, runtime, and supply-chain hardening`
 
-Status 2026-08-02: **In progress** on the canonical phase branch from exact
-`dev@957ff9fcb5841ad51e07ca797bac83774dacbed2`. `CHG-2026-023` reconciles the
-stale issue #29 mapping without changing the accepted P0–P12 order. Three
-independent reviews and official-source research froze repository-native
-rotation, encryption-truth, runtime and supply-chain controls; no external
-secret manager/KMS/PKI/provider or certification claim is introduced.
+Accepted 2026-08-02: `CHG-2026-023`/ADR-031 and the repository-native secret,
+rotation, encryption-truth, runtime, SBOM and digest-bound provenance controls
+passed sole Level C `096bf28d2bb54bc1bbd637a2b767a0d5`. Exact head
+`8617f2021d84af5befcfb5582a91b5b30c90abd2` passed automatic push/PR runs
+`30737326707`/`30737393207`; PR #87 merged by merge commit
+`1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`, and automatic dev run
+`30737823547` passed the full heavy path and P1-through-P8-S2 aggregator. No
+external secret manager/KMS/PKI/provider, certification or SLSA level is
+introduced or claimed. P8-S3 is not started.
 
 Outcome: an operator rotates secrets and deploys traceable artifacts without
 placing long-lived credentials in source or logs.

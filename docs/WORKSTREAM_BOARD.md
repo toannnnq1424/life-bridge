@@ -70,7 +70,7 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 18       | `P7-S2` Event replay/reconciliation     | Validated/merged; PR #81 and CI passed        | Head `2111cd5`; merge `c2c0f33`; dev run `30731150450` green    | Close #26 after docs-only evidence             |
 | 19       | `P7-S3` Data lifecycle/recovery         | Accepted; PR #83 and dev CI green             | Head `fdaf8ed`; merge `34c716d`; dev run `30733589109`          | Docs-only closeout; close #27 bilingually      |
 | 20       | `P8-S1` Isolation/consent enforcement   | Accepted                                      | P2; P6/P7                                                       | Authorization isolation matrix                 |
-| 21       | `P8-S2` Secrets/runtime/supply chain    | In progress — CHG-2026-023 local candidate    | P8-S1; hosted CI                                                | Rotation/SBOM/provenance/container evidence    |
+| 21       | `P8-S2` Secrets/runtime/supply chain    | Accepted; PR #87 and dev CI green             | Head `8617f20`; merge `1e884b9`; dev run `30737823547`          | Docs-only closeout; close #29 bilingually      |
 | 22       | `P8-S3` Abuse/privacy response          | Planned                                       | P8-S1/S2                                                        | Safeguards and tabletop evidence               |
 | 23       | `P9-S1` Observability/SLO baseline      | Planned                                       | P6–P8 release journeys                                          | Redacted journey telemetry/SLO                 |
 | 24       | `P9-S2` Offline/conflict/degradation    | Planned                                       | P9-S1; frozen journey list                                      | Truthful reusable failure states               |
@@ -281,3 +281,12 @@ production authorization and focused negatives are implemented. Product head
 `4da952e`; automatic dev run `30735583092` passed the full heavy path and
 cumulative gate. Only this docs-only closeout and bilingual #28 closure remain.
 Do not start P8-S2.
+
+# P8-S2 accepted — 2026-08-02
+
+Canonical exact head `8617f2021d84af5befcfb5582a91b5b30c90abd2`
+passed automatic push/PR runs `30737326707`/`30737393207`, including the
+P8-S2 and cumulative P1-through-P8-S2 gates. PR #87 merged by merge commit
+`1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`; automatic dev run
+`30737823547` passed the same full heavy path. Complete only this docs-only
+closeout and bilingual #29 closure. Do not start P8-S3.

@@ -1251,3 +1251,21 @@ continues to fail on any output it creates or leaves itself.
   `4da952eb97e72dbf8d9a6103a6e83438df292848`; automatic dev run
   `30735583092` passed Windows, PostgreSQL/mixed-runtime, failure/recovery,
   P8-S1 and the cumulative P1-through-P8-S1 gate without rerun.
+
+# INT-2026-034 — P8-S2 secrets/runtime/supply-chain acceptance
+
+- Base/branch: exact `dev@957ff9fcb5841ad51e07ca797bac83774dacbed2` on
+  `phase/8-secrets-encryption-runtime-supply-chain-hardening`.
+- Contract: `CHG-2026-023`/ADR-031 freezes repository-evidenced secret owners,
+  bounded rotation, encryption boundaries, runtime least privilege, isolated
+  SBOMs and digest-bound unsigned provenance without a new provider/KMS/PKI.
+- Evidence: three independent reviews, current official sources, focused proof
+  and sole Level C `096bf28d2bb54bc1bbd637a2b767a0d5` passed. Initial automatic
+  run `30737234013` retained a CI-only Docker-template quoting defect and was
+  not rerun. Exact correction head `8617f2021d84af5befcfb5582a91b5b30c90abd2`
+  passed automatic push/PR runs `30737326707`/`30737393207`.
+- Promotion: ready PR #87 merged by merge commit
+  `1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`; automatic dev run
+  `30737823547` passed every heavy job and the terminal P1-through-P8-S2 gate.
+  Only bounded docs-only closeout, bilingual #29 closure and branch cleanup
+  remain. P8-S3 is unstarted.
