@@ -2857,7 +2857,7 @@ docs-only, while bounded integrity and the stable aggregator must still pass.
 After that merge/dev evidence, issue #23 can close bilingually. Exact next is
 P6-S3 in a fresh task; it is not started here.
 
-## 2026-08-02 — P6-S3 authenticated service communication candidate
+## 2026-08-02 — P6-S3 authenticated service communication accepted
 
 ### Objective
 
@@ -2907,11 +2907,17 @@ builds and integrity. Docker absence raised only during classification; the
 same ledger was continued without rerunning green stages and ended
 `passed_with_hosted_container_required`.
 
-### Validation intentionally deferred
+### Hosted promotion evidence
 
-Exact-head hosted six-image valid/missing/wrong-scope auth, independent
-Notification replacement, failure/recovery and aggregate gates; then exact
-post-merge `dev` CI. Local container proof is unavailable under KI-004.
+PR #77 exact head `8450adb576ff6c8d1a03b21632f8e9941ed1bd80` passed all 14
+push/pull-request checks, including six-image auth vectors, independent
+Notification replacement, PostgreSQL/mixed-runtime Chromium acceptance,
+Windows security/build proof and both required aggregators. PR #77 merged by
+merge commit `08fd1c895da712b7cff6254e38681a5250509ef7`. Automatic `dev` run
+`30724770738` passed all seven checks, including P6-S3 failure/recovery,
+P6-S2 artifact upgrade, cumulative P1-P6 acceptance and the stable required
+aggregator. Local container proof remains unavailable under KI-004, but its
+required hosted substitute is now satisfied.
 
 ### Known issues
 
@@ -2920,7 +2926,8 @@ KI-020 remain unchanged and do not authorize deployment claims.
 
 ### Exact next step
 
-Review diff/secrets/junk, create one coherent commit, push the canonical branch,
-open one ready PR to `dev`, require literal-head checks, merge with a merge
-commit, verify automatic `dev` CI and close issue #24 bilingually. Do not start
-P7-S1.
+Close issue #24 bilingually after this docs-only closeout is accepted. The next
+fresh canonical task is P7-S1 owned migrations from the then-current accepted
+`dev`; it must re-read actual schema ownership, migration ordering, rollback,
+backup/restore and mixed-version contracts before making changes. Do not start
+P7-S1 in this task.

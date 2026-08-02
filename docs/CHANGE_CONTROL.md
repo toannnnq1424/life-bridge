@@ -264,7 +264,7 @@ link the change identifier.
 
 ### CHG-2026-020 — Reconcile issue #24 to accepted P6-S3 scope
 
-- Date/status: 2026-08-02; accepted, implementation active.
+- Date/status: 2026-08-02; product accepted, docs-only closeout pending.
 - Planned baseline: issue #24 described topology-only P6-S3 while the accepted
   plan defines authenticated communication and dependency isolation.
 - Actual: retain and update #24; implement scoped assertions, protected
@@ -272,7 +272,9 @@ link the change identifier.
 - Reason/evidence: accepted dispatch and three independent pre-code reviews.
 - Impact: direct HTTP/config/auth, Care Notification dispatch, health,
   telemetry, manifests, tests and CI; no UI/data-owner/datastore changes.
-- Validation: focused Node/Spring proof, one Level C, literal-head and
-  post-merge hosted gates.
-- Follow-up: close #24 bilingually, derive but do not start P7-S1.
+- Validation: focused Node/Spring proof, one Level C, PR #77 exact head
+  `8450adb` green across 14 checks, merge `08fd1c8`, and automatic `dev` run
+  `30724770738` green across all seven checks.
+- Follow-up: merge docs-only closeout, close #24 bilingually, derive but do not
+  start P7-S1.
 - Decision state: accepted.
