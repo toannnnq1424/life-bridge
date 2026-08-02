@@ -3301,3 +3301,23 @@ built successfully: a YAML-escaped quote reached Docker's Go template as a
 literal backslash. The one-line quoting correction does not change product or
 runtime policy; the failed run is retained and will not be rerun. A new exact
 head must supersede it through automatic push/PR workflows.
+
+# 2026-08-02 — P8-S2 hosted promotion and canonical closeout
+
+Exact correction head `8617f2021d84af5befcfb5582a91b5b30c90abd2`
+passed automatic push run `30737326707` and PR run `30737393207`, including
+Windows, PostgreSQL/mixed-runtime, independent containers, P8-S2 secrets/runtime/
+SBOM/provenance and the terminal P1-through-P8-S2 aggregator. No run was
+manually dispatched or rerun, and no second Level C occurred.
+
+Ready PR #87 merged to `dev` only by merge commit
+`1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`. Automatic post-merge dev run
+`30737823547` passed the same full heavy path in 11m50s. The earlier failed/
+cancelled CI-only runs remain visible evidence rather than being rewritten.
+
+This same-branch closeout changes only the six canonical state Markdown files.
+It records immutable promotion truth, does not alter product/runtime/workflow,
+and does not rerun Level C. After its docs-only classifier and always-reported
+aggregator pass, merge it by merge commit, verify automatic dev CI, close issue
+#29 bilingually, remove the phase branch, and leave the Stitch canary untouched.
+P8-S3 requires a fresh controller-dispatched task and is not started here.

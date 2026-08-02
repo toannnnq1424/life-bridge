@@ -76,3 +76,13 @@ unit and contract proof runs locally; exact-head PostgreSQL/mixed-runtime jobs
 passed in runs `30735140477`/`30735160950`, and automatic dev run `30735583092`
 passed the same heavy path. This is an environment classification, not a
 skipped hosted requirement or compliance claim.
+
+# P8-S2 local container/PostgreSQL environment note — 2026-08-02
+
+The sole Level C classified the unavailable local Docker/PostgreSQL proof as
+hosted-required. Exact-head runs `30737326707`/`30737393207` and automatic dev
+run `30737823547` passed the independent container, PostgreSQL/mixed-runtime,
+runtime, SBOM/provenance and cumulative gates. The local absence is therefore
+an environment note, not a skipped requirement. Production key custody,
+trusted signing and storage-at-rest selection remain later decision gates; no
+provider, certification, SLSA level or deployment claim is inferred.

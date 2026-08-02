@@ -313,6 +313,6 @@ link the change identifier.
 - Actual implementation: retain issue #29 and reconcile it in place; implement the accepted P8-S2 inventory, bounded rotation/encryption, runtime least privilege and digest-bound SBOM/provenance/scanning gate.
 - Reason/evidence: exact accepted dispatch plus three independent pre-code reviews and current official-source research.
 - Impact: direct security/config/runtime/artifact/workflow/test contracts only; P8-S3, services, datastore ownership and release order are unchanged.
-- Validation: focused Node/Spring/fitness proof, exactly one Level C, exact-head hosted P8-S2 and cumulative gate, automatic post-merge dev proof.
-- Follow-up: close #29 only after remote/merge/CI/cleanup truth; P8-S3 remains a fresh task.
-- Decision state: implemented locally; hosted acceptance pending.
+- Validation: focused Node/Spring/fitness proof and sole Level C `096bf28d2bb54bc1bbd637a2b767a0d5` passed; exact head `8617f2021d84af5befcfb5582a91b5b30c90abd2` passed automatic push/PR runs `30737326707`/`30737393207`; PR #87 merged as `1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`, and automatic dev run `30737823547` passed the full P1-through-P8-S2 path.
+- Follow-up: complete this bounded docs-only closeout, close #29 bilingually and remove the phase branch; P8-S3 remains a fresh task.
+- Decision state: accepted at `dev@1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`.
