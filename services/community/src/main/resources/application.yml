@@ -39,7 +39,7 @@ management:
 
 community:
   internal-token: ${COMMUNITY_INTERNAL_TOKEN}
-  previous-internal-token: ${COMMUNITY_INTERNAL_TOKEN_PREVIOUS:#{null}}
+  previous-internal-token: ${COMMUNITY_INTERNAL_TOKEN_PREVIOUS:}
   allowed-province-city-codes: ${COMMUNITY_ALLOWED_PROVINCE_CITY_CODES:SYN-PC-001,SYN-PC-002}
   fixtures-enabled: ${COMMUNITY_FIXTURES_ENABLED:false}
   runtime-mode: ${RUNTIME_MODE:production}
