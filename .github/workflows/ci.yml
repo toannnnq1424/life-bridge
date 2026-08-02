@@ -358,7 +358,7 @@ jobs:
             user="$(docker image inspect --format '{{.Config.User}}' "lifebridge/$name:${EXPECTED_SHA}")"
             test -n "$user"
             test "$user" != "0"
-            test "$(docker image inspect --format '{{index .Config.Labels \"org.opencontainers.image.revision\"}}' "lifebridge/$name:${EXPECTED_SHA}")" = "$EXPECTED_SHA"
+            test "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "lifebridge/$name:${EXPECTED_SHA}")" = "$EXPECTED_SHA"
             ! docker history --no-trunc "lifebridge/$name:${EXPECTED_SHA}" | grep -Eiq '(BEGIN [A-Z ]*PRIVATE KEY|IDENTITY_DATA_KEY=|INTERNAL_TOKEN=|DATABASE_PASSWORD=)'
           done
           docker image inspect --format '{{.Id}}' "lifebridge/gateway:${EXPECTED_SHA}" > /tmp/gateway-image-id

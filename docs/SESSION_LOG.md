@@ -3293,3 +3293,11 @@ open and stale but browser submission awaits action-boundary confirmation.
 After confirmation, reconcile #29 title/body, commit and push the one phase
 branch, open one ready PR to dev, observe only automatic exact-head gates and
 continue through merge/dev CI/cleanup. Do not start P8-S3.
+
+Issue #29 was reconciled in place and ready PR #87 opened at product head
+`0bedd84f6221eab3b174084e87de331d23a93571`. Automatic push run
+`30737234013` retained a P6-S2 container harness failure after the first image
+built successfully: a YAML-escaped quote reached Docker's Go template as a
+literal backslash. The one-line quoting correction does not change product or
+runtime policy; the failed run is retained and will not be rerun. A new exact
+head must supersede it through automatic push/PR workflows.
