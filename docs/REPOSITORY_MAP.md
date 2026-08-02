@@ -1,5 +1,15 @@
 # Repository Map
 
+## P8-S1 candidate additions
+
+- `contracts/authorization/p8-s1-policy.json`: deny-by-default authorization matrix.
+- `packages/contracts/src/p8-s1-authorization.test.ts`: current decision/version negatives.
+- `tools/quality/src/p8-s1-policy.test.ts`: matrix and two-household fitness.
+- `scripts/validate-p8-s1.ps1`: single-use Level C ledger.
+
+Production P1 routes now join the session -> Identity -> owner decision flow;
+fixture object routes remain local/test-only compatibility.
+
 ## P7-S2 additions
 
 - `services/care-coordination/migrations/009_p7_event_recovery.sql`: fenced

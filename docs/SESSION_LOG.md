@@ -3173,3 +3173,58 @@ passed the full heavy path in 10m09s. No rerun was dispatched. P7-S3 and Phase 7
 are accepted subject only to this bounded docs-only closeout and bilingual issue
 #27 closure. The exact next phase must be controller-dispatched separately; do
 not begin P8, DATA-S1 or release work here.
+
+# 2026-08-02 — P8-S1 household isolation candidate
+
+### Objective
+
+Require authenticated, household-scoped, consent-aware access across the
+historical task/member/dashboard/notification seam without starting P8-S2.
+
+### Planned versus actual
+
+`CHG-2026-022`/ADR-030 keeps existing roles/services/datastores and adds
+household-scoped production compatibility paths because object-only P1 URLs
+cannot establish owner context safely. Local/test fixture compatibility remains
+behind the accepted production-fatal guard.
+
+### Completed
+
+Three independent reviews, official-source threat review, executable policy,
+two-household fixtures, exact service `kid` binding, membership/consent decision
+version/freshness checks, Gateway/Identity/Care/Notification routing, negative
+tests, classifier coverage, P8 hosted job and P1-through-P8-S1 aggregator.
+
+### Files changed
+
+Authorization contract/policy, Gateway and three owner boundaries, config and
+fixtures, focused/integration tests, single-use runner, CI and canonical state
+documents. No UI, migration, datastore, canary or orchestration report changed.
+
+### Decisions and Change IDs
+
+`CHG-2026-022`; ADR-030.
+
+### Validation performed
+
+Focused P8 proof 74/74; contracts 69/69; classifier 31/31; format/lint/typecheck
+and builds pass. Sole Level C invocation
+`3243be5e650649ae8f831ff4c49dfe66` passed every local stage with final
+`passed_with_hosted_postgres_required`.
+
+### Validation intentionally deferred
+
+Local PostgreSQL/mixed-runtime proof because Docker Desktop Linux engine is
+unavailable. Exact-head hosted jobs remain mandatory.
+
+### Known issues
+
+No product acceptance is claimed before exact-head and post-merge hosted
+evidence. Legal sources informed engineering controls only.
+
+### Exact next step
+
+Review/stage one coherent candidate, push only the canonical phase branch,
+open one ready PR to `dev`, require all exact-head gates, merge by merge commit,
+verify automatic `dev` CI, then bounded docs-only closeout and bilingual #28
+closure. Do not start P8-S2.

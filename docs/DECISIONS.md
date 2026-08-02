@@ -883,3 +883,16 @@ Use an ADR for durable product, architecture, data, security, integration, or op
   Platform TLS/secret-manager implementation remains P8/P11 deployment work.
 - Rollback: roll consumers back during overlap, prove the authenticated smoke
   path, then remove the previous key; never restore broad credentials or HTTP.
+
+# ADR-030 — household-scoped authorization at owner boundaries
+
+- Date: 2026-08-02
+- Change ID: `CHG-2026-022`
+- Status: accepted for the P8-S1 candidate
+
+Production requests cannot establish household or actor authority from a
+fixture header or object identifier alone. Gateway obtains a fresh Identity
+decision for the exact operation, household, resource and digest. Owners check
+membership/consent projection versions and freshness. Object-only legacy task
+routes remain local/test fixture compatibility; no new role, protocol,
+datastore or shared business owner is introduced.

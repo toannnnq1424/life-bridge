@@ -1507,3 +1507,14 @@ registry actions are `delete`, `pseudonymize`, `retain`, `tombstone`,
 `export_include`, and `export_exclude`; synthetic fixture approvals do not
 establish production policy. This is a product orchestration contract, not a
 regulatory export or erasure claim.
+
+# P8-S1 household-scoped compatibility contract
+
+Production task detail/completion uses
+`/api/v1/households/{householdId}/tasks/{taskId}`. Production notification reads
+require `householdId`; historical object-only task/notification paths are
+fixture-mode compatibility only and return non-disclosing failure otherwise.
+Gateway obtains a `CoordinationAuthorizationDecision` with exact household,
+resource, permission, membership/subject/grant/privacy versions, correlation
+and request digest. Care/Notification repeat the binding and freshness check at
+their owner route.

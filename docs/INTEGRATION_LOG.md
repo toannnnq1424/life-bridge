@@ -1236,3 +1236,13 @@ continues to fail on any output it creates or leaves itself.
   Automatic dev run `30733589109` then passed the full heavy path in 10m09s,
   including P7-S3 recovery/lifecycle and the terminal aggregator. Phase 7 is
   accepted; only bounded docs-only closeout and bilingual issue closure remain.
+
+# INT-2026-033 — P8-S1 authorization-isolation candidate
+
+- Base/branch: exact `dev@a6cd86fd891e30828d04dbbae00a5da1f6922ae6`
+  on `phase/8-household-isolation-consent-enforcement`.
+- Boundary: session -> Identity household/consent decision -> owner route;
+  P6/P7 service and datastore ownership remain unchanged.
+- Contract: `CHG-2026-022`/ADR-030 and the P8-S1 machine policy default deny.
+- Evidence: three reviews and focused proof pass. Local PostgreSQL is
+  environment-unavailable; Level C/hosted promotion remain pending.

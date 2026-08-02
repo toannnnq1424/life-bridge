@@ -916,3 +916,12 @@ Recovery is likewise owner-local: one encrypted logical artifact and isolated
 restore target per PostgreSQL owner. The encrypted emergency IndexedDB envelope
 is a derived client copy with local delete/rebuild semantics, not a server
 backup source. Runtime polyglot Node/Spring does not imply polyglot persistence.
+
+# P8-S1 authorization overlay
+
+P8-S1 adds no service or datastore. It routes the historical P1 protected
+surface through the existing Gateway -> Identity -> owner topology. Identity
+owns relationship/consent versions; Care/Notification own records and enforce
+the exact decision immediately before access. Fixture-header identity is
+accepted only under the existing local/test runtime guard. Recovery operator,
+Gateway and event producer scopes remain distinct P6 identities.

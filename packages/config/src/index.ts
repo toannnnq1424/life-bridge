@@ -59,10 +59,10 @@ export function verifyServiceAssertion(value: unknown, policy: ServiceAssertionP
     >;
     if (typeof payload.kid !== "string" || !policy.keys[payload.kid]) return false;
     const actual = Buffer.from(parts[1]!, "base64url");
-    const signatureValid = Object.values(policy.keys).some((secret) => {
-      const expected = createHmac("sha256", secret).update(parts[0]!).digest();
-      return actual.length === expected.length && timingSafeEqual(actual, expected);
-    });
+    const declaredKey = policy.keys[payload.kid];
+    if (!declaredKey) return false;
+    const expected = createHmac("sha256", declaredKey).update(parts[0]!).digest();
+    const signatureValid = actual.length === expected.length && timingSafeEqual(actual, expected);
     if (!signatureValid) return false;
     const now = Math.floor((policy.now ?? new Date()).getTime() / 1000);
     return (

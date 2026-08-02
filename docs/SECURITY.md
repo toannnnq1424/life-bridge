@@ -492,3 +492,13 @@ Lifecycle processing is fail-closed. Without an owner-approved data-class
 disposition the only valid outcome is `POLICY_DECISION_REQUIRED`, with no
 physical delete or export artifact. Fixture approvals are synthetic test input
 and never legal policy or compliance evidence.
+
+# P8-S1 household authorization controls
+
+The P8-S1 registry defaults every unknown actor, relationship, consent state,
+resource, operation, service identity and datastore edge to deny. Production
+task/member/dashboard/notification requests require a fresh Identity decision
+bound to household, resource, operation, correlation and request digest. Owner
+services reject stale decisions and missing membership/consent versions without
+distinguishing foreign from nonexistent resources. Service signatures verify
+only the key declared by `kid`; fixture activation remains production-fatal.
