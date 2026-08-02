@@ -16,6 +16,10 @@ export interface SafeLogEvent {
   errorCode?: string;
   durationMs?: number;
   retryCount?: number;
+  dependency?: "identity" | "care" | "notification" | "community";
+  failureClass?:
+    "timeout" | "rate_limited" | "rejected" | "unavailable" | "invalid_response" | "saturated";
+  circuitState?: "closed" | "open" | "half_open";
   actorId?: string;
   householdId?: string;
   resourceId?: string;

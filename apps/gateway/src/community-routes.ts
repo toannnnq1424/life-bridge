@@ -25,6 +25,7 @@ import {
   type CommunityModerationPermission,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, type SafeLogger } from "@lifebridge/observability";
+import { createServiceAssertion, DependencyGuard } from "@lifebridge/config";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 export interface CommunityGatewayConfig {
@@ -38,6 +39,30 @@ export interface CommunityGatewayConfig {
 }
 
 type Fetcher = typeof fetch;
+const routeGuards = new WeakMap<object, Map<string, DependencyGuard>>();
+function guardedRouteFetch(
+  fetcher: Fetcher,
+  dependency: string,
+  operation: () => Promise<Response>,
+) {
+  let guards = routeGuards.get(fetcher as object);
+  if (!guards) {
+    guards = new Map();
+    routeGuards.set(fetcher as object, guards);
+  }
+  let guard = guards.get(dependency);
+  if (!guard) {
+    guard = new DependencyGuard({ maxConcurrent: 16, failureThreshold: 3, openMs: 5_000 });
+    guards.set(dependency, guard);
+  }
+  return guard.execute(async () => {
+    const response = await operation();
+    if (response.status === 429 || response.status >= 500) {
+      throw new Error("DEPENDENCY_RETRYABLE_FAILURE");
+    }
+    return response;
+  });
+}
 type JsonRecord = Record<string, unknown>;
 
 interface DependencyResponse {
@@ -343,6 +368,7 @@ export function registerCommunityRoutes(
         },
       });
     const requestDigest = communityRequestDigest("POST", input.internalPath, input.intentBody);
+    let dispatched = false;
     try {
       const decision = await callIdentity(
         fetcher,
@@ -374,6 +400,7 @@ export function registerCommunityRoutes(
       )
         throw new Error("MODERATION_AUTHORITY_MISMATCH");
       const command = CommunityModerationCommandSchema.parse(input.commandBody(authorization));
+      dispatched = true;
       const response = await callCommunity(
         fetcher,
         config,
@@ -389,7 +416,14 @@ export function registerCommunityRoutes(
           .send(CommunityModerationResultSchema.parse(response.body));
       return reply.code(response.status).send(response.body);
     } catch {
-      return unavailable(reply, correlationId, logger, "COMMUNITY_SERVICE_UNAVAILABLE");
+      return unavailable(
+        reply,
+        correlationId,
+        logger,
+        dispatched && input.mutation
+          ? "COMMUNITY_REQUEST_RESULT_UNKNOWN"
+          : "COMMUNITY_SERVICE_UNAVAILABLE",
+      );
     }
   }
 
@@ -474,6 +508,7 @@ export function registerCommunityRoutes(
       });
     }
     const requestDigest = communityRequestDigest("POST", input.internalPath, input.intentBody);
+    let dispatched = false;
     try {
       const decision = await callIdentity(
         fetcher,
@@ -507,6 +542,7 @@ export function registerCommunityRoutes(
         throw new Error("MATCH_AUTHORITY_MISMATCH");
       }
       const command = CommunityMatchCommandSchema.parse(input.commandBody(authorization));
+      dispatched = true;
       const response = await callCommunity(
         fetcher,
         config,
@@ -521,7 +557,14 @@ export function registerCommunityRoutes(
       }
       return reply.code(response.status).send(response.body);
     } catch {
-      return unavailable(reply, correlationId, logger, "COMMUNITY_SERVICE_UNAVAILABLE");
+      return unavailable(
+        reply,
+        correlationId,
+        logger,
+        dispatched && input.mutation
+          ? "COMMUNITY_REQUEST_RESULT_UNKNOWN"
+          : "COMMUNITY_SERVICE_UNAVAILABLE",
+      );
     }
   }
 
@@ -662,18 +705,27 @@ async function callCommunity(
   body?: unknown,
   idempotencyKey?: string,
 ): Promise<DependencyResponse> {
-  const response = await fetcher(`${config.communityUrl}${path}`, {
-    method,
-    headers: {
-      "content-type": "application/json",
-      "x-correlation-id": correlationId,
-      "x-internal-service-token": config.communityToken,
-      "x-lifebridge-contract-version": config.communityContractVersion ?? "community-v2",
-      ...(idempotencyKey ? { "idempotency-key": idempotencyKey } : {}),
-    },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: AbortSignal.timeout(2_500),
-  });
+  const response = await guardedRouteFetch(fetcher, "community", () =>
+    fetcher(`${config.communityUrl}${path}`, {
+      method,
+      headers: {
+        "content-type": "application/json",
+        "x-correlation-id": correlationId,
+        "x-internal-service-token": config.communityToken,
+        "x-lifebridge-service-identity": createServiceAssertion({
+          caller: "gateway",
+          audience: "community",
+          scope: "community.access",
+          keyId: "gateway-current",
+          secret: config.communityToken,
+        }),
+        "x-lifebridge-contract-version": config.communityContractVersion ?? "community-v2",
+        ...(idempotencyKey ? { "idempotency-key": idempotencyKey } : {}),
+      },
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      signal: AbortSignal.timeout(2_500),
+    }),
+  );
   return { status: response.status, body: await safeJson(response) };
 }
 
@@ -687,25 +739,40 @@ async function callIdentity(
 ): Promise<DependencyResponse> {
   const sessionToken = request.cookies[config.sessionCookieName];
   const csrfToken = String(request.headers["x-csrf-token"] ?? "");
-  const response = await fetcher(`${config.identityUrl}${path}`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-correlation-id": correlationId,
-      "x-internal-service-token": config.identityToken,
-      "x-rate-limit-source": request.ip,
-      ...(sessionToken ? { "x-session-token": sessionToken } : {}),
-      ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(2_500),
-  });
+  const response = await guardedRouteFetch(fetcher, "identity", () =>
+    fetcher(`${config.identityUrl}${path}`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-correlation-id": correlationId,
+        "x-internal-service-token": config.identityToken,
+        "x-lifebridge-service-identity": createServiceAssertion({
+          caller: "gateway",
+          audience: "identity-consent",
+          scope: "identity.access",
+          keyId: "gateway-current",
+          secret: config.identityToken,
+        }),
+        "x-rate-limit-source": request.ip,
+        ...(sessionToken ? { "x-session-token": sessionToken } : {}),
+        ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(2_500),
+    }),
+  );
   return { status: response.status, body: await safeJson(response) };
 }
 
 async function safeJson(response: Response): Promise<unknown> {
+  const declared = Number(response.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > 256 * 1024) {
+    throw new Error("COMMUNITY_RESPONSE_TOO_LARGE");
+  }
   try {
-    return await response.json();
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (bytes.length > 256 * 1024) throw new Error("COMMUNITY_RESPONSE_TOO_LARGE");
+    return JSON.parse(bytes.toString("utf8"));
   } catch {
     return null;
   }
@@ -766,6 +833,8 @@ function unavailable(
     result: "failed",
     correlationId,
     errorCode: code,
+    dependency: code === "IDENTITY_SERVICE_UNAVAILABLE" ? "identity" : "community",
+    failureClass: "unavailable",
   });
   return reply.code(503).send({
     error: {

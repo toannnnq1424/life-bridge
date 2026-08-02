@@ -675,3 +675,14 @@ The always-reported required aggregator keeps its existing display name. It
 accepts skipped heavy jobs only when the classifier succeeded with exact
 `docs_only=true` and bounded docs/config/secret/integrity checks succeeded.
 Unknown, empty, invalid-base, cancelled and mixed diffs fail closed.
+
+# P6-S3 authenticated dependency-isolation proof
+
+`pnpm.cmd run validate:p6-s3` is the only local Level C command and retains a
+marker/ledger. Node/Spring tests cover valid, missing, expired, wrong audience/
+scope, rotation overlap/cutoff, production transport rejection, dependency
+bulkhead/circuit recovery, byte bounds, permanent versus retryable Notification
+failure and redacted attribution. Hosted CI also calls the production
+Notification image with missing, wrong-scope and valid Care identity before
+independent replacement. P6-S1/P6-S2 fitness, the docs-only classifier and the
+required aggregator display name remain cumulative and unchanged.

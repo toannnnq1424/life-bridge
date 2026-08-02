@@ -13,6 +13,9 @@ const internalToken = requiredSecret(
   process.env.IDENTITY_INTERNAL_TOKEN,
   "IDENTITY_INTERNAL_TOKEN",
 );
+const previousInternalToken = process.env.IDENTITY_INTERNAL_TOKEN_PREVIOUS
+  ? requiredSecret(process.env.IDENTITY_INTERNAL_TOKEN_PREVIOUS, "IDENTITY_INTERNAL_TOKEN_PREVIOUS")
+  : undefined;
 const dataKey = requiredKey(process.env.IDENTITY_DATA_KEY, "IDENTITY_DATA_KEY");
 const rateLimitKey = requiredKey(process.env.IDENTITY_RATE_LIMIT_KEY, "IDENTITY_RATE_LIMIT_KEY");
 const servicePort = port(process.env.IDENTITY_PORT, 3100);
@@ -27,7 +30,14 @@ const identity = new IdentityService(pool, {
 });
 const households = new HouseholdService(pool, { rateLimitKey });
 const consent = new ConsentService(pool, { rateLimitKey, cursorKey: dataKey });
-const app = buildIdentityServer(identity, internalToken, households, consent);
+const app = buildIdentityServer(
+  identity,
+  internalToken,
+  households,
+  consent,
+  process.env.RUNTIME_MODE !== "local" && process.env.RUNTIME_MODE !== "test",
+  previousInternalToken,
+);
 
 const close = async () => {
   await app.close();

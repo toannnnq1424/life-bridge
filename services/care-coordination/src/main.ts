@@ -1,6 +1,12 @@
 import { createHash } from "node:crypto";
 
-import { port, requiredSecret, requiredUrl } from "@lifebridge/config";
+import {
+  port,
+  requiredDependencyUrl,
+  requiredSecret,
+  requiredUrl,
+  RuntimeModeSchema,
+} from "@lifebridge/config";
 import { Pool } from "pg";
 
 import { OutboxDispatcher, httpEventDeliverer } from "./dispatcher.js";
@@ -16,12 +22,22 @@ import { CareService } from "./service.js";
 
 const databaseUrl = requiredUrl(process.env.CARE_DATABASE_URL, "CARE_DATABASE_URL");
 const internalToken = requiredSecret(process.env.CARE_INTERNAL_TOKEN, "CARE_INTERNAL_TOKEN");
+const previousInternalToken = process.env.CARE_INTERNAL_TOKEN_PREVIOUS
+  ? requiredSecret(process.env.CARE_INTERNAL_TOKEN_PREVIOUS, "CARE_INTERNAL_TOKEN_PREVIOUS")
+  : undefined;
 const cursorSecret = requiredSecret(process.env.CARE_CURSOR_KEY, "CARE_CURSOR_KEY");
 const notificationToken = requiredSecret(
-  process.env.NOTIFICATION_INTERNAL_TOKEN,
-  "NOTIFICATION_INTERNAL_TOKEN",
+  process.env.RUNTIME_MODE === "production"
+    ? process.env.CARE_NOTIFICATION_INTERNAL_TOKEN
+    : (process.env.CARE_NOTIFICATION_INTERNAL_TOKEN ?? process.env.NOTIFICATION_INTERNAL_TOKEN),
+  "CARE_NOTIFICATION_INTERNAL_TOKEN",
 );
-const notificationUrl = requiredUrl(process.env.NOTIFICATION_URL, "NOTIFICATION_URL");
+const runtimeMode = RuntimeModeSchema.parse(process.env.RUNTIME_MODE);
+const notificationUrl = requiredDependencyUrl(
+  process.env.NOTIFICATION_URL,
+  "NOTIFICATION_URL",
+  runtimeMode,
+);
 const servicePort = port(process.env.CARE_PORT, 3101);
 const serviceHost = process.env.CARE_HOST ?? "127.0.0.1";
 
@@ -49,6 +65,8 @@ const app = buildCareServer(
   medicationReminders,
   emergencyReadiness,
   documentVault,
+  runtimeMode === "production",
+  previousInternalToken,
 );
 const dispatcher = new OutboxDispatcher(
   care,

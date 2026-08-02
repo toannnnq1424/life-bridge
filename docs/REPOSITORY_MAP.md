@@ -1,6 +1,11 @@
 # Repository Map
 
 Verified: 2026-07-29
+P6-S3 adds scoped service assertions/dependency guards in `packages/config`,
+receiver enforcement across Node/Spring, separate Care-to-Notification keys,
+redacted failure attribution, `docs/security/P6_S3_THREAT_MODEL.md`, focused
+cross-runtime tests and `scripts/validate-p6-s3.ps1`. No UI, service, datastore
+or migration is added.
 P6-S1 locally adds `contracts/community/p6-s1`, explicit Gateway version
 selection, dual-version Spring capability/filter proof, compatibility tests,
 and one-shot validation. It adds no UI, service, database, or migration.

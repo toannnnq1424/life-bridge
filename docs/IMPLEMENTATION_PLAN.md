@@ -899,6 +899,18 @@ Acceptance:
 
 ### `P6-S3 — Authenticated service communication and dependency isolation`
 
+Status: local candidate validated on 2026-08-02 from exact accepted
+`dev@6d7204d6272d70672a1c1f1429cdc742fd172bc0`. Three independent pre-code
+reviews are reconciled in `docs/testing/P6_S3_PRECODE_REVIEW.md`; the frozen
+security/failure/rollback contract is `docs/security/P6_S3_THREAT_MODEL.md`.
+Issue #24 is retained and reconciled in place under `CHG-2026-020` rather than
+duplicated.
+The sole Level C invocation `e1a1a5cc1003405ebd44912743befe2c` passed all
+static/auth, Spring, cumulative P6, security/SBOM, production-build and
+integrity stages. Local Docker was truthfully classified unavailable under
+KI-004; exact-head hosted container/auth/failure/rollback proof remains the
+promotion gate.
+
 Outcome: an unavailable secondary service cannot corrupt confirmed core state,
 and internal calls use explicit least-privilege identities outside local mode.
 

@@ -223,3 +223,13 @@ inventories with `pnpm.cmd run sbom:p6-s2`. Run the slice campaign with
 unavailable and never satisfies container or upgrade acceptance. Runtime
 orchestration must inject each manifest's allowlisted variables separately and
 must never inject admin/bootstrap credentials.
+
+# P6-S3 credential rotation and rollback
+
+Production injects each caller-to-audience key only into that caller and
+receiver. Gateway and Care never share the Notification event key. Dependency
+URLs must use HTTPS; only explicit local/test loopback may use HTTP. Rotation is
+provider current+previous, caller current, authenticated smoke/failure recovery,
+old-caller drain, then previous-key removal. Rollback is consumer-first during
+overlap. Stop on successful wrong-scope access, secret leakage, changed Care
+confirmation during secondary outage, or duplicate Notification inbox result.

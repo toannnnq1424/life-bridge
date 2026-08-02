@@ -1,4 +1,10 @@
-import { port, requiredSecret, requiredUrl, requireFixtureSafeMode } from "@lifebridge/config";
+import {
+  port,
+  requiredDependencyUrl,
+  requiredSecret,
+  requiredUrl,
+  requireFixtureSafeMode,
+} from "@lifebridge/config";
 
 import { buildGatewayServer } from "./server.js";
 
@@ -15,10 +21,14 @@ if (!["community-v1", "community-v2"].includes(communityContractVersion)) {
   throw new Error("COMMUNITY_CONTRACT_VERSION_INVALID");
 }
 const config = {
-  careUrl: requiredUrl(process.env.CARE_URL, "CARE_URL"),
-  identityUrl: requiredUrl(process.env.IDENTITY_URL, "IDENTITY_URL"),
-  notificationUrl: requiredUrl(process.env.NOTIFICATION_URL, "NOTIFICATION_URL"),
-  communityUrl: requiredUrl(process.env.COMMUNITY_URL, "COMMUNITY_URL"),
+  careUrl: requiredDependencyUrl(process.env.CARE_URL, "CARE_URL", runtime.mode),
+  identityUrl: requiredDependencyUrl(process.env.IDENTITY_URL, "IDENTITY_URL", runtime.mode),
+  notificationUrl: requiredDependencyUrl(
+    process.env.NOTIFICATION_URL,
+    "NOTIFICATION_URL",
+    runtime.mode,
+  ),
+  communityUrl: requiredDependencyUrl(process.env.COMMUNITY_URL, "COMMUNITY_URL", runtime.mode),
   careToken: requiredSecret(process.env.CARE_INTERNAL_TOKEN, "CARE_INTERNAL_TOKEN"),
   identityToken: requiredSecret(process.env.IDENTITY_INTERNAL_TOKEN, "IDENTITY_INTERNAL_TOKEN"),
   notificationToken: requiredSecret(

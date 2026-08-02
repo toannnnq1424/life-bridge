@@ -1466,3 +1466,19 @@ fresh ten-second exact-purpose P2 decision and forwards a closed JSON command
 to Spring Community. Language-neutral artifacts and fixed digest vectors live
 under `contracts/community/p5-s3-v1`; Zod consumer schemas are in
 `packages/contracts/src/p5-s3-community-contract.ts`.
+
+# P6-S3 internal service identity and failure contract
+
+Production `/internal/*` requests carry `x-lifebridge-service-identity`, a
+bounded HMAC assertion containing only version, key id, caller, audience,
+scope, issue/expiry times and nonce. Lifetime is at most 120 seconds. Receivers
+verify signature/time/caller/audience/route scope before business parsing.
+Missing, expired, wrong-audience and wrong-scope calls remain non-enumerating.
+Gateway uses `identity.access`, `care.access`, `notification.read` and
+`community.access`; Care alone uses `notification.events` with its own key.
+
+Production dependency URLs require HTTPS and exclude user-info, query and
+fragment. Calls have finite timeout, payload/response ceiling and per-dependency
+bulkhead/circuit state. Secondary failure returns degraded or unknown truth,
+never an authoritative empty projection or false confirmation. Care completion
+commits independently; Notification recovery reuses the durable event identity.

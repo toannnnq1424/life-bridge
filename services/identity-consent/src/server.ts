@@ -30,6 +30,7 @@ import {
   successEnvelope,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
+import { verifyServiceAssertion } from "@lifebridge/config";
 import Fastify from "fastify";
 
 import { IdentityError } from "./errors.js";
@@ -46,6 +47,8 @@ export function buildIdentityServer(
   internalToken: string,
   households?: HouseholdService,
   consent?: ConsentService,
+  enforceServiceIdentity = false,
+  previousInternalToken?: string,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 32 * 1024 });
 
@@ -55,11 +58,23 @@ export function buildIdentityServer(
   });
 
   app.addHook("preHandler", async (request, reply) => {
-    if (
-      request.url.startsWith("/internal/") &&
-      header(request, "x-internal-service-token") !== internalToken
-    ) {
-      await reply.code(404).send();
+    if (request.url.startsWith("/internal/")) {
+      const legacy = header(request, "x-internal-service-token") === internalToken;
+      const serviceIdentity = verifyServiceAssertion(
+        header(request, "x-lifebridge-service-identity"),
+        {
+          audience: "identity-consent",
+          scope: "identity.access",
+          allowedCallers: ["gateway"],
+          keys: {
+            "gateway-current": internalToken,
+            ...(previousInternalToken ? { "gateway-previous": previousInternalToken } : {}),
+          },
+        },
+      );
+      if (!(serviceIdentity || (!enforceServiceIdentity && legacy))) {
+        await reply.code(404).send();
+      }
     }
   });
 
