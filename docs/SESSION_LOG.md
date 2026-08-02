@@ -3321,3 +3321,25 @@ and does not rerun Level C. After its docs-only classifier and always-reported
 aggregator pass, merge it by merge commit, verify automatic dev CI, close issue
 #29 bilingually, remove the phase branch, and leave the Stitch canary untouched.
 P8-S3 requires a fresh controller-dispatched task and is not started here.
+
+# 2026-08-02 — P8-S3 abuse, privacy lifecycle and response candidate
+
+Objective: bound abuse without starving recovery, prevent false privacy
+completion, and exercise an evidence-backed synthetic response. Issue #30 had
+stale scope and was reconciled in place. Three reviews found missing general
+admission, in-memory/false-complete lifecycle behavior and moderation drift.
+`CHG-2026-024` implements policy-neutral corrections without appeal/report,
+provider, irreversible delete, legal matrix or P9 expansion.
+
+Completed candidate: machine inventory/tabletop, separate recovery budgets,
+digest-only admission evidence, explicit lifecycle states, moderation parity/
+reconcile, focused adversarial tests, one-shot runner and hosted Phase 8 gate.
+Focused TypeScript and 59 Node tests passed. Repository-scoped Java bootstrapped;
+provider proof passed 3/3 while PostgreSQL integration truthfully skipped 3/3
+without a local database. The sole Level C command stopped before marker/ledger
+creation because the extra pnpm separator duplicated `SkipInstall`; it was not
+invoked again. Classified continuation passed format, lint, typecheck, P8-S3
+52/52, P8-S1 75/75, P8-S2 49/49, P7-S2 44/44, P7-S3 59/59, docs/config/
+secrets, zero high dependency findings, all builds, diff and canary checks.
+Hosted PostgreSQL/mixed-runtime and exact-head promotion remain required. Do
+not start P9.

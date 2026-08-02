@@ -29,7 +29,11 @@ import {
   type CoordinationPermission,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId, SafeLogger } from "@lifebridge/observability";
-import { createServiceAssertion, DependencyGuard } from "@lifebridge/config";
+import {
+  AbuseAdmissionController,
+  createServiceAssertion,
+  DependencyGuard,
+} from "@lifebridge/config";
 import { fixtureMember } from "@lifebridge/test-fixtures";
 import cookie from "@fastify/cookie";
 import Fastify from "fastify";
@@ -244,10 +248,31 @@ export function buildGatewayServer(
   logger = new SafeLogger("gateway"),
 ) {
   const app = Fastify({ logger: false, bodyLimit: 512 * 1024 });
+  const admission = new AbuseAdmissionController();
+  const admitted = new WeakMap<object, { scope: string; dimensionDigest: string }>();
   void app.register(cookie);
-  app.addHook("onRequest", async (_request, reply) => {
+  app.addHook("onRequest", async (request, reply) => {
     reply.header("cache-control", "no-store");
     reply.header("pragma", "no-cache");
+    const scope = abuseScope(request.method, request.url);
+    const rawDimension = `${request.ip}:${String(request.headers[config.sessionCookieName] ?? request.headers.cookie ?? "public").slice(0, 128)}`;
+    const decision = admission.admit(scope, rawDimension, abuseBudget(scope));
+    if (!decision.allowed) {
+      reply.header("retry-after", String(decision.retryAfterSeconds));
+      return reply.code(429).send({
+        error: {
+          code: "REQUEST_BUDGET_EXHAUSTED",
+          messageKey: "request.rate_limited",
+          retryable: true,
+          correlationId: resolveCorrelationId(request.headers["x-correlation-id"]),
+        },
+      });
+    }
+    admitted.set(request, { scope, dimensionDigest: decision.dimensionDigest });
+  });
+  app.addHook("onResponse", async (request) => {
+    const held = admitted.get(request);
+    if (held) admission.release(held.scope, held.dimensionDigest);
   });
   registerCommunityRoutes(
     app,
@@ -2300,6 +2325,25 @@ export function buildGatewayServer(
   }
 
   return app;
+}
+
+function abuseScope(method: string, url: string): string {
+  if (/recover|factor|mfa/iu.test(url)) return "account-recovery";
+  if (/emergency/iu.test(url) && method === "GET") return "emergency-recovery-read";
+  if (/moderation/iu.test(url)) return "moderation";
+  if (/documents/iu.test(url)) return "document-transfer";
+  if (/community\/directory/iu.test(url)) return "public-search";
+  return method === "GET" ? "normal-read" : "normal-mutation";
+}
+
+function abuseBudget(scope: string): { limit: number; windowMs: number; maxConcurrent: number } {
+  if (scope === "account-recovery") return { limit: 10, windowMs: 600_000, maxConcurrent: 4 };
+  if (scope === "emergency-recovery-read" || scope === "moderation")
+    return { limit: 30, windowMs: 60_000, maxConcurrent: 4 };
+  if (scope === "document-transfer") return { limit: 8, windowMs: 60_000, maxConcurrent: 2 };
+  if (scope === "public-search") return { limit: 30, windowMs: 60_000, maxConcurrent: 8 };
+  if (scope === "normal-read") return { limit: 120, windowMs: 60_000, maxConcurrent: 16 };
+  return { limit: 30, windowMs: 60_000, maxConcurrent: 8 };
 }
 
 function requiredIdempotencyKey(value: unknown): string {

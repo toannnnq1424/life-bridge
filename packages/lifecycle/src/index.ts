@@ -31,7 +31,15 @@ export interface LifecycleResult {
   requestId: string;
   owner: string;
   dataClass: string;
-  state: "confirmed" | "excluded" | "retained" | "attention_required";
+  state:
+    | "requested"
+    | "in_progress"
+    | "blocked"
+    | "policy_decision_required"
+    | "completed"
+    | "failed"
+    | "excluded"
+    | "retained";
   action: LifecycleAction;
   version: number;
   intentDigest: string;
@@ -123,7 +131,7 @@ export class LifecycleCoordinator {
           ? "excluded"
           : disposition.action === "retain"
             ? "retained"
-            : "confirmed",
+            : "completed",
       action: disposition.action,
       version: 1,
       intentDigest: digest,
@@ -138,7 +146,9 @@ export interface OwnerLifecycleEvidence {
   owner: string;
   version: number;
   intentDigest: string;
-  state: "confirmed" | "excluded" | "retained" | "attention_required";
+  state: LifecycleResult["state"];
+  verifiedAt?: string;
+  policyVersion?: number;
 }
 
 export function reconcileLifecycle(
@@ -147,7 +157,7 @@ export function reconcileLifecycle(
   requiredOwners: readonly string[],
   evidence: readonly OwnerLifecycleEvidence[],
 ): {
-  state: "complete" | "attention_required";
+  state: "complete" | "in_progress" | "blocked" | "failed";
   owners: Record<string, OwnerLifecycleEvidence["state"]>;
 } {
   const owners: Record<string, OwnerLifecycleEvidence["state"]> = {};
@@ -161,12 +171,30 @@ export function reconcileLifecycle(
     }
     const existing = evidence.filter((candidate) => candidate.owner === item.owner);
     const highest = Math.max(...existing.map((candidate) => candidate.version));
+    if (existing.filter((candidate) => candidate.version === highest).length !== 1)
+      throw new LifecyclePolicyError("LIFECYCLE_VERSION_CONFLICT");
     if (item.version === highest) owners[item.owner] = item.state;
   }
-  const complete = requiredOwners.every(
-    (owner) => owners[owner] && owners[owner] !== "attention_required",
-  );
-  return { state: complete ? "complete" : "attention_required", owners };
+  const terminal = new Set<LifecycleResult["state"]>(["completed", "excluded", "retained"]);
+  const complete = requiredOwners.every((owner) => owners[owner] && terminal.has(owners[owner]));
+  if (complete) return { state: "complete", owners };
+  if (Object.values(owners).includes("failed")) return { state: "failed", owners };
+  if (
+    Object.values(owners).some(
+      (state) => state === "blocked" || state === "policy_decision_required",
+    )
+  )
+    return { state: "blocked", owners };
+  return { state: "in_progress", owners };
+}
+
+export function aggregateIntentDigest(input: {
+  requestId: string;
+  operation: "delete" | "export" | "access" | "correction";
+  policyVersion: number;
+  targetManifestVersion: number;
+}): string {
+  return createHash("sha256").update(JSON.stringify(input)).digest("hex");
 }
 
 export function intentDigest(command: LifecycleCommand): string {

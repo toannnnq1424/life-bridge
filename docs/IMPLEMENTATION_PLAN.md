@@ -1045,6 +1045,14 @@ Acceptance:
 
 ### `P8-S3 — Abuse safeguards, privacy lifecycle, and security response`
 
+Candidate 2026-08-02: `CHG-2026-024` reconciles stale issue #30. Machine
+inventory freezes per-surface dimensions/budgets and independent recovery
+capacity; lifecycle reconciliation treats pending, blocked, failed and policy
+decision states as non-complete; the actual P5 moderation resolve/reconcile
+boundary is repaired without claiming report/claim/appeal; and a synthetic
+bilingual tabletop covers detection through improvement. This is engineering
+evidence only, not legal advice, certification, production mutation or P9.
+
 Outcome: abusive requests are bounded, privacy actions are fulfilled, and the
 team can execute a security response without claiming legal certification.
 

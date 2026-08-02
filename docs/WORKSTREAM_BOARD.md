@@ -290,3 +290,10 @@ P8-S2 and cumulative P1-through-P8-S2 gates. PR #87 merged by merge commit
 `1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`; automatic dev run
 `30737823547` passed the same full heavy path. Complete only this docs-only
 closeout and bilingual #29 closure. Do not start P8-S3.
+
+# P8-S3 active candidate — 2026-08-02
+
+`phase/8-abuse-privacy-security-response` owns P8-S3 from exact accepted
+`dev@272a20dd953683c85a290bcfeeceedeae18797f4`. Issue #30 was reconciled in
+place. Focused validation precedes exactly one Level C; the ready PR targets
+only `dev`. P9/DATA-S1/release remain blocked and unstarted.

@@ -619,8 +619,42 @@ jobs:
           pnpm run validate:secrets
           pnpm run typecheck
 
+  p8-s3-abuse-privacy-response:
+    name: P8-S3 abuse, privacy lifecycle and response
+    runs-on: windows-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Run exact-head abuse, lifecycle and tabletop proof
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p8-s3:fitness
+          pnpm run test:p5-s3:contracts
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml -Dtest=CommunityModerationProviderContractTest test
+          pnpm run typecheck
+
   integrated-gate:
-    name: P1 through P8-S2 full required gate
+    name: P1 through P8-S3 / Phase 8 full required gate
     if: always()
     needs:
       - classify-changes
@@ -634,6 +668,7 @@ jobs:
       - p7-s3-lifecycle-recovery
       - p8-s1-authorization-isolation
       - p8-s2-secrets-supply-chain
+      - p8-s3-abuse-privacy-response
     runs-on: ubuntu-latest
     steps:
       - name: Require every acceptance job
@@ -647,6 +682,7 @@ jobs:
           P7_S3_RESULT: ${{ needs.p7-s3-lifecycle-recovery.result }}
           P8_S1_RESULT: ${{ needs.p8-s1-authorization-isolation.result }}
           P8_S2_RESULT: ${{ needs.p8-s2-secrets-supply-chain.result }}
+          P8_S3_RESULT: ${{ needs.p8-s3-abuse-privacy-response.result }}
           CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
           DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
           BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
@@ -663,6 +699,7 @@ jobs:
             test "$P7_S3_RESULT" = "skipped"
             test "$P8_S1_RESULT" = "skipped"
             test "$P8_S2_RESULT" = "skipped"
+            test "$P8_S3_RESULT" = "skipped"
           else
             test "$DOCS_ONLY" = "false"
             test "$WINDOWS_RESULT" = "success"
@@ -674,4 +711,5 @@ jobs:
             test "$P7_S3_RESULT" = "success"
             test "$P8_S1_RESULT" = "success"
             test "$P8_S2_RESULT" = "success"
+            test "$P8_S3_RESULT" = "success"
           fi

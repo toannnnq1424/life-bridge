@@ -1,5 +1,14 @@
 # Known Issues
 
+## P8-S3 local validation note — 2026-08-02
+
+The sole Level C command failed before runner initialization because an extra
+pnpm separator duplicated `SkipInstall`; no marker/resource was created and no
+second Level C was launched. Classified continuation passed every local static,
+Node, Java-provider, security and build stage. Local PostgreSQL Community tests
+remained unavailable/skipped; exact-head hosted PostgreSQL/mixed-runtime proof
+is mandatory and no production/legal/certification claim is inferred.
+
 P7-S2 introduces no new accepted exception. Local PostgreSQL unavailability was
 classified by the single Level C and satisfied by exact-head plus automatic
 post-merge hosted PostgreSQL proof. Existing release gates remain unchanged.

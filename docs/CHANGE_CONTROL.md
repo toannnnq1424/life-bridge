@@ -309,6 +309,8 @@ link the change identifier.
 
 # CHG-2026-023 — Reconcile P8-S2 canonical ownership and executable hardening scope
 
+<!-- P8-S3 candidate: CHG-2026-024 is recorded at the end of this document. -->
+
 - Planned baseline: issue #29 still described the superseded privacy-lifecycle slice while the accepted P0–P12 plan assigns P8-S2 to secrets, encryption, runtime and supply chain.
 - Actual implementation: retain issue #29 and reconcile it in place; implement the accepted P8-S2 inventory, bounded rotation/encryption, runtime least privilege and digest-bound SBOM/provenance/scanning gate.
 - Reason/evidence: exact accepted dispatch plus three independent pre-code reviews and current official-source research.
@@ -316,3 +318,19 @@ link the change identifier.
 - Validation: focused Node/Spring/fitness proof and sole Level C `096bf28d2bb54bc1bbd637a2b767a0d5` passed; exact head `8617f2021d84af5befcfb5582a91b5b30c90abd2` passed automatic push/PR runs `30737326707`/`30737393207`; PR #87 merged as `1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`, and automatic dev run `30737823547` passed the full P1-through-P8-S2 path.
 - Follow-up: complete this bounded docs-only closeout, close #29 bilingually and remove the phase branch; P8-S3 remains a fresh task.
 - Decision state: accepted at `dev@1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`.
+
+# CHG-2026-024 — Reconcile P8-S3 abuse, privacy lifecycle and response scope
+
+- Planned baseline: issue #30 retained stale P8-S2 secrets/supply-chain scope.
+- Actual: reconcile #30 in place; add topology-specific admission budgets,
+  truthful lifecycle states/reconciliation, supported moderation recovery and a
+  synthetic machine-evaluated response exercise.
+- Reason/evidence: accepted dispatch, three independent reviews and current
+  OWASP/NIST/CISA primary-source research.
+- Impact: P8-S3 contracts, Gateway/Community boundary, shared validation, tests
+  and CI. No provider, datastore, appeal/report workflow, irreversible deletion,
+  legal matrix, P9 or release work.
+- Validation: focused TypeScript/Node/Java proof, one Level C, exact-head hosted
+  gates and merge-commit promotion required.
+- Follow-up: close #30 only after merge/dev CI/docs truth; do not start P9.
+- Decision state: accepted candidate implementation.
