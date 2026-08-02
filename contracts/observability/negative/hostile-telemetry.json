@@ -1,0 +1,16 @@
+{
+  "correlation": [
+    "corr_same_for_every_client",
+    "bad\r\nforged",
+    "00-00000000000000000000000000000000-0000000000000000-01"
+  ],
+  "baggage": "authorization=synthetic-secret,email=person@example.test,task=private-care-text",
+  "attributes": {
+    "password": "synthetic-not-a-real-password",
+    "householdId": "household_private",
+    "medication": "private-content",
+    "document": "private-content",
+    "error": "sql connection string and raw exception"
+  },
+  "cardinalityFloodCount": 10000
+}

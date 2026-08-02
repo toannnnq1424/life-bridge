@@ -96,3 +96,9 @@ runtime, SBOM/provenance and cumulative gates. The local absence is therefore
 an environment note, not a skipped requirement. Production key custody,
 trusted signing and storage-at-rest selection remain later decision gates; no
 provider, certification, SLSA level or deployment claim is inferred.
+
+# P9-S1 open acceptance dependencies (2026-08-02)
+
+- Local Docker/PostgreSQL availability is not assumed; the exact-head hosted P9-S1 job owns the mixed Node/Spring/PostgreSQL durable-path proof.
+- The GitHub connector installation does not see the private repository, but the authenticated in-app browser does. Issue #31 was verified and reconciled in place; promotion will use the authenticated repository UI/ordinary Git transport without creating a duplicate.
+- No production telemetry collector or enforceable repository retention store exists. Inventory truthfully assigns stdout/CI access and retention to the execution environment; this is not a compliance claim.

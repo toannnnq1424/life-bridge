@@ -1074,6 +1074,8 @@ threat/privacy model, abuse controls, and response drill pass.
 
 ### `P9-S1 — Redacted end-to-end observability and SLO baseline`
 
+Status (2026-08-02): candidate implementation in progress on exact accepted P8 base. `CHG-2026-025`/ADR-032 freezes exporter-neutral, strict allowlisted telemetry: Gateway restarts public trace context, authenticated internal hops may continue strict W3C context, baggage is prohibited, Node/Spring implement the same language-neutral bounds, and stdout/CI retention and access remain explicitly environment-owned. The initial SLO entry is a measurement scaffold with no invented production traffic or target; exact-head hosted PostgreSQL/mixed-runtime evidence must populate the first synthetic sample before acceptance.
+
 Outcome: an operator can trace an accepted user journey across services without
 exposing sensitive task, household, medication, or document content.
 

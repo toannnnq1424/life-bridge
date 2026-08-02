@@ -28,7 +28,10 @@ import {
   successEnvelope,
   type CoordinationPermission,
 } from "@lifebridge/contracts";
-import { resolveCorrelationId, SafeLogger } from "@lifebridge/observability";
+import {
+  resolvePublicCorrelationId as resolveCorrelationId,
+  SafeLogger,
+} from "@lifebridge/observability";
 import {
   AbuseAdmissionController,
   createServiceAssertion,

@@ -496,7 +496,7 @@ describe("P2-S3 consent gateway boundary", () => {
       expect(headers.get("x-session-token")).toBe("synthetic_session");
       expect(headers.get("x-csrf-token")).toBe("c".repeat(43));
       expect(headers.get("idempotency-key")).toBe("consent-grant-0001");
-      expect(headers.get("x-correlation-id")).toBe("corr_consent_gateway");
+      expect(headers.get("x-correlation-id")).toMatch(/^corr_[a-f0-9]{32}$/);
       expect(headers.get("x-actor-id")).toBeNull();
       expect(headers.get("x-fixture-actor-id")).toBeNull();
       return new Response(

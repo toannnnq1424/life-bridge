@@ -135,7 +135,7 @@ describe("P5-S1 Community Gateway consumer", () => {
     expect(cached.statusCode).toBe(200);
     expect(calls).toHaveLength(1);
     expect(cached.json()).toMatchObject({
-      meta: { correlationId: "corr_public_directory_cached" },
+      meta: { correlationId: expect.stringMatching(/^corr_[a-f0-9]{32}$/) },
     });
     await app.close();
   });
@@ -273,7 +273,7 @@ describe("P5-S1 Community Gateway consumer", () => {
               ? "community.consent.revoked"
               : "community.authority.required",
           retryable: false,
-          correlationId: "corr_authority_mapping",
+          correlationId: expect.stringMatching(/^corr_[a-f0-9]{32}$/),
         },
       });
       expect(fetcher).toHaveBeenCalledTimes(1);

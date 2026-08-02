@@ -1278,3 +1278,7 @@ continues to fail on any output it creates or leaves itself.
   `30737823547` passed every heavy job and the terminal P1-through-P8-S2 gate.
   Only bounded docs-only closeout, bilingual #29 closure and branch cleanup
   remain. P8-S3 is unstarted.
+
+# 2026-08-02 — P9-S1 candidate integration
+
+`CHG-2026-025` preserves the accepted service/data/auth/recovery boundaries and adds exporter-neutral trusted context, strict allowlisted structured signals, Spring parity, machine dashboard/SLO inventory, negative leakage/spoof/cardinality fixtures, a one-shot Level C runner and exact-head cumulative CI. No collector, SaaS, shared datastore, business import or cross-service credential was added. Promotion remains pending the sole Level C, hosted exact-head gates and GitHub permission restoration.
