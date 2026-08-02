@@ -21,6 +21,13 @@ import { buildCareServer } from "./server.js";
 import { CareService } from "./service.js";
 
 const databaseUrl = requiredUrl(process.env.CARE_DATABASE_URL, "CARE_DATABASE_URL");
+const migrationDatabaseUrl = requiredUrl(
+  process.env.CARE_MIGRATION_DATABASE_URL ??
+    (process.env.RUNTIME_MODE === "local" || process.env.RUNTIME_MODE === "test"
+      ? databaseUrl
+      : undefined),
+  "CARE_MIGRATION_DATABASE_URL",
+);
 const internalToken = requiredSecret(process.env.CARE_INTERNAL_TOKEN, "CARE_INTERNAL_TOKEN");
 const previousInternalToken = process.env.CARE_INTERNAL_TOKEN_PREVIOUS
   ? requiredSecret(process.env.CARE_INTERNAL_TOKEN_PREVIOUS, "CARE_INTERNAL_TOKEN_PREVIOUS")
@@ -41,7 +48,7 @@ const notificationUrl = requiredDependencyUrl(
 const servicePort = port(process.env.CARE_PORT, 3101);
 const serviceHost = process.env.CARE_HOST ?? "127.0.0.1";
 
-await migrateCareDatabase(databaseUrl);
+await migrateCareDatabase(migrationDatabaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
 const care = new CareService(pool);
 const coordination = new CoordinationService(pool, {

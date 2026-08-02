@@ -17,6 +17,9 @@ importers:
       '@eslint/js':
         specifier: 10.0.1
         version: 10.0.1(eslint@10.7.0)
+      '@lifebridge/migrations':
+        specifier: workspace:*
+        version: link:packages/migrations
       '@playwright/test':
         specifier: 1.62.0
         version: 1.62.0
@@ -112,6 +115,16 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
 
+  packages/migrations:
+    dependencies:
+      pg:
+        specifier: 8.22.0
+        version: 8.22.0
+    devDependencies:
+      '@types/pg':
+        specifier: 8.20.0
+        version: 8.20.0
+
   packages/observability:
     dependencies:
       '@lifebridge/contracts':
@@ -132,6 +145,9 @@ importers:
       '@lifebridge/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@lifebridge/migrations':
+        specifier: workspace:*
+        version: link:../../packages/migrations
       '@lifebridge/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -157,6 +173,9 @@ importers:
       '@lifebridge/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@lifebridge/migrations':
+        specifier: workspace:*
+        version: link:../../packages/migrations
       '@lifebridge/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -185,6 +204,9 @@ importers:
       '@lifebridge/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@lifebridge/migrations':
+        specifier: workspace:*
+        version: link:../../packages/migrations
       '@lifebridge/observability':
         specifier: workspace:*
         version: link:../../packages/observability

@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "postgresqlVersion": "17.5",
+  "compatibilityPolicy": "expand-migrate-contract",
+  "contractPhase": "deferred-until-no-n-minus-one-runtime",
+  "owners": [
+    {
+      "owner": "identity-consent",
+      "database": "lifebridge_identity",
+      "schema": "public",
+      "tables": { "allowedPrefixes": ["identity_", "lifebridge_migration_ledger"] },
+      "tool": { "name": "lifebridge-node-ledger", "version": "1", "driver": "pg@8.22.0" },
+      "credentials": {
+        "migration": "IDENTITY_MIGRATION_DATABASE_URL",
+        "runtime": "IDENTITY_DATABASE_URL",
+        "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
+      },
+      "compatibility": { "schema": 8, "runtimeMinimum": 7, "runtimeMaximum": 8 },
+      "migrations": [
+        [1, "001_initial.sql", "5039d2574f7ff3c6ab2438bf3b82c0b0dafc8cfd7d601cc1a41d841b68941b69"],
+        [
+          2,
+          "002_household_authorization.sql",
+          "217beba8bececa6188214f496c5b95de14af1ff2d1919fd813b7aeeddeda88b1"
+        ],
+        [
+          3,
+          "003_consent_privacy_audit.sql",
+          "d55651f4328bead98b3b016dda259e8a313f8104647e1b0aeb70428c977495fe"
+        ],
+        [
+          4,
+          "004_document_vault_scope.sql",
+          "1f17a82c864eef20ad9e1160524a098e22eb4acccb9fd72aded37a24baaf5eaf"
+        ],
+        [
+          5,
+          "005_community_support_scope.sql",
+          "79ad0b6a6aece5b8815788a623fec0fde5adcac624451c1db2ba000cced7bb77"
+        ],
+        [
+          6,
+          "006_community_match_scopes.sql",
+          "ad90ace5458568d942c84c4bc202ec293ec128747e8fc3c267399fbbb9d94eed"
+        ],
+        [
+          7,
+          "007_community_moderation_scopes.sql",
+          "9bae8d2581f72ba6b69d3e77765986d3c13c795fe2d09a5d2ddd52fcaf2a6ab3"
+        ],
+        [
+          8,
+          "008_p7_schema_compatibility.sql",
+          "ae5cc72d7b898cb18f6e0b9bcedc3275bec761a64a9ea8b2b28173ee8a0ffe08"
+        ]
+      ]
+    },
+    {
+      "owner": "care-coordination",
+      "database": "lifebridge_care",
+      "schema": "public",
+      "tables": { "allowedPrefixes": ["care_", "lifebridge_migration_ledger"] },
+      "tool": { "name": "lifebridge-node-ledger", "version": "1", "driver": "pg@8.22.0" },
+      "credentials": {
+        "migration": "CARE_MIGRATION_DATABASE_URL",
+        "runtime": "CARE_DATABASE_URL",
+        "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
+      },
+      "compatibility": { "schema": 8, "runtimeMinimum": 7, "runtimeMaximum": 8 },
+      "migrations": [
+        [1, "001_initial.sql", "7f87f9582e5e7e07289e278dd808e2bdc0a4730316980f2c1b73be06a4ca59ca"],
+        [
+          2,
+          "002_daily_timeline_handoff.sql",
+          "9a875d74f64856779a6375edea16d48da5f71f7e3f71c350eaf888b5bada83b1"
+        ],
+        [
+          3,
+          "003_calendar_appointments.sql",
+          "861575047ae482fa8684efa856eab6b652d6ecdbee2d12e9cea79c6877fd739e"
+        ],
+        [
+          4,
+          "004_care_plan_review.sql",
+          "b946c1f9056d72e9c41e7e45dbb65d03f9af2626ece662155f02765613077f08"
+        ],
+        [
+          5,
+          "005_medication_reminders.sql",
+          "37335f7a93fc46c8d7660cfe2640bd0addf99e9862644ce383f0b3bae33a9cf4"
+        ],
+        [
+          6,
+          "006_emergency_readiness.sql",
+          "b19dc0294676bb70aeac700d17efb87e3e42e572dd3993171dba2aca20cba2c9"
+        ],
+        [
+          7,
+          "007_document_vault.sql",
+          "f6c0343e6be44b23ea9c991a058259e3922b7af435a8c302d738638d527bae5b"
+        ],
+        [
+          8,
+          "008_p7_schema_compatibility.sql",
+          "466555bf00bea2e972355940015ccb06c57b96b9cfebf7ce495cc3cc029da2bb"
+        ]
+      ]
+    },
+    {
+      "owner": "notification",
+      "database": "lifebridge_notification",
+      "schema": "public",
+      "tables": {
+        "allowedPrefixes": [
+          "notification_",
+          "notifications",
+          "appointment_",
+          "medication_",
+          "lifebridge_migration_ledger"
+        ]
+      },
+      "tool": { "name": "lifebridge-node-ledger", "version": "1", "driver": "pg@8.22.0" },
+      "credentials": {
+        "migration": "NOTIFICATION_MIGRATION_DATABASE_URL",
+        "runtime": "NOTIFICATION_DATABASE_URL",
+        "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
+      },
+      "compatibility": { "schema": 4, "runtimeMinimum": 3, "runtimeMaximum": 4 },
+      "migrations": [
+        [1, "001_initial.sql", "5888fb05bed8b253d77ebd79da858dfaa0e677cab277bb36a6b11ddbd0a5f3ed"],
+        [
+          2,
+          "002_appointment_reminder_intent.sql",
+          "1850b47eb4b707f0b6f02f1ff4c6a615dd23bba17385cecdb61940120158febb"
+        ],
+        [
+          3,
+          "003_medication_reminder_delivery.sql",
+          "2afffbd4ec84140d0c607154679b57ea2ac634a2634ae46a5ea923b26217f6fa"
+        ],
+        [
+          4,
+          "004_p7_schema_compatibility.sql",
+          "cab3de580229e8d3cabad12f029d27f30d6348f289190158dbaa0725ae10bde6"
+        ]
+      ]
+    },
+    {
+      "owner": "community",
+      "database": "lifebridge_community",
+      "schema": "public",
+      "tables": { "allowedPrefixes": ["community_", "flyway_schema_history"] },
+      "tool": { "name": "flyway", "version": "12.4.0", "driver": "postgresql-jdbc@42.7.11" },
+      "credentials": {
+        "migration": [
+          "COMMUNITY_MIGRATION_DATABASE_URL",
+          "COMMUNITY_MIGRATION_DATABASE_USERNAME",
+          "COMMUNITY_MIGRATION_DATABASE_PASSWORD"
+        ],
+        "runtime": [
+          "COMMUNITY_DATABASE_URL",
+          "COMMUNITY_DATABASE_USERNAME",
+          "COMMUNITY_DATABASE_PASSWORD"
+        ],
+        "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
+      },
+      "compatibility": { "schema": 4, "runtimeMinimum": 3, "runtimeMaximum": 4 },
+      "migrations": [
+        [
+          1,
+          "V1__p5_s1_community.sql",
+          "ed6557d7a85d5c50b89e84d2fd1c221bc72d45130ff2e0394100f0c150605594"
+        ],
+        [
+          2,
+          "V2__p5_s2_match_coordination.sql",
+          "36282ee17fad00da88c156dfa6c2f37ff9e780942a24dc31776a1ff2344633f2"
+        ],
+        [
+          3,
+          "V3__p5_s3_moderation_resolution.sql",
+          "424e7ef84bb6cdcbe36033a59eb4cff2c9ac6dab4be3d8245ee787128e86122f"
+        ],
+        [
+          4,
+          "V4__p7_schema_compatibility.sql",
+          "197a1e6b422117d76ab985becc1b6efe5874c121e06215eb4f11b35106b633ab"
+        ]
+      ]
+    }
+  ],
+  "recoveryPoint": {
+    "requiredBeforeMutation": true,
+    "fields": [
+      "owner",
+      "createdAt",
+      "ledgerDigest",
+      "artifactSha256",
+      "verificationResult",
+      "correlationId"
+    ],
+    "prohibitedClaims": ["production-pitr", "retention", "rpo", "rto", "disaster-recovery"]
+  }
+}

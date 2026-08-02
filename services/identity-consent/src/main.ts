@@ -9,6 +9,13 @@ import { HouseholdService } from "./household-service.js";
 import { IdentityService } from "./service.js";
 
 const databaseUrl = requiredUrl(process.env.IDENTITY_DATABASE_URL, "IDENTITY_DATABASE_URL");
+const migrationDatabaseUrl = requiredUrl(
+  process.env.IDENTITY_MIGRATION_DATABASE_URL ??
+    (process.env.RUNTIME_MODE === "local" || process.env.RUNTIME_MODE === "test"
+      ? databaseUrl
+      : undefined),
+  "IDENTITY_MIGRATION_DATABASE_URL",
+);
 const internalToken = requiredSecret(
   process.env.IDENTITY_INTERNAL_TOKEN,
   "IDENTITY_INTERNAL_TOKEN",
@@ -21,7 +28,7 @@ const rateLimitKey = requiredKey(process.env.IDENTITY_RATE_LIMIT_KEY, "IDENTITY_
 const servicePort = port(process.env.IDENTITY_PORT, 3100);
 const serviceHost = process.env.IDENTITY_HOST ?? "127.0.0.1";
 
-await migrateIdentityDatabase(databaseUrl);
+await migrateIdentityDatabase(migrationDatabaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
 const identity = new IdentityService(pool, {
   dataKey,

@@ -5,6 +5,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json tsconfig.buil
 COPY services/care-coordination services/care-coordination
 COPY packages/config packages/config
 COPY packages/contracts packages/contracts
+COPY packages/migrations packages/migrations
 COPY packages/observability packages/observability
 COPY packages/test-fixtures packages/test-fixtures
 COPY tools/quality/src/p6-s2-sbom.ts tools/quality/src/p6-s2-sbom.ts

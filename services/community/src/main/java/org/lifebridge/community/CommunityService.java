@@ -52,7 +52,7 @@ public class CommunityService {
   public boolean ready() {
     Integer state =
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM community_schema_state WHERE service='community' AND version IN (1,2)",
+            "SELECT COUNT(*) FROM community_schema_state WHERE service='community' AND version BETWEEN 3 AND 4",
             Integer.class);
     return state != null && state == 1;
   }

@@ -1,0 +1,4 @@
+{
+  "owner": "notification",
+  "tables": { "allowedPrefixes": ["care_tasks"] }
+}

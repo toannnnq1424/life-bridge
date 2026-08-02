@@ -366,6 +366,7 @@ jobs:
           docker run -d --name lifebridge-notification-v1 --read-only --tmpfs /tmp --add-host host.docker.internal:host-gateway \
             -p 127.0.0.1:33102:3102 \
             -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e NOTIFICATION_MIGRATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
             -e NOTIFICATION_INTERNAL_TOKEN="$token" \
             -e CARE_NOTIFICATION_INTERNAL_TOKEN='synthetic-care-notification-key-0001' \
             "lifebridge/notification:${EXPECTED_SHA}"
@@ -386,6 +387,7 @@ jobs:
           docker run -d --name lifebridge-notification-v2 --read-only --tmpfs /tmp --add-host host.docker.internal:host-gateway \
             -p 127.0.0.1:33102:3102 \
             -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e NOTIFICATION_MIGRATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
             -e NOTIFICATION_INTERNAL_TOKEN="$token" \
             -e CARE_NOTIFICATION_INTERNAL_TOKEN='synthetic-care-notification-key-0001' \
             lifebridge/notification:p6-s2-upgrade
@@ -426,6 +428,52 @@ jobs:
           pnpm install --frozen-lockfile
           ./scripts/validate-p6-s3.ps1 -SkipInstall
 
+  p7-s1-owned-migrations:
+    name: P7-S1 owned migrations and schema compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Run the exact-head P7-S1 migration campaign
+        shell: pwsh
+        env:
+          P7_ADMIN_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/postgres
+        run: |
+          pnpm install --frozen-lockfile
+          ./scripts/validate-p7-s1.ps1 -SkipInstall
+
   integrated-gate:
     name: P1 through P6-S1 full required gate
     if: always()
@@ -436,6 +484,7 @@ jobs:
       - postgres-browser
       - artifact-containers
       - p6-s3-service-isolation
+      - p7-s1-owned-migrations
     runs-on: ubuntu-latest
     steps:
       - name: Require every acceptance job
@@ -444,6 +493,7 @@ jobs:
           POSTGRES_BROWSER_RESULT: ${{ needs.postgres-browser.result }}
           ARTIFACT_CONTAINERS_RESULT: ${{ needs.artifact-containers.result }}
           P6_S3_RESULT: ${{ needs.p6-s3-service-isolation.result }}
+          P7_S1_RESULT: ${{ needs.p7-s1-owned-migrations.result }}
           CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
           DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
           BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
@@ -455,10 +505,12 @@ jobs:
             test "$POSTGRES_BROWSER_RESULT" = "skipped"
             test "$ARTIFACT_CONTAINERS_RESULT" = "skipped"
             test "$P6_S3_RESULT" = "skipped"
+            test "$P7_S1_RESULT" = "skipped"
           else
             test "$DOCS_ONLY" = "false"
             test "$WINDOWS_RESULT" = "success"
             test "$POSTGRES_BROWSER_RESULT" = "success"
             test "$ARTIFACT_CONTAINERS_RESULT" = "success"
             test "$P6_S3_RESULT" = "success"
+            test "$P7_S1_RESULT" = "success"
           fi

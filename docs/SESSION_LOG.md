@@ -2931,3 +2931,62 @@ fresh canonical task is P7-S1 owned migrations from the then-current accepted
 `dev`; it must re-read actual schema ownership, migration ordering, rollback,
 backup/restore and mixed-version contracts before making changes. Do not start
 P7-S1 in this task.
+
+## 2026-08-02 — P7-S1 service-owned migrations local candidate
+
+### Objective
+
+Upgrade each owned schema without unbudgeted downtime, ownership leakage or an
+unsafe rollback claim.
+
+### Planned versus actual
+
+Issue #25 was verified OPEN with accepted metadata; no duplicate/mutation was
+needed. Three reviews converged on missing Node checksums/locks, credential
+separation, mixed-runtime and failure proof. `CHG-2026-021`/ADR-029 resolves
+those gaps without changing the outcome.
+
+### Completed
+
+Added the four-owner ledger, owner-locked Node protocol, four additive N
+migrations, separate production migration/runtime config, safe Flyway policy,
+bounded Community readiness, redacted migration health, failure/recovery proof
+harnesses and an exact-head hosted P7 job.
+
+### Files changed
+
+Migration contracts/package and owners; direct service config/artifacts; P7
+quality/runner/CI; Community compatibility tests; relevant state docs. No UI,
+orchestration/report file or Stitch canary changed.
+
+### Decisions and Change IDs
+
+`CHG-2026-021`/ADR-029. Rollback keeps the expanded schema or uses forward
+compensation; no unsafe down migration is claimed.
+
+### Validation performed
+
+Focused format/ESLint/TypeScript, ledger 4/4, Community 1/1, P6-S2 21/21,
+P6-S3 68/68 and affected Node builds passed. Workspace Temurin 25.0.3+9 and
+Maven 3.9.16 bootstrapped without machine-wide changes.
+
+The sole Level C invocation `e74d11e218464bc19dde0f008d05d68b` passed locked
+install, static ledger/ownership, Community compatibility, cumulative P6
+security/build and candidate-integrity stages. PostgreSQL was truthfully
+classified unavailable and the same ledger ended
+`passed_with_hosted_postgres_required`.
+
+### Validation intentionally deferred
+
+Hosted PostgreSQL/Flyway/mixed-runtime proof, PR/merge/dev CI and issue closeout
+remain. Local Docker/PostgreSQL is unavailable; Level C will not be rerun.
+
+### Known issues
+
+Existing release/environment issues remain; P7-S2/P7-S3 are not started.
+
+### Exact next step
+
+Run exactly one P7-S1 Level C, classify/continue only failed or unstarted
+stages, then promote one coherent commit through one ready PR to dev. Do not
+start P7-S2.

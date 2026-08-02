@@ -1,5 +1,9 @@
 # Repository Map
 
+P7-S1 candidate adds `contracts/migrations`, `packages/migrations`, four
+additive owner migrations, P7 quality/security/pre-code contracts and a hosted
+job. It adds no UI, service, engine, shared schema or P7-S2/P7-S3 work.
+
 Verified: 2026-07-29
 P6-S3 adds scoped service assertions/dependency guards in `packages/config`,
 receiver enforcement across Node/Spring, separate Care-to-Notification keys,

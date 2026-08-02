@@ -1,5 +1,13 @@
 # LifeBridge Test Strategy
 
+## P7-S1 validation
+
+Focused proof covers ledger fitness, affected TypeScript and Community schema
+readiness. Exactly one local Level C uses `pnpm.cmd run validate:p7-s1`.
+Hosted exact-head proof covers Node/Flyway fresh, repeat, concurrent, partial,
+lock timeout, drift, credential denial, unavailable DB, recovery and redacted
+health. The existing always-reported aggregator name remains unchanged.
+
 ## Purpose
 
 LifeBridge validates coherent changes at the smallest useful scope. The project does not run the full suite after every edit. Tests must prove user-visible vertical slices, shared contracts, failure handling, and safe behavior without wasting local or CI time.

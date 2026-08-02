@@ -15,6 +15,7 @@
   "dependencies": {
     "@lifebridge/config": "workspace:*",
     "@lifebridge/contracts": "workspace:*",
+    "@lifebridge/migrations": "workspace:*",
     "@lifebridge/observability": "workspace:*",
     "fastify": "5.10.0",
     "pg": "8.22.0"
