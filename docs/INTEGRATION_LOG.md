@@ -1137,7 +1137,7 @@ continues to fail on any output it creates or leaves itself.
   prove docs-only push/PR behavior while bounded checks and the aggregator still
   report a real conclusion. P6-S3 is exact next and has not started.
 
-# P6-S3 candidate — 2026-08-02
+# P6-S3 accepted — 2026-08-02
 
 - Branch: `phase/6-authenticated-service-communication-dependency-isolation`
   from exact `dev@6d7204d6272d70672a1c1f1429cdc742fd172bc0`.
@@ -1149,5 +1149,10 @@ continues to fail on any output it creates or leaves itself.
   classified continuation after Docker engine absence interrupted only the
   environment-classification line. All five prior stages remained green and
   were not rerun. Final local result is `passed_with_hosted_container_required`.
-- Promotion: pending one coherent commit, branch push, ready PR to `dev`,
-  literal-head hosted gates and merge-commit/post-merge evidence.
+- Promotion: PR #77 exact head `8450adb576ff6c8d1a03b21632f8e9941ed1bd80`
+  passed all 14 checks and merged as
+  `08fd1c895da712b7cff6254e38681a5250509ef7`. Automatic `dev` run
+  `30724770738` passed all seven checks, including the stable required
+  aggregator.
+- Next: close #24 bilingually after docs-only closeout; orient a fresh P7-S1
+  task from accepted `dev` without beginning it here.
