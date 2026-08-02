@@ -1230,3 +1230,9 @@ continues to fail on any output it creates or leaves itself.
   evidence was truthfully `environment_unavailable_hosted_required`; cumulative
   security/build and candidate integrity passed; final result was
   `passed_with_hosted_postgres_required`. No second runner campaign occurred.
+- Exact-head hosted acceptance: push/PR runs `30733182403` and `30733210842`
+  passed every required job and the P1-through-P7-S3 aggregator. Ready PR #83
+  merged by merge commit `34c716d2931f14851b3b552fadbbc961ec62753b`.
+  Automatic dev run `30733589109` then passed the full heavy path in 10m09s,
+  including P7-S3 recovery/lifecycle and the terminal aggregator. Phase 7 is
+  accepted; only bounded docs-only closeout and bilingual issue closure remain.
