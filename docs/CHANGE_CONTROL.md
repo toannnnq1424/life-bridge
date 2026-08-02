@@ -330,7 +330,8 @@ link the change identifier.
 - Impact: P8-S3 contracts, Gateway/Community boundary, shared validation, tests
   and CI. No provider, datastore, appeal/report workflow, irreversible deletion,
   legal matrix, P9 or release work.
-- Validation: focused TypeScript/Node/Java proof, one Level C, exact-head hosted
-  gates and merge-commit promotion required.
-- Follow-up: close #30 only after merge/dev CI/docs truth; do not start P9.
-- Decision state: accepted candidate implementation.
+- Validation: focused continuation passed after the sole Level C
+  pre-initialization runner failure. Exact head `9a62acd` passed 26 PR checks;
+  PR #89 merged as `adf0bad`; dev run `30739630918` passed Phase 8.
+- Follow-up: merge docs-only closeout, close #30 and remove the phase branch.
+- Decision state: accepted at `dev@adf0bad67a43d9dac73b0ce7cc540b60f7bb8ee8`.

@@ -6,8 +6,9 @@ The sole Level C command failed before runner initialization because an extra
 pnpm separator duplicated `SkipInstall`; no marker/resource was created and no
 second Level C was launched. Classified continuation passed every local static,
 Node, Java-provider, security and build stage. Local PostgreSQL Community tests
-remained unavailable/skipped; exact-head hosted PostgreSQL/mixed-runtime proof
-is mandatory and no production/legal/certification claim is inferred.
+remained unavailable/skipped. Both exact-head workflows and automatic dev run
+`30739630918` passed hosted PostgreSQL/mixed-runtime proof. No production,
+legal or certification claim is inferred.
 
 P7-S2 introduces no new accepted exception. Local PostgreSQL unavailability was
 classified by the single Level C and satisfied by exact-head plus automatic

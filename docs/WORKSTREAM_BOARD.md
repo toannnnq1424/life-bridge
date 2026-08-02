@@ -291,9 +291,8 @@ P8-S2 and cumulative P1-through-P8-S2 gates. PR #87 merged by merge commit
 `30737823547` passed the same full heavy path. Complete only this docs-only
 closeout and bilingual #29 closure. Do not start P8-S3.
 
-# P8-S3 active candidate — 2026-08-02
+# P8-S3 accepted — 2026-08-02
 
-`phase/8-abuse-privacy-security-response` owns P8-S3 from exact accepted
-`dev@272a20dd953683c85a290bcfeeceedeae18797f4`. Issue #30 was reconciled in
-place. Focused validation precedes exactly one Level C; the ready PR targets
-only `dev`. P9/DATA-S1/release remain blocked and unstarted.
+Accepted at `dev@adf0bad67a43d9dac73b0ce7cc540b60f7bb8ee8` through
+merge-commit PR #89 and dev run `30739630918`. Only docs-only closeout, issue
+#30 closure and phase-branch removal remain. P9/DATA-S1/release are unstarted.
