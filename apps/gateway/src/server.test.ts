@@ -465,11 +465,12 @@ describe("gateway identity boundary", () => {
 
   it("ignores a forged P1 fixture actor whenever fixture mode is disabled", async () => {
     const protectedConfig = { ...config, fixtureEnabled: false };
-    const fetcher = (async (_input: string | URL | Request, init?: RequestInit) => {
-      expect(new Headers(init?.headers).get("x-actor-id")).toBe("");
+    const fetcher = (async (input: string | URL | Request, init?: RequestInit) => {
+      expect(String(input)).toBe("http://identity.test/internal/v1/coordination/authorize");
+      expect(new Headers(init?.headers).get("x-actor-id")).toBeNull();
       return new Response(
-        JSON.stringify({ error: { code: "FORBIDDEN", correlationId: "corr_actor_1" } }),
-        { status: 403, headers: { "content-type": "application/json" } },
+        JSON.stringify({ error: { code: "SESSION_REQUIRED", correlationId: "corr_actor_1" } }),
+        { status: 401, headers: { "content-type": "application/json" } },
       );
     }) as typeof fetch;
     const app = buildGatewayServer(protectedConfig, fetcher);
@@ -480,7 +481,7 @@ describe("gateway identity boundary", () => {
       headers: { "x-fixture-actor-id": "member_lan" },
     });
 
-    expect(response.statusCode).toBe(403);
+    expect(response.statusCode).toBe(401);
     await app.close();
   });
 });

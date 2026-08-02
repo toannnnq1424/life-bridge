@@ -1,0 +1,172 @@
+{
+  "version": "P8-S1-v1",
+  "default": "deny",
+  "accessedAt": "2026-08-02",
+  "sources": [
+    "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/",
+    "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/",
+    "https://owasp.org/www-project-application-security-verification-standard/",
+    "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final",
+    "https://pages.nist.gov/800-63-4/",
+    "https://xaydungchinhsach.chinhphu.vn/toan-van-nghi-dinh-13-2023-nd-cp-bao-ve-du-lieu-ca-nhan-119230516104357809.htm"
+  ],
+  "householdRoles": ["organizer", "caregiver", "member"],
+  "relationships": ["active", "inactive", "absent"],
+  "consentStates": ["self", "active", "missing", "revoked", "stale"],
+  "serviceIdentities": ["gateway", "care-coordination", "recovery-operator"],
+  "datastoreOwners": ["identity-consent", "care-coordination", "notification", "community"],
+  "publicResources": ["community.directory"],
+  "rules": [
+    {
+      "resource": "identity.account_session",
+      "operations": ["register", "authenticate", "read", "update", "logout", "recover"],
+      "owner": "identity-consent",
+      "relationship": "account",
+      "consent": "none",
+      "service": "gateway",
+      "scope": "identity.account"
+    },
+    {
+      "resource": "identity.household",
+      "operations": [
+        "create",
+        "read",
+        "invite",
+        "resend",
+        "revoke_invitation",
+        "respond_invitation"
+      ],
+      "owner": "identity-consent",
+      "relationship": "active_or_invited",
+      "consent": "none",
+      "service": "gateway",
+      "scope": "identity.household"
+    },
+    {
+      "resource": "identity.recipient_context",
+      "operations": ["create", "read"],
+      "owner": "identity-consent",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "identity.consent"
+    },
+    {
+      "resource": "identity.consent",
+      "operations": ["overview", "grant", "narrow", "revoke", "audit", "governed_read"],
+      "owner": "identity-consent",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "identity.consent"
+    },
+    {
+      "resource": "care.task",
+      "operations": ["list", "read", "create", "complete", "handoff", "dashboard"],
+      "owner": "care-coordination",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "care.task"
+    },
+    {
+      "resource": "care.appointment",
+      "operations": ["list", "read", "create", "change", "cancel"],
+      "owner": "care-coordination",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "care.appointment"
+    },
+    {
+      "resource": "care.plan",
+      "operations": ["read", "history", "save_draft", "confirm"],
+      "owner": "care-coordination",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "care.plan"
+    },
+    {
+      "resource": "care.medication_reminder",
+      "operations": ["list", "read", "create", "change", "disable"],
+      "owner": "care-coordination",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "care.medication"
+    },
+    {
+      "resource": "care.emergency",
+      "operations": ["read", "replace", "history", "save_draft", "review", "offline_snapshot"],
+      "owner": "care-coordination",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "care.emergency"
+    },
+    {
+      "resource": "care.document",
+      "operations": ["list", "upload", "metadata", "download", "delete"],
+      "owner": "care-coordination",
+      "relationship": "active",
+      "consent": "self_or_active_document",
+      "service": "gateway",
+      "scope": "care.document"
+    },
+    {
+      "resource": "notification.delivery",
+      "operations": ["list", "acknowledge"],
+      "owner": "notification",
+      "relationship": "active",
+      "consent": "self_or_active",
+      "service": "gateway",
+      "scope": "notification.read"
+    },
+    {
+      "resource": "community.directory",
+      "operations": ["search"],
+      "owner": "community",
+      "relationship": "public",
+      "consent": "none",
+      "service": "gateway",
+      "scope": "community.public"
+    },
+    {
+      "resource": "community.help_request",
+      "operations": ["list", "submit", "reconcile", "close", "delete"],
+      "owner": "community",
+      "relationship": "active",
+      "consent": "active_community",
+      "service": "gateway",
+      "scope": "community.help_request"
+    },
+    {
+      "resource": "community.match",
+      "operations": ["query", "respond", "manage", "progress"],
+      "owner": "community",
+      "relationship": "active",
+      "consent": "active_match",
+      "service": "gateway",
+      "scope": "community.match"
+    },
+    {
+      "resource": "community.moderation",
+      "operations": ["list", "read", "resolve", "reconcile"],
+      "owner": "community",
+      "relationship": "active",
+      "consent": "active_moderation",
+      "service": "gateway",
+      "scope": "community.moderation"
+    },
+    {
+      "resource": "owner.event_recovery",
+      "operations": ["evidence", "replay", "reconcile"],
+      "owner": "owner-local",
+      "relationship": "operator",
+      "consent": "current_at_side_effect",
+      "service": "recovery-operator",
+      "scope": "event.recovery"
+    }
+  ]
+}

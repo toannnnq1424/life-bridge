@@ -2,6 +2,7 @@ import {
   AcknowledgeMedicationReminderRequestSchema,
   CareCoordinationEventSchema,
   CoordinationAuthorizationDecisionSchema,
+  currentCoordinationAuthorization,
   IdempotencyKeySchema,
   successEnvelope,
 } from "@lifebridge/contracts";
@@ -154,6 +155,36 @@ export function buildNotificationServer(
     };
   });
 
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/authorized/households/:householdId/notifications/query",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = recordBody(request.body);
+      const expectedDigest = createHash("sha256")
+        .update(
+          JSON.stringify({
+            operation: "notification.task.read",
+            householdId: request.params.householdId,
+          }),
+          "utf8",
+        )
+        .digest("hex");
+      const decision = currentCoordinationAuthorization(body.authorization, {
+        permission: "notification.task.read",
+        householdId: request.params.householdId,
+        correlationId,
+        requestDigest: expectedDigest,
+      });
+      if (!decision) {
+        return reply.code(404).send();
+      }
+      return {
+        data: await service.list(decision.actor.actorId),
+        meta: { correlationId },
+      };
+    },
+  );
+
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
     const eventReuse = error instanceof EventIdReusedError;
@@ -224,3 +255,4 @@ function requiredIdempotencyKey(value: unknown): string {
   }
   return IdempotencyKeySchema.parse(value);
 }
+import { createHash } from "node:crypto";

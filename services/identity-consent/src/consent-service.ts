@@ -530,7 +530,11 @@ export class ConsentService {
       try {
         await client.query("BEGIN");
         transactionOpen = true;
-        await this.requireActiveMember(client, input.accountId, request.householdId);
+        const membershipVersion = await this.requireActiveMember(
+          client,
+          input.accountId,
+          request.householdId,
+        );
 
         const subjectResult = await client.query<SubjectRow>(
           `SELECT * FROM identity_consent_subjects
@@ -619,11 +623,12 @@ export class ConsentService {
         });
         const actor = actorFor(input.accountId);
         const carePlanPermission = request.permission.startsWith("coordination.care_plan.");
-        const eligibleTargets = carePlanPermission
-          ? eligibleAccounts.map(actorFor)
-          : request.permission === "coordination.task.handoff"
-            ? eligibleAccounts.filter((accountId) => accountId !== input.accountId).map(actorFor)
-            : [];
+        const eligibleTargets =
+          carePlanPermission || request.permission === "coordination.task.create"
+            ? eligibleAccounts.map(actorFor)
+            : request.permission === "coordination.task.handoff"
+              ? eligibleAccounts.filter((accountId) => accountId !== input.accountId).map(actorFor)
+              : [];
         const target = request.targetActorRef
           ? eligibleTargets.find((candidate) => candidate.actorRef === request.targetActorRef)
           : null;
@@ -658,6 +663,11 @@ export class ConsentService {
           permission: request.permission,
           actor,
           householdId: request.householdId,
+          membershipVersion,
+          taskId: request.taskId,
+          appointmentId: request.appointmentId,
+          medicationReminderId: request.medicationReminderId,
+          medicationOccurrenceId: request.medicationOccurrenceId,
           recipientContextId: subject.recipient_context_id,
           documentId: request.documentId,
           subjectId: subject.subject_id,
@@ -1293,13 +1303,18 @@ export class ConsentService {
     return result.rows[0];
   }
 
-  private async requireActiveMember(client: PoolClient, accountId: string, householdId: string) {
-    const result = await client.query(
-      `SELECT 1 FROM identity_household_memberships
+  private async requireActiveMember(
+    client: PoolClient,
+    accountId: string,
+    householdId: string,
+  ): Promise<number> {
+    const result = await client.query<{ version: number }>(
+      `SELECT version FROM identity_household_memberships
        WHERE household_id = $1 AND account_id = $2 AND status = 'active'`,
       [householdId, accountId],
     );
     if (!result.rows[0]) throw inaccessible();
+    return result.rows[0].version;
   }
 
   private async resolveRecipientRef(

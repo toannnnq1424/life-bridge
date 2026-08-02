@@ -297,22 +297,48 @@ export function buildGatewayServer(
 
   app.get<{ Params: { householdId: string } }>(
     "/api/v1/households/:householdId/members",
-    async (request, reply) =>
-      forwardCare(
-        request,
-        reply,
-        `${config.careUrl}/internal/v1/households/${encodeURIComponent(request.params.householdId)}/members`,
-      ),
+    async (request, reply) => {
+      if (config.fixtureEnabled) {
+        return forwardCare(
+          request,
+          reply,
+          `${config.careUrl}/internal/v1/households/${encodeURIComponent(request.params.householdId)}/members`,
+        );
+      }
+      const householdId = request.params.householdId;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.household_members.read",
+        householdId,
+        requestDigest: digestJson({ operation: "household_members.read", householdId }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/authorized/households/${encodeURIComponent(householdId)}/members/query`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
   );
 
   app.get<{ Params: { householdId: string } }>(
     "/api/v1/households/:householdId/tasks",
-    async (request, reply) =>
-      forwardCare(
-        request,
-        reply,
-        `${config.careUrl}/internal/v1/households/${encodeURIComponent(request.params.householdId)}/tasks`,
-      ),
+    async (request, reply) => {
+      if (config.fixtureEnabled) {
+        return forwardCare(
+          request,
+          reply,
+          `${config.careUrl}/internal/v1/households/${encodeURIComponent(request.params.householdId)}/tasks`,
+        );
+      }
+      const householdId = request.params.householdId;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.task.list",
+        householdId,
+        requestDigest: digestJson({ operation: "task.list", householdId }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/authorized/households/${encodeURIComponent(householdId)}/tasks/query`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
   );
 
   app.post<{ Params: { householdId: string }; Body: unknown }>(
@@ -320,6 +346,20 @@ export function buildGatewayServer(
     async (request, reply) => {
       const parsedBody = CreateTaskRequestSchema.parse(request.body);
       const key = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      if (!config.fixtureEnabled) {
+        const householdId = request.params.householdId;
+        return authorizeAndForward(request, reply, {
+          permission: "coordination.task.create",
+          householdId,
+          requestDigest: digestJson({ operation: "task.create", householdId, request: parsedBody }),
+          dependency: "care",
+          targetUrl: `${config.careUrl}/internal/v1/authorized/households/${encodeURIComponent(householdId)}/tasks`,
+          method: "POST",
+          idempotencyKey: key,
+          mutation: true,
+          body: (authorization) => ({ authorization, request: parsedBody }),
+        });
+      }
       return forwardCare(
         request,
         reply,
@@ -330,16 +370,19 @@ export function buildGatewayServer(
   );
 
   app.get<{ Params: { taskId: string } }>("/api/v1/tasks/:taskId", async (request, reply) =>
-    forwardCare(
-      request,
-      reply,
-      `${config.careUrl}/internal/v1/tasks/${encodeURIComponent(request.params.taskId)}`,
-    ),
+    config.fixtureEnabled
+      ? forwardCare(
+          request,
+          reply,
+          `${config.careUrl}/internal/v1/tasks/${encodeURIComponent(request.params.taskId)}`,
+        )
+      : reply.code(404).send(),
   );
 
   app.patch<{ Params: { taskId: string }; Body: unknown }>(
     "/api/v1/tasks/:taskId",
     async (request, reply) => {
+      if (!config.fixtureEnabled) return reply.code(404).send();
       const parsedBody = CompleteTaskRequestSchema.parse(request.body);
       const key = requiredIdempotencyKey(request.headers["idempotency-key"]);
       return forwardCare(
@@ -351,9 +394,64 @@ export function buildGatewayServer(
     },
   );
 
+  app.get<{ Params: { householdId: string; taskId: string } }>(
+    "/api/v1/households/:householdId/tasks/:taskId",
+    async (request, reply) => {
+      const { householdId, taskId } = request.params;
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.task.read",
+        householdId,
+        taskId,
+        requestDigest: digestJson({ operation: "task.read", householdId, taskId }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/authorized/households/${encodeURIComponent(householdId)}/tasks/${encodeURIComponent(taskId)}/read`,
+        method: "POST",
+        body: (authorization) => ({ authorization }),
+      });
+    },
+  );
+
+  app.patch<{ Params: { householdId: string; taskId: string }; Body: unknown }>(
+    "/api/v1/households/:householdId/tasks/:taskId",
+    async (request, reply) => {
+      const { householdId, taskId } = request.params;
+      const parsedBody = CompleteTaskRequestSchema.parse(request.body);
+      const key = requiredIdempotencyKey(request.headers["idempotency-key"]);
+      return authorizeAndForward(request, reply, {
+        permission: "coordination.task.complete",
+        householdId,
+        taskId,
+        requestDigest: digestJson({
+          operation: "task.complete",
+          householdId,
+          taskId,
+          request: parsedBody,
+        }),
+        dependency: "care",
+        targetUrl: `${config.careUrl}/internal/v1/authorized/households/${encodeURIComponent(householdId)}/tasks/${encodeURIComponent(taskId)}/complete`,
+        method: "POST",
+        idempotencyKey: key,
+        mutation: true,
+        body: (authorization) => ({ authorization, request: parsedBody }),
+      });
+    },
+  );
+
   app.get<{ Params: { householdId: string } }>(
     "/api/v1/households/:householdId/dashboard",
     async (request, reply) => {
+      if (!config.fixtureEnabled) {
+        const householdId = request.params.householdId;
+        return authorizeAndForward(request, reply, {
+          permission: "coordination.dashboard.read",
+          householdId,
+          requestDigest: digestJson({ operation: "dashboard.read", householdId }),
+          dependency: "care",
+          targetUrl: `${config.careUrl}/internal/v1/authorized/households/${encodeURIComponent(householdId)}/dashboard/query`,
+          method: "POST",
+          body: (authorization) => ({ authorization }),
+        });
+      }
       const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
       const actor = actorId(request.headers, config.fixtureEnabled);
       let careResponse: DependencyResponse;
@@ -410,27 +508,43 @@ export function buildGatewayServer(
     },
   );
 
-  app.get("/api/v1/notifications", async (request, reply) => {
-    const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
-    const actor = actorId(request.headers, config.fixtureEnabled);
-    try {
-      const response = await dependencyRequest(
-        fetcher,
-        `${config.notificationUrl}/internal/v1/notifications`,
-        {
-          actorId: actor,
-          correlationId,
-          token: config.notificationToken,
-        },
-      );
-      if (response.status >= 400) {
+  app.get<{ Querystring: { householdId?: string } }>(
+    "/api/v1/notifications",
+    async (request, reply) => {
+      if (!config.fixtureEnabled) {
+        const householdId = String(request.query.householdId ?? "");
+        if (!householdId) return reply.code(404).send();
+        return authorizeAndForward(request, reply, {
+          permission: "notification.task.read",
+          householdId,
+          requestDigest: digestJson({ operation: "notification.task.read", householdId }),
+          dependency: "notification",
+          targetUrl: `${config.notificationUrl}/internal/v1/authorized/households/${encodeURIComponent(householdId)}/notifications/query`,
+          method: "POST",
+          body: (authorization) => ({ authorization }),
+        });
+      }
+      const correlationId = resolveCorrelationId(request.headers["x-correlation-id"]);
+      const actor = actorId(request.headers, config.fixtureEnabled);
+      try {
+        const response = await dependencyRequest(
+          fetcher,
+          `${config.notificationUrl}/internal/v1/notifications`,
+          {
+            actorId: actor,
+            correlationId,
+            token: config.notificationToken,
+          },
+        );
+        if (response.status >= 400) {
+          return dependencyUnavailable(reply, correlationId, logger, "notification");
+        }
+        return reply.code(200).send(response.body);
+      } catch {
         return dependencyUnavailable(reply, correlationId, logger, "notification");
       }
-      return reply.code(200).send(response.body);
-    } catch {
-      return dependencyUnavailable(reply, correlationId, logger, "notification");
-    }
-  });
+    },
+  );
 
   const anonymousIdentityRoutes = [
     ["/api/v1/account/registrations", "/internal/v1/account/registrations"],
@@ -1976,6 +2090,7 @@ export function buildGatewayServer(
     input: {
       permission: CoordinationPermission;
       householdId: string;
+      taskId?: string;
       medicationReminderId?: string;
       medicationOccurrenceId?: string;
       documentId?: string;
@@ -2002,6 +2117,7 @@ export function buildGatewayServer(
       body: {
         permission: input.permission,
         householdId: input.householdId,
+        ...(input.taskId ? { taskId: input.taskId } : {}),
         ...(input.medicationReminderId ? { medicationReminderId: input.medicationReminderId } : {}),
         ...(input.medicationOccurrenceId
           ? { medicationOccurrenceId: input.medicationOccurrenceId }

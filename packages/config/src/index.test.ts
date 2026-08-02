@@ -80,7 +80,7 @@ describe("P6-S3 service communication", () => {
       now,
       nonce: "synthetic_nonce_0003",
     });
-    expect(verifyServiceAssertion(oldBinary, policy)).toBe(true);
+    expect(verifyServiceAssertion(oldBinary, policy)).toBe(false);
     expect(verifyServiceAssertion(oldBinary, { ...policy, keys: { current: secret } })).toBe(false);
     expect(verifyServiceAssertion(assertion, { ...policy, scope: "care.admin" })).toBe(false);
     expect(verifyServiceAssertion(assertion, { ...policy, audience: "notification" })).toBe(false);

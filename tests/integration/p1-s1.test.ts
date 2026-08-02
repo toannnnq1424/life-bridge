@@ -4,6 +4,9 @@ import {
   FIXTURE_CARE_RECIPIENT_ID,
   FIXTURE_CREATOR_ID,
   FIXTURE_HOUSEHOLD_ID,
+  FIXTURE_SECOND_CREATOR_ID,
+  FIXTURE_SECOND_HOUSEHOLD_ID,
+  FIXTURE_SECOND_MEMBER_ID,
 } from "@lifebridge/test-fixtures";
 import { Pool } from "pg";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -173,6 +176,45 @@ describe("P1-S1 accountable care-task loop", () => {
         title: "A changed payload",
       }),
     ).rejects.toMatchObject({ code: "IDEMPOTENCY_KEY_REUSED", statusCode: 409 });
+  });
+
+  it("does not disclose a second household through list, detail, or mutation", async () => {
+    const care = new CareService(carePool, { now: fixedNow });
+    const foreign = await care.createTask({
+      actorId: FIXTURE_SECOND_CREATOR_ID,
+      householdId: FIXTURE_SECOND_HOUSEHOLD_ID,
+      idempotencyKey: "idem_second_household_create",
+      correlationId: "corr_second_household_create",
+      request: {
+        title: "Synthetic second household task",
+        description: "Isolation fixture",
+        assigneeId: FIXTURE_SECOND_MEMBER_ID,
+        careRecipientId: "person_binh",
+        dueAt: "2026-08-04T10:30:00+07:00",
+        dueTimeZone: "Asia/Bangkok",
+        priority: "normal",
+      },
+    });
+
+    await expect(
+      care.listTasks(FIXTURE_CREATOR_ID, FIXTURE_SECOND_HOUSEHOLD_ID),
+    ).rejects.toMatchObject({ code: "TASK_NOT_FOUND", statusCode: 404 });
+    await expect(care.getTask(FIXTURE_CREATOR_ID, foreign.task.taskId)).rejects.toMatchObject({
+      code: "TASK_NOT_FOUND",
+      statusCode: 404,
+    });
+    await expect(
+      care.completeTask({
+        actorId: FIXTURE_CREATOR_ID,
+        taskId: foreign.task.taskId,
+        idempotencyKey: "idem_foreign_complete",
+        correlationId: "corr_foreign_complete",
+        request: { operation: "complete", expectedVersion: 1 },
+      }),
+    ).rejects.toMatchObject({ code: "TASK_NOT_FOUND", statusCode: 404 });
+    expect((await care.getTask(FIXTURE_SECOND_CREATOR_ID, foreign.task.taskId)).taskId).toBe(
+      foreign.task.taskId,
+    );
   });
 
   it("keeps completion durable through notification outage and retries the same event", async () => {

@@ -294,3 +294,15 @@ link the change identifier.
 - Follow-up: merge-commit to dev, post-merge CI and bilingual #25 closeout;
   P7-S2 only in a fresh task.
 - Decision state: accepted; candidate validation pending.
+
+# CHG-2026-022 — household-scoped legacy task authorization
+
+| Field                 | Decision                                                                                                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Planned baseline      | P8-S1 hardens the existing household/resource surface without adding a role, IdP or datastore.                                                                             |
+| Actual implementation | Production P1 task/member/dashboard/notification calls require a fresh Identity decision and household-scoped owner route. Ambiguous object-only URLs remain fixture-only. |
+| Reason/evidence       | Three reviews found the historical fixture actor bypass and that an object-only URL cannot authorize without disclosing or trusting its owner.                             |
+| Impact                | Additive API paths/permissions; local fixture demo remains compatible. No UI, role, shared table, credential or engine change.                                             |
+| Validation            | Deny-default matrix, two-household BOLA/IDOR, current decision/version binding, production fixture guard, service-key binding and hosted cumulative gates.                 |
+| Follow-up             | Complete P8-S1 exact-head and post-merge evidence; do not start P8-S2.                                                                                                     |
+| Decision state        | Implemented candidate; hosted acceptance pending.                                                                                                                          |

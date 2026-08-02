@@ -715,3 +715,11 @@ restore, synthetic N-1→N upgrade and measured RPO/RTO for all four owners. Uni
 negatives cover missing/corrupt/wrong-owner/stale-version/unencrypted artifacts,
 unsafe/existing targets, policy absence, every fixture action, replay and
 changed-intent conflicts. P7-S1 migration and P7-S2 recovery remain cumulative.
+
+# P8-S1 validation
+
+Focused proof is `pnpm.cmd run test:p8-s1:fitness`. PostgreSQL P1 integration
+adds second-household list/detail/mutation negatives. The sole Level C entry is
+`pnpm.cmd run validate:p8-s1`; its marker precedes all stages and no second
+campaign may hide a failure. Hosted CI reports `P8-S1 authorization isolation
+and revocation` and the always-reported `P1 through P8-S1 full required gate`.

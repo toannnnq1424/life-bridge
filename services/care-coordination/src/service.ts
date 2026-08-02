@@ -155,8 +155,8 @@ export class CareService {
     this.logger = options.logger ?? new SafeLogger("care-coordination");
   }
 
-  public listMembers(actorId: string, householdId: string): Member[] {
-    this.assertHouseholdActor(actorId, householdId);
+  public listMembers(actorId: string, householdId: string, authorized = false): Member[] {
+    if (!authorized) this.assertHouseholdActor(actorId, householdId);
     return FIXTURE_MEMBERS.filter(
       (member) => member.householdId === householdId && member.active,
     ).map((member) => ({ ...member }));
@@ -174,8 +174,12 @@ export class CareService {
     }
   }
 
-  public async listTasks(actorId: string, householdId: string): Promise<TaskProjection[]> {
-    this.assertHouseholdActor(actorId, householdId);
+  public async listTasks(
+    actorId: string,
+    householdId: string,
+    authorized = false,
+  ): Promise<TaskProjection[]> {
+    if (!authorized) this.assertHouseholdActor(actorId, householdId);
     const result = await this.pool.query<TaskRow>(
       `${taskSelection}
        WHERE task.household_id = $1
@@ -187,9 +191,18 @@ export class CareService {
     return result.rows.map(projectTask);
   }
 
-  public async getTask(actorId: string, taskId: string): Promise<TaskProjection> {
+  public async getTask(
+    actorId: string,
+    taskId: string,
+    authorizedHouseholdId?: string,
+  ): Promise<TaskProjection> {
     const row = await this.findTask(taskId);
-    if (!row || !this.canSee(actorId, row.household_id)) {
+    if (
+      !row ||
+      (authorizedHouseholdId
+        ? row.household_id !== authorizedHouseholdId
+        : !this.canSee(actorId, row.household_id))
+    ) {
       throw new CareError(404, "TASK_NOT_FOUND", "errors.task.notFound");
     }
     return projectTask(row);
@@ -201,9 +214,16 @@ export class CareService {
     idempotencyKey: string;
     correlationId: string;
     request: CreateTaskRequest;
+    authorizedActorIds?: readonly string[];
   }): Promise<{ task: TaskProjection; statusCode: number }> {
     const request = CreateTaskRequestSchema.parse(input.request);
-    this.assertCreatePermission(input.actorId, input.householdId, request.assigneeId);
+    if (input.authorizedActorIds) {
+      if (!input.authorizedActorIds.includes(request.assigneeId)) {
+        throw new CareError(404, "TASK_NOT_FOUND", "errors.task.notFound");
+      }
+    } else {
+      this.assertCreatePermission(input.actorId, input.householdId, request.assigneeId);
+    }
     const requestHash = canonicalHash(request);
     const client = await this.pool.connect();
 
@@ -325,6 +345,7 @@ export class CareService {
     idempotencyKey: string;
     correlationId: string;
     request: CompleteTaskRequest;
+    authorizedHouseholdId?: string;
   }): Promise<TaskProjection> {
     const requestHash = canonicalHash(input.request);
     const client = await this.pool.connect();
@@ -354,7 +375,9 @@ export class CareService {
       const row = result.rows[0];
       if (
         !row ||
-        !this.canSee(input.actorId, row.household_id) ||
+        (input.authorizedHouseholdId
+          ? row.household_id !== input.authorizedHouseholdId
+          : !this.canSee(input.actorId, row.household_id)) ||
         row.assignee_id !== input.actorId
       ) {
         if (row) {

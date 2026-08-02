@@ -68,3 +68,10 @@ Exact-head push/PR and automatic post-merge dev PostgreSQL evidence subsequently
 passed. The local Docker absence remains an environment note, not a P7-S3
 acceptance blocker. Production deployment still depends on later P11/P12 gates;
 P7-S3 does not claim live infrastructure, legal advice or regulatory compliance.
+
+# P8-S1 local PostgreSQL environment note — 2026-08-02
+
+Docker Desktop's Linux engine is unavailable in this session. Focused static,
+unit and contract proof runs locally; exact-head PostgreSQL/mixed-runtime jobs
+remain mandatory hosted evidence. This is an environment classification, not a
+skipped hosted requirement or compliance claim.

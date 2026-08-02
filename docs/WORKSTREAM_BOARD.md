@@ -270,3 +270,12 @@ passed push/PR runs `30727810915`/`30727812530`; automatic post-merge run
 `30728240535` passed all eight jobs. This docs-only closeout and bilingual #25
 closure are the only remaining same-task actions. Exact next is P7-S2 in a
 fresh controller-dispatched task; do not begin it here.
+
+# P8-S1 active candidate — 2026-08-02
+
+Canonical branch `phase/8-household-isolation-consent-enforcement` starts from
+accepted `dev@a6cd86fd891e30828d04dbbae00a5da1f6922ae6`. Research and three
+reviews passed with required controls. `CHG-2026-022`/ADR-030, policy, P1
+production authorization and focused negatives are implemented. One Level C,
+hosted gates, ready PR, merge/dev CI and bilingual #28 closure remain. Do not
+start P8-S2.

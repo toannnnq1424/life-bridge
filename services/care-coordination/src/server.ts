@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import {
   CalendarQuerySchema,
   CarePlanHistoryQuerySchema,
@@ -10,6 +12,7 @@ import {
   ConfirmCarePlanVersionRequestSchema,
   DailyTimelineQuerySchema,
   CompleteTaskRequestSchema,
+  currentCoordinationAuthorization,
   CreateTaskRequestSchema,
   HandoffTaskRequestSchema,
   IdempotencyKeySchema,
@@ -23,6 +26,7 @@ import {
   SaveEmergencyPlanDraftRequestSchema,
   UploadDocumentRequestSchema,
   successEnvelope,
+  type CoordinationPermission,
 } from "@lifebridge/contracts";
 import { resolveCorrelationId } from "@lifebridge/observability";
 import Fastify from "fastify";
@@ -666,6 +670,173 @@ export function buildCareServer(
     },
   );
 
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/authorized/households/:householdId/members/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const authorization = requireLegacyAuthorization(body.authorization, {
+        permission: "coordination.household_members.read",
+        householdId: request.params.householdId,
+        correlationId,
+        digest: legacyDigest({
+          operation: "household_members.read",
+          householdId: request.params.householdId,
+        }),
+      });
+      return successEnvelope(
+        care.listMembers(authorization.actor.actorId, request.params.householdId, true),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/authorized/households/:householdId/tasks/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const authorization = requireLegacyAuthorization(body.authorization, {
+        permission: "coordination.task.list",
+        householdId: request.params.householdId,
+        correlationId,
+        digest: legacyDigest({ operation: "task.list", householdId: request.params.householdId }),
+      });
+      return successEnvelope(
+        await care.listTasks(authorization.actor.actorId, request.params.householdId, true),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/authorized/households/:householdId/tasks",
+    async (request, reply) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const parsed = CreateTaskRequestSchema.parse(body.request);
+      const authorization = requireLegacyAuthorization(body.authorization, {
+        permission: "coordination.task.create",
+        householdId: request.params.householdId,
+        correlationId,
+        digest: legacyDigest({
+          operation: "task.create",
+          householdId: request.params.householdId,
+          request: parsed,
+        }),
+      });
+      const result = await care.createTask({
+        actorId: authorization.actor.actorId,
+        householdId: request.params.householdId,
+        idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+        correlationId,
+        request: parsed,
+        authorizedActorIds: [authorization.actor, ...authorization.eligibleTargets].map(
+          (actor) => actor.actorId,
+        ),
+      });
+      return reply.code(result.statusCode).send(successEnvelope(result.task, correlationId));
+    },
+  );
+
+  app.post<{ Params: { householdId: string; taskId: string }; Body: unknown }>(
+    "/internal/v1/authorized/households/:householdId/tasks/:taskId/read",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const authorization = requireLegacyAuthorization(body.authorization, {
+        permission: "coordination.task.read",
+        householdId: request.params.householdId,
+        taskId: request.params.taskId,
+        correlationId,
+        digest: legacyDigest({
+          operation: "task.read",
+          householdId: request.params.householdId,
+          taskId: request.params.taskId,
+        }),
+      });
+      return successEnvelope(
+        await care.getTask(
+          authorization.actor.actorId,
+          request.params.taskId,
+          request.params.householdId,
+        ),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string; taskId: string }; Body: unknown }>(
+    "/internal/v1/authorized/households/:householdId/tasks/:taskId/complete",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const parsed = CompleteTaskRequestSchema.parse(body.request);
+      const authorization = requireLegacyAuthorization(body.authorization, {
+        permission: "coordination.task.complete",
+        householdId: request.params.householdId,
+        taskId: request.params.taskId,
+        correlationId,
+        digest: legacyDigest({
+          operation: "task.complete",
+          householdId: request.params.householdId,
+          taskId: request.params.taskId,
+          request: parsed,
+        }),
+      });
+      return successEnvelope(
+        await care.completeTask({
+          actorId: authorization.actor.actorId,
+          taskId: request.params.taskId,
+          idempotencyKey: requiredIdempotencyKey(header(request, "idempotency-key")),
+          correlationId,
+          request: parsed,
+          authorizedHouseholdId: request.params.householdId,
+        }),
+        correlationId,
+      );
+    },
+  );
+
+  app.post<{ Params: { householdId: string }; Body: unknown }>(
+    "/internal/v1/authorized/households/:householdId/dashboard/query",
+    async (request) => {
+      const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
+      const body = coordinationBody(request.body);
+      const authorization = requireLegacyAuthorization(body.authorization, {
+        permission: "coordination.dashboard.read",
+        householdId: request.params.householdId,
+        correlationId,
+        digest: legacyDigest({
+          operation: "dashboard.read",
+          householdId: request.params.householdId,
+        }),
+      });
+      const tasks = await care.listTasks(
+        authorization.actor.actorId,
+        request.params.householdId,
+        true,
+      );
+      const ordered = [...tasks].sort(
+        (left, right) => new Date(left.dueAt).getTime() - new Date(right.dueAt).getTime(),
+      );
+      return successEnvelope(
+        {
+          openCount: tasks.filter((task) => task.status === "open").length,
+          completedCount: tasks.filter((task) => task.status === "completed").length,
+          nextTasks: ordered.slice(0, 5),
+          lastConfirmedAt:
+            tasks
+              .map((task) => task.completedAt ?? task.createdAt)
+              .sort()
+              .at(-1) ?? null,
+          taskSourceFreshness: "current" as const,
+        },
+        correlationId,
+      );
+    },
+  );
+
   app.get<{ Params: { householdId: string } }>(
     "/internal/v1/households/:householdId/tasks",
     async (request) => {
@@ -871,6 +1042,33 @@ function requireEmergencyReadiness(
 function requireDocumentVault(service: DocumentVaultService | undefined): DocumentVaultService {
   if (!service) throw new CareError(503, "SERVICE_UNAVAILABLE", "errors.service.unavailable", true);
   return service;
+}
+
+function legacyDigest(value: unknown): string {
+  return createHash("sha256").update(JSON.stringify(value), "utf8").digest("hex");
+}
+
+function requireLegacyAuthorization(
+  value: unknown,
+  expected: {
+    permission: CoordinationPermission;
+    householdId: string;
+    taskId?: string;
+    correlationId: string;
+    digest: string;
+  },
+) {
+  const decision = currentCoordinationAuthorization(value, {
+    permission: expected.permission,
+    householdId: expected.householdId,
+    correlationId: expected.correlationId,
+    requestDigest: expected.digest,
+    ...(expected.taskId ? { taskId: expected.taskId } : {}),
+  });
+  if (!decision) {
+    throw new CareError(404, "TASK_NOT_FOUND", "errors.task.notFound");
+  }
+  return decision;
 }
 
 function coordinationBody(value: unknown): Record<string, unknown> {

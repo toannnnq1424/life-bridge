@@ -511,6 +511,13 @@ export type GovernedRecipientContextProjection = z.infer<
 >;
 
 export const CoordinationPermissionSchema = z.enum([
+  "coordination.household_members.read",
+  "coordination.task.list",
+  "coordination.task.read",
+  "coordination.task.create",
+  "coordination.task.complete",
+  "coordination.dashboard.read",
+  "notification.task.read",
   "coordination.timeline.read",
   "coordination.task.handoff",
   "coordination.calendar.read",
@@ -560,6 +567,11 @@ export const CoordinationAuthorizationDecisionSchema = z
     permission: CoordinationPermissionSchema,
     actor: CoordinationActorSchema,
     householdId: OpaqueIdSchema,
+    membershipVersion: z.number().int().positive().optional(),
+    taskId: OpaqueIdSchema.optional(),
+    appointmentId: OpaqueIdSchema.optional(),
+    medicationReminderId: OpaqueIdSchema.optional(),
+    medicationOccurrenceId: OpaqueIdSchema.optional(),
     recipientContextId: OpaqueIdSchema,
     documentId: OpaqueIdSchema.optional(),
     subjectId: OpaqueIdSchema,
@@ -589,8 +601,11 @@ export const CoordinationAuthorizationRequestSchema = z
   })
   .strict()
   .superRefine((value, context) => {
-    const handoff = value.permission === "coordination.task.handoff";
-    if (handoff !== Boolean(value.taskId)) {
+    const taskScoped =
+      value.permission === "coordination.task.handoff" ||
+      value.permission === "coordination.task.read" ||
+      value.permission === "coordination.task.complete";
+    if (taskScoped !== Boolean(value.taskId)) {
       context.addIssue({ code: "custom", message: "task_scope_required", path: ["taskId"] });
     }
     const appointmentMutation =
@@ -643,7 +658,7 @@ export const CoordinationAuthorizationRequestSchema = z
         path: ["documentId"],
       });
     }
-    if (!handoff && value.targetActorRef) {
+    if (value.permission !== "coordination.task.handoff" && value.targetActorRef) {
       context.addIssue({
         code: "custom",
         message: "target_scope_not_allowed",
@@ -660,6 +675,37 @@ export type CoordinationAuthorizationDecision = z.infer<
 export type CoordinationAuthorizationRequest = z.infer<
   typeof CoordinationAuthorizationRequestSchema
 >;
+
+export function currentCoordinationAuthorization(
+  value: unknown,
+  expected: {
+    permission: CoordinationPermission;
+    householdId: string;
+    correlationId: string;
+    requestDigest: string;
+    taskId?: string;
+    now?: Date;
+    maxAgeMs?: number;
+  },
+): CoordinationAuthorizationDecision | null {
+  const parsed = CoordinationAuthorizationDecisionSchema.safeParse(value);
+  if (!parsed.success) return null;
+  const decision = parsed.data;
+  const age = (expected.now ?? new Date()).getTime() - new Date(decision.decidedAt).getTime();
+  if (
+    decision.permission !== expected.permission ||
+    decision.householdId !== expected.householdId ||
+    decision.correlationId !== expected.correlationId ||
+    decision.requestDigest !== expected.requestDigest ||
+    typeof decision.membershipVersion !== "number" ||
+    (expected.taskId !== undefined && decision.taskId !== expected.taskId) ||
+    age < -1_000 ||
+    age > (expected.maxAgeMs ?? 10_000)
+  ) {
+    return null;
+  }
+  return decision;
+}
 
 const CommunityOpaqueIdSchema = z
   .string()
