@@ -752,18 +752,19 @@ export class CareService {
     const recoveryId = `recovery_${randomUUID().replaceAll("-", "")}`;
     try {
       await client.query("BEGIN");
-      const current = await client.query<{ status: string }>(
-        `SELECT status FROM care_outbox WHERE event_id=$1 FOR UPDATE`,
+      const current = await client.query<{ status: string; attempt_count: number }>(
+        `SELECT status,attempt_count FROM care_outbox WHERE event_id=$1 FOR UPDATE`,
         [input.eventId],
       );
-      const beforeState = current.rows[0]?.status;
+      const currentRow = current.rows[0];
+      const beforeState = currentRow?.status;
       if (!beforeState) throw new CareError(404, "TASK_NOT_FOUND", "errors.event.notFound", false);
-      const eligible = beforeState === "attention_required";
+      const eligible = beforeState === "attention_required" && currentRow.attempt_count < 10;
       const afterState = eligible && !input.dryRun ? "pending" : beforeState;
       const result = input.dryRun ? "previewed" : eligible ? "requeued" : "rejected";
       if (eligible && !input.dryRun) {
         await client.query(
-          `UPDATE care_outbox SET status='pending',attempt_count=0,next_attempt_at=$2,
+          `UPDATE care_outbox SET status='pending',max_attempts=LEAST(10,attempt_count+3),next_attempt_at=$2,
              claim_token=NULL,lease_expires_at=NULL,last_error_code=NULL,terminal_at=NULL
            WHERE event_id=$1 AND status='attention_required'`,
           [input.eventId, this.now()],

@@ -3085,6 +3085,13 @@ cumulative command and candidate-integrity check green.
 Hosted PostgreSQL crash/concurrency/recovery, exact-head jobs, PR/merge/dev CI
 and issue closure remain mandatory.
 
+The first exact-head push/PR runs `30730590933`/`30730608773` both failed the
+new P7-S2 job on the same deterministic invariant: replay reset the outbox
+attempt counter while immutable attempt history retained earlier numbers,
+causing a primary-key collision. The correction preserves monotonic attempt
+numbers and grants only three more attempts up to the database cap of ten. The
+failed runs are retained and are not rerun.
+
 ### Known issues
 
 Local PostgreSQL is unavailable. Existing release/environment issues remain;
