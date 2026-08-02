@@ -37,7 +37,7 @@ public class CommunityModerationService {
 
   @Transactional
   public Result resolve(String caseId,Map<String,Object> body,String key,String correlation){
-    Auth auth=authorize(body,"community_moderation.resolve","/internal/v1/community/moderation/cases/"+caseId+"/resolution"); enrollment(auth.actor()); validateKey(key);
+    Auth auth=authorize(body,"community_moderation.case.resolve","/internal/v1/community/moderation/cases/"+caseId+"/resolution"); enrollment(auth.actor()); validateKey(key);
     String intent=json(withoutAuth(body)); String kd=CommunityDigest.sha256(key), ad=CommunityDigest.sha256(auth.actor()), id=CommunityDigest.sha256(intent);
     List<Map<String,Object>> saved=jdbc.queryForList("SELECT intent_digest,response_json::text FROM community_moderation_idempotency WHERE key_digest=? AND actor_ref_digest=? AND operation='resolve' AND expires_at>CURRENT_TIMESTAMP",kd,ad);
     if(!saved.isEmpty()){ if(!id.equals(saved.getFirst().get("intent_digest"))) throw fail(HttpStatus.CONFLICT,"COMMUNITY_MODERATION_IDEMPOTENCY_CONFLICT"); try{return ok(mapper.readValue(String.valueOf(saved.getFirst().get("response_json")),new TypeReference<Map<String,Object>>(){}));}catch(Exception e){throw fail(HttpStatus.SERVICE_UNAVAILABLE,"COMMUNITY_SERVICE_UNAVAILABLE");}}
@@ -53,9 +53,19 @@ public class CommunityModerationService {
     jdbc.update("INSERT INTO community_moderation_resolutions(resolution_id,case_id,outcome,reason,actor_ref_digest,policy_version,resolved_at,retain_until) VALUES (?,?,?,?,?,'P5-S3-v1',?,?)","resolution_"+UUID.randomUUID().toString().replace("-",""),caseId,outcome,reason,ad,Timestamp.from(now),Timestamp.from(now.plus(365,ChronoUnit.DAYS)));
     audit("moderation.resolved",CommunityDigest.sha256(caseId),next,auth.actor(),correlation);
     jdbc.update("INSERT INTO community_outbox(event_id,event_type,aggregate_id,aggregate_version,lifecycle_outcome,delivery_state,payload,occurred_at,correlation_id,causation_id) VALUES (?,'community.moderation.resolved.v1',?,?,'resolved','suppressed_not_configured',?::jsonb,?,?,?)","event_"+UUID.randomUUID().toString().replace("-",""),caseId,next,json(Map.of("caseId",caseId,"version",next,"outcome",outcome,"policyVersion","P5-S3-v1")),Timestamp.from(now),correlation,text(body,"submissionReference"));
-    Map<String,Object> result=Map.of("caseId",caseId,"state","resolved","version",next,"outcome",outcome,"reason",reason,"policyVersion","P5-S3-v1","resolvedAt",now.toString());
+    Map<String,Object> result=Map.of("caseId",caseId,"state","resolved","version",next,"outcome",outcome,"reason",reason,"policyVersion","P5-S3-v1","resolvedAt",now.toString(),"submissionReference",text(body,"submissionReference"));
     jdbc.update("INSERT INTO community_moderation_idempotency(key_digest,actor_ref_digest,operation,intent_digest,case_id,response_json,created_at,expires_at) VALUES (?,?,'resolve',?,?,?::jsonb,?,?)",kd,ad,id,caseId,json(result),Timestamp.from(now),Timestamp.from(now.plus(24,ChronoUnit.HOURS)));
     return ok(result);
+  }
+
+  @Transactional
+  public Result reconcile(Map<String,Object> body,String correlation){
+    Auth auth=authorize(body,"community_moderation.case.reconcile","/internal/v1/community/moderation/cases/reconcile"); enrollment(auth.actor());
+    String submission=text(body,"submissionReference");
+    List<Map<String,Object>> rows=jdbc.queryForList("SELECT response_json::text FROM community_moderation_idempotency WHERE operation='resolve' AND response_json->>'submissionReference'=? AND expires_at>CURRENT_TIMESTAMP ORDER BY created_at DESC LIMIT 1",submission);
+    audit("moderation.reconciled",CommunityDigest.sha256(submission),1,auth.actor(),correlation);
+    if(rows.isEmpty())return ok(Map.of("state","unknown","submissionReference",submission,"policyVersion","P5-S3-v1"));
+    try{return ok(mapper.readValue(String.valueOf(rows.getFirst().get("response_json")),new TypeReference<Map<String,Object>>(){}));}catch(Exception e){throw fail(HttpStatus.SERVICE_UNAVAILABLE,"COMMUNITY_SERVICE_UNAVAILABLE");}
   }
 
   private Map<String,Object> projection(java.sql.ResultSet r)throws java.sql.SQLException{return Map.of("caseId",r.getString("case_id"),"state",r.getString("state"),"evidenceCategory",r.getString("evidence_category"),"provenance",r.getString("provenance"),"redactionState",r.getString("redaction_state"),"policyVersion",r.getString("policy_version"),"version",r.getInt("version"),"reportedAt",r.getTimestamp("reported_at").toInstant().toString(),"expiresAt",r.getTimestamp("expires_at").toInstant().toString());}

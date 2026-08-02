@@ -2,6 +2,8 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 import { z } from "zod";
 
+export * from "./abuse.js";
+
 export type RuntimeMode = "local" | "test" | "production";
 
 export interface ServiceAssertionInput {

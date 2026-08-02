@@ -22,6 +22,10 @@ public final class CommunityModerationController {
       @RequestHeader("idempotency-key") String key,
       @RequestHeader("x-correlation-id") String correlation) { return respond(service.resolve(caseId, body, key, correlation)); }
 
+  @PostMapping("/internal/v1/community/moderation/cases/reconcile")
+  ResponseEntity<Map<String,Object>> reconcile(@RequestBody Map<String,Object> body,
+      @RequestHeader("x-correlation-id") String correlation) { return respond(service.reconcile(body, correlation)); }
+
   private ResponseEntity<Map<String,Object>> respond(CommunityModerationService.Result result) {
     return ResponseEntity.status(result.status()).header("cache-control", "no-store").body(result.body());
   }

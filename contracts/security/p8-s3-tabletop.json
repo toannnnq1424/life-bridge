@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "exerciseId": "p8-s3-synthetic-credential-consent-event",
+  "syntheticOnly": true,
+  "severity": "high-synthetic",
+  "phases": [
+    "detect",
+    "triage",
+    "preserve_evidence",
+    "contain",
+    "revoke",
+    "recover",
+    "restore_replay_reconcile",
+    "communicate_bilingually",
+    "improve"
+  ],
+  "owners": ["incident-lead", "identity-owner", "data-owner", "communications-owner"],
+  "controls": [
+    "p8-s1-authorization",
+    "p8-s2-rotation",
+    "p7-s2-reconciliation",
+    "p7-s3-isolated-restore",
+    "p8-s3-admission-lifecycle"
+  ],
+  "communications": { "externalSent": false, "legalClaim": false, "languages": ["en", "vi"] },
+  "evidence": {
+    "identifiers": "synthetic-or-digest",
+    "rawPayloads": false,
+    "appendOnlyDigestBound": true
+  },
+  "deadlines": [
+    { "action": "rotate-compromised-generation", "hours": 4 },
+    { "action": "post-incident-review", "hours": 72 }
+  ]
+}

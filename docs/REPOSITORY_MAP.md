@@ -1,5 +1,16 @@
 # Repository Map
 
+## P8-S3 candidate additions
+
+- `contracts/security/p8-s3-*`: fail-closed inventory and synthetic exercise.
+- `packages/config/src/abuse.ts`: digest-keyed admission with separate recovery.
+- `packages/lifecycle`: explicit pending/blocked/failed reconciliation.
+- Community moderation permission parity and authoritative reconcile endpoint.
+- P8-S3 quality, one-shot runner and hosted terminal Phase 8 gate.
+
+No provider, datastore, report/claim/appeal workflow, irreversible deletion,
+legal claim or P9 work is added.
+
 ## P8-S2 candidate additions
 
 - `contracts/security/`: actual secret/encryption inventory, runtime policy and

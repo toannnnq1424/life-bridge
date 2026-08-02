@@ -86,11 +86,11 @@ describe("P7-S3 fail-closed lifecycle policy", () => {
             owner: "identity-consent",
             version: 1,
             intentDigest: digest,
-            state: "confirmed",
+            state: "completed",
           },
         ],
       ).state,
-    ).toBe("attention_required");
+    ).toBe("in_progress");
     const result = reconcileLifecycle(
       "request_synthetic_1",
       digest,
@@ -101,14 +101,14 @@ describe("P7-S3 fail-closed lifecycle policy", () => {
           owner: "identity-consent",
           version: 1,
           intentDigest: digest,
-          state: "attention_required",
+          state: "in_progress",
         },
         {
           requestId: "request_synthetic_1",
           owner: "identity-consent",
           version: 2,
           intentDigest: digest,
-          state: "confirmed",
+          state: "completed",
         },
         {
           requestId: "request_synthetic_1",
@@ -121,7 +121,7 @@ describe("P7-S3 fail-closed lifecycle policy", () => {
     );
     expect(result).toEqual({
       state: "complete",
-      owners: { "identity-consent": "confirmed", "care-coordination": "retained" },
+      owners: { "identity-consent": "completed", "care-coordination": "retained" },
     });
   });
   it("rejects poison/out-of-scope owner evidence", () => {
@@ -136,7 +136,7 @@ describe("P7-S3 fail-closed lifecycle policy", () => {
             owner: "identity-consent",
             version: 1,
             intentDigest: "d".repeat(64),
-            state: "confirmed",
+            state: "completed",
           },
         ],
       ),
