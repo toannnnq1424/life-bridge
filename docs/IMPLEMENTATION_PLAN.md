@@ -1023,6 +1023,13 @@ Acceptance:
 
 ### `P8-S2 — Secrets, encryption, runtime, and supply-chain hardening`
 
+Status 2026-08-02: **In progress** on the canonical phase branch from exact
+`dev@957ff9fcb5841ad51e07ca797bac83774dacbed2`. `CHG-2026-023` reconciles the
+stale issue #29 mapping without changing the accepted P0–P12 order. Three
+independent reviews and official-source research froze repository-native
+rotation, encryption-truth, runtime and supply-chain controls; no external
+secret manager/KMS/PKI/provider or certification claim is introduced.
+
 Outcome: an operator rotates secrets and deploys traceable artifacts without
 placing long-lived credentials in source or logs.
 

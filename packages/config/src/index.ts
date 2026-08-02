@@ -191,6 +191,49 @@ export function requiredKey(value: unknown, name: string): Buffer {
   return key;
 }
 
+export interface RotationKeyring {
+  current: { id: string; key: Buffer };
+  previous?: { id: string; key: Buffer };
+}
+
+export function requiredRotationKeyring(
+  currentValue: unknown,
+  currentIdValue: unknown,
+  previousValue: unknown,
+  previousIdValue: unknown,
+  name: string,
+): RotationKeyring {
+  const id = z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{1,32}$/)
+    .safeParse(currentIdValue);
+  if (!id.success) throw new Error(`${name}_CURRENT_ID_MISSING_OR_INVALID`);
+  const current = { id: id.data, key: requiredKey(currentValue, `${name}_CURRENT`) };
+  if (previousValue === undefined && previousIdValue === undefined) return { current };
+  const previousId = z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{1,32}$/)
+    .safeParse(previousIdValue);
+  if (!previousId.success) throw new Error(`${name}_PREVIOUS_ID_MISSING_OR_INVALID`);
+  const previous = { id: previousId.data, key: requiredKey(previousValue, `${name}_PREVIOUS`) };
+  if (previous.id === current.id || timingSafeEqual(previous.key, current.key)) {
+    throw new Error(`${name}_ROTATION_KEYS_NOT_DISTINCT`);
+  }
+  return { current, previous };
+}
+
+export function requiredPostgresUrl(value: unknown, name: string, mode: RuntimeMode): string {
+  const raw = requiredUrl(value, name);
+  const parsed = new URL(raw);
+  if (!new Set(["postgres:", "postgresql:"]).has(parsed.protocol)) {
+    throw new Error(`${name}_NOT_POSTGRESQL`);
+  }
+  if (mode === "production" && parsed.searchParams.get("sslmode") !== "verify-full") {
+    throw new Error(`${name}_TRANSPORT_UNPROTECTED`);
+  }
+  return raw;
+}
+
 export function requiredSecret(value: unknown, name: string): string {
   const parsed = z.string().min(24).max(256).safeParse(value);
   if (!parsed.success) {

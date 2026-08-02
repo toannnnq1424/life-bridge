@@ -896,3 +896,10 @@ decision for the exact operation, household, resource and digest. Owners check
 membership/consent projection versions and freshness. Object-only legacy task
 routes remain local/test fixture compatibility; no new role, protocol,
 datastore or shared business owner is introduced.
+
+# ADR-031 — Repository-native P8-S2 rotation and unsigned digest-bound provenance
+
+- Status: accepted for P8-S2 on 2026-08-02.
+- Context: the repository has existing environment injection, short service assertions, owner-isolated PostgreSQL, pinned Actions/images and CycloneDX generation, but no selected production provider, KMS, PKI or signing identity.
+- Decision: retain the architecture and add exact current/previous key generations, bounded overlap/revocation, key-id AES-GCM envelopes, truthful transport/at-rest inventory, orchestrator-enforced runtime policy, deterministic SBOM/artifact digests and locally verifiable unsigned provenance. Provenance explicitly records no SLSA level.
+- Consequences: operators can rehearse rotation and verify exact-source artifact evidence without placing credentials in Git/logs/artifacts. Provider key custody, storage encryption, trusted signing/attestation and certification remain release-gated decisions; they cannot be inferred from this ADR.

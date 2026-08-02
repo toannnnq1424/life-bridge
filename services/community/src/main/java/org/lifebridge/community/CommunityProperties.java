@@ -28,6 +28,9 @@ public record CommunityProperties(
         || allowedProvinceCityCodes.stream().anyMatch(code -> !code.matches("^[A-Z0-9-]{3,32}$"))) {
       throw new IllegalArgumentException("COMMUNITY_ALLOWED_PROVINCE_CITY_CODES_INVALID");
     }
+    if (!List.of("local", "test", "production").contains(runtimeMode)) {
+      throw new IllegalArgumentException("COMMUNITY_RUNTIME_MODE_INVALID");
+    }
     if (fixturesEnabled && "production".equals(runtimeMode)) {
       throw new IllegalArgumentException("COMMUNITY_FIXTURES_FORBIDDEN");
     }

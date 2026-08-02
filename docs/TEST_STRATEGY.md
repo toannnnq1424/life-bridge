@@ -228,15 +228,22 @@ Fix only failures caused by or blocking the active slice. Record deferred valida
 
 ## Production-maturity validation campaigns
 
-| Phase | Required additional evidence                                                                                                                                |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P6    | Provider/consumer compatibility, mixed-version primary flow, independent artifact/start/health, architecture fitness, dependency isolation                  |
-| P7    | `N-1 -> N` migrations, replay/reconciliation/dead-letter recovery, duplicate/loss checks, backup/restore, retention/deletion, RPO/RTO                       |
-| P8    | Authorization/isolation matrix, consent revocation, secret rotation, SBOM/provenance, dependency/container scan, abuse and response exercise                |
-| P9    | Redacted telemetry journey, SLI/SLO/error budget, injected-alert/runbook test, degraded/offline/conflict states, incident and DR rehearsal                  |
-| P10   | Representative load, spike and soak, backpressure/saturation, correctness under scale, capacity and cost thresholds                                         |
-| P11   | Clean install, full CI/security/performance/DR evidence, immutable production build, migration/rollback, staged rollout, smoke, demo, and release rehearsal |
-| P12   | Alert-to-resolution/postmortem, patch/vulnerability/credential cadence, backup/restore recheck, SLO review, privacy-safe feedback governance                |
+| Phase | Required additional evidence                                                                                                                 |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| P6    | Provider/consumer compatibility, mixed-version primary flow, independent artifact/start/health, architecture fitness, dependency isolation   |
+| P7    | `N-1 -> N` migrations, replay/reconciliation/dead-letter recovery, duplicate/loss checks, backup/restore, retention/deletion, RPO/RTO        |
+| P8    | Authorization/isolation matrix, consent revocation, secret rotation, SBOM/provenance, dependency/container scan, abuse and response exercise |
+
+P8-S2 uses `pnpm.cmd run test:p8-s2:fitness` for inventory, key-generation,
+transport, pinning, exception, provenance-tamper and runtime-policy negatives.
+The sole Level C entry is `pnpm.cmd run validate:p8-s2 -- --SkipInstall` only
+after the coherent candidate is green. Hosted proof must independently inspect
+all six artifacts/containers and report the always-run P1-through-P8-S2 gate;
+local Docker/PostgreSQL absence is never reported as a pass.
+| P9 | Redacted telemetry journey, SLI/SLO/error budget, injected-alert/runbook test, degraded/offline/conflict states, incident and DR rehearsal |
+| P10 | Representative load, spike and soak, backpressure/saturation, correctness under scale, capacity and cost thresholds |
+| P11 | Clean install, full CI/security/performance/DR evidence, immutable production build, migration/rollback, staged rollout, smoke, demo, and release rehearsal |
+| P12 | Alert-to-resolution/postmortem, patch/vulnerability/credential cadence, backup/restore recheck, SLO review, privacy-safe feedback governance |
 
 Each campaign:
 

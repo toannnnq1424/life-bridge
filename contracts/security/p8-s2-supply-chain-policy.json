@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "actionsMustUseFullSha": true,
+  "containersMustUseDigest": true,
+  "releaseThresholds": {
+    "dependency": "high",
+    "container": "high",
+    "secretLeak": 0,
+    "expiredExceptions": 0
+  },
+  "exceptionRequiredFields": ["id", "owner", "expiresAt", "evidence", "rationale"],
+  "exceptions": [],
+  "provenance": {
+    "predicate": "https://slsa.dev/provenance/v1",
+    "claimLevel": null,
+    "requiredBindings": [
+      "sourceSha",
+      "artifactSha256",
+      "sbomSha256",
+      "buildInputsSha256",
+      "builderVersions"
+    ]
+  },
+  "artifactLeakageForbidden": [
+    ".env",
+    "private key",
+    "source map",
+    "test-fixtures",
+    "fixture credential",
+    "migration credential",
+    "cache token"
+  ]
+}

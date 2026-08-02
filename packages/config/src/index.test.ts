@@ -5,6 +5,8 @@ import {
   DependencyGuard,
   requiredDependencyUrl,
   requiredKey,
+  requiredPostgresUrl,
+  requiredRotationKeyring,
   requireFixtureSafeMode,
   verifyServiceAssertion,
 } from "./index.js";
@@ -35,6 +37,27 @@ describe("fixture runtime boundary", () => {
     expect(() => requiredKey("too-short", "IDENTITY_DATA_KEY")).toThrow(
       "IDENTITY_DATA_KEY_MISSING_OR_INVALID",
     );
+  });
+
+  it("freezes bounded keyring and PostgreSQL transport contracts", () => {
+    const current = Buffer.alloc(32, 7).toString("base64url");
+    const previous = Buffer.alloc(32, 8).toString("base64url");
+    expect(
+      requiredRotationKeyring(current, "k2", previous, "k1", "IDENTITY_DATA_KEY"),
+    ).toMatchObject({
+      current: { id: "k2" },
+      previous: { id: "k1" },
+    });
+    expect(() =>
+      requiredRotationKeyring(current, "k1", current, "k1", "IDENTITY_DATA_KEY"),
+    ).toThrow();
+    expect(
+      requiredPostgresUrl("postgresql://db/app?sslmode=verify-full", "DB", "production"),
+    ).toContain("verify-full");
+    expect(() => requiredPostgresUrl("postgresql://db/app", "DB", "production")).toThrow(
+      "DB_TRANSPORT_UNPROTECTED",
+    );
+    expect(requiredPostgresUrl("postgresql://127.0.0.1/app", "DB", "test")).toContain("127.0.0.1");
   });
 });
 

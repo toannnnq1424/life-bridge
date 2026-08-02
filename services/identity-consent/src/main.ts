@@ -1,4 +1,11 @@
-import { port, requiredKey, requiredSecret, requiredUrl } from "@lifebridge/config";
+import {
+  port,
+  requiredKey,
+  requiredPostgresUrl,
+  requiredRotationKeyring,
+  requiredSecret,
+  RuntimeModeSchema,
+} from "@lifebridge/config";
 import { Pool } from "pg";
 
 import { hashPassword } from "./crypto.js";
@@ -8,13 +15,19 @@ import { ConsentService } from "./consent-service.js";
 import { HouseholdService } from "./household-service.js";
 import { IdentityService } from "./service.js";
 
-const databaseUrl = requiredUrl(process.env.IDENTITY_DATABASE_URL, "IDENTITY_DATABASE_URL");
-const migrationDatabaseUrl = requiredUrl(
+const runtimeMode = RuntimeModeSchema.parse(process.env.RUNTIME_MODE);
+const databaseUrl = requiredPostgresUrl(
+  process.env.IDENTITY_DATABASE_URL,
+  "IDENTITY_DATABASE_URL",
+  runtimeMode,
+);
+const migrationDatabaseUrl = requiredPostgresUrl(
   process.env.IDENTITY_MIGRATION_DATABASE_URL ??
     (process.env.RUNTIME_MODE === "local" || process.env.RUNTIME_MODE === "test"
       ? databaseUrl
       : undefined),
   "IDENTITY_MIGRATION_DATABASE_URL",
+  runtimeMode,
 );
 const internalToken = requiredSecret(
   process.env.IDENTITY_INTERNAL_TOKEN,
@@ -23,7 +36,13 @@ const internalToken = requiredSecret(
 const previousInternalToken = process.env.IDENTITY_INTERNAL_TOKEN_PREVIOUS
   ? requiredSecret(process.env.IDENTITY_INTERNAL_TOKEN_PREVIOUS, "IDENTITY_INTERNAL_TOKEN_PREVIOUS")
   : undefined;
-const dataKey = requiredKey(process.env.IDENTITY_DATA_KEY, "IDENTITY_DATA_KEY");
+const dataKeys = requiredRotationKeyring(
+  process.env.IDENTITY_DATA_KEY_CURRENT ?? process.env.IDENTITY_DATA_KEY,
+  process.env.IDENTITY_DATA_KEY_CURRENT_ID ?? "legacy",
+  process.env.IDENTITY_DATA_KEY_PREVIOUS,
+  process.env.IDENTITY_DATA_KEY_PREVIOUS_ID,
+  "IDENTITY_DATA_KEY",
+);
 const rateLimitKey = requiredKey(process.env.IDENTITY_RATE_LIMIT_KEY, "IDENTITY_RATE_LIMIT_KEY");
 const servicePort = port(process.env.IDENTITY_PORT, 3100);
 const serviceHost = process.env.IDENTITY_HOST ?? "127.0.0.1";
@@ -31,12 +50,12 @@ const serviceHost = process.env.IDENTITY_HOST ?? "127.0.0.1";
 await migrateIdentityDatabase(migrationDatabaseUrl);
 const pool = new Pool({ connectionString: databaseUrl, max: 10 });
 const identity = new IdentityService(pool, {
-  dataKey,
+  dataKey: dataKeys,
   rateLimitKey,
   dummyPasswordHash: await hashPassword(`dummy-${randomDummy()}`),
 });
 const households = new HouseholdService(pool, { rateLimitKey });
-const consent = new ConsentService(pool, { rateLimitKey, cursorKey: dataKey });
+const consent = new ConsentService(pool, { rateLimitKey, cursorKey: dataKeys.current.key });
 const app = buildIdentityServer(
   identity,
   internalToken,
