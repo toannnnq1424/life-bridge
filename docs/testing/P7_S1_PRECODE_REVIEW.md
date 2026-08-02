@@ -1,7 +1,9 @@
 # P7-S1 pre-code review — service-owned migration safety
 
-Date: 2026-08-02  
-Base: `origin/dev@ae48031652fbc9e751cd0b0928deb5c01f39b5e0`  
+Date: 2026-08-02
+
+Base: `origin/dev@ae48031652fbc9e751cd0b0928deb5c01f39b5e0`
+
 Scope: P7-S1 only
 
 ## Frozen inventory
