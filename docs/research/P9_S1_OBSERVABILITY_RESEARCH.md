@@ -1,0 +1,13 @@
+# P9-S1 observability research gate
+
+Status: **PASS WITH ASSUMPTIONS**. Retrieved 2026-08-02. This is engineering evidence, not legal advice or a compliance claim.
+
+| Primary source                                                                                                               | Current use                                            | Decision / limitation                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| W3C, _Trace Context_ Recommendation (2021), https://www.w3.org/TR/trace-context/                                             | HTTP trace format and trust-boundary analysis          | Restart public context; accept strict context only after internal authentication; no PII in trace state.                    |
+| OpenTelemetry, _Baggage_ (retrieved 2026-08-02), https://opentelemetry.io/docs/concepts/signals/baggage/                     | Propagation leakage analysis                           | LifeBridge propagates no baggage in P9-S1. No collector/provider is selected.                                               |
+| OpenTelemetry, _Semantic conventions_ (retrieved 2026-08-02), https://opentelemetry.io/docs/specs/semconv/                   | Stable signal vocabulary                               | Repository definitions are exporter-neutral; no claim of complete SDK auto-instrumentation.                                 |
+| OWASP, _Logging Cheat Sheet_ (retrieved 2026-08-02), https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html | Exclusion, sanitization, access and retention controls | Strict runtime allowlist, CR/LF rejection, secrets/PII/care-content negatives, truthful environment-owned access/retention. |
+| NIST, _Privacy Framework_ (retrieved 2026-08-02), https://www.nist.gov/privacy-framework                                     | Data minimization and lifecycle governance             | Used as voluntary risk-management guidance only; no jurisdictional or certification claim.                                  |
+
+The actual stack is repository-native JSON structured signals on stdout plus CI evidence and Spring Actuator health. P9-S1 adds no external SaaS, exporter or shared telemetry datastore. Exact retention and access therefore inherit the local/hosted environment and are not falsely represented as repository-enforced.

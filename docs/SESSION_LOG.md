@@ -3347,3 +3347,9 @@ checks were green. PR #89 merged by merge commit
 `30739630918` passed the full Phase 8 path. This docs-only closeout must pass
 classifier/aggregator, then #30 closes and the phase branch is removed. Do not
 start P9.
+
+# 2026-08-02 — P9-S1 redacted observability candidate
+
+Started from exact accepted `origin/dev@c93be641fd1a828e16aef060c70f5f9feb4c4f36` in the clean task worktree and canonical `phase/9-redacted-observability-slo-baseline` branch. Three independent architecture/operations, security/privacy and validation/reliability reviews converged on trusted Gateway roots, post-auth internal continuation, baggage prohibition, runtime allowlists, Spring parity, state-safe failure injection and synthetic-only SLO truth. Official W3C, OpenTelemetry, OWASP and NIST research is recorded without a compliance claim.
+
+The candidate adds executable inventory/dashboard/negative fixtures, strict fail-safe Node signals, Gateway spoof prevention, Java parity, focused fitness, one-shot Level C and P9 hosted/cumulative gates. Focused TypeScript 12/12, observability 9/9, typecheck/format and Java parity 2/2 pass. Sole Level C `091f8d49c2734571ac1c934357b80b87` passed every stage and ended `passed_with_hosted_postgres_mixed_runtime_required`; it must not run again. Issue #31 was verified and reconciled in place through the authenticated repository UI; no duplicate exists. Exact next in this task is coherent commit/push, ready PR, exact-head hosted gates, merge-commit, automatic dev CI and bilingual closeout. Do not start P9-S2.

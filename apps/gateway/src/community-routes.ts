@@ -24,7 +24,10 @@ import {
   type CommunityMatchPermission,
   type CommunityModerationPermission,
 } from "@lifebridge/contracts";
-import { resolveCorrelationId, type SafeLogger } from "@lifebridge/observability";
+import {
+  resolvePublicCorrelationId as resolveCorrelationId,
+  type SafeLogger,
+} from "@lifebridge/observability";
 import { createServiceAssertion, DependencyGuard } from "@lifebridge/config";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { SafeLogger, SafeMetrics, SafeTracer, resolveCorrelationId } from "./index.js";
+import {
+  acceptTrustedTraceContext,
+  createTrustedTraceContext,
+  SafeLogger,
+  SafeMetrics,
+  SafeTracer,
+  safePropagationHeaders,
+  resolveCorrelationId,
+} from "./index.js";
 
 describe("safe structured logging", () => {
   it("serializes only the allow-listed shape", () => {
@@ -31,9 +39,50 @@ describe("safe structured logging", () => {
       operation: "complete",
       result: "success",
       correlationId: "corr_demo_123",
-      actorId: "member_minh",
-      resourceId: "task_demo_1",
     });
+  });
+
+  it("restarts untrusted context and propagates no baggage", () => {
+    const hostile = "00-11111111111111111111111111111111-2222222222222222-01";
+    const first = acceptTrustedTraceContext(hostile, false);
+    const second = acceptTrustedTraceContext(hostile, false);
+    expect(first.traceId).not.toBe("11111111111111111111111111111111");
+    expect(first.traceId).not.toBe(second.traceId);
+    expect(Object.keys(safePropagationHeaders(first))).toEqual(["traceparent", "x-correlation-id"]);
+  });
+
+  it("continues only trusted strict W3C context with a fresh span", () => {
+    const parent = createTrustedTraceContext();
+    const child = acceptTrustedTraceContext(parent.traceparent, true);
+    expect(child.traceId).toBe(parent.traceId);
+    expect(child.spanId).not.toBe(parent.spanId);
+  });
+
+  it("drops sensitive/unknown runtime keys, control injection and survives sink failure", () => {
+    const output: string[] = [];
+    const logger = new SafeLogger("gateway", (value) => output.push(value));
+    logger.emit({
+      level: "info",
+      eventName: "bad\r\nsecret",
+      operation: "request",
+      result: "success",
+      correlationId: "corr_safe_123",
+      actorId: "household_private",
+      password: "hidden",
+      baggage: "email@example.test",
+    } as never);
+    expect(output.join("\n")).not.toMatch(/household_private|hidden|example\.test|\r|\nsecret/);
+    expect(() =>
+      new SafeLogger("gateway", () => {
+        throw new Error("exporter down");
+      }).emit({
+        level: "info",
+        eventName: "request.accepted",
+        operation: "request",
+        result: "success",
+        correlationId: "corr_safe_123",
+      }),
+    ).not.toThrow();
   });
 
   it("replaces invalid inbound correlation identifiers", () => {

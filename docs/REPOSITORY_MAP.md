@@ -341,3 +341,11 @@ edits inside a mapped boundary do not require a map rewrite.
 - `tools/quality/src/p6-s2-*` — change-classifier, architecture-fitness and
   artifact-specific SBOM generation/tests.
 - `scripts/validate-p6-s2.ps1` — one-shot Windows P6-S2 slice validation.
+
+## P9-S1 observability additions
+
+- `contracts/observability/`: executable journey/signal/redaction/SLO/dashboard inventory and adversarial fixtures.
+- `packages/observability/`: strict Node telemetry schema, trusted trace propagation and fail-safe sinks.
+- `services/community/.../SafeTelemetry.java`: Spring parity without cross-runtime business imports.
+- `tools/quality/src/p9-s1-fitness.test.ts` and `scripts/validate-p9-s1.ps1`: focused fitness and single-use Level C entry point.
+- `docs/operations/P9_S1_OBSERVABILITY_RUNBOOK.md`: operator classification, ownership, escalation and recovery procedure.
