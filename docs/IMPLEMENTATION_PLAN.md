@@ -1688,6 +1688,17 @@ single Level C, exact-head/post-merge CI and issue #14 closeout are complete.
 
 ## Exact next action
 
+P7-S1 is accepted at
+`dev@2eac295de1fb33232023372ae974a4ce9a9354a2`. PR #79 exact head `fea1093`
+passed automatic push/PR runs `30727810915`/`30727812530`; automatic
+post-merge run `30728240535` passed all eight jobs including hosted P7-S1 and
+the unchanged aggregate gate. Finish only this same-task docs-only closeout and
+bilingual issue #25 closure. P7-S2 may start only from a fresh controller
+dispatch after closeout; P7-S3, P8, DATA-S1 and release remain out of scope.
+
+The historical handoffs below remain evidence of their accepted slices and do
+not supersede this orientation.
+
 P5-S3 is accepted at
 `dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`. Feature PR #70 established the
 moderation slice; post-merge run `30425583410` exposed an initialization race.

@@ -66,7 +66,7 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 14       | `P6-S1` Contract rolling compatibility  | Validated/merged; PR #73 and CI passed        | Exact head `b36a181`; merge `f7aab76`; post-merge CI green      | Issue #22 closed with bilingual evidence       |
 | 15       | `P6-S2` Independent artifacts/ownership | Product validated/merged; closeout PR pending | Exact head `0e10073`; merge `2b4c8d4`; post-merge CI green      | Issue #23 closes after docs-only gate proof    |
 | 16       | `P6-S3` Service auth/failure isolation  | Validated/merged; PR #77 and CI passed        | Exact head `8450adb`; merge `08fd1c8`; post-merge CI green      | Close #24 after docs-only evidence             |
-| 17       | `P7-S1` Owned migrations                | Local candidate; hosted promotion pending     | P6 accepted; exact-head P7 database proof pending               | Compatible schema upgrade                      |
+| 17       | `P7-S1` Owned migrations                | Validated/merged; PR #79 and CI passed        | Exact head `fea1093`; merge `2eac295`; post-merge CI green      | Close #25 after docs-only evidence             |
 | 18       | `P7-S2` Event replay/reconciliation     | Planned                                       | P7-S1                                                           | Recoverable idempotent delivery                |
 | 19       | `P7-S3` Data lifecycle/recovery         | Planned                                       | P7-S1/S2; P2 consent                                            | Restore/retention/deletion evidence            |
 | 20       | `P8-S1` Isolation/consent enforcement   | Planned                                       | P2; P6/P7                                                       | Authorization isolation matrix                 |
@@ -261,3 +261,12 @@ Controller dispatch supersedes the stale no-slice-active handoff for P5-S3
 only. Mandatory contract/policy, Stitch UI/privacy/accessibility, and
 test/CI/operations reviews are reconciled and Frozen. Candidate implementation
 exists on `phase/5-moderation-resolution`; local Level C and promotion remain.
+
+## P7-S1 canonical handoff — 2026-08-02
+
+P7-S1 is accepted at
+`dev@2eac295de1fb33232023372ae974a4ce9a9354a2`. Exact product head `fea1093`
+passed push/PR runs `30727810915`/`30727812530`; automatic post-merge run
+`30728240535` passed all eight jobs. This docs-only closeout and bilingual #25
+closure are the only remaining same-task actions. Exact next is P7-S2 in a
+fresh controller-dispatched task; do not begin it here.

@@ -1171,3 +1171,16 @@ continues to fail on any output it creates or leaves itself.
   root quality tooling unnecessarily depended on the new workspace package.
   Targeted correction uses a relative quality import while service artifacts
   retain owned dependencies/copies; the failed run is retained, not rerun.
+
+### Canonical promotion evidence
+
+- Exact correction head `fea109328db910b40b8d95cb88d2f8716ec9b80a`
+  passed automatic push/PR runs `30727810915`/`30727812530`, 16/16 checks on
+  each candidate view including hosted P7-S1 PostgreSQL/Flyway, mixed-runtime,
+  credential isolation, failure/recovery and the unchanged aggregate gate.
+- Ready PR #79 merged to `dev` by merge commit
+  `2eac295de1fb33232023372ae974a4ce9a9354a2`. Automatic post-merge run
+  `30728240535` passed all eight jobs. No manual rerun or dispatch occurred.
+- P7-S1 is accepted. Same-task closeout is Markdown-only and must prove the
+  accepted docs classifier/always-reported aggregator before issue #25 closes
+  bilingually. P7-S2 remains unstarted pending a fresh canonical task.
