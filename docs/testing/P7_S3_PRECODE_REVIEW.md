@@ -1,6 +1,6 @@
 # P7-S3 pre-code review — lifecycle and recovery
 
-Date: 2026-08-02  
+Date: 2026-08-02
 Accepted base: `origin/dev@36ba33372a2b138e10d0fc76b7e3ac96a008f05f`
 
 Three independent read-only reviews covered recovery/version ownership, privacy
