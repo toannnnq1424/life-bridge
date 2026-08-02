@@ -1,6 +1,6 @@
 # Integration Log
 
-## INT-2026-031 — P7-S2 local recovery candidate
+## INT-2026-031 — P7-S2 accepted recovery slice
 
 - Base: exact `origin/dev@20361386a918d731b18ada5c7fbf16496cbfd171`.
 - Boundary: Care outbox → authenticated HTTP → Notification inbox; no broker,
@@ -9,8 +9,11 @@
   deduplication, monotonic receipt and durable result.
 - Operations: distinct operator scopes/keys, redacted API reconciliation and
   dry-run-first single-event replay.
-- Gate: focused proof and one Level C precede one ready PR to `dev`; P7-S3 is
-  excluded.
+- Gate: exact product head `2111cd5ba2da3632c060c41bf153fe7322c5570a`
+  passed push/PR runs `30730747200`/`30730748657`. PR #81 merged by merge
+  commit `c2c0f33516a7860dc40ec5c3376a45a06a3bf1c5`; automatic `dev` run
+  `30731150450` passed Windows, PostgreSQL/mixed-runtime/Chromium, P6-S2,
+  P6-S3, P7-S1, P7-S2 and the P1-through-P7-S2 aggregator. P7-S3 is excluded.
 
 This file records how branches, contracts, services, data, design artifacts, and
 environments are intended to converge. It is not a substitute for Git history.

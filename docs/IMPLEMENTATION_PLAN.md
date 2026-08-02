@@ -950,8 +950,11 @@ Acceptance:
 Outcome: an operator recovers delayed or poison events without losing or
 duplicating the business result.
 
-Status: **In progress** on the canonical branch from exact accepted
-`dev@20361386a918d731b18ada5c7fbf16496cbfd171`. The frozen topology is Care
+Status: **Accepted on `dev`** through product PR #81 and merge commit
+`c2c0f33516a7860dc40ec5c3376a45a06a3bf1c5`. Exact product head
+`2111cd5ba2da3632c060c41bf153fe7322c5570a` passed push/PR runs
+`30730747200`/`30730748657`; automatic post-merge run `30731150450` passed all
+required P1 through P7-S2 gates. The frozen topology is Care
 PostgreSQL outbox → authenticated bounded HTTP → Notification PostgreSQL
 inbox/result. Care owns attempts/terminal attention; Notification owns receipt
 and durable result. Recovery is single-event, dry-run-first and redacted.
