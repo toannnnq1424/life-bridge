@@ -3099,7 +3099,15 @@ no P7-S3 authority is implied.
 
 ### Exact next step
 
-Commit and push the coherent phase candidate, open one ready PR to `dev`, obtain
-literal exact-head hosted P7-S2 plus cumulative gates, merge by merge commit,
-verify automatic dev CI, perform bounded closeout and close issue #26
-bilingually. Do not start P7-S3.
+Product promotion is complete. Exact head
+`2111cd5ba2da3632c060c41bf153fe7322c5570a` passed hosted push/PR runs
+`30730747200`/`30730748657`; PR #81 merged by merge commit
+`c2c0f33516a7860dc40ec5c3376a45a06a3bf1c5`. Automatic post-merge `dev` run
+`30731150450` passed every required job, including Windows,
+PostgreSQL/mixed-runtime/Chromium, inherited P6/P7-S1 boundaries, P7-S2 32/32,
+and the P1-through-P7-S2 aggregator. No manual rerun or dispatch occurred.
+
+Complete only this bounded Markdown closeout under the accepted docs-only
+classifier, then close issue #26 bilingually. The exact next product slice is
+P7-S3 only in a fresh controller-dispatched task from the then-current accepted
+`dev`; do not begin P7-S3, P8, DATA-S1 or release work here.
