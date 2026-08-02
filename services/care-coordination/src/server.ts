@@ -52,6 +52,7 @@ export function buildCareServer(
   documentVault?: DocumentVaultService,
   enforceServiceIdentity = false,
   previousInternalToken?: string,
+  recoveryInternalToken = internalToken,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 512 * 1024 });
 
@@ -62,15 +63,18 @@ export function buildCareServer(
 
   app.addHook("preHandler", async (request, reply) => {
     if (request.url.startsWith("/internal/")) {
+      const recoveryRoute = request.url.startsWith("/internal/v1/event-recovery/");
       const legacy = header(request, "x-internal-service-token") === internalToken;
       const identity = verifyServiceAssertion(header(request, "x-lifebridge-service-identity"), {
         audience: "care-coordination",
-        scope: "care.access",
-        allowedCallers: ["gateway"],
-        keys: {
-          "gateway-current": internalToken,
-          ...(previousInternalToken ? { "gateway-previous": previousInternalToken } : {}),
-        },
+        scope: recoveryRoute ? "event.recovery" : "care.access",
+        allowedCallers: recoveryRoute ? ["recovery-operator"] : ["gateway"],
+        keys: recoveryRoute
+          ? { "recovery-current": recoveryInternalToken }
+          : {
+              "gateway-current": internalToken,
+              ...(previousInternalToken ? { "gateway-previous": previousInternalToken } : {}),
+            },
       });
       if (!(identity || (!enforceServiceIdentity && legacy))) {
         await reply.code(404).send();
@@ -85,6 +89,27 @@ export function buildCareServer(
       : reply.code(503).send({ status: "not_ready", dependency: "care_database" }),
   );
   app.get("/version", async () => ({ service: "care-coordination", contract: "P4-S3-v1" }));
+
+  app.get<{ Params: { eventId: string } }>(
+    "/internal/v1/event-recovery/events/:eventId",
+    async (request, reply) => {
+      const evidence = await care.deliveryEvidence(request.params.eventId);
+      return evidence ? evidence : reply.code(404).send();
+    },
+  );
+  app.post<{ Params: { eventId: string }; Body: unknown }>(
+    "/internal/v1/event-recovery/events/:eventId/replay",
+    async (request) => {
+      const body = recoveryBody(request.body);
+      return care.replayEvent({
+        eventId: request.params.eventId,
+        operatorId: boundedRecoveryText(body.operatorId, "operatorId"),
+        reasonCode: boundedRecoveryText(body.reasonCode, "reasonCode"),
+        dryRun: body.dryRun !== false,
+        correlationId: resolveCorrelationId(header(request, "x-correlation-id")),
+      });
+    },
+  );
 
   app.post<{ Params: { householdId: string }; Body: unknown }>(
     "/internal/v1/coordination/households/:householdId/documents/query",
@@ -853,4 +878,18 @@ function coordinationBody(value: unknown): Record<string, unknown> {
     throw new CareError(400, "HANDOFF_VALIDATION_FAILED", "handoff.validation");
   }
   return value as Record<string, unknown>;
+}
+
+function recoveryBody(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new CareError(400, "TASK_VALIDATION_FAILED", "errors.recovery.validation", false);
+  }
+  return value as Record<string, unknown>;
+}
+
+function boundedRecoveryText(value: unknown, field: string): string {
+  if (typeof value !== "string" || !/^[a-zA-Z0-9_.:-]{3,80}$/u.test(value)) {
+    throw new CareError(400, "TASK_VALIDATION_FAILED", `errors.recovery.${field}`, false);
+  }
+  return value;
 }

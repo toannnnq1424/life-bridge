@@ -1,5 +1,13 @@
 # Data Model
 
+## P7-S2 delivery and recovery evidence
+
+Care owns claim/lease fencing, bounded attempts, failure/terminal timestamps,
+`care_delivery_attempts` and content-free `care_event_recovery_audit`.
+Notification inbox evidence adds opaque aggregate/version and payload size;
+`notification_event_heads` enforces monotonic ordering. Neither service stores
+or mutates the other's business truth.
+
 ## P7-S1 migration metadata and compatibility
 
 Node databases contain owner-local `lifebridge_migration_ledger` rows with

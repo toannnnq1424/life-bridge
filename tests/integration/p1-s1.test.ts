@@ -31,11 +31,12 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await carePool.query(
-    `TRUNCATE care_task_handoffs, care_timeline_events, care_idempotency,
-              care_audit, care_outbox, care_tasks RESTART IDENTITY CASCADE`,
+    `TRUNCATE care_event_recovery_audit, care_delivery_attempts, care_task_handoffs,
+              care_timeline_events, care_idempotency, care_audit, care_outbox,
+              care_tasks RESTART IDENTITY CASCADE`,
   );
   await notificationPool.query(
-    "TRUNCATE notifications, notification_inbox RESTART IDENTITY CASCADE",
+    "TRUNCATE notification_event_heads, notifications, notification_inbox RESTART IDENTITY CASCADE",
   );
 });
 

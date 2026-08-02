@@ -12,6 +12,7 @@ export async function migrateCareDatabase(connectionString: string): Promise<voi
     "006_emergency_readiness.sql",
     "007_document_vault.sql",
     "008_p7_schema_compatibility.sql",
+    "009_p7_event_recovery.sql",
   ];
   await migrateOwnedDatabase({
     connectionString,

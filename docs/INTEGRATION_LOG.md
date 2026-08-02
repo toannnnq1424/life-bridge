@@ -1,5 +1,17 @@
 # Integration Log
 
+## INT-2026-031 — P7-S2 local recovery candidate
+
+- Base: exact `origin/dev@20361386a918d731b18ada5c7fbf16496cbfd171`.
+- Boundary: Care outbox → authenticated HTTP → Notification inbox; no broker,
+  datastore, shared credential or Community delivery.
+- Ownership: Care owns fenced attempts/terminal/replay audit; Notification owns
+  deduplication, monotonic receipt and durable result.
+- Operations: distinct operator scopes/keys, redacted API reconciliation and
+  dry-run-first single-event replay.
+- Gate: focused proof and one Level C precede one ready PR to `dev`; P7-S3 is
+  excluded.
+
 This file records how branches, contracts, services, data, design artifacts, and
 environments are intended to converge. It is not a substitute for Git history.
 

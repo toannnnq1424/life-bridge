@@ -15,7 +15,7 @@
         "runtime": "IDENTITY_DATABASE_URL",
         "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
       },
-      "compatibility": { "schema": 8, "runtimeMinimum": 7, "runtimeMaximum": 8 },
+      "compatibility": { "schema": 9, "runtimeMinimum": 8, "runtimeMaximum": 9 },
       "migrations": [
         [1, "001_initial.sql", "5039d2574f7ff3c6ab2438bf3b82c0b0dafc8cfd7d601cc1a41d841b68941b69"],
         [
@@ -103,6 +103,11 @@
           8,
           "008_p7_schema_compatibility.sql",
           "466555bf00bea2e972355940015ccb06c57b96b9cfebf7ce495cc3cc029da2bb"
+        ],
+        [
+          9,
+          "009_p7_event_recovery.sql",
+          "8400f21d71933ea7aebdd942f41b1e227ccd1bb0cbb9137c4dc0bb3a4fd20006"
         ]
       ]
     },
@@ -125,7 +130,7 @@
         "runtime": "NOTIFICATION_DATABASE_URL",
         "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
       },
-      "compatibility": { "schema": 4, "runtimeMinimum": 3, "runtimeMaximum": 4 },
+      "compatibility": { "schema": 5, "runtimeMinimum": 4, "runtimeMaximum": 5 },
       "migrations": [
         [1, "001_initial.sql", "5888fb05bed8b253d77ebd79da858dfaa0e677cab277bb36a6b11ddbd0a5f3ed"],
         [
@@ -142,6 +147,11 @@
           4,
           "004_p7_schema_compatibility.sql",
           "cab3de580229e8d3cabad12f029d27f30d6348f289190158dbaa0725ae10bde6"
+        ],
+        [
+          5,
+          "005_p7_event_result_evidence.sql",
+          "2ea7ecaff23483fb067cc61ff994a5339efffaf0a69f5ddfdac5188386b79e30"
         ]
       ]
     },

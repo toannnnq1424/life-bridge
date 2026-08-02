@@ -3032,3 +3032,67 @@ The exact next product slice is P7-S2 only in a fresh controller-dispatched
 task from the then-current accepted `dev`. That task must freeze replay,
 reconciliation, idempotency and dead-letter ownership before implementation.
 Do not start P7-S2, P7-S3, P8, DATA-S1 or release work here.
+
+## 2026-08-02 — P7-S2 durable event recovery local candidate
+
+### Objective
+
+Recover delayed, duplicated, out-of-order and poison Care events without loss,
+duplicate durable Notification results or corruption of source truth.
+
+### Planned versus actual
+
+The accepted outcome and brokerless transport are unchanged. Three independent
+reviews converged on stale-worker fencing, aggregate ordering, least-privilege
+operator evidence and deterministic crash proof. No broker, datastore, service,
+shared credential, UI or P7-S3 work was added.
+
+### Completed
+
+Added Care claim-token CAS, bounded/exhausted terminal attention, attempt and
+recovery audit, aggregate ordering and single-flight dispatch. Added
+Notification immutable receipt/result evidence, aggregate locking and stale
+version rejection. Added separate operator scopes/keys, redacted owner-local
+reconcile APIs, dry-run-first replay tooling, deterministic PostgreSQL failure
+harness, auth/architecture negatives, fail-closed classifier updates and an
+exact-head P7-S2 hosted/cumulative job.
+
+### Files changed
+
+Care/Notification additive migrations and direct source/tests; migration ledger;
+operator/fitness/database tools; P7-S2 runner/CI; direct architecture/API/data/
+security/deployment/test/state documents. The Stitch canary is untouched.
+
+### Decisions and Change IDs
+
+No new architecture/product decision or ADR is required. Care remains terminal
+owner; Notification remains durable-result owner; rollback is additive
+roll-forward/compensation.
+
+### Validation performed
+
+Focused P7-S2 auth/fencing/classifier suite passed 32/32; P7-S1 ledger fitness
+passed 4/4; P6-S2 fitness 27/27 and P6-S3 contracts 69/69 passed; repository
+typecheck, lint, format, docs/config/secrets and all production builds passed.
+The sole Level C invocation `c3ee4d2790d54e43b13ad4015cf0953c`
+passed locked install and static/auth fitness, classified local PostgreSQL as
+hosted-required, then retained a cumulative-stage exit while the tool-side wait
+timed out. No second campaign was invoked. Targeted decomposition proved every
+cumulative command and candidate-integrity check green.
+
+### Validation intentionally deferred
+
+Hosted PostgreSQL crash/concurrency/recovery, exact-head jobs, PR/merge/dev CI
+and issue closure remain mandatory.
+
+### Known issues
+
+Local PostgreSQL is unavailable. Existing release/environment issues remain;
+no P7-S3 authority is implied.
+
+### Exact next step
+
+Commit and push the coherent phase candidate, open one ready PR to `dev`, obtain
+literal exact-head hosted P7-S2 plus cumulative gates, merge by merge commit,
+verify automatic dev CI, perform bounded closeout and close issue #26
+bilingually. Do not start P7-S3.

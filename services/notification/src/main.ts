@@ -36,6 +36,12 @@ const previousCareInternalToken = process.env.CARE_NOTIFICATION_INTERNAL_TOKEN_P
       "CARE_NOTIFICATION_INTERNAL_TOKEN_PREVIOUS",
     )
   : undefined;
+const recoveryInternalToken = requiredSecret(
+  process.env.RUNTIME_MODE === "production"
+    ? process.env.NOTIFICATION_RECOVERY_INTERNAL_TOKEN
+    : (process.env.NOTIFICATION_RECOVERY_INTERNAL_TOKEN ?? internalToken),
+  "NOTIFICATION_RECOVERY_INTERNAL_TOKEN",
+);
 const servicePort = port(process.env.NOTIFICATION_PORT, 3102);
 const serviceHost = process.env.NOTIFICATION_HOST ?? "127.0.0.1";
 
@@ -51,6 +57,7 @@ const app = buildNotificationServer(
   careInternalToken,
   previousInternalToken,
   previousCareInternalToken,
+  recoveryInternalToken,
 );
 const deliveryTimer = setInterval(() => {
   void medicationReminders.processDue().catch(() => undefined);

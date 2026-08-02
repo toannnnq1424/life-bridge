@@ -1,5 +1,15 @@
 # Repository Map
 
+## P7-S2 additions
+
+- `services/care-coordination/migrations/009_p7_event_recovery.sql`: fenced
+  attempts, terminal attention and recovery audit.
+- `services/notification/migrations/005_p7_event_result_evidence.sql`:
+  consumer ordering/result evidence.
+- `tools/quality/src/p7-s2-recovery.ts`: API-only operator tool.
+- `tools/quality/src/p7-s2-event-recovery.ts`: deterministic PostgreSQL proof.
+- `scripts/validate-p7-s2.ps1`: exactly-once Level C ledger.
+
 P7-S1 candidate adds `contracts/migrations`, `packages/migrations`, four
 additive owner migrations, P7 quality/security/pre-code contracts and a hosted
 job. It adds no UI, service, engine, shared schema or P7-S2/P7-S3 work.

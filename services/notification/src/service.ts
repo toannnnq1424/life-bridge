@@ -7,11 +7,16 @@ import {
   type Notification,
 } from "@lifebridge/contracts";
 import { SafeLogger } from "@lifebridge/observability";
-import type { Pool, QueryResultRow } from "pg";
+import type { Pool, PoolClient, QueryResultRow } from "pg";
 
 interface InboxRow extends QueryResultRow {
   payload_hash: string;
-  result: "stored" | "suppressed_self" | "reminder_scheduled" | "reminder_cancelled";
+  result:
+    | "stored"
+    | "suppressed_self"
+    | "reminder_scheduled"
+    | "reminder_cancelled"
+    | "out_of_order_rejected";
   notification_id: string | null;
   processed_at: Date;
 }
@@ -31,6 +36,13 @@ export class EventIdReusedError extends Error {
   public constructor() {
     super("EVENT_ID_REUSED");
     this.name = "EventIdReusedError";
+  }
+}
+
+export class OutOfOrderEventError extends Error {
+  public constructor() {
+    super("OUT_OF_ORDER_EVENT");
+    this.name = "OutOfOrderEventError";
   }
 }
 
@@ -80,6 +92,9 @@ export class NotificationService {
     try {
       await client.query("BEGIN");
       await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [event.eventId]);
+      await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
+        `${event.eventType}:${event.aggregateId}`,
+      ]);
       const existing = await client.query<InboxRow>(
         `SELECT payload_hash, result, notification_id, processed_at
          FROM notification_inbox
@@ -93,6 +108,7 @@ export class NotificationService {
           throw new EventIdReusedError();
         }
         await client.query("COMMIT");
+        if (inbox.result === "out_of_order_rejected") throw new OutOfOrderEventError();
         const duplicateResult =
           inbox.result === "stored"
             ? "duplicate"
@@ -107,6 +123,33 @@ export class NotificationService {
         };
       }
 
+      const head = await client.query<{ aggregate_version: number }>(
+        `SELECT aggregate_version FROM notification_event_heads
+         WHERE aggregate_id=$1 AND event_type=$2`,
+        [event.aggregateId, event.eventType],
+      );
+      if ((head.rows[0]?.aggregate_version ?? 0) > event.aggregateVersion) {
+        const processedAt = this.now();
+        await client.query(
+          `INSERT INTO notification_inbox
+            (source_event_id,payload_hash,event_type,event_version,result,notification_id,
+             processed_at,aggregate_id,aggregate_version,payload_size)
+           VALUES ($1,$2,$3,$4,'out_of_order_rejected',NULL,$5,$6,$7,$8)`,
+          [
+            event.eventId,
+            hash,
+            event.eventType,
+            event.eventVersion,
+            processedAt,
+            event.aggregateId,
+            event.aggregateVersion,
+            Buffer.byteLength(JSON.stringify(event.payload)),
+          ],
+        );
+        await client.query("COMMIT");
+        throw new OutOfOrderEventError();
+      }
+
       const processedAt = this.now();
       if (event.eventType === "care.appointment.reminder_intent.v1") {
         const result =
@@ -114,9 +157,19 @@ export class NotificationService {
         await client.query(
           `INSERT INTO notification_inbox (
             source_event_id, payload_hash, event_type, event_version,
-            result, notification_id, processed_at
-          ) VALUES ($1,$2,$3,$4,$5,NULL,$6)`,
-          [event.eventId, hash, event.eventType, event.eventVersion, result, processedAt],
+            result, notification_id, processed_at, aggregate_id, aggregate_version, payload_size
+          ) VALUES ($1,$2,$3,$4,$5,NULL,$6,$7,$8,$9)`,
+          [
+            event.eventId,
+            hash,
+            event.eventType,
+            event.eventVersion,
+            result,
+            processedAt,
+            event.aggregateId,
+            event.aggregateVersion,
+            Buffer.byteLength(JSON.stringify(event.payload)),
+          ],
         );
         await client.query(
           `INSERT INTO appointment_reminder_intents (
@@ -143,6 +196,7 @@ export class NotificationService {
             processedAt,
           ],
         );
+        await this.recordHead(client, event, processedAt);
         await client.query("COMMIT");
         this.logger.emit({
           level: "info",
@@ -168,10 +222,20 @@ export class NotificationService {
         await client.query(
           `INSERT INTO notification_inbox (
             source_event_id, payload_hash, event_type, event_version,
-            result, notification_id, processed_at
-          ) VALUES ($1,$2,$3,$4,'suppressed_self',NULL,$5)`,
-          [event.eventId, hash, event.eventType, event.eventVersion, processedAt],
+            result, notification_id, processed_at, aggregate_id, aggregate_version, payload_size
+          ) VALUES ($1,$2,$3,$4,'suppressed_self',NULL,$5,$6,$7,$8)`,
+          [
+            event.eventId,
+            hash,
+            event.eventType,
+            event.eventVersion,
+            processedAt,
+            event.aggregateId,
+            event.aggregateVersion,
+            Buffer.byteLength(JSON.stringify(event.payload)),
+          ],
         );
+        await this.recordHead(client, event, processedAt);
         await client.query("COMMIT");
         this.logger.emit({
           level: "info",
@@ -202,9 +266,19 @@ export class NotificationService {
       await client.query(
         `INSERT INTO notification_inbox (
           source_event_id, payload_hash, event_type, event_version,
-          result, notification_id, processed_at
-        ) VALUES ($1,$2,$3,$4,'stored',$5,$6)`,
-        [event.eventId, hash, event.eventType, event.eventVersion, id, processedAt],
+          result, notification_id, processed_at, aggregate_id, aggregate_version, payload_size
+        ) VALUES ($1,$2,$3,$4,'stored',$5,$6,$7,$8,$9)`,
+        [
+          event.eventId,
+          hash,
+          event.eventType,
+          event.eventVersion,
+          id,
+          processedAt,
+          event.aggregateId,
+          event.aggregateVersion,
+          Buffer.byteLength(JSON.stringify(event.payload)),
+        ],
       );
       await client.query(
         `INSERT INTO notifications (
@@ -221,6 +295,7 @@ export class NotificationService {
           processedAt,
         ],
       );
+      await this.recordHead(client, event, processedAt);
       await client.query("COMMIT");
       this.logger.emit({
         level: "info",
@@ -238,13 +313,64 @@ export class NotificationService {
         processedAt: processedAt.toISOString(),
       };
     } catch (error) {
-      if (!(error instanceof EventIdReusedError)) {
+      if (!(error instanceof EventIdReusedError) && !(error instanceof OutOfOrderEventError)) {
         await client.query("ROLLBACK");
       }
       throw error;
     } finally {
       client.release();
     }
+  }
+
+  public async receiptEvidence(eventId: string): Promise<Record<string, unknown> | null> {
+    const result = await this.pool.query<{
+      source_event_id: string;
+      payload_hash: string;
+      event_type: string;
+      event_version: number;
+      aggregate_id: string | null;
+      aggregate_version: number | null;
+      result: string;
+      notification_id: string | null;
+      processed_at: Date;
+    }>(
+      `SELECT source_event_id,payload_hash,event_type,event_version,aggregate_id,
+              aggregate_version,result,notification_id,processed_at
+       FROM notification_inbox WHERE source_event_id=$1`,
+      [eventId],
+    );
+    const row = result.rows[0];
+    return row
+      ? {
+          eventId: row.source_event_id,
+          payloadDigest: row.payload_hash,
+          eventType: row.event_type,
+          eventVersion: row.event_version,
+          aggregateId: row.aggregate_id,
+          aggregateVersion: row.aggregate_version,
+          result: row.result,
+          durableResult: row.notification_id !== null,
+          processedAt: row.processed_at.toISOString(),
+        }
+      : null;
+  }
+
+  private async recordHead(
+    client: PoolClient,
+    event: CareCoordinationEvent,
+    processedAt: Date,
+  ): Promise<void> {
+    await client.query(
+      `INSERT INTO notification_event_heads
+        (aggregate_id,event_type,aggregate_version,source_event_id,processed_at)
+       VALUES ($1,$2,$3,$4,$5)
+       ON CONFLICT (aggregate_id,event_type) DO UPDATE SET
+         aggregate_version=EXCLUDED.aggregate_version,
+         source_event_id=EXCLUDED.source_event_id,
+         processed_at=EXCLUDED.processed_at
+       WHERE notification_event_heads.aggregate_version <= EXCLUDED.aggregate_version`,
+      [event.aggregateId, event.eventType, event.aggregateVersion, event.eventId, processedAt],
+    );
   }
 
   public async list(recipientId: string): Promise<Notification[]> {

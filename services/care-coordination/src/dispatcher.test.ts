@@ -27,8 +27,8 @@ const event: CareTaskCompletedEvent = {
 describe("outbox dispatcher", () => {
   it("acknowledges a durable consumer result", async () => {
     const care = {
-      claimOutbox: vi.fn().mockResolvedValue({ event, attemptCount: 1 }),
-      markOutboxAcknowledged: vi.fn().mockResolvedValue(undefined),
+      claimOutbox: vi.fn().mockResolvedValue({ event, attemptCount: 1, claimToken: "claim_1" }),
+      markOutboxAcknowledged: vi.fn().mockResolvedValue(true),
       markOutboxFailed: vi.fn(),
     };
     const dispatcher = new OutboxDispatcher(care as unknown as CareService, async () => ({
@@ -39,13 +39,13 @@ describe("outbox dispatcher", () => {
     }));
 
     await expect(dispatcher.dispatchOnce()).resolves.toBe("delivered");
-    expect(care.markOutboxAcknowledged).toHaveBeenCalledWith(event.eventId, "stored");
+    expect(care.markOutboxAcknowledged).toHaveBeenCalledWith(event.eventId, "claim_1", "stored");
     expect(care.markOutboxFailed).not.toHaveBeenCalled();
   });
 
   it("records bounded failure without rolling back task completion", async () => {
     const care = {
-      claimOutbox: vi.fn().mockResolvedValue({ event, attemptCount: 3 }),
+      claimOutbox: vi.fn().mockResolvedValue({ event, attemptCount: 3, claimToken: "claim_3" }),
       markOutboxAcknowledged: vi.fn(),
       markOutboxFailed: vi.fn().mockResolvedValue(undefined),
     };
@@ -63,6 +63,7 @@ describe("outbox dispatcher", () => {
     await expect(dispatcher.dispatchOnce()).resolves.toBe("failed");
     expect(care.markOutboxFailed).toHaveBeenCalledWith(
       event.eventId,
+      "claim_3",
       "NOTIFICATION_HTTP_503",
       3,
       3,
@@ -72,7 +73,7 @@ describe("outbox dispatcher", () => {
 
   it("terminalizes permanent dependency rejection without blind retry", async () => {
     const care = {
-      claimOutbox: vi.fn().mockResolvedValue({ event, attemptCount: 1 }),
+      claimOutbox: vi.fn().mockResolvedValue({ event, attemptCount: 1, claimToken: "claim_1" }),
       markOutboxAcknowledged: vi.fn(),
       markOutboxFailed: vi.fn().mockResolvedValue(undefined),
     };
@@ -82,6 +83,7 @@ describe("outbox dispatcher", () => {
     await expect(dispatcher.dispatchOnce()).resolves.toBe("failed");
     expect(care.markOutboxFailed).toHaveBeenCalledWith(
       event.eventId,
+      "claim_1",
       "NOTIFICATION_HTTP_403",
       1,
       1,

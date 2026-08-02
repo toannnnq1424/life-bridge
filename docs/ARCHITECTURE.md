@@ -1,5 +1,18 @@
 # LifeBridge Architecture
 
+## P7-S2 durable event recovery boundary
+
+The transport remains brokerless: Care claims its PostgreSQL outbox and calls
+Notification through authenticated HTTP. Claim tokens and CAS fence stale
+workers; lower active aggregate versions block higher claims. Notification
+serializes event/aggregate processing, preserves immutable payload hashes and
+rejects delayed older versions without overwriting durable results.
+
+Care owns attempt history, terminal attention and replay audit. Notification
+owns receipt/result evidence. Recovery compares bounded owner-local APIs by
+event ID without datastore credentials or raw payloads. Community remains
+`suppressed_not_configured`.
+
 ## P7-S1 owner migration boundary
 
 `contracts/migrations/p7-s1-owner-ledger.json` is the machine authority for

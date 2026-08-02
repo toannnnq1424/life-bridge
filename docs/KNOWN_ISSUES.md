@@ -1,5 +1,9 @@
 # Known Issues
 
+P7-S2 introduces no new accepted exception. Local PostgreSQL availability is
+classified by the single Level C; hosted exact-head proof remains mandatory if
+local PostgreSQL is unavailable. Existing release gates remain unchanged.
+
 ## P7-S1 candidate environment note — 2026-08-02
 
 Local Docker/PostgreSQL destructive proof remains unavailable under the
