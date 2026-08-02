@@ -933,6 +933,12 @@ authenticated calls, and dependency-failure tests pass.
 Outcome: an operator upgrades owned service schemas without downtime, data
 ownership leakage, or an unsafe rollback claim.
 
+Status: local candidate on 2026-08-02 from exact accepted
+`dev@ae48031652fbc9e751cd0b0928deb5c01f39b5e0`. `CHG-2026-021` freezes the
+four-owner ledger, separate runtime/migrator credentials, additive N schema,
+Node ledger protocol, retained Flyway executor and roll-forward/compensation
+contract. Hosted PostgreSQL/Flyway/mixed-runtime proof remains the gate.
+
 Acceptance:
 
 - `N-1 -> N` schema evolution works with mixed runtime versions;

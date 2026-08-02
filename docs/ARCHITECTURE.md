@@ -1,5 +1,14 @@
 # LifeBridge Architecture
 
+## P7-S1 owner migration boundary
+
+`contracts/migrations/p7-s1-owner-ledger.json` is the machine authority for
+four owner databases, table namespaces, exact migrations/tools, credential
+identifiers and N-1/N windows. Node services share only a technical runner;
+Community retains Flyway. Production artifacts require distinct runtime and
+migration credentials. P7 changes are expand-only; contraction waits for
+evidenced N-1 retirement and is not implemented here.
+
 ## Document status
 
 - Architecture baseline: `ARCH-2026-07-25`

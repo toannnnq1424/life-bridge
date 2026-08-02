@@ -15,6 +15,7 @@
   "dependencies": {
     "@lifebridge/config": "workspace:*",
     "@lifebridge/contracts": "workspace:*",
+    "@lifebridge/migrations": "workspace:*",
     "@lifebridge/observability": "workspace:*",
     "@node-rs/argon2": "2.0.2",
     "fastify": "5.10.0",

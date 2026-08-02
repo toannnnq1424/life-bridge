@@ -1,5 +1,14 @@
 # Data Model
 
+## P7-S1 migration metadata and compatibility
+
+Node databases contain owner-local `lifebridge_migration_ledger` rows with
+immutable name, SHA-256, tool, outcome and time. Community retains
+`flyway_schema_history`; the repository ledger normalizes its ordered SQL.
+P7 adds only `*_schema_compatibility` metadata and advances Identity/Care 7→8
+and Notification/Community 3→4. Runtime roles have owner DML but no migration
+history or foreign-owner access.
+
 ## Status and principles
 
 The `P1-S1-v1` ownership and entity contract is frozen for implementation on

@@ -1156,3 +1156,18 @@ continues to fail on any output it creates or leaves itself.
   aggregator.
 - Next: close #24 bilingually after docs-only closeout; orient a fresh P7-S1
   task from accepted `dev` without beginning it here.
+
+## 2026-08-02 — P7-S1 local candidate integration
+
+- Base/branch: exact `dev@ae48031652fbc9e751cd0b0928deb5c01f39b5e0` on
+  `phase/7-service-owned-migrations-schema-compatibility`.
+- `CHG-2026-021`/ADR-029 adds the four-owner ledger, Node checksum/lock
+  protocol, retained Flyway validation, credential split and additive N.
+- P6 classifier, bounded integrity, auth/artifacts and exact always-reported
+  aggregator name remain; one P7 non-doc job is added.
+- Promotion awaits the sole local Level C, exact-head gates, one ready PR to
+  dev, merge commit, automatic dev CI and bilingual #25 closeout.
+- First push run `30727684488` exposed a partial Docker build-context defect:
+  root quality tooling unnecessarily depended on the new workspace package.
+  Targeted correction uses a relative quality import while service artifacts
+  retain owned dependencies/copies; the failed run is retained, not rerun.

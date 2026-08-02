@@ -5,6 +5,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json tsconfig.buil
 COPY services/notification services/notification
 COPY packages/config packages/config
 COPY packages/contracts packages/contracts
+COPY packages/migrations packages/migrations
 COPY packages/observability packages/observability
 COPY tools/quality/src/p6-s2-sbom.ts tools/quality/src/p6-s2-sbom.ts
 RUN pnpm install --frozen-lockfile && pnpm --filter @lifebridge/notification build && pnpm --filter @lifebridge/notification deploy --prod --legacy /artifact

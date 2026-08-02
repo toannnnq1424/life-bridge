@@ -1,5 +1,11 @@
 # Known Issues
 
+## P7-S1 candidate environment note — 2026-08-02
+
+Local Docker/PostgreSQL destructive proof remains unavailable under the
+accepted environment limitation. The exact-head hosted PostgreSQL/Flyway job
+is mandatory before P7-S1 acceptance. This note authorizes no P7-S2/P7-S3 work.
+
 Updated: 2026-08-02
 
 P5-S3 note: KI-001 and KI-016 remain unchanged. KI-019 also covers the two

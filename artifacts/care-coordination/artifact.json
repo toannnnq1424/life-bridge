@@ -9,6 +9,7 @@
   "health": { "live": "/health/live", "ready": "/health/ready" },
   "requiredConfig": [
     "CARE_DATABASE_URL",
+    "CARE_MIGRATION_DATABASE_URL",
     "CARE_INTERNAL_TOKEN",
     "CARE_CURSOR_KEY",
     "NOTIFICATION_URL",
@@ -19,6 +20,7 @@
     "CARE_HOST",
     "CARE_PORT",
     "CARE_DATABASE_URL",
+    "CARE_MIGRATION_DATABASE_URL",
     "CARE_INTERNAL_TOKEN",
     "CARE_INTERNAL_TOKEN_PREVIOUS",
     "CARE_CURSOR_KEY",

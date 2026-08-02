@@ -1,5 +1,15 @@
 # Deployment
 
+## P7-S1 schema upgrade runbook
+
+Verify the owner ledger and a bounded pre-migration recovery point, then run
+only the owner migrator credential. Drift, gap, lock timeout, insufficient
+credential, database unavailability and uncertainty fail closed. Reconcile an
+uncertain commit from a fresh connection. Keep N-1/N inside the declared
+window; application rollback leaves the expanded schema and data correction is
+an idempotent forward compensation. Flyway clean/automatic repair and down
+migration are forbidden. Retention, PITR, RPO/RTO and DR remain P7-S3.
+
 ## Current status
 
 P1-S1 provides a production-built local runtime for synthetic acceptance:

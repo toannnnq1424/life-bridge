@@ -19,6 +19,12 @@ spring:
       minimum-idle: 1
   flyway:
     enabled: true
+    url: ${COMMUNITY_MIGRATION_DATABASE_URL:${COMMUNITY_DATABASE_URL}}
+    user: ${COMMUNITY_MIGRATION_DATABASE_USERNAME:${COMMUNITY_DATABASE_USERNAME}}
+    password: ${COMMUNITY_MIGRATION_DATABASE_PASSWORD:${COMMUNITY_DATABASE_PASSWORD}}
+    clean-disabled: true
+    validate-on-migrate: true
+    out-of-order: false
     validate-migration-naming: true
   jackson:
     deserialization:
@@ -36,6 +42,10 @@ management:
       probes:
         enabled: true
       show-details: never
+
+logging:
+  level:
+    org.flywaydb.core.FlywayExecutor: warn
 
 community:
   internal-token: ${COMMUNITY_INTERNAL_TOKEN}

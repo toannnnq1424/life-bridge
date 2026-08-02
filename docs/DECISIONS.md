@@ -1,5 +1,17 @@
 # LifeBridge Architecture and Product Decisions
 
+## ADR-029 — Owner-local ledgers and additive compatibility windows
+
+- Status: Accepted for P7-S1 candidate, 2026-08-02
+- Change: `CHG-2026-021`
+
+Three Node owners use owner-local immutable SHA-256 ledgers and advisory locks;
+Community retains Flyway 12.4.0. Production runtime and migration credentials
+are distinct. The supported window is exactly N-1 through N and all P7 schema
+changes are additive. Rollback means application rollback with expanded schema
+or a new idempotent forward compensation, never historical mutation, automatic
+repair/clean or a production down migration.
+
 ## ADR policy
 
 Use an ADR for durable product, architecture, data, security, integration, or operating-policy decisions—not trivial code details. Preserve planned versus actual. A changed decision is superseded by a new ADR and linked Change ID; do not rewrite history.

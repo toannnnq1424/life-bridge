@@ -278,3 +278,19 @@ link the change identifier.
 - Follow-up: merge docs-only closeout, close #24 bilingually, derive but do not
   start P7-S1.
 - Decision state: accepted.
+
+## `CHG-2026-021` — P7-S1 executable migration ownership
+
+- Planned baseline: service-owned migrations, N-1/N compatibility and
+  roll-forward/compensation, without an executable four-owner protocol.
+- Actual: machine owner ledger; Node checksum/advisory-lock protocol; retained
+  Flyway validation; distinct production runtime/migrator config; additive N.
+- Reason/evidence: exact dispatch, frozen inventory and three independent
+  ownership, tooling and security/operations reviews.
+- Impact: P7-S1 only; no UI, engine, service, shared schema, P7-S2/P7-S3 or
+  release work.
+- Validation: focused proof, one Level C and hosted exact-head PostgreSQL/
+  Flyway/mixed-runtime gate before merge.
+- Follow-up: merge-commit to dev, post-merge CI and bilingual #25 closeout;
+  P7-S2 only in a fresh task.
+- Decision state: accepted; candidate validation pending.
