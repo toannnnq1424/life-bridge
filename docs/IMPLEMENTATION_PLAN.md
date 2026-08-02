@@ -1002,12 +1002,15 @@ accepted; no P8/DATA-S1/release work begins in this task.
 
 ### `P8-S1 — Household isolation and consent enforcement`
 
-Candidate 2026-08-02: `CHG-2026-022`/ADR-030 adds the executable
+Accepted 2026-08-02: `CHG-2026-022`/ADR-030 adds the executable
 deny-by-default matrix, current membership/consent decision binding, exact
 service-key verification, two-household fixtures and production authorization
-for historical task/member/dashboard/notification routes. Focused proof is
-green; Level C, hosted and promotion evidence remain pending. P8-S2/P8-S3 are
-not started.
+for historical task/member/dashboard/notification routes. Product head
+`376b88f8eb51ebceb1ad679de2119bca7dc65a39` passed push/PR runs
+`30735140477`/`30735160950`; PR #85 merged as
+`4da952eb97e72dbf8d9a6103a6e83438df292848`, and automatic dev run
+`30735583092` passed the full heavy path and P1-through-P8-S1 gate. P8-S2/P8-S3
+are not started.
 
 Outcome: an authorized user can access only the accepted household/resource
 scope, while denied users cannot enumerate protected records.

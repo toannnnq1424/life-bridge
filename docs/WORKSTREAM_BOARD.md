@@ -69,7 +69,7 @@ Gates block only dependent validation/work. They do not authorize broad system r
 | 17       | `P7-S1` Owned migrations                | Validated/merged; PR #79 and CI passed        | Exact head `fea1093`; merge `2eac295`; post-merge CI green      | Close #25 after docs-only evidence             |
 | 18       | `P7-S2` Event replay/reconciliation     | Validated/merged; PR #81 and CI passed        | Head `2111cd5`; merge `c2c0f33`; dev run `30731150450` green    | Close #26 after docs-only evidence             |
 | 19       | `P7-S3` Data lifecycle/recovery         | Accepted; PR #83 and dev CI green             | Head `fdaf8ed`; merge `34c716d`; dev run `30733589109`          | Docs-only closeout; close #27 bilingually      |
-| 20       | `P8-S1` Isolation/consent enforcement   | Planned                                       | P2; P6/P7                                                       | Authorization isolation matrix                 |
+| 20       | `P8-S1` Isolation/consent enforcement   | Accepted                                      | P2; P6/P7                                                       | Authorization isolation matrix                 |
 | 21       | `P8-S2` Secrets/runtime/supply chain    | Planned                                       | P8-S1; hosted CI                                                | Rotation/SBOM/provenance evidence              |
 | 22       | `P8-S3` Abuse/privacy response          | Planned                                       | P8-S1/S2                                                        | Safeguards and tabletop evidence               |
 | 23       | `P9-S1` Observability/SLO baseline      | Planned                                       | P6–P8 release journeys                                          | Redacted journey telemetry/SLO                 |
@@ -271,11 +271,13 @@ passed push/PR runs `30727810915`/`30727812530`; automatic post-merge run
 closure are the only remaining same-task actions. Exact next is P7-S2 in a
 fresh controller-dispatched task; do not begin it here.
 
-# P8-S1 active candidate — 2026-08-02
+# P8-S1 accepted — 2026-08-02
 
 Canonical branch `phase/8-household-isolation-consent-enforcement` starts from
 accepted `dev@a6cd86fd891e30828d04dbbae00a5da1f6922ae6`. Research and three
 reviews passed with required controls. `CHG-2026-022`/ADR-030, policy, P1
-production authorization and focused negatives are implemented. One Level C,
-hosted gates, ready PR, merge/dev CI and bilingual #28 closure remain. Do not
-start P8-S2.
+production authorization and focused negatives are implemented. Product head
+`376b88f` passed push/PR runs `30735140477`/`30735160950`; PR #85 merged as
+`4da952e`; automatic dev run `30735583092` passed the full heavy path and
+cumulative gate. Only this docs-only closeout and bilingual #28 closure remain.
+Do not start P8-S2.

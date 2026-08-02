@@ -73,5 +73,6 @@ P7-S3 does not claim live infrastructure, legal advice or regulatory compliance.
 
 Docker Desktop's Linux engine is unavailable in this session. Focused static,
 unit and contract proof runs locally; exact-head PostgreSQL/mixed-runtime jobs
-remain mandatory hosted evidence. This is an environment classification, not a
+passed in runs `30735140477`/`30735160950`, and automatic dev run `30735583092`
+passed the same heavy path. This is an environment classification, not a
 skipped hosted requirement or compliance claim.
