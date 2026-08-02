@@ -1,5 +1,14 @@
 # Integration Log
 
+## INT-2026-036 — P8-S3 and Phase 8 convergence
+
+- Head `9a62acd52f945eddbf3a890b99b17d2072ea633e` passed 26 automatic
+  PR checks, including PostgreSQL/mixed-runtime and terminal Phase 8.
+- PR #89 merged only by merge commit
+  `adf0bad67a43d9dac73b0ce7cc540b60f7bb8ee8` into dev.
+- Automatic dev run `30739630918` passed. No manual dispatch/rerun, force push,
+  rebase, test/main promotion, production mutation or canary change occurred.
+
 ## INT-2026-031 — P7-S2 accepted recovery slice
 
 - Base: exact `origin/dev@20361386a918d731b18ada5c7fbf16496cbfd171`.

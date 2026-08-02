@@ -3341,5 +3341,9 @@ creation because the extra pnpm separator duplicated `SkipInstall`; it was not
 invoked again. Classified continuation passed format, lint, typecheck, P8-S3
 52/52, P8-S1 75/75, P8-S2 49/49, P7-S2 44/44, P7-S3 59/59, docs/config/
 secrets, zero high dependency findings, all builds, diff and canary checks.
-Hosted PostgreSQL/mixed-runtime and exact-head promotion remain required. Do
-not start P9.
+Hosted PostgreSQL/mixed-runtime passed in both exact-head workflows: all 26 PR
+checks were green. PR #89 merged by merge commit
+`adf0bad67a43d9dac73b0ce7cc540b60f7bb8ee8`; automatic dev run
+`30739630918` passed the full Phase 8 path. This docs-only closeout must pass
+classifier/aggregator, then #30 closes and the phase branch is removed. Do not
+start P9.
