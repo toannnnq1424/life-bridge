@@ -1,5 +1,17 @@
 # API Contracts
 
+## P7-S2 internal recovery contract
+
+`GET /internal/v1/event-recovery/events/{eventId}` requires the
+`recovery-operator` identity. Care uses `event.recovery`; Notification uses
+read-only `event.reconciliation`. Responses contain bounded opaque evidence,
+never raw event or care content.
+
+Care alone exposes `POST .../{eventId}/replay`. It requires one explicit event
+ID, operator ID and reason, defaults to dry-run and may CAS only
+`attention_required` to `pending`. Event identity, payload, source truth and
+consumer rows are immutable. Schema/hash/order poison is permanently rejected.
+
 ## Status
 
 - Contract set: `P1-S1-v1`

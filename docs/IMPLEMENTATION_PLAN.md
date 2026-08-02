@@ -950,6 +950,12 @@ Acceptance:
 Outcome: an operator recovers delayed or poison events without losing or
 duplicating the business result.
 
+Status: **In progress** on the canonical branch from exact accepted
+`dev@20361386a918d731b18ada5c7fbf16496cbfd171`. The frozen topology is Care
+PostgreSQL outbox → authenticated bounded HTTP → Notification PostgreSQL
+inbox/result. Care owns attempts/terminal attention; Notification owns receipt
+and durable result. Recovery is single-event, dry-run-first and redacted.
+
 Acceptance:
 
 - outbox/inbox replay is idempotent and reconciliation detects drift;

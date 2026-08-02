@@ -1,5 +1,14 @@
 # LifeBridge Test Strategy
 
+## P7-S2 failure proof
+
+The PostgreSQL harness forces lease expiry, stale-worker completion, concurrent
+duplicate consume, lost acknowledgement, delayed N-1 after N, immutable-ID
+payload conflict, terminal dry-run/execute and replay. It asserts exactly one
+durable result per source event and unchanged Care source truth. Static fitness
+rejects foreign ownership, direct recovery SQL, unbounded operations, leakage
+and classifier regressions.
+
 ## P7-S1 validation
 
 Focused proof covers ledger fitness, affected TypeScript and Community schema

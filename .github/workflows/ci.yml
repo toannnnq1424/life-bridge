@@ -171,6 +171,7 @@ jobs:
           pnpm.cmd run format:p5-s3:check
           pnpm.cmd run format:p6-s1:check
           pnpm.cmd run format:p6-s2:check
+          pnpm.cmd run format:p7-s2:check
           pnpm.cmd run lint
           pnpm.cmd run typecheck
           pnpm.cmd run test:unit
@@ -183,6 +184,7 @@ jobs:
           node --experimental-strip-types tools/quality/src/p5-s3-contract-integrity.ts
           pnpm.cmd run test:p6-s1:contracts
           pnpm.cmd run test:p6-s2:fitness
+          pnpm.cmd run test:p7-s2:fitness
           ./mvnw.cmd -B -ntp -f services/community/pom.xml clean test
           pnpm.cmd run build
 
@@ -474,8 +476,51 @@ jobs:
           pnpm install --frozen-lockfile
           ./scripts/validate-p7-s1.ps1 -SkipInstall
 
+  p7-s2-event-recovery:
+    name: P7-S2 replay, reconciliation and terminal recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - name: Run exact-head P7-S2 failure and recovery proof
+        shell: pwsh
+        env:
+          P7_ADMIN_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/postgres
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p7-s2:fitness
+          pnpm run test:p7-s2:database
+
   integrated-gate:
-    name: P1 through P6-S1 full required gate
+    name: P1 through P7-S2 full required gate
     if: always()
     needs:
       - classify-changes
@@ -485,6 +530,7 @@ jobs:
       - artifact-containers
       - p6-s3-service-isolation
       - p7-s1-owned-migrations
+      - p7-s2-event-recovery
     runs-on: ubuntu-latest
     steps:
       - name: Require every acceptance job
@@ -494,6 +540,7 @@ jobs:
           ARTIFACT_CONTAINERS_RESULT: ${{ needs.artifact-containers.result }}
           P6_S3_RESULT: ${{ needs.p6-s3-service-isolation.result }}
           P7_S1_RESULT: ${{ needs.p7-s1-owned-migrations.result }}
+          P7_S2_RESULT: ${{ needs.p7-s2-event-recovery.result }}
           CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
           DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
           BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
@@ -506,6 +553,7 @@ jobs:
             test "$ARTIFACT_CONTAINERS_RESULT" = "skipped"
             test "$P6_S3_RESULT" = "skipped"
             test "$P7_S1_RESULT" = "skipped"
+            test "$P7_S2_RESULT" = "skipped"
           else
             test "$DOCS_ONLY" = "false"
             test "$WINDOWS_RESULT" = "success"
@@ -513,4 +561,5 @@ jobs:
             test "$ARTIFACT_CONTAINERS_RESULT" = "success"
             test "$P6_S3_RESULT" = "success"
             test "$P7_S1_RESULT" = "success"
+            test "$P7_S2_RESULT" = "success"
           fi

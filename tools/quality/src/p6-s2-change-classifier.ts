@@ -1,17 +1,21 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const rootDocs = new Set(["README.md", "CODEX.md", "AGENTS.md", "CONTRIBUTING.md"]);
+const boundedCloseoutDocs = new Set([
+  "docs/CHANGE_CONTROL.md",
+  "docs/IMPLEMENTATION_PLAN.md",
+  "docs/INTEGRATION_LOG.md",
+  "docs/KNOWN_ISSUES.md",
+  "docs/SESSION_LOG.md",
+  "docs/WORKSTREAM_BOARD.md",
+]);
 
 export function isDocsOnly(paths: string[]): boolean {
   if (paths.length === 0) return false;
   return paths.every((raw) => {
     const path = raw.replaceAll("\\", "/");
     if (!path || path.startsWith("/") || path.includes("../") || path.includes("//")) return false;
-    return (
-      rootDocs.has(path) ||
-      /^docs\/(?!orchestration\/reports\/STITCH_MCP_CANARY\.md$).+\.md$/u.test(path)
-    );
+    return path === "README.md" || boundedCloseoutDocs.has(path);
   });
 }
 

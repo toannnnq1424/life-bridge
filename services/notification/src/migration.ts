@@ -8,6 +8,7 @@ export async function migrateNotificationDatabase(connectionString: string): Pro
     "002_appointment_reminder_intent.sql",
     "003_medication_reminder_delivery.sql",
     "004_p7_schema_compatibility.sql",
+    "005_p7_event_result_evidence.sql",
   ];
   await migrateOwnedDatabase({
     connectionString,

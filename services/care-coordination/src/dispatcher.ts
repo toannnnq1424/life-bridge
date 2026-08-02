@@ -37,7 +37,12 @@ export class OutboxDispatcher {
       if (acknowledgement.eventId !== claimed.event.eventId) {
         throw new Error("ACK_EVENT_MISMATCH");
       }
-      await this.care.markOutboxAcknowledged(claimed.event.eventId, acknowledgement.result);
+      const acknowledged = await this.care.markOutboxAcknowledged(
+        claimed.event.eventId,
+        claimed.claimToken,
+        acknowledgement.result,
+      );
+      if (!acknowledged) return "failed";
       this.logger.emit({
         level: "info",
         eventName:
@@ -68,6 +73,7 @@ export class OutboxDispatcher {
         /^NOTIFICATION_HTTP_(?:429|500|502|503|504)$/.test(errorCode);
       await this.care.markOutboxFailed(
         claimed.event.eventId,
+        claimed.claimToken,
         errorCode,
         claimed.attemptCount,
         retryable ? this.maxAttempts : claimed.attemptCount,

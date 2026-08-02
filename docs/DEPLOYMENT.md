@@ -1,5 +1,13 @@
 # Deployment
 
+## P7-S2 operator recovery
+
+Provision independent `CARE_RECOVERY_INTERNAL_TOKEN` and
+`NOTIFICATION_RECOVERY_INTERNAL_TOKEN` values only to the operator and owning
+service. Reconcile before mutation. Replay remains dry-run unless `--execute`
+is explicit and requires operator/reason evidence. Rollback keeps additive
+schemas and confirmed results; corrections use audited roll-forward.
+
 ## P7-S1 schema upgrade runbook
 
 Verify the owner ledger and a bounded pre-migration recovery point, then run

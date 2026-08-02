@@ -1,5 +1,13 @@
 # Security and Privacy
 
+## P7-S2 recovery controls
+
+Recovery uses dedicated per-service keys/scopes, never Gateway read or Care
+publisher credentials. Evidence is content-free and bounded; mutation is
+Care-only, single-event, dry-run-first, audited and fenced. Logs/tool output
+exclude payloads, recipient content, tokens, database URLs, response bodies and
+stacks. See `docs/security/P7_S2_THREAT_MODEL.md`.
+
 ## Security objectives
 
 LifeBridge handles household relationships and potentially sensitive care

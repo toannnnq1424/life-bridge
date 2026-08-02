@@ -32,7 +32,8 @@ interface TaskRow extends QueryResultRow {
   created_at: Date;
   completed_by: string | null;
   completed_at: Date | null;
-  outbox_status: "pending" | "retrying" | "failed" | "delivered" | "suppressed" | null;
+  outbox_status:
+    "pending" | "retrying" | "failed" | "attention_required" | "delivered" | "suppressed" | null;
 }
 
 interface IdempotencyRow extends QueryResultRow {
@@ -52,17 +53,31 @@ interface OutboxRow extends QueryResultRow {
   payload: CareCoordinationEvent["payload"];
   occurred_at: Date;
   attempt_count: number;
+  claim_token: string | null;
 }
 
 export interface ClaimedOutboxEvent {
   event: CareCoordinationEvent;
   attemptCount: number;
+  claimToken: string;
 }
 
 export interface CareServiceOptions {
   now?: () => Date;
   id?: (prefix: string) => string;
   logger?: SafeLogger;
+}
+
+export interface DeliveryEvidence {
+  eventId: string;
+  eventType: string;
+  eventVersion: number;
+  aggregateId: string;
+  aggregateVersion: number;
+  state: string;
+  attemptCount: number;
+  lastErrorCode: string | null;
+  occurredAt: string;
 }
 
 const taskSelection = `
@@ -86,6 +101,7 @@ function deliveryFromStatus(
     case "retrying":
       return "retrying";
     case "failed":
+    case "attention_required":
       return "failed";
     case "delivered":
       return "delivered";
@@ -554,12 +570,28 @@ export class CareService {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
+      await client.query(
+        `UPDATE care_outbox
+         SET status='attention_required',terminal_at=$1,
+             last_error_code=COALESCE(last_error_code,'CLAIM_LEASE_EXHAUSTED')
+         WHERE status='retrying' AND attempt_count >= max_attempts
+           AND lease_expires_at <= $1`,
+        [this.now()],
+      );
       const result = await client.query<OutboxRow>(
         `SELECT event_id, event_type, event_version, aggregate_id,
                 aggregate_version, correlation_id, causation_id, payload,
-                occurred_at, attempt_count
+                occurred_at, attempt_count, claim_token
          FROM care_outbox
-         WHERE status IN ('pending', 'retrying') AND next_attempt_at <= $1
+         WHERE status IN ('pending', 'retrying')
+           AND next_attempt_at <= $1
+           AND attempt_count < max_attempts
+           AND NOT EXISTS (
+             SELECT 1 FROM care_outbox earlier
+             WHERE earlier.aggregate_id = care_outbox.aggregate_id
+               AND earlier.aggregate_version < care_outbox.aggregate_version
+               AND earlier.status IN ('pending', 'retrying')
+           )
          ORDER BY occurred_at, event_id
          FOR UPDATE SKIP LOCKED
          LIMIT 1`,
@@ -571,11 +603,19 @@ export class CareService {
         return null;
       }
       const attemptCount = row.attempt_count + 1;
+      const claimToken = `claim_${randomUUID().replaceAll("-", "")}`;
       await client.query(
         `UPDATE care_outbox
-         SET status = 'retrying', attempt_count = $2, next_attempt_at = $3
+         SET status = 'retrying', attempt_count = $2, next_attempt_at = $3,
+             claim_token = $4, lease_expires_at = $3
          WHERE event_id = $1`,
-        [row.event_id, attemptCount, new Date(this.now().getTime() + 5_000)],
+        [row.event_id, attemptCount, new Date(this.now().getTime() + 5_000), claimToken],
+      );
+      await client.query(
+        `INSERT INTO care_delivery_attempts
+           (event_id, attempt_number, claim_token, started_at)
+         VALUES ($1,$2,$3,$4)`,
+        [row.event_id, attemptCount, claimToken, this.now()],
       );
       await client.query("COMMIT");
       return {
@@ -592,6 +632,7 @@ export class CareService {
           payload: row.payload,
         }),
         attemptCount,
+        claimToken,
       };
     } catch (error) {
       await client.query("ROLLBACK");
@@ -603,6 +644,7 @@ export class CareService {
 
   public async markOutboxAcknowledged(
     eventId: string,
+    claimToken: string,
     result:
       | "stored"
       | "duplicate"
@@ -611,30 +653,149 @@ export class CareService {
       | "reminder_cancelled"
       | "medication_reminder_scheduled"
       | "medication_reminder_cancelled",
-  ): Promise<void> {
-    await this.pool.query(
-      `UPDATE care_outbox
+  ): Promise<boolean> {
+    const updated = await this.pool.query(
+      `WITH changed AS (
+         UPDATE care_outbox
        SET status = $2, delivered_at = $3, last_error_code = NULL
-       WHERE event_id = $1`,
-      [eventId, result === "suppressed_self" ? "suppressed" : "delivered", this.now()],
+       WHERE event_id = $1 AND status = 'retrying' AND claim_token = $4
+       RETURNING event_id
+       )
+       UPDATE care_delivery_attempts
+       SET completed_at=$3, result='acknowledged'
+       WHERE event_id=$1 AND claim_token=$4 AND EXISTS (SELECT 1 FROM changed)
+       RETURNING event_id`,
+      [eventId, result === "suppressed_self" ? "suppressed" : "delivered", this.now(), claimToken],
     );
+    return (updated.rowCount ?? 0) === 1;
   }
 
   public async markOutboxFailed(
     eventId: string,
+    claimToken: string,
     errorCode: string,
     attemptCount: number,
     maxAttempts: number,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const terminal = attemptCount >= maxAttempts;
-    await this.pool.query(
-      `UPDATE care_outbox
+    const updated = await this.pool.query(
+      `WITH changed AS (
+         UPDATE care_outbox
        SET status = $2,
            last_error_code = $3,
-           next_attempt_at = $4
-       WHERE event_id = $1`,
-      [eventId, terminal ? "failed" : "retrying", errorCode, new Date(this.now().getTime() + 250)],
+           next_attempt_at = $4,
+           first_failed_at = COALESCE(first_failed_at,$5),
+           last_failed_at = $5,
+           terminal_at = CASE WHEN $2 = 'attention_required' THEN $5 ELSE terminal_at END
+       WHERE event_id = $1 AND status = 'retrying' AND claim_token = $6
+       RETURNING event_id
+       )
+       UPDATE care_delivery_attempts
+       SET completed_at=$5,
+           result=CASE WHEN $2='attention_required' THEN 'terminal_failure' ELSE 'retryable_failure' END,
+           error_code=$3
+       WHERE event_id=$1 AND claim_token=$6 AND EXISTS (SELECT 1 FROM changed)
+       RETURNING event_id`,
+      [
+        eventId,
+        terminal ? "attention_required" : "retrying",
+        errorCode,
+        new Date(this.now().getTime() + 250),
+        this.now(),
+        claimToken,
+      ],
     );
+    return (updated.rowCount ?? 0) === 1;
+  }
+
+  public async deliveryEvidence(eventId: string): Promise<DeliveryEvidence | null> {
+    const result = await this.pool.query<{
+      event_id: string;
+      event_type: string;
+      event_version: number;
+      aggregate_id: string;
+      aggregate_version: number;
+      status: string;
+      attempt_count: number;
+      last_error_code: string | null;
+      occurred_at: Date;
+    }>(
+      `SELECT event_id,event_type,event_version,aggregate_id,aggregate_version,
+              status,attempt_count,last_error_code,occurred_at
+       FROM care_outbox WHERE event_id=$1`,
+      [eventId],
+    );
+    const row = result.rows[0];
+    return row
+      ? {
+          eventId: row.event_id,
+          eventType: row.event_type,
+          eventVersion: row.event_version,
+          aggregateId: row.aggregate_id,
+          aggregateVersion: row.aggregate_version,
+          state: row.status,
+          attemptCount: row.attempt_count,
+          lastErrorCode: row.last_error_code,
+          occurredAt: row.occurred_at.toISOString(),
+        }
+      : null;
+  }
+
+  public async replayEvent(input: {
+    eventId: string;
+    operatorId: string;
+    reasonCode: string;
+    correlationId: string;
+    dryRun: boolean;
+  }): Promise<{ eventId: string; beforeState: string; afterState: string; result: string }> {
+    const client = await this.pool.connect();
+    const recoveryId = `recovery_${randomUUID().replaceAll("-", "")}`;
+    try {
+      await client.query("BEGIN");
+      const current = await client.query<{ status: string; attempt_count: number }>(
+        `SELECT status,attempt_count FROM care_outbox WHERE event_id=$1 FOR UPDATE`,
+        [input.eventId],
+      );
+      const currentRow = current.rows[0];
+      const beforeState = currentRow?.status;
+      if (!beforeState) throw new CareError(404, "TASK_NOT_FOUND", "errors.event.notFound", false);
+      const eligible = beforeState === "attention_required" && currentRow.attempt_count < 10;
+      const afterState = eligible && !input.dryRun ? "pending" : beforeState;
+      const result = input.dryRun ? "previewed" : eligible ? "requeued" : "rejected";
+      if (eligible && !input.dryRun) {
+        await client.query(
+          `UPDATE care_outbox SET status='pending',max_attempts=LEAST(10,attempt_count+3),next_attempt_at=$2,
+             claim_token=NULL,lease_expires_at=NULL,last_error_code=NULL,terminal_at=NULL
+           WHERE event_id=$1 AND status='attention_required'`,
+          [input.eventId, this.now()],
+        );
+      }
+      await client.query(
+        `INSERT INTO care_event_recovery_audit
+          (recovery_id,event_id,operator_id,reason_code,dry_run,before_state,after_state,
+           result,correlation_id,occurred_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [
+          recoveryId,
+          input.eventId,
+          input.operatorId,
+          input.reasonCode,
+          input.dryRun,
+          beforeState,
+          afterState,
+          result,
+          input.correlationId,
+          this.now(),
+        ],
+      );
+      await client.query("COMMIT");
+      return { eventId: input.eventId, beforeState, afterState, result };
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   public async countRows(

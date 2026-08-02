@@ -39,6 +39,12 @@ const notificationToken = requiredSecret(
     : (process.env.CARE_NOTIFICATION_INTERNAL_TOKEN ?? process.env.NOTIFICATION_INTERNAL_TOKEN),
   "CARE_NOTIFICATION_INTERNAL_TOKEN",
 );
+const recoveryInternalToken = requiredSecret(
+  process.env.RUNTIME_MODE === "production"
+    ? process.env.CARE_RECOVERY_INTERNAL_TOKEN
+    : (process.env.CARE_RECOVERY_INTERNAL_TOKEN ?? internalToken),
+  "CARE_RECOVERY_INTERNAL_TOKEN",
+);
 const runtimeMode = RuntimeModeSchema.parse(process.env.RUNTIME_MODE);
 const notificationUrl = requiredDependencyUrl(
   process.env.NOTIFICATION_URL,
@@ -74,14 +80,20 @@ const app = buildCareServer(
   documentVault,
   runtimeMode === "production",
   previousInternalToken,
+  recoveryInternalToken,
 );
 const dispatcher = new OutboxDispatcher(
   care,
   httpEventDeliverer(notificationUrl, notificationToken),
 );
 
+let dispatching = false;
 const timer = setInterval(() => {
-  void dispatcher.dispatchOnce();
+  if (dispatching) return;
+  dispatching = true;
+  void dispatcher.dispatchOnce().finally(() => {
+    dispatching = false;
+  });
 }, 250);
 timer.unref();
 

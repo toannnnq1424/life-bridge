@@ -13,7 +13,7 @@ import {
   type MedicationReminderNotificationService,
   NotificationBoundaryError,
 } from "./medication-reminder-service.js";
-import { EventIdReusedError, type NotificationService } from "./service.js";
+import { EventIdReusedError, OutOfOrderEventError, type NotificationService } from "./service.js";
 
 function header(request: { headers: Record<string, unknown> }, name: string): unknown {
   return request.headers[name];
@@ -27,25 +27,39 @@ export function buildNotificationServer(
   careInternalToken = internalToken,
   previousInternalToken?: string,
   previousCareInternalToken?: string,
+  recoveryInternalToken = internalToken,
 ) {
   const app = Fastify({ logger: false, bodyLimit: 64 * 1024 });
 
   app.addHook("preHandler", async (request, reply) => {
     if (request.url.startsWith("/internal/")) {
+      const recoveryRoute = request.url.startsWith("/internal/v1/event-recovery/");
       const eventRoute = request.url.startsWith("/internal/v1/events/");
       const identity = verifyServiceAssertion(header(request, "x-lifebridge-service-identity"), {
         audience: "notification",
-        scope: eventRoute ? "notification.events" : "notification.read",
-        allowedCallers: eventRoute ? ["care-coordination"] : ["gateway"],
-        keys: eventRoute
-          ? {
-              "care-current": careInternalToken,
-              ...(previousCareInternalToken ? { "care-previous": previousCareInternalToken } : {}),
-            }
-          : {
-              "gateway-current": internalToken,
-              ...(previousInternalToken ? { "gateway-previous": previousInternalToken } : {}),
-            },
+        scope: recoveryRoute
+          ? "event.reconciliation"
+          : eventRoute
+            ? "notification.events"
+            : "notification.read",
+        allowedCallers: recoveryRoute
+          ? ["recovery-operator"]
+          : eventRoute
+            ? ["care-coordination"]
+            : ["gateway"],
+        keys: recoveryRoute
+          ? { "recovery-current": recoveryInternalToken }
+          : eventRoute
+            ? {
+                "care-current": careInternalToken,
+                ...(previousCareInternalToken
+                  ? { "care-previous": previousCareInternalToken }
+                  : {}),
+              }
+            : {
+                "gateway-current": internalToken,
+                ...(previousInternalToken ? { "gateway-previous": previousInternalToken } : {}),
+              },
       });
       const legacy = header(request, "x-internal-service-token") === internalToken;
       if (!(identity || (!enforceServiceIdentity && legacy))) {
@@ -63,6 +77,14 @@ export function buildNotificationServer(
       : reply.code(503).send({ status: "not_ready", dependency: "notification_database" });
   });
   app.get("/version", async () => ({ service: "notification", contract: "P4-S1-v1" }));
+
+  app.get<{ Params: { eventId: string } }>(
+    "/internal/v1/event-recovery/events/:eventId",
+    async (request, reply) => {
+      const evidence = await service.receiptEvidence(request.params.eventId);
+      return evidence ? evidence : reply.code(404).send();
+    },
+  );
 
   app.post<{ Body: unknown }>("/internal/v1/events/care-task-completed", async (request) =>
     service.consume(request.body),
@@ -135,23 +157,30 @@ export function buildNotificationServer(
   app.setErrorHandler(async (error, request, reply) => {
     const correlationId = resolveCorrelationId(header(request, "x-correlation-id"));
     const eventReuse = error instanceof EventIdReusedError;
+    const outOfOrder = error instanceof OutOfOrderEventError;
     const boundary = error instanceof NotificationBoundaryError ? error : null;
     const validation = error instanceof Error && error.name === "ZodError";
     return reply
-      .code(boundary ? boundary.statusCode : eventReuse ? 409 : validation ? 400 : 500)
+      .code(
+        boundary ? boundary.statusCode : eventReuse || outOfOrder ? 409 : validation ? 400 : 500,
+      )
       .send({
         error: {
           code: boundary
             ? boundary.code
             : eventReuse
               ? "EVENT_ID_REUSED"
-              : "INTERNAL_CONTRACT_INVALID",
+              : outOfOrder
+                ? "OUT_OF_ORDER_EVENT"
+                : "INTERNAL_CONTRACT_INVALID",
           messageKey: boundary
             ? boundary.messageKey
             : eventReuse
               ? "errors.event.reused"
-              : "errors.contract.invalid",
-          retryable: boundary ? boundary.retryable : !eventReuse,
+              : outOfOrder
+                ? "errors.event.outOfOrder"
+                : "errors.contract.invalid",
+          retryable: boundary ? boundary.retryable : !(eventReuse || outOfOrder),
           correlationId,
         },
       });

@@ -71,4 +71,60 @@ describe("P6-S3 Notification service identity", () => {
     expect(consume).toHaveBeenCalledTimes(1);
     await app.close();
   });
+
+  it("isolates reconciliation from Gateway and Care delivery identities", async () => {
+    const receiptEvidence = vi.fn(async () => ({ eventId: "evt_recovery_1", result: "stored" }));
+    const service = {
+      isReady: vi.fn(async () => true),
+      receiptEvidence,
+    } as unknown as NotificationService;
+    const gatewayKey = "synthetic-notification-gateway-key-001";
+    const careKey = "synthetic-notification-care-key-00001";
+    const recoveryKey = "synthetic-notification-recovery-key-001";
+    const app = buildNotificationServer(
+      service,
+      gatewayKey,
+      undefined,
+      true,
+      careKey,
+      undefined,
+      undefined,
+      recoveryKey,
+    );
+    const assertion = (caller: string, scope: string, secret: string, keyId: string) =>
+      createServiceAssertion({
+        caller,
+        audience: "notification",
+        scope,
+        keyId,
+        secret,
+        nonce: `nonce_${caller.replaceAll("-", "_")}`,
+      });
+    for (const identity of [
+      assertion("gateway", "notification.read", gatewayKey, "gateway-current"),
+      assertion("care-coordination", "notification.events", careKey, "care-current"),
+    ]) {
+      const denied = await app.inject({
+        method: "GET",
+        url: "/internal/v1/event-recovery/events/evt_recovery_1",
+        headers: { "x-lifebridge-service-identity": identity },
+      });
+      expect(denied.statusCode).toBe(404);
+    }
+    const accepted = await app.inject({
+      method: "GET",
+      url: "/internal/v1/event-recovery/events/evt_recovery_1",
+      headers: {
+        "x-lifebridge-service-identity": assertion(
+          "recovery-operator",
+          "event.reconciliation",
+          recoveryKey,
+          "recovery-current",
+        ),
+      },
+    });
+    expect(accepted.statusCode).toBe(200);
+    expect(receiptEvidence).toHaveBeenCalledOnce();
+    await app.close();
+  });
 });
