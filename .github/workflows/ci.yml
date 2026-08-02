@@ -655,7 +655,7 @@ jobs:
 
   p9-s1-redacted-observability:
     name: P9-S1 redacted journey telemetry and SLO baseline
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: classify-changes
     if: needs.classify-changes.outputs.docs_only != 'true'
@@ -696,7 +696,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run test:p9-s1:fitness
           pnpm run test:p7-s2:database
-          ./mvnw.cmd -B -ntp -f services/community/pom.xml -Dtest=SafeTelemetryTest test
+          ./mvnw -B -ntp -f services/community/pom.xml -Dtest=SafeTelemetryTest test
           pnpm run typecheck
 
   integrated-gate:
