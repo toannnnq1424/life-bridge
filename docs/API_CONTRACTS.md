@@ -1494,3 +1494,16 @@ fragment. Calls have finite timeout, payload/response ceiling and per-dependency
 bulkhead/circuit state. Secondary failure returns degraded or unknown truth,
 never an authoritative empty projection or false confirmation. Care completion
 commits independently; Notification recovery reuses the durable event identity.
+
+# P7-S3 policy-neutral lifecycle contract
+
+Identity owns an authenticated lifecycle request and opaque per-owner status;
+each service acts only on its own store. Requests are versioned and digest-bound.
+Same idempotency key plus the same intent replays the result; changed intent
+returns `IDEMPOTENCY_CONFLICT`. A missing owner-approved data-class disposition
+returns `POLICY_DECISION_REQUIRED` before any physical action. Partial results
+remain `attention_required` and are never represented as complete. Supported
+registry actions are `delete`, `pseudonymize`, `retain`, `tombstone`,
+`export_include`, and `export_exclude`; synthetic fixture approvals do not
+establish production policy. This is a product orchestration contract, not a
+regulatory export or erasure claim.

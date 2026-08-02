@@ -3111,3 +3111,56 @@ Complete only this bounded Markdown closeout under the accepted docs-only
 classifier, then close issue #26 bilingually. The exact next product slice is
 P7-S3 only in a fresh controller-dispatched task from the then-current accepted
 `dev`; do not begin P7-S3, P8, DATA-S1 or release work here.
+
+# 2026-08-02 — P7-S3 reversible recovery and policy-neutral framework candidate
+
+The canonical task resumed on exact base `36ba33372a2b138e10d0fc76b7e3ac96a008f05f`
+and the single required phase branch. Signed-in GitHub issue #27 was already
+open with the exact bilingual title/scope. Three independent pre-code reviews
+were reconciled across recovery/version ownership, consent/privacy policy and
+failure/security/CI.
+
+The candidate corrects P7-S1 ledger drift (Identity 8, Care 9), inventories four
+authoritative PostgreSQL 17.5 sources plus the derived emergency IndexedDB copy,
+adds encrypted provenance-bound backup verification and isolated restore guards,
+synthetic N-1→N/RPO/RTO tooling, lifecycle policy/idempotency/reconciliation
+contracts that fail closed with `POLICY_DECISION_REQUIRED`, negative fitness,
+a single-use Level C runner and an exact-head P7-S3 hosted/aggregate gate.
+
+Focused format, 48 initial tests, lint, typecheck, docs and config validation
+passed. The secret gate found an OpenAI-key-shaped substring inside ordinary
+inventory wording; the wording was corrected and the scanner was preserved.
+The targeted local PostgreSQL proof was environment-blocked before resource
+creation because Docker Desktop's Linux engine was unavailable. It remains a
+hosted-required gate. Level C has not run; nothing was pushed and no PR exists.
+
+Exact next in this same task is to finish focused validation, present the short
+owner disposition matrix, then wait for those decisions before Level C and
+promotion. P8, DATA-S1 and release remain unstarted.
+
+The owner then delegated the production-policy choice. The task selected the
+privacy-first engineering matrix in
+`contracts/lifecycle/p7-s3-product-policy.json`: immediate access revocation,
+delete or pseudonymize active identifiable content, bounded continuity/security
+evidence of at most 365 days, 24-hour product-export artifacts and 30-day backup
+artifacts. Product export explicitly excludes security, audit, delivery,
+moderation and outbox evidence. Unsupported legal holds remain fail-closed and
+require counsel evidence. This is an engineering default, not legal advice or a
+regulatory export/erasure claim, and it opens the single Level C gate.
+
+The first Level C command attempted to pass `--SkipInstall` through pnpm using
+an extra `--`. PowerShell rejected the resulting duplicate parameter before
+the runner initialized: no P7-S3 marker, ledger, evidence directory or stage
+exists. This is classified as an invocation-wrapper defect. The task did not
+run a second campaign or push/PR. Exact next requires explicit authorization to
+invoke the corrected runner entry point once, followed by hosted PostgreSQL
+proof if that campaign passes locally with the expected hosted-required state.
+
+The owner explicitly authorized one corrected invocation. Level C invocation
+`f5a95124f1ea4b8b905c00adb5fdef30` recorded static fitness pass, the expected
+`environment_unavailable_hosted_required` database state, cumulative
+security/build pass, integrity pass and terminal
+`passed_with_hosted_postgres_required`. The outer terminal call timed out after
+the ledger had finalized, so no stage continuation or second campaign was
+needed. Exact next is one coherent commit, phase-branch push, one ready PR and
+literal exact-head hosted PostgreSQL/P7 aggregate evidence.

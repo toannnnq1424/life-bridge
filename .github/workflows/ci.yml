@@ -519,8 +519,41 @@ jobs:
           pnpm run test:p7-s2:fitness
           pnpm run test:p7-s2:database
 
+  p7-s3-lifecycle-recovery:
+    name: P7-S3 lifecycle policy and encrypted isolated recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - name: Run exact-head recovery and policy-neutral lifecycle proof
+        shell: pwsh
+        run: |
+          docker run -d --name lifebridge-p7s3-postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+          for ($i=0; $i -lt 60; $i++) { docker exec lifebridge-p7s3-postgres pg_isready -U postgres -d postgres *> $null; if ($LASTEXITCODE -eq 0) { break }; Start-Sleep -Seconds 1 }
+          pnpm install --frozen-lockfile
+          $env:P7_ADMIN_DATABASE_URL='postgresql://postgres@127.0.0.1:5432/postgres'
+          $env:P7_S3_POSTGRES_CONTAINER='lifebridge-p7s3-postgres'
+          pnpm run test:p7-s3:fitness
+          pnpm run test:p7-s3:database
+          docker rm -f lifebridge-p7s3-postgres
+
   integrated-gate:
-    name: P1 through P7-S2 full required gate
+    name: P1 through P7-S3 full required gate
     if: always()
     needs:
       - classify-changes
@@ -531,6 +564,7 @@ jobs:
       - p6-s3-service-isolation
       - p7-s1-owned-migrations
       - p7-s2-event-recovery
+      - p7-s3-lifecycle-recovery
     runs-on: ubuntu-latest
     steps:
       - name: Require every acceptance job
@@ -541,6 +575,7 @@ jobs:
           P6_S3_RESULT: ${{ needs.p6-s3-service-isolation.result }}
           P7_S1_RESULT: ${{ needs.p7-s1-owned-migrations.result }}
           P7_S2_RESULT: ${{ needs.p7-s2-event-recovery.result }}
+          P7_S3_RESULT: ${{ needs.p7-s3-lifecycle-recovery.result }}
           CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
           DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
           BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
@@ -554,6 +589,7 @@ jobs:
             test "$P6_S3_RESULT" = "skipped"
             test "$P7_S1_RESULT" = "skipped"
             test "$P7_S2_RESULT" = "skipped"
+            test "$P7_S3_RESULT" = "skipped"
           else
             test "$DOCS_ONLY" = "false"
             test "$WINDOWS_RESULT" = "success"
@@ -562,4 +598,5 @@ jobs:
             test "$P6_S3_RESULT" = "success"
             test "$P7_S1_RESULT" = "success"
             test "$P7_S2_RESULT" = "success"
+            test "$P7_S3_RESULT" = "success"
           fi

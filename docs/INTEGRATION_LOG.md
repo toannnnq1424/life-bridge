@@ -1199,3 +1199,34 @@ continues to fail on any output it creates or leaves itself.
 - P7-S1 is accepted. Same-task closeout is Markdown-only and must prove the
   accepted docs classifier/always-reported aggregator before issue #25 closes
   bilingually. P7-S2 remains unstarted pending a fresh canonical task.
+
+# INT-2026-032 — P7-S3 policy-neutral recovery candidate
+
+- Base/branch: exact `dev@36ba33372a2b138e10d0fc76b7e3ac96a008f05f` on
+  `phase/7-data-lifecycle-recovery-persistence-decisions`.
+- Scope: corrected Identity/Care ledger drift; frozen four-owner PostgreSQL
+  inventory; encrypted manifest-driven isolated restore tooling; fail-closed
+  lifecycle registry/reconciliation; focused tests and hosted P7-S3 aggregate.
+- Focused evidence: format, lint, typecheck and 48 initial P7-S3/classifier tests
+  passed; docs/config passed. The first secret scan correctly rejected the text
+  `task-owned...` as an OpenAI-key-shaped sentinel; the inventory wording was
+  corrected without weakening the scanner and requires revalidation.
+- Environment: targeted local PostgreSQL proof could not start because Docker
+  Desktop's Linux engine was unavailable; no resource was created. Hosted proof
+  remains required.
+- Policy gate: production dispositions, legal hold/statutory retention,
+  artifact expiry and regulatory export/erasure scope remain owner decisions.
+  Level C, push, PR and acceptance are intentionally not started.
+- Owner policy was subsequently accepted. The single Level C command was then
+  invoked as `pnpm.cmd run validate:p7-s3 -- --SkipInstall`, but pnpm forwarded
+  both `--` and `--SkipInstall`; PowerShell rejected duplicate parameter binding
+  before the runner created its marker, evidence directory or any stage. This is
+  an invocation-wrapper defect, not a product failure. No second campaign was
+  started; promotion remains blocked pending explicit authorization to run the
+  corrected entry point once.
+- The owner authorized one corrected invocation. Invocation
+  `f5a95124f1ea4b8b905c00adb5fdef30` completed every runner stage before the
+  outer terminal timeout: static policy/recovery fitness passed; local database
+  evidence was truthfully `environment_unavailable_hosted_required`; cumulative
+  security/build and candidate integrity passed; final result was
+  `passed_with_hosted_postgres_required`. No second runner campaign occurred.

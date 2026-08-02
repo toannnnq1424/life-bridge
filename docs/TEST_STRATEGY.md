@@ -703,3 +703,15 @@ failure and redacted attribution. Hosted CI also calls the production
 Notification image with missing, wrong-scope and valid Care identity before
 independent replacement. P6-S1/P6-S2 fitness, the docs-only classifier and the
 required aggregator display name remain cumulative and unchanged.
+
+# P7-S3 validation
+
+Focused proof is `pnpm.cmd run test:p7-s3:fitness`; hosted PostgreSQL proof is
+`pnpm.cmd run test:p7-s3:database`. The single-use Level C entry point is
+`pnpm.cmd run validate:p7-s3` and must not run until the owner disposition
+matrix is accepted. The hosted job verifies exact-head PostgreSQL 17.5
+encrypted backup, manifest/hash/list validation, live-target guards, isolated
+restore, synthetic N-1→N upgrade and measured RPO/RTO for all four owners. Unit
+negatives cover missing/corrupt/wrong-owner/stale-version/unencrypted artifacts,
+unsafe/existing targets, policy absence, every fixture action, replay and
+changed-intent conflicts. P7-S1 migration and P7-S2 recovery remain cumulative.
