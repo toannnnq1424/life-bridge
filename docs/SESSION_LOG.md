@@ -2998,3 +2998,37 @@ Existing release/environment issues remain; P7-S2/P7-S3 are not started.
 Run exactly one P7-S1 Level C, classify/continue only failed or unstarted
 stages, then promote one coherent commit through one ready PR to dev. Do not
 start P7-S2.
+
+## 2026-08-02 — P7-S1 canonical acceptance
+
+### Promotion and hosted evidence
+
+The retained product correction head
+`fea109328db910b40b8d95cb88d2f8716ec9b80a` passed all 16 checks across
+automatic push run `30727810915` and pull-request run `30727812530`. This
+included owner-ledger fitness and negatives, Node and Flyway repeatability,
+concurrent/partial/lock-timeout/drift/credential/unavailable-database paths,
+pre-migration recovery evidence, forward compensation, redacted telemetry,
+mixed N-1/N runtimes, cumulative P1–P7-S1 checks and both unchanged
+always-reported aggregators. The earlier failed run `30727684488` remains
+retained as the diagnosed partial-build-context defect; it was not rerun.
+
+Ready PR #79 merged to `dev` only by merge commit
+`2eac295de1fb33232023372ae974a4ce9a9354a2`. Automatic exact-merge run
+`30728240535` passed all eight jobs, including the P7-S1 PostgreSQL/Flyway job
+and the stable required aggregator. No manual dispatch/rerun, force push,
+rebase, amend, direct `dev` push or `test`/`main` promotion occurred.
+
+### Canonical result and next orientation
+
+P7-S1 is accepted on `dev`. The four service owners retain distinct schemas,
+migration/runtime credentials and ledgers; the compatibility window is
+additive N-1/N, with evidenced roll-forward/compensation rather than an unsafe
+down migration. Local environment note KI-004 remains truthful but its required
+hosted substitute is satisfied for this slice.
+
+Close canonical issue #25 bilingually after this docs-only closeout is merged.
+The exact next product slice is P7-S2 only in a fresh controller-dispatched
+task from the then-current accepted `dev`. That task must freeze replay,
+reconciliation, idempotency and dead-letter ownership before implementation.
+Do not start P7-S2, P7-S3, P8, DATA-S1 or release work here.
