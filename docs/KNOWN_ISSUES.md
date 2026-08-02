@@ -42,3 +42,24 @@ conformance claim is made.
 
 Closed items remain in session/integration history rather than being silently
 removed. Update this file after every slice when status or mitigation changes.
+
+# P7-S3 policy decision and local environment note — 2026-08-02
+
+The product owner delegated and accepted a conservative engineering disposition
+matrix: product export only, 24-hour export artifacts, 30-day backup artifacts,
+and bounded evidence retention up to 365 days. This resolves the product gate
+without claiming statutory compliance. Actual legal-hold/statutory-retention
+applicability remains counsel-owned; any requested override fails closed with
+`POLICY_DECISION_REQUIRED`. A targeted local PostgreSQL rehearsal could not
+start because the Docker Desktop Linux engine was unavailable. No resource was
+created; hosted PostgreSQL proof is required.
+
+The initial Level C command also failed before runner initialization because an
+extra pnpm argument separator produced duplicate `SkipInstall` binding. There
+is no marker or stage evidence and no product failure. The exactly-once guard
+prevents silently launching a corrected second command without owner approval.
+
+The owner granted that explicit exception. The corrected invocation completed
+with `passed_with_hosted_postgres_required`; only the already-recorded local
+Docker engine limitation remains, and hosted PostgreSQL proof is now the next
+required gate.

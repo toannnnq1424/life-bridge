@@ -903,3 +903,16 @@ scope. Each dependency has its own timeout, byte ceilings, bulkhead and circuit.
 Gateway probes required Care/Identity concurrently; Notification and Community
 are truthful degraded states. Telemetry records only allow-listed dependency
 and failure class, never URLs, headers, tokens, bodies or raw idempotency keys.
+
+# P7-S3 lifecycle and recovery boundaries
+
+Identity coordinates only opaque lifecycle request/status evidence. Identity,
+Care, Notification and Community independently apply an owner-approved policy
+to their own PostgreSQL store and expose owner-local result evidence; no
+coordinator reads foreign tables or credentials. Missing policy or owner
+evidence remains `attention_required` and never becomes a completion claim.
+
+Recovery is likewise owner-local: one encrypted logical artifact and isolated
+restore target per PostgreSQL owner. The encrypted emergency IndexedDB envelope
+is a derived client copy with local delete/rebuild semantics, not a server
+backup source. Runtime polyglot Node/Spring does not imply polyglot persistence.

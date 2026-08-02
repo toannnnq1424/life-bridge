@@ -980,6 +980,17 @@ Acceptance:
 Phase gate: previous-schema upgrade, reconciliation/replay, restore,
 retention/deletion, RPO/RTO, and service-ownership checks pass.
 
+Candidate update 2026-08-02: reversible recovery and a policy-neutral lifecycle
+framework are implemented on the canonical phase branch. The owner ledger drift
+is corrected; the exact inventory remains PostgreSQL-only; encrypted,
+provenance-bound isolated restore and lifecycle fail-closed proofs are tracked.
+The product owner subsequently delegated the choice and accepted the
+privacy-first engineering matrix in
+`contracts/lifecycle/p7-s3-product-policy.json`: product export only, 24-hour
+export artifacts, 30-day backup artifacts and bounded evidence retention up to
+365 days. Unsupported legal overrides still return
+`POLICY_DECISION_REQUIRED`. Level C may now proceed; P8 remains unstarted.
+
 ## P8 — Security, privacy, abuse, and supply-chain hardening
 
 ### `P8-S1 — Household isolation and consent enforcement`

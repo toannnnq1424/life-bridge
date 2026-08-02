@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "decisionState": "policy-neutral-framework",
+  "persistenceDecision": {
+    "authoritativeEngine": "postgresql",
+    "version": "17.5",
+    "additionalEngines": [],
+    "adrRequiredForAdditionalEngine": true
+  },
+  "sources": [
+    {
+      "id": "identity-consent-postgresql",
+      "owner": "identity-consent",
+      "authority": "source-of-truth",
+      "database": "lifebridge_identity",
+      "schema": "public",
+      "schemaVersion": 8,
+      "credentialBoundary": {
+        "runtime": "IDENTITY_DATABASE_URL",
+        "migration": "IDENTITY_MIGRATION_DATABASE_URL",
+        "backup": "IDENTITY_BACKUP_DATABASE_URL",
+        "restore": "IDENTITY_RESTORE_DATABASE_URL"
+      },
+      "dataClasses": [
+        "account-security",
+        "household-authority",
+        "consent-privacy",
+        "redacted-audit"
+      ],
+      "backup": {
+        "format": "pg-custom",
+        "hash": "sha256",
+        "manifestVersion": 1,
+        "access": "owner-scoped"
+      },
+      "restoreTarget": "new-isolated-empty-database-only",
+      "rebuildExit": "verified logical dump to supported newer PostgreSQL plus immutable migrations"
+    },
+    {
+      "id": "care-coordination-postgresql",
+      "owner": "care-coordination",
+      "authority": "source-of-truth",
+      "database": "lifebridge_care",
+      "schema": "public",
+      "schemaVersion": 9,
+      "credentialBoundary": {
+        "runtime": "CARE_DATABASE_URL",
+        "migration": "CARE_MIGRATION_DATABASE_URL",
+        "backup": "CARE_BACKUP_DATABASE_URL",
+        "restore": "CARE_RESTORE_DATABASE_URL"
+      },
+      "dataClasses": [
+        "care-coordination",
+        "reminders",
+        "emergency-readiness",
+        "document-bytes",
+        "redacted-audit",
+        "event-outbox"
+      ],
+      "backup": {
+        "format": "pg-custom",
+        "hash": "sha256",
+        "manifestVersion": 1,
+        "access": "owner-scoped"
+      },
+      "restoreTarget": "new-isolated-empty-database-only",
+      "rebuildExit": "verified logical dump to supported newer PostgreSQL plus immutable migrations and P7-S2 reconciliation"
+    },
+    {
+      "id": "notification-postgresql",
+      "owner": "notification",
+      "authority": "source-of-truth",
+      "database": "lifebridge_notification",
+      "schema": "public",
+      "schemaVersion": 5,
+      "credentialBoundary": {
+        "runtime": "NOTIFICATION_DATABASE_URL",
+        "migration": "NOTIFICATION_MIGRATION_DATABASE_URL",
+        "backup": "NOTIFICATION_BACKUP_DATABASE_URL",
+        "restore": "NOTIFICATION_RESTORE_DATABASE_URL"
+      },
+      "dataClasses": ["notification-result", "event-inbox", "delivery-evidence"],
+      "backup": {
+        "format": "pg-custom",
+        "hash": "sha256",
+        "manifestVersion": 1,
+        "access": "owner-scoped"
+      },
+      "restoreTarget": "new-isolated-empty-database-only",
+      "rebuildExit": "verified logical dump to supported newer PostgreSQL plus immutable migrations and producer reconciliation"
+    },
+    {
+      "id": "community-postgresql",
+      "owner": "community",
+      "authority": "source-of-truth",
+      "database": "lifebridge_community",
+      "schema": "public",
+      "schemaVersion": 4,
+      "credentialBoundary": {
+        "runtime": "COMMUNITY_DATABASE_URL+USERNAME+PASSWORD",
+        "migration": "COMMUNITY_MIGRATION_DATABASE_URL+USERNAME+PASSWORD",
+        "backup": "COMMUNITY_BACKUP_DATABASE_URL+USERNAME+PASSWORD",
+        "restore": "COMMUNITY_RESTORE_DATABASE_URL+USERNAME+PASSWORD"
+      },
+      "dataClasses": [
+        "community-directory",
+        "help-request",
+        "match-coordination",
+        "moderation-evidence",
+        "redacted-audit",
+        "event-outbox"
+      ],
+      "backup": {
+        "format": "pg-custom",
+        "hash": "sha256",
+        "manifestVersion": 1,
+        "access": "owner-scoped"
+      },
+      "restoreTarget": "new-isolated-empty-database-only",
+      "rebuildExit": "verified logical dump to supported newer PostgreSQL plus Flyway migrations"
+    },
+    {
+      "id": "emergency-offline-indexeddb",
+      "owner": "web-user-device",
+      "authority": "derived-encrypted-offline-copy",
+      "engine": "indexeddb",
+      "dataClasses": ["emergency-readiness-derived-copy"],
+      "credentialBoundary": { "encryption": "user-passphrase-derived AES-GCM envelope" },
+      "backup": null,
+      "restoreTarget": null,
+      "rebuildExit": "delete locally or rebuild from fresh authorized Care projection; never server recovery truth"
+    }
+  ],
+  "policy": {
+    "unapprovedDisposition": "POLICY_DECISION_REQUIRED",
+    "unapprovedPhysicalDelete": false,
+    "claims": ["engineering-evidence-only", "not-legal-advice", "not-regulatory-export-or-erasure"]
+  }
+}

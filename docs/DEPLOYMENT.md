@@ -251,3 +251,21 @@ provider current+previous, caller current, authenticated smoke/failure recovery,
 old-caller drain, then previous-key removal. Rollback is consumer-first during
 overlap. Stop on successful wrong-scope access, secret leakage, changed Care
 confirmation during secondary outage, or duplicate Notification inbox result.
+
+# P7-S3 backup and isolated restore runbook
+
+Use only the exact PostgreSQL 17.5 client/server pair and one owner-scoped
+backup credential per source. Produce a custom-format logical dump outside the
+database volume, encrypt it, bind SHA-256/byte count/owner/schema/ledger and
+capture/recovery-point timestamps in the manifest, then verify all fields and
+`pg_restore --list` before creating a target. The target must be a new empty
+`lifebridge_p7s3_restore_<owner>_<task>` database. Canonical live names,
+source-equals-target and existing targets are rejected. Restore uses
+`--single-transaction --exit-on-error --no-owner` and an owner-local role.
+
+Measured `rpoMs` is logical snapshot capture time minus the last durable
+synthetic recovery point; `rtoMs` is isolated restore start to verified-ready.
+These are reproducible engineering measurements, not production objectives,
+PITR or disaster-recovery claims. Missing/corrupt/incompatible artifacts
+require a new verified backup. A failed isolated target is disposable; never
+clean or roll back a live source.

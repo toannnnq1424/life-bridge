@@ -590,3 +590,15 @@ contains no free-form sensitive column and performs no P5-S1/P5-S2 backfill.
 Protected terminal projections purge within 30 days; content-free integrity
 evidence is capped at 365 days. Identity, Gateway, Care, and Notification do
 not receive Community SQL ownership.
+
+# P7-S3 source inventory and lifecycle policy
+
+`contracts/lifecycle/p7-s3-source-inventory.json` is the machine-readable
+inventory for four authoritative PostgreSQL 17.5 owners plus the derived,
+encrypted emergency IndexedDB copy. Current schema truth is Identity 8, Care 9,
+Notification 5 and Community 4. Backup/restore and lifecycle credentials remain
+owner-specific. No cross-service table or credential access is permitted.
+
+Unapproved retention/delete/export dispositions fail closed with
+`POLICY_DECISION_REQUIRED`. Fixture dispositions validate mechanics only and
+do not change the accepted P2 policy or create legal/compliance claims.

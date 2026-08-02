@@ -15,7 +15,7 @@
         "runtime": "IDENTITY_DATABASE_URL",
         "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
       },
-      "compatibility": { "schema": 9, "runtimeMinimum": 8, "runtimeMaximum": 9 },
+      "compatibility": { "schema": 8, "runtimeMinimum": 7, "runtimeMaximum": 8 },
       "migrations": [
         [1, "001_initial.sql", "5039d2574f7ff3c6ab2438bf3b82c0b0dafc8cfd7d601cc1a41d841b68941b69"],
         [
@@ -66,7 +66,7 @@
         "runtime": "CARE_DATABASE_URL",
         "runtimeCapabilities": ["CONNECT", "USAGE", "SELECT", "INSERT", "UPDATE", "DELETE"]
       },
-      "compatibility": { "schema": 8, "runtimeMinimum": 7, "runtimeMaximum": 8 },
+      "compatibility": { "schema": 9, "runtimeMinimum": 8, "runtimeMaximum": 9 },
       "migrations": [
         [1, "001_initial.sql", "7f87f9582e5e7e07289e278dd808e2bdc0a4730316980f2c1b73be06a4ca59ca"],
         [

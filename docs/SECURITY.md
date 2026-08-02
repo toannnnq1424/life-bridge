@@ -478,3 +478,17 @@ The CI change classifier is intentionally narrow: only root governance Markdown
 and ordinary `docs/**/*.md` can be docs-only. Workflow, source, contract,
 container, package/lock, tooling, script, test, migration, config, hidden and
 protected-canary changes fail closed into the heavy campaign.
+
+# P7-S3 recovery and lifecycle controls
+
+Four PostgreSQL owners have distinct runtime, migration, backup and restore
+credential identifiers. Recovery artifacts are task-owned, AES-256-GCM
+encrypted, SHA-256 verified and provenance-bound before isolated target
+creation. Logs allow-list owner, bounded result, action/version and duration;
+they omit request/data-class/subject/household identifiers, payloads, paths,
+database URLs and credentials.
+
+Lifecycle processing is fail-closed. Without an owner-approved data-class
+disposition the only valid outcome is `POLICY_DECISION_REQUIRED`, with no
+physical delete or export artifact. Fixture approvals are synthetic test input
+and never legal policy or compliance evidence.
