@@ -991,6 +991,13 @@ export artifacts, 30-day backup artifacts and bounded evidence retention up to
 365 days. Unsupported legal overrides still return
 `POLICY_DECISION_REQUIRED`. Level C may now proceed; P8 remains unstarted.
 
+Accepted 2026-08-02: product head `fdaf8ed7bd9524a274886bf3609d4b5485de676f`
+passed exact-head push/PR runs `30733182403`/`30733210842`, including P7-S3
+encrypted isolated restore and both P1-through-P7-S3 aggregators. PR #83 merged
+by merge commit `34c716d2931f14851b3b552fadbbc961ec62753b` and automatic dev run
+`30733589109` passed the full heavy path in 10m09s. P7-S3 and Phase 7 are
+accepted; no P8/DATA-S1/release work begins in this task.
+
 ## P8 — Security, privacy, abuse, and supply-chain hardening
 
 ### `P8-S1 — Household isolation and consent enforcement`

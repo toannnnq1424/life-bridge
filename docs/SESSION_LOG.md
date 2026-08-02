@@ -3164,3 +3164,12 @@ security/build pass, integrity pass and terminal
 the ledger had finalized, so no stage continuation or second campaign was
 needed. Exact next is one coherent commit, phase-branch push, one ready PR and
 literal exact-head hosted PostgreSQL/P7 aggregate evidence.
+
+Exact-head product runs `30733182403` and `30733210842` passed all required
+jobs, including P7-S3 encrypted owner restore/lifecycle and both full
+aggregators. PR #83 merged with merge commit
+`34c716d2931f14851b3b552fadbbc961ec62753b`. Automatic dev run `30733589109`
+passed the full heavy path in 10m09s. No rerun was dispatched. P7-S3 and Phase 7
+are accepted subject only to this bounded docs-only closeout and bilingual issue
+#27 closure. The exact next phase must be controller-dispatched separately; do
+not begin P8, DATA-S1 or release work here.

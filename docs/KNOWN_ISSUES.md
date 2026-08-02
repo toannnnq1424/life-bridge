@@ -63,3 +63,8 @@ The owner granted that explicit exception. The corrected invocation completed
 with `passed_with_hosted_postgres_required`; only the already-recorded local
 Docker engine limitation remains, and hosted PostgreSQL proof is now the next
 required gate.
+
+Exact-head push/PR and automatic post-merge dev PostgreSQL evidence subsequently
+passed. The local Docker absence remains an environment note, not a P7-S3
+acceptance blocker. Production deployment still depends on later P11/P12 gates;
+P7-S3 does not claim live infrastructure, legal advice or regulatory compliance.
