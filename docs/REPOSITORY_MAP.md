@@ -1,5 +1,18 @@
 # Repository Map
 
+## P8-S2 candidate additions
+
+- `contracts/security/`: actual secret/encryption inventory, runtime policy and
+  supply-chain thresholds/exception contract.
+- `packages/config` and Identity crypto: production PostgreSQL transport and
+  current-write/previous-read keyring contracts.
+- `tools/quality/src/p8-s2-*`: unsigned digest-bound provenance and adversarial
+  fitness; `scripts/validate-p8-s2.ps1` is the single-use Level C runner.
+- `.github/workflows/ci.yml`: exact-head P8-S2 job and cumulative P1–P8-S2 gate.
+
+No service, datastore, external secret manager/KMS/PKI, provider deployment or
+P8-S3 surface is added.
+
 ## P8-S1 candidate additions
 
 - `contracts/authorization/p8-s1-policy.json`: deny-by-default authorization matrix.

@@ -1,4 +1,4 @@
-import { port, requiredSecret, requiredUrl } from "@lifebridge/config";
+import { port, requiredPostgresUrl, requiredSecret, RuntimeModeSchema } from "@lifebridge/config";
 import { Pool } from "pg";
 
 import { migrateNotificationDatabase } from "./migration.js";
@@ -6,13 +6,19 @@ import { MedicationReminderNotificationService } from "./medication-reminder-ser
 import { buildNotificationServer } from "./server.js";
 import { NotificationService } from "./service.js";
 
-const databaseUrl = requiredUrl(process.env.NOTIFICATION_DATABASE_URL, "NOTIFICATION_DATABASE_URL");
-const migrationDatabaseUrl = requiredUrl(
+const runtimeMode = RuntimeModeSchema.parse(process.env.RUNTIME_MODE);
+const databaseUrl = requiredPostgresUrl(
+  process.env.NOTIFICATION_DATABASE_URL,
+  "NOTIFICATION_DATABASE_URL",
+  runtimeMode,
+);
+const migrationDatabaseUrl = requiredPostgresUrl(
   process.env.NOTIFICATION_MIGRATION_DATABASE_URL ??
     (process.env.RUNTIME_MODE === "local" || process.env.RUNTIME_MODE === "test"
       ? databaseUrl
       : undefined),
   "NOTIFICATION_MIGRATION_DATABASE_URL",
+  runtimeMode,
 );
 const internalToken = requiredSecret(
   process.env.NOTIFICATION_INTERNAL_TOKEN,

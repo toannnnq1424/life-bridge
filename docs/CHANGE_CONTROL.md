@@ -306,3 +306,13 @@ link the change identifier.
 | Validation            | Deny-default matrix, two-household BOLA/IDOR, current decision/version binding, production fixture guard and exact service-key binding passed focused/Level C proof; exact-head runs `30735140477`/`30735160950` and dev run `30735583092` passed hosted cumulative gates. |
 | Follow-up             | Bounded docs-only closeout and bilingual #28 closure; do not start P8-S2.                                                                                                                                                                                                  |
 | Decision state        | Accepted at `dev@4da952eb97e72dbf8d9a6103a6e83438df292848`.                                                                                                                                                                                                                |
+
+# CHG-2026-023 — Reconcile P8-S2 canonical ownership and executable hardening scope
+
+- Planned baseline: issue #29 still described the superseded privacy-lifecycle slice while the accepted P0–P12 plan assigns P8-S2 to secrets, encryption, runtime and supply chain.
+- Actual implementation: retain issue #29 and reconcile it in place; implement the accepted P8-S2 inventory, bounded rotation/encryption, runtime least privilege and digest-bound SBOM/provenance/scanning gate.
+- Reason/evidence: exact accepted dispatch plus three independent pre-code reviews and current official-source research.
+- Impact: direct security/config/runtime/artifact/workflow/test contracts only; P8-S3, services, datastore ownership and release order are unchanged.
+- Validation: focused Node/Spring/fitness proof, exactly one Level C, exact-head hosted P8-S2 and cumulative gate, automatic post-merge dev proof.
+- Follow-up: close #29 only after remote/merge/CI/cleanup truth; P8-S3 remains a fresh task.
+- Decision state: implemented locally; hosted acceptance pending.

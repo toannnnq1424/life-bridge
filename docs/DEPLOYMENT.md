@@ -244,6 +244,18 @@ must never inject admin/bootstrap credentials.
 
 # P6-S3 credential rotation and rollback
 
+## P8-S2 production hardening contract
+
+Production deployables consume owner-specific runtime credentials and the
+orchestrator must enforce the machine policy in
+`contracts/security/p8-s2-runtime-policy.json`: non-root, read-only rootfs,
+`/tmp`-only writable memory, all capabilities dropped, no-new-privileges,
+declared port/probes, bounded resources and shutdown. Dockerfiles cannot enforce
+all of these settings; hosted runtime inspection is required. Production
+fixture/debug activation and migration credentials in runtime artifacts fail
+closed. PostgreSQL transport requires certificate-verifying TLS, while
+storage-at-rest and key custody remain provider decisions rather than claims.
+
 Production injects each caller-to-audience key only into that caller and
 receiver. Gateway and Care never share the Notification event key. Dependency
 URLs must use HTTPS; only explicit local/test loopback may use HTTP. Rotation is

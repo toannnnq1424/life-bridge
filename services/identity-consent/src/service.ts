@@ -23,9 +23,10 @@ import {
   hashPassword,
   keyedDigest,
   newTotpSecret,
-  openSecret,
+  openSecretWithKeyring,
   randomToken,
-  sealSecret,
+  sealSecretWithKeyring,
+  type DataKeyring,
   totpProvisioningUri,
   validateTotp,
   verifyPassword,
@@ -113,7 +114,7 @@ export interface AuthenticatedSession {
 }
 
 export interface IdentityServiceOptions {
-  dataKey: Buffer;
+  dataKey: Buffer | DataKeyring;
   rateLimitKey: Buffer;
   dummyPasswordHash: string;
   now?: () => Date;
@@ -139,7 +140,7 @@ function dateMin(left: Date, right: Date): Date {
 }
 
 export class IdentityService {
-  private readonly dataKey: Buffer;
+  private readonly dataKeys: DataKeyring;
   private readonly rateLimitKey: Buffer;
   private readonly dummyPasswordHash: string;
   private readonly now: () => Date;
@@ -150,7 +151,9 @@ export class IdentityService {
     private readonly pool: Pool,
     options: IdentityServiceOptions,
   ) {
-    this.dataKey = options.dataKey;
+    this.dataKeys = Buffer.isBuffer(options.dataKey)
+      ? { current: { id: "legacy", key: options.dataKey } }
+      : options.dataKey;
     this.rateLimitKey = options.rateLimitKey;
     this.dummyPasswordHash = options.dummyPasswordHash;
     this.now = options.now ?? (() => new Date());
@@ -415,14 +418,18 @@ export class IdentityService {
         );
         authenticator = result.rows[0];
         if (authenticator) {
-          secret = openSecret(
+          secret = openSecretWithKeyring(
             authenticator.encrypted_secret,
-            this.dataKey,
+            this.dataKeys,
             authenticator.authenticator_id,
           );
         }
       } else if (validChallenge && challenge?.encrypted_artifact) {
-        secret = openSecret(challenge.encrypted_artifact, this.dataKey, challenge.challenge_id);
+        secret = openSecretWithKeyring(
+          challenge.encrypted_artifact,
+          this.dataKeys,
+          challenge.challenge_id,
+        );
       }
       const acceptedStep = validateTotp(secret, input.code, now.getTime());
       const priorStep = authenticator?.last_accepted_step;
@@ -854,7 +861,11 @@ export class IdentityService {
       );
       const secret =
         validChallenge && challenge?.encrypted_artifact
-          ? openSecret(challenge.encrypted_artifact, this.dataKey, challenge.challenge_id)
+          ? openSecretWithKeyring(
+              challenge.encrypted_artifact,
+              this.dataKeys,
+              challenge.challenge_id,
+            )
           : newTotpSecret();
       const acceptedStep = validateTotp(secret, input.code, now.getTime());
       if (!validChallenge || acceptedStep === null || !challenge) {
@@ -891,7 +902,7 @@ export class IdentityService {
           [
             authenticatorId,
             challenge.account_id,
-            sealSecret(secret, this.dataKey, authenticatorId),
+            sealSecretWithKeyring(secret, this.dataKeys, authenticatorId),
             acceptedStep,
             now,
           ],
@@ -967,7 +978,7 @@ export class IdentityService {
     const id = this.id("challenge");
     const token = randomToken();
     const artifact = input.artifactSecret
-      ? sealSecret(input.artifactSecret, this.dataKey, id)
+      ? sealSecretWithKeyring(input.artifactSecret, this.dataKeys, id)
       : null;
     await client.query(
       `INSERT INTO identity_challenges (
@@ -1046,9 +1057,9 @@ export class IdentityService {
     if (!authenticator) {
       return undefined;
     }
-    const secret = openSecret(
+    const secret = openSecretWithKeyring(
       authenticator.encrypted_secret,
-      this.dataKey,
+      this.dataKeys,
       authenticator.authenticator_id,
     );
     const acceptedStep = validateTotp(secret, totpCode, this.now().getTime());

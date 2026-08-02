@@ -3233,3 +3233,71 @@ is claimed.
 Complete this bounded docs-only closeout, close #28 bilingually, and remove the
 phase branch after accepted dev truth is verified. P8-S2 requires a fresh
 controller-dispatched task and is not started here.
+
+# 2026-08-02 — P8-S2 local secrets/runtime/supply-chain candidate
+
+### Objective
+
+Let an operator rotate actual credentials and deploy least-privilege,
+traceable artifacts without credentials entering source, logs, caches, images,
+SBOMs or provenance.
+
+### Planned versus actual
+
+The accepted P8-S2 outcome is unchanged. `CHG-2026-023` reconciles stale issue
+#29 ownership in place. Three independent reviews and official NIST/OWASP/
+GitHub/SLSA/CycloneDX/Docker/npm/Maven sources froze repository-native controls.
+No external secret manager, KMS, PKI, provider, certification or SLSA level was
+added or claimed.
+
+### Completed
+
+Added the machine secret/encryption inventory, runtime/supply-chain policies,
+current-write/previous-read Identity AES-GCM keyring, exact Spring/Node `kid`
+parity, production PostgreSQL TLS validation, unsigned digest-bound provenance,
+pinning/exception/tamper/runtime negatives, hardened hosted container flags,
+P8-S2 hosted job and cumulative P1-through-P8-S2 aggregator.
+
+### Files changed
+
+Direct `contracts/security`, config/Identity/Community runtime and tests,
+Identity artifact manifest, P8 quality/runner/CI and direct security/deployment/
+test/change/state documents. No orchestration/report or Stitch canary file was
+touched.
+
+### Decisions and Change IDs
+
+`CHG-2026-023`; ADR-031. Provider custody, trusted signing and storage-at-rest
+remain explicit future decision gates.
+
+### Validation performed
+
+Focused P8-S2 49/49, inherited P8-S1 75/75, P6 artifact 39/39, P6 service 70/70,
+Spring current/previous parity 2/2, format/lint/type/build/docs/config/secret and
+zero-high dependency audit passed. Sole Level C invocation
+`096bf28d2bb54bc1bbd637a2b767a0d5` passed every stage and ended
+`passed_with_hosted_postgres_container_required`.
+
+### Validation intentionally deferred
+
+Exact-head hosted independent container/PostgreSQL proof, ready PR, merge-commit,
+automatic dev CI and issue closeout remain mandatory. No second Level C may run.
+
+### Known issues
+
+Local Docker/PostgreSQL proof remains hosted-required. Issue #29 is verified
+open and stale but browser submission awaits action-boundary confirmation.
+
+### Exact next step
+
+After confirmation, reconcile #29 title/body, commit and push the one phase
+branch, open one ready PR to dev, observe only automatic exact-head gates and
+continue through merge/dev CI/cleanup. Do not start P8-S3.
+
+Issue #29 was reconciled in place and ready PR #87 opened at product head
+`0bedd84f6221eab3b174084e87de331d23a93571`. Automatic push run
+`30737234013` retained a P6-S2 container harness failure after the first image
+built successfully: a YAML-escaped quote reached Docker's Go template as a
+literal backslash. The one-line quoting correction does not change product or
+runtime policy; the failed run is retained and will not be rerun. A new exact
+head must supersede it through automatic push/PR workflows.

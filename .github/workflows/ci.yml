@@ -1,4 +1,4 @@
-name: Integrated P1 through P6-S1 acceptance CI
+name: Integrated P1 through P8-S2 acceptance CI
 
 on:
   pull_request:
@@ -354,10 +354,12 @@ jobs:
         run: |
           set -euo pipefail
           for name in web gateway identity-consent care-coordination notification community; do
-            docker build --file "artifacts/$name/Dockerfile" --tag "lifebridge/$name:${EXPECTED_SHA}" .
+            docker build --label "org.opencontainers.image.revision=${EXPECTED_SHA}" --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" --file "artifacts/$name/Dockerfile" --tag "lifebridge/$name:${EXPECTED_SHA}" .
             user="$(docker image inspect --format '{{.Config.User}}' "lifebridge/$name:${EXPECTED_SHA}")"
             test -n "$user"
             test "$user" != "0"
+            test "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "lifebridge/$name:${EXPECTED_SHA}")" = "$EXPECTED_SHA"
+            ! docker history --no-trunc "lifebridge/$name:${EXPECTED_SHA}" | grep -Eiq '(BEGIN [A-Z ]*PRIVATE KEY|IDENTITY_DATA_KEY=|INTERNAL_TOKEN=|DATABASE_PASSWORD=)'
           done
           docker image inspect --format '{{.Id}}' "lifebridge/gateway:${EXPECTED_SHA}" > /tmp/gateway-image-id
       - name: Replace only Notification and preserve owned datastore
@@ -365,10 +367,11 @@ jobs:
         run: |
           set -euo pipefail
           token='synthetic-notification-token-000001'
-          docker run -d --name lifebridge-notification-v1 --read-only --tmpfs /tmp --add-host host.docker.internal:host-gateway \
+          docker run -d --name lifebridge-notification-v1 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 512m --cpus 1.0 --add-host host.docker.internal:host-gateway \
             -p 127.0.0.1:33102:3102 \
             -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
             -e NOTIFICATION_MIGRATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e RUNTIME_MODE=test \
             -e NOTIFICATION_INTERNAL_TOKEN="$token" \
             -e CARE_NOTIFICATION_INTERNAL_TOKEN='synthetic-care-notification-key-0001' \
             "lifebridge/notification:${EXPECTED_SHA}"
@@ -386,10 +389,11 @@ jobs:
           docker rm --force lifebridge-notification-v1
           docker build --label org.opencontainers.image.revision="${EXPECTED_SHA}-upgrade" \
             --file artifacts/notification/Dockerfile --tag lifebridge/notification:p6-s2-upgrade .
-          docker run -d --name lifebridge-notification-v2 --read-only --tmpfs /tmp --add-host host.docker.internal:host-gateway \
+          docker run -d --name lifebridge-notification-v2 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 512m --cpus 1.0 --add-host host.docker.internal:host-gateway \
             -p 127.0.0.1:33102:3102 \
             -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
             -e NOTIFICATION_MIGRATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e RUNTIME_MODE=test \
             -e NOTIFICATION_INTERNAL_TOKEN="$token" \
             -e CARE_NOTIFICATION_INTERNAL_TOKEN='synthetic-care-notification-key-0001' \
             lifebridge/notification:p6-s2-upgrade
@@ -580,8 +584,43 @@ jobs:
           pnpm run test:p8-s1:fitness
           pnpm run typecheck
 
+  p8-s2-secrets-supply-chain:
+    name: P8-S2 secrets, runtime, SBOM and provenance
+    runs-on: windows-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Run exact-head hardening proof
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p8-s2:fitness
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml -Dtest=InternalTokenFilterTest test
+          pnpm run sbom:p6-s2
+          pnpm run validate:secrets
+          pnpm run typecheck
+
   integrated-gate:
-    name: P1 through P8-S1 full required gate
+    name: P1 through P8-S2 full required gate
     if: always()
     needs:
       - classify-changes
@@ -594,6 +633,7 @@ jobs:
       - p7-s2-event-recovery
       - p7-s3-lifecycle-recovery
       - p8-s1-authorization-isolation
+      - p8-s2-secrets-supply-chain
     runs-on: ubuntu-latest
     steps:
       - name: Require every acceptance job
@@ -606,6 +646,7 @@ jobs:
           P7_S2_RESULT: ${{ needs.p7-s2-event-recovery.result }}
           P7_S3_RESULT: ${{ needs.p7-s3-lifecycle-recovery.result }}
           P8_S1_RESULT: ${{ needs.p8-s1-authorization-isolation.result }}
+          P8_S2_RESULT: ${{ needs.p8-s2-secrets-supply-chain.result }}
           CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
           DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
           BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
@@ -621,6 +662,7 @@ jobs:
             test "$P7_S2_RESULT" = "skipped"
             test "$P7_S3_RESULT" = "skipped"
             test "$P8_S1_RESULT" = "skipped"
+            test "$P8_S2_RESULT" = "skipped"
           else
             test "$DOCS_ONLY" = "false"
             test "$WINDOWS_RESULT" = "success"
@@ -631,4 +673,5 @@ jobs:
             test "$P7_S2_RESULT" = "success"
             test "$P7_S3_RESULT" = "success"
             test "$P8_S1_RESULT" = "success"
+            test "$P8_S2_RESULT" = "success"
           fi

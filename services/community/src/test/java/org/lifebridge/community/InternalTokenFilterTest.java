@@ -32,6 +32,14 @@ final class InternalTokenFilterTest {
         filter, assertion("gateway", "community", "community.access", Instant.now()), 200);
   }
 
+  @Test
+  void bindsDeclaredKidToItsExactGeneration() throws Exception {
+    InternalTokenFilter filter = new InternalTokenFilter(
+        new CommunityProperties(SECRET, "synthetic-community-previous-0001", List.of("SYN-PC-001"), false, "production"), mapper);
+    assertStatus(filter, assertionWith("gateway-current", "synthetic-community-previous-0001"), 401);
+    assertStatus(filter, assertionWith("gateway-previous", "synthetic-community-previous-0001"), 200);
+  }
+
   private InternalTokenFilter filter() {
     return new InternalTokenFilter(
         new CommunityProperties(SECRET, null, List.of("SYN-PC-001"), false, "production"), mapper);
@@ -70,5 +78,15 @@ final class InternalTokenFilterTest {
         + "."
         + Base64.getUrlEncoder().withoutPadding()
             .encodeToString(mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
+  }
+
+
+  private String assertionWith(String kid, String secret) throws Exception {
+    long issued = Instant.now().getEpochSecond();
+    String json = mapper.writeValueAsString(Map.of("v", 1, "kid", kid, "iss", "gateway", "aud", "community", "scope", "community.access", "iat", issued, "exp", issued + 60, "nonce", "synthetic_nonce_0002"));
+    String payload = Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+    Mac mac = Mac.getInstance("HmacSHA256");
+    mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+    return payload + "." + Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
   }
 }

@@ -54,6 +54,26 @@ export function sealSecret(secret: string, key: Buffer, aad: string): string {
   return `v1.${nonce.toString("base64url")}.${encrypted.toString("base64url")}.${tag.toString("base64url")}`;
 }
 
+export interface DataKeyring {
+  current: { id: string; key: Buffer };
+  previous?: { id: string; key: Buffer };
+}
+
+export function sealSecretWithKeyring(secret: string, keys: DataKeyring, aad: string): string {
+  return `v2.${keys.current.id}.${sealSecret(secret, keys.current.key, aad).slice(3)}`;
+}
+
+export function openSecretWithKeyring(sealed: string, keys: DataKeyring, aad: string): string {
+  if (sealed.startsWith("v1.")) return openSecret(sealed, keys.current.key, aad);
+  const [version, kid, nonce, encrypted, tag] = sealed.split(".");
+  if (version !== "v2" || !kid || !nonce || !encrypted || !tag)
+    throw new Error("SEALED_SECRET_INVALID");
+  const selected =
+    keys.current.id === kid ? keys.current : keys.previous?.id === kid ? keys.previous : undefined;
+  if (!selected) throw new Error("SEALED_SECRET_KEY_REVOKED");
+  return openSecret(`v1.${nonce}.${encrypted}.${tag}`, selected.key, aad);
+}
+
 export function openSecret(sealed: string, key: Buffer, aad: string): string {
   const [version, nonceText, encryptedText, tagText] = sealed.split(".");
   if (version !== "v1" || !nonceText || !encryptedText || !tagText || key.length !== 32) {

@@ -153,6 +153,15 @@ Before release:
 - deployment configuration review;
 - incident-response and credential-rotation rehearsal.
 - artifact provenance, container/dependency scans, and owned exceptions;
+
+P8-S2 freezes the actual credential and encryption inventory in
+`contracts/security/p8-s2-secret-inventory.json`. Rotation evidence identifies
+only owner, consumer, generation and result. Identity sealed material supports
+current-write/previous-read AES-256-GCM envelopes with exact key id and AAD;
+removing the previous id rejects stale envelopes. This is application-layer
+protection only. PostgreSQL storage-at-rest, external key custody, provider PKI,
+certification and SLSA levels are not evidenced or claimed.
+
 - zero unresolved required MCP/integration debt;
 - successful P8 security/privacy/abuse/supply-chain gate and current P9
   incident/DR evidence.

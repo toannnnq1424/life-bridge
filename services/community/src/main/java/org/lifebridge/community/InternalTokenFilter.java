@@ -69,15 +69,15 @@ public final class InternalTokenFilter extends OncePerRequestFilter {
           Base64.getUrlDecoder().decode(parts[0]), Map.class);
       String keyId = String.valueOf(payload.get("kid"));
       if (!"gateway-current".equals(keyId) && !"gateway-previous".equals(keyId)) return false;
-      boolean signatureValid = false;
-      for (String secret : new String[] {properties.internalToken(), properties.previousInternalToken()}) {
-        if (secret == null) continue;
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-        String expected = Base64.getUrlEncoder().withoutPadding()
-            .encodeToString(mac.doFinal(parts[0].getBytes(StandardCharsets.UTF_8)));
-        signatureValid |= CommunityDigest.secretEquals(expected, parts[1]);
-      }
+      String declaredSecret = "gateway-current".equals(keyId)
+          ? properties.internalToken()
+          : properties.previousInternalToken();
+      if (declaredSecret == null) return false;
+      Mac mac = Mac.getInstance("HmacSHA256");
+      mac.init(new SecretKeySpec(declaredSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+      String expected = Base64.getUrlEncoder().withoutPadding()
+          .encodeToString(mac.doFinal(parts[0].getBytes(StandardCharsets.UTF_8)));
+      boolean signatureValid = CommunityDigest.secretEquals(expected, parts[1]);
       if (!signatureValid) return false;
       long now = Instant.now().getEpochSecond();
       long issued = ((Number) payload.getOrDefault("iat", 0)).longValue();

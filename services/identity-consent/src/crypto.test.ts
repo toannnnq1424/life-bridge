@@ -7,6 +7,8 @@ import {
   openSecret,
   PASSWORD_HASH_OPTIONS,
   sealSecret,
+  sealSecretWithKeyring,
+  openSecretWithKeyring,
   validateTotp,
   verifyPassword,
 } from "./crypto.js";
@@ -46,4 +48,17 @@ describe("identity cryptographic boundaries", () => {
     expect(validateTotp(secret, token, at)).toBe(Math.floor(at / 30_000));
     expect(validateTotp(secret, "000000", at)).toBeNull();
   });
+});
+
+it("activates current writes, overlaps previous reads, and rejects revoked keys", () => {
+  const previous = { id: "k1", key: Buffer.alloc(32, 1) };
+  const current = { id: "k2", key: Buffer.alloc(32, 2) };
+  const old = sealSecretWithKeyring("synthetic-factor-secret", { current: previous }, "factor");
+  const ring = { current, previous };
+  expect(openSecretWithKeyring(old, ring, "factor")).toBe("synthetic-factor-secret");
+  expect(sealSecretWithKeyring("new", ring, "factor")).toMatch(/^v2\.k2\./u);
+  expect(() => openSecretWithKeyring(old, { current }, "factor")).toThrow(
+    "SEALED_SECRET_KEY_REVOKED",
+  );
+  expect(() => openSecretWithKeyring(old, ring, "other")).toThrow();
 });
