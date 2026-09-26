@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s1-v1/schemas/public-directory-query.schema.json",
+  "title": "P5-S1 public directory query",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "enum": [
+        "daily_living_support",
+        "transport_coordination",
+        "household_errand",
+        "social_connection",
+        "digital_access",
+        "accessibility_support"
+      ]
+    },
+    "provinceCityCode": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 32,
+      "pattern": "^[A-Z0-9-]+$"
+    },
+    "organizationType": {
+      "enum": ["public_service", "nonprofit", "community_group"]
+    }
+  }
+}

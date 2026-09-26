@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "name": "gateway",
+  "owner": "gateway",
+  "runtime": "node",
+  "build": "pnpm.cmd --filter @lifebridge/gateway build",
+  "entrypoint": "node dist/main.mjs",
+  "port": { "env": "GATEWAY_PORT", "default": 3001 },
+  "health": { "live": "/health/live", "ready": "/health/ready" },
+  "requiredConfig": [
+    "APP_ORIGIN",
+    "CARE_URL",
+    "IDENTITY_URL",
+    "NOTIFICATION_URL",
+    "COMMUNITY_URL",
+    "CARE_INTERNAL_TOKEN",
+    "IDENTITY_INTERNAL_TOKEN",
+    "NOTIFICATION_INTERNAL_TOKEN",
+    "COMMUNITY_INTERNAL_TOKEN",
+    "RUNTIME_MODE"
+  ],
+  "allowedConfig": [
+    "APP_ORIGIN",
+    "GATEWAY_HOST",
+    "GATEWAY_PORT",
+    "RUNTIME_MODE",
+    "FIXTURE_IDENTITY",
+    "COMMUNITY_CONTRACT_VERSION",
+    "CARE_URL",
+    "IDENTITY_URL",
+    "NOTIFICATION_URL",
+    "COMMUNITY_URL",
+    "CARE_INTERNAL_TOKEN",
+    "IDENTITY_INTERNAL_TOKEN",
+    "NOTIFICATION_INTERNAL_TOKEN",
+    "COMMUNITY_INTERNAL_TOKEN",
+    "NODE_ENV"
+  ],
+  "databaseCredential": null,
+  "migrations": null,
+  "sbom": "sbom/gateway.cdx.json",
+  "container": "artifacts/gateway/Dockerfile"
+}

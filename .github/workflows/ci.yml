@@ -1,4 +1,4 @@
-name: Phase 0 CI
+name: Integrated P1 through P9-S1 acceptance CI
 
 on:
   pull_request:
@@ -21,58 +21,760 @@ permissions:
   contents: read
 
 concurrency:
-  group: phase0-${{ github.workflow }}-${{ github.ref }}
+  group: integrated-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  validate-windows:
-    name: Windows quality and security
-    runs-on: windows-latest
-    timeout-minutes: 20
+env:
+  EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
+jobs:
+  classify-changes:
+    name: Classify candidate changes
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
     steps:
-      - name: Check out repository
+      - name: Check out exact candidate with comparison history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Classify exact changed paths fail closed
+        id: classify
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          $head = git rev-parse HEAD
+          if ($head -ne $env:EXPECTED_SHA) { throw "Classifier checkout mismatch." }
+          $base = if ($env:EVENT_NAME -eq "pull_request") { git merge-base $env:PR_BASE_SHA $head } else { $env:EVENT_BEFORE }
+          $docsOnly = "false"
+          if ($base -and $base -notmatch '^0+$') {
+            git cat-file -e "$base^{commit}" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $paths = @(git diff --name-only --diff-filter=ACDMRTUXB $base $head)
+              $listPath = Join-Path $env:RUNNER_TEMP "lifebridge-changed-paths.json"
+              ConvertTo-Json -InputObject $paths -Compress | Set-Content -LiteralPath $listPath -Encoding utf8NoBOM
+              $docsOnly = node --experimental-strip-types tools/quality/src/p6-s2-change-classifier.ts $listPath
+            }
+          }
+          if ($docsOnly -notin @("true", "false")) { throw "Invalid classifier output." }
+          "docs_only=$docsOnly" >> $env:GITHUB_OUTPUT
+
+  bounded-integrity:
+    name: Bounded docs, config, secret, and integrity checks
+    needs: classify-changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          persist-credentials: false
+      - name: Set up pinned pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Run bounded always-applicable checks
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm run validate:docs
+          pnpm run validate:config
+          pnpm run validate:secrets
+          pnpm exec vitest run tools/quality/src/p6-s2-change-classifier.test.ts
+          $canaryStatus = git status --short -- docs/orchestration/reports/STITCH_MCP_CANARY.md
+          if ($canaryStatus) { throw "Protected canary changed." }
+
+  windows-quality:
+    name: Windows static, unit, build, and security
+    runs-on: windows-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
           persist-credentials: false
 
-      - name: Detect Phase 0 baseline
-        id: baseline
+      - name: Verify exact candidate
         shell: powershell
         run: |
-          $available = Test-Path -LiteralPath package.json -PathType Leaf
-          $bootstrapPush = "${{ github.event_name }}" -eq "push" -and "${{ github.ref }}" -eq "refs/heads/main"
-          if (-not $available -and -not $bootstrapPush) {
-            throw "Phase 0 baseline is missing outside the approved default-branch bootstrap push."
+          if ((git rev-parse HEAD) -ne $env:EXPECTED_SHA) {
+            throw "Checked-out SHA does not match the PR head."
           }
-          "available=$($available.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
       - name: Set up pinned pnpm
-        if: steps.baseline.outputs.available == 'true'
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: 11.9.0
           run_install: false
 
       - name: Set up Node.js
-        if: steps.baseline.outputs.available == 'true'
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 22.22.3
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install locked dependencies
-        if: steps.baseline.outputs.available == 'true'
+      - name: Set up accepted Temurin JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          # setup-java's Windows Temurin catalog names this exact build
+          # 25.0.3+9.0.LTS; it is the same accepted Temurin 25.0.3+9 artifact.
+          java-version: 25.0.3+9.0.LTS
+          cache: maven
+          cache-dependency-path: |
+            services/community/pom.xml
+            .mvn/wrapper/maven-wrapper.properties
+            mvnw
+            mvnw.cmd
+
+      - name: Bootstrap checksummed repository Java and Maven toolchain
+        shell: powershell
+        run: |
+          if ((git ls-files --stage mvnw).Split()[0] -ne "100755") {
+            throw "The Linux Maven wrapper must be committed executable."
+          }
+          ./scripts/bootstrap-community-toolchain.ps1
+
+      - name: Install locked dependencies with narrow build policy
         shell: powershell
         run: pnpm.cmd install --frozen-lockfile
 
-      - name: Run Phase 0 validation
-        if: steps.baseline.outputs.available == 'true'
+      - name: Run Windows quality checks
         shell: powershell
-        run: pnpm.cmd run validate:phase0
+        run: |
+          pnpm.cmd run format:p1:check
+          pnpm.cmd run format:p2:backend:check
+          pnpm.cmd run format:p3:check
+          pnpm.cmd run format:p3-s2:check
+          pnpm.cmd run format:p3-s3:check
+          pnpm.cmd run format:p4-s1:check
+          pnpm.cmd run format:p4-s2:check
+          pnpm.cmd run format:p4-s3:check
+          pnpm.cmd run format:p5-s1:check
+          pnpm.cmd run format:p5-s3:check
+          pnpm.cmd run format:p6-s1:check
+          pnpm.cmd run format:p6-s2:check
+          pnpm.cmd run format:p7-s2:check
+          pnpm.cmd run lint
+          pnpm.cmd run typecheck
+          pnpm.cmd run test:unit
+          pnpm.cmd run validate:docs
+          pnpm.cmd run validate:config
+          pnpm.cmd run validate:secrets
+          pnpm.cmd run test:p5-s1:contracts
+          node --experimental-strip-types tools/quality/src/p5-s1-contract-integrity.ts
+          pnpm.cmd run test:p5-s3:contracts
+          node --experimental-strip-types tools/quality/src/p5-s3-contract-integrity.ts
+          pnpm.cmd run test:p6-s1:contracts
+          pnpm.cmd run test:p6-s2:fitness
+          pnpm.cmd run test:p7-s2:fitness
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml clean test
+          pnpm.cmd run build
+
+      - name: Verify Java provenance and reproducible Community package
+        shell: powershell
+        run: |
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml clean verify
+          $sbomPath = "services/community/target/classes/META-INF/sbom/community-sbom.json"
+          if (-not (Test-Path $sbomPath)) {
+            throw "Community CycloneDX provenance output is missing."
+          }
+          $sbom = Get-Content $sbomPath -Raw | ConvertFrom-Json
+          if ($sbom.bomFormat -ne "CycloneDX" -or -not $sbom.specVersion) {
+            throw "Community CycloneDX provenance output is invalid."
+          }
+          $first = (Get-FileHash -Algorithm SHA256 services/community/target/lifebridge-community.jar).Hash
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml clean verify
+          $second = (Get-FileHash -Algorithm SHA256 services/community/target/lifebridge-community.jar).Hash
+          if ($first -ne $second) {
+            throw "Community package is not reproducible."
+          }
 
       - name: Audit dependency advisories
-        if: steps.baseline.outputs.available == 'true'
         shell: powershell
         run: pnpm.cmd run security:deps
+
+  postgres-browser:
+    name: P6-S1 PostgreSQL, mixed-runtime, and cumulative Chromium acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify exact candidate
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Set up pinned pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Set up accepted Temurin JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          # Keep the hosted catalog alias exact across Windows and Linux.
+          java-version: 25.0.3+9.0.LTS
+          cache: maven
+          cache-dependency-path: |
+            services/community/pom.xml
+            .mvn/wrapper/maven-wrapper.properties
+            mvnw
+            mvnw.cmd
+
+      - name: Install locked dependencies with narrow build policy
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium system dependencies
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Prepare isolated database credentials
+        shell: pwsh
+        run: |
+          $carePassword = [guid]::NewGuid().ToString('N')
+          $identityPassword = [guid]::NewGuid().ToString('N')
+          $notificationPassword = [guid]::NewGuid().ToString('N')
+          $communityPassword = [guid]::NewGuid().ToString('N')
+          Write-Output "::add-mask::$carePassword"
+          Write-Output "::add-mask::$identityPassword"
+          Write-Output "::add-mask::$notificationPassword"
+          Write-Output "::add-mask::$communityPassword"
+          "P1_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
+          "P1_CARE_DATABASE_PASSWORD=$carePassword" >> $env:GITHUB_ENV
+          "P1_NOTIFICATION_DATABASE_PASSWORD=$notificationPassword" >> $env:GITHUB_ENV
+          "P2_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
+          "P2_IDENTITY_DATABASE_PASSWORD=$identityPassword" >> $env:GITHUB_ENV
+          "P5_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres" >> $env:GITHUB_ENV
+          "P5_COMMUNITY_DATABASE_PASSWORD=$communityPassword" >> $env:GITHUB_ENV
+
+      - name: Align database URLs with generated owner credentials
+        shell: pwsh
+        run: |
+          "CARE_DATABASE_URL=postgresql://lifebridge_care:$($env:P1_CARE_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_care" >> $env:GITHUB_ENV
+          "NOTIFICATION_DATABASE_URL=postgresql://lifebridge_notification:$($env:P1_NOTIFICATION_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_notification" >> $env:GITHUB_ENV
+          "P5_S1_COMMUNITY_TEST_DATABASE_URL=postgresql://lifebridge_community:$($env:P5_COMMUNITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
+          "P5_S2_COMMUNITY_TEST_DATABASE_URL=postgresql://lifebridge_community:$($env:P5_COMMUNITY_DATABASE_PASSWORD)@127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
+          "COMMUNITY_DATABASE_URL=jdbc:postgresql://127.0.0.1:5432/lifebridge_community" >> $env:GITHUB_ENV
+          "COMMUNITY_DATABASE_USERNAME=lifebridge_community" >> $env:GITHUB_ENV
+          "COMMUNITY_DATABASE_PASSWORD=$($env:P5_COMMUNITY_DATABASE_PASSWORD)" >> $env:GITHUB_ENV
+
+      - name: Run the cumulative P5-S3 database and browser campaign
+        shell: pwsh
+        env:
+          P5_S1_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: ./scripts/validate-p5-s3.ps1 -UseExistingDatabase -SkipInstall
+
+      - name: Remove cumulative browser output before P6 integrity gate
+        shell: pwsh
+        run: |
+          foreach ($path in @("test-results", "playwright-report")) {
+            if (Test-Path -LiteralPath $path) {
+              Remove-Item -Recurse -Force -LiteralPath $path
+            }
+          }
+
+      - name: Run P6-S1 current and previous compatibility gates
+        shell: pwsh
+        run: ./scripts/validate-p6-s1.ps1 -SkipInstall
+
+  artifact-containers:
+    name: P6-S2 isolated containers and independent upgrade
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          persist-credentials: false
+      - name: Build and inspect every owned image
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in web gateway identity-consent care-coordination notification community; do
+            docker build --label "org.opencontainers.image.revision=${EXPECTED_SHA}" --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" --file "artifacts/$name/Dockerfile" --tag "lifebridge/$name:${EXPECTED_SHA}" .
+            user="$(docker image inspect --format '{{.Config.User}}' "lifebridge/$name:${EXPECTED_SHA}")"
+            test -n "$user"
+            test "$user" != "0"
+            test "$(docker image inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' "lifebridge/$name:${EXPECTED_SHA}")" = "$EXPECTED_SHA"
+            ! docker history --no-trunc "lifebridge/$name:${EXPECTED_SHA}" | grep -Eiq '(BEGIN [A-Z ]*PRIVATE KEY|IDENTITY_DATA_KEY=|INTERNAL_TOKEN=|DATABASE_PASSWORD=)'
+          done
+          docker image inspect --format '{{.Id}}' "lifebridge/gateway:${EXPECTED_SHA}" > /tmp/gateway-image-id
+      - name: Replace only Notification and preserve owned datastore
+        shell: bash
+        run: |
+          set -euo pipefail
+          token='synthetic-notification-token-000001'
+          docker run -d --name lifebridge-notification-v1 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 512m --cpus 1.0 --add-host host.docker.internal:host-gateway \
+            -p 127.0.0.1:33102:3102 \
+            -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e NOTIFICATION_MIGRATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e RUNTIME_MODE=test \
+            -e NOTIFICATION_INTERNAL_TOKEN="$token" \
+            -e CARE_NOTIFICATION_INTERNAL_TOKEN='synthetic-care-notification-key-0001' \
+            "lifebridge/notification:${EXPECTED_SHA}"
+          for attempt in $(seq 1 30); do curl --fail --silent http://127.0.0.1:33102/health/ready && break; sleep 1; done
+          curl --fail --silent http://127.0.0.1:33102/health/ready
+          curl --fail --silent http://127.0.0.1:33102/health/live
+          valid_assertion="$(node -e 'const c=require("crypto"),n=Math.floor(Date.now()/1000),p=Buffer.from(JSON.stringify({v:1,kid:"care-current",iss:"care-coordination",aud:"notification",scope:"notification.events",iat:n,exp:n+60,nonce:"synthetic_nonce_0001"})).toString("base64url");process.stdout.write(p+"."+c.createHmac("sha256","synthetic-care-notification-key-0001").update(p).digest("base64url"))')"
+          wrong_assertion="$(node -e 'const c=require("crypto"),n=Math.floor(Date.now()/1000),p=Buffer.from(JSON.stringify({v:1,kid:"gateway-current",iss:"gateway",aud:"notification",scope:"notification.read",iat:n,exp:n+60,nonce:"synthetic_nonce_0001"})).toString("base64url");process.stdout.write(p+"."+c.createHmac("sha256","synthetic-notification-token-000001").update(p).digest("base64url"))')"
+          missing_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -X POST -H 'content-type: application/json' --data '{}' http://127.0.0.1:33102/internal/v1/events/care-coordination)"
+          wrong_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -X POST -H 'content-type: application/json' -H "x-lifebridge-service-identity: $wrong_assertion" --data '{}' http://127.0.0.1:33102/internal/v1/events/care-coordination)"
+          valid_status="$(curl --silent --output /dev/null --write-out '%{http_code}' -X POST -H 'content-type: application/json' -H "x-lifebridge-service-identity: $valid_assertion" --data '{}' http://127.0.0.1:33102/internal/v1/events/care-coordination)"
+          test "$missing_status" = "404"
+          test "$wrong_status" = "404"
+          test "$valid_status" != "404"
+          docker rm --force lifebridge-notification-v1
+          docker build --label org.opencontainers.image.revision="${EXPECTED_SHA}-upgrade" \
+            --file artifacts/notification/Dockerfile --tag lifebridge/notification:p6-s2-upgrade .
+          docker run -d --name lifebridge-notification-v2 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 512m --cpus 1.0 --add-host host.docker.internal:host-gateway \
+            -p 127.0.0.1:33102:3102 \
+            -e NOTIFICATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e NOTIFICATION_MIGRATION_DATABASE_URL=postgresql://postgres@host.docker.internal:5432/postgres \
+            -e RUNTIME_MODE=test \
+            -e NOTIFICATION_INTERNAL_TOKEN="$token" \
+            -e CARE_NOTIFICATION_INTERNAL_TOKEN='synthetic-care-notification-key-0001' \
+            lifebridge/notification:p6-s2-upgrade
+          for attempt in $(seq 1 30); do curl --fail --silent http://127.0.0.1:33102/health/ready && break; sleep 1; done
+          curl --fail --silent http://127.0.0.1:33102/health/ready
+          curl --fail --silent http://127.0.0.1:33102/health/live
+          test "$(docker image inspect --format '{{.Id}}' "lifebridge/gateway:${EXPECTED_SHA}")" = "$(cat /tmp/gateway-image-id)"
+          docker rm --force lifebridge-notification-v2
+
+  p6-s3-service-isolation:
+    name: P6-S3 authenticated dependency failure and recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Run exact-head authenticated failure contracts
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          ./scripts/validate-p6-s3.ps1 -SkipInstall
+
+  p7-s1-owned-migrations:
+    name: P7-S1 owned migrations and schema compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Run the exact-head P7-S1 migration campaign
+        shell: pwsh
+        env:
+          P7_ADMIN_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/postgres
+        run: |
+          pnpm install --frozen-lockfile
+          ./scripts/validate-p7-s1.ps1 -SkipInstall
+
+  p7-s2-event-recovery:
+    name: P7-S2 replay, reconciliation and terminal recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - name: Run exact-head P7-S2 failure and recovery proof
+        shell: pwsh
+        env:
+          P7_ADMIN_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/postgres
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p7-s2:fitness
+          pnpm run test:p7-s2:database
+
+  p7-s3-lifecycle-recovery:
+    name: P7-S3 lifecycle policy and encrypted isolated recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - name: Run exact-head recovery and policy-neutral lifecycle proof
+        shell: pwsh
+        run: |
+          docker run -d --name lifebridge-p7s3-postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+          for ($i=0; $i -lt 60; $i++) { docker exec lifebridge-p7s3-postgres pg_isready -U postgres -d postgres *> $null; if ($LASTEXITCODE -eq 0) { break }; Start-Sleep -Seconds 1 }
+          pnpm install --frozen-lockfile
+          $env:P7_ADMIN_DATABASE_URL='postgresql://postgres@127.0.0.1:5432/postgres'
+          $env:P7_S3_POSTGRES_CONTAINER='lifebridge-p7s3-postgres'
+          pnpm run test:p7-s3:fitness
+          pnpm run test:p7-s3:database
+          docker rm -f lifebridge-p7s3-postgres
+
+  p8-s1-authorization-isolation:
+    name: P8-S1 authorization isolation and revocation
+    runs-on: windows-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - name: Run exact-head household authorization proof
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p8-s1:fitness
+          pnpm run typecheck
+
+  p8-s2-secrets-supply-chain:
+    name: P8-S2 secrets, runtime, SBOM and provenance
+    runs-on: windows-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Run exact-head hardening proof
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p8-s2:fitness
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml -Dtest=InternalTokenFilterTest test
+          pnpm run sbom:p6-s2
+          pnpm run validate:secrets
+          pnpm run typecheck
+
+  p8-s3-abuse-privacy-response:
+    name: P8-S3 abuse, privacy lifecycle and response
+    runs-on: windows-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Run exact-head abuse, lifecycle and tabletop proof
+        shell: pwsh
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p8-s3:fitness
+          pnpm run test:p5-s3:contracts
+          ./mvnw.cmd -B -ntp -f services/community/pom.xml -Dtest=CommunityModerationProviderContractTest test
+          pnpm run typecheck
+
+  p9-s1-redacted-observability:
+    name: P9-S1 redacted journey telemetry and SLO baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: classify-changes
+    if: needs.classify-changes.outputs.docs_only != 'true'
+    services:
+      postgres:
+        image: postgres:17.5-alpine@sha256:6567bca8d7bc8c82c5922425a0baee57be8402df92bae5eacad5f01ae9544daa
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    steps:
+      - name: Check out exact candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 22.22.3
+          cache: pnpm
+      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: 25.0.3+9.0.LTS
+      - name: Prove exact-head Node Spring PostgreSQL telemetry safety
+        shell: pwsh
+        env:
+          P7_ADMIN_DATABASE_URL: postgresql://postgres@127.0.0.1:5432/postgres
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test:p9-s1:fitness
+          pnpm run test:p7-s2:database
+          ./mvnw -B -ntp -f services/community/pom.xml -Dtest=SafeTelemetryTest test
+          pnpm run typecheck
+
+  integrated-gate:
+    name: P1 through P8-S3 / Phase 8 full required gate
+    if: always()
+    needs:
+      - classify-changes
+      - bounded-integrity
+      - windows-quality
+      - postgres-browser
+      - artifact-containers
+      - p6-s3-service-isolation
+      - p7-s1-owned-migrations
+      - p7-s2-event-recovery
+      - p7-s3-lifecycle-recovery
+      - p8-s1-authorization-isolation
+      - p8-s2-secrets-supply-chain
+      - p8-s3-abuse-privacy-response
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every acceptance job
+        env:
+          WINDOWS_RESULT: ${{ needs.windows-quality.result }}
+          POSTGRES_BROWSER_RESULT: ${{ needs.postgres-browser.result }}
+          ARTIFACT_CONTAINERS_RESULT: ${{ needs.artifact-containers.result }}
+          P6_S3_RESULT: ${{ needs.p6-s3-service-isolation.result }}
+          P7_S1_RESULT: ${{ needs.p7-s1-owned-migrations.result }}
+          P7_S2_RESULT: ${{ needs.p7-s2-event-recovery.result }}
+          P7_S3_RESULT: ${{ needs.p7-s3-lifecycle-recovery.result }}
+          P8_S1_RESULT: ${{ needs.p8-s1-authorization-isolation.result }}
+          P8_S2_RESULT: ${{ needs.p8-s2-secrets-supply-chain.result }}
+          P8_S3_RESULT: ${{ needs.p8-s3-abuse-privacy-response.result }}
+          CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
+          DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
+          BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
+        run: |
+          test "$CLASSIFIER_RESULT" = "success"
+          test "$BOUNDED_RESULT" = "success"
+          if [ "$DOCS_ONLY" = "true" ]; then
+            test "$WINDOWS_RESULT" = "skipped"
+            test "$POSTGRES_BROWSER_RESULT" = "skipped"
+            test "$ARTIFACT_CONTAINERS_RESULT" = "skipped"
+            test "$P6_S3_RESULT" = "skipped"
+            test "$P7_S1_RESULT" = "skipped"
+            test "$P7_S2_RESULT" = "skipped"
+            test "$P7_S3_RESULT" = "skipped"
+            test "$P8_S1_RESULT" = "skipped"
+            test "$P8_S2_RESULT" = "skipped"
+            test "$P8_S3_RESULT" = "skipped"
+          else
+            test "$DOCS_ONLY" = "false"
+            test "$WINDOWS_RESULT" = "success"
+            test "$POSTGRES_BROWSER_RESULT" = "success"
+            test "$ARTIFACT_CONTAINERS_RESULT" = "success"
+            test "$P6_S3_RESULT" = "success"
+            test "$P7_S1_RESULT" = "success"
+            test "$P7_S2_RESULT" = "success"
+            test "$P7_S3_RESULT" = "success"
+            test "$P8_S1_RESULT" = "success"
+            test "$P8_S2_RESULT" = "success"
+            test "$P8_S3_RESULT" = "success"
+          fi
+
+  p9-s1-integrated-gate:
+    name: P1 through P9-S1 / redacted observability required gate
+    if: always()
+    needs: [classify-changes, bounded-integrity, integrated-gate, p9-s1-redacted-observability]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preserve docs-only truth and require cumulative acceptance
+        env:
+          CLASSIFIER_RESULT: ${{ needs.classify-changes.result }}
+          DOCS_ONLY: ${{ needs.classify-changes.outputs.docs_only }}
+          BOUNDED_RESULT: ${{ needs.bounded-integrity.result }}
+          INHERITED_RESULT: ${{ needs.integrated-gate.result }}
+          P9_RESULT: ${{ needs.p9-s1-redacted-observability.result }}
+        run: |
+          test "$CLASSIFIER_RESULT" = "success"
+          test "$BOUNDED_RESULT" = "success"
+          test "$INHERITED_RESULT" = "success"
+          if [ "$DOCS_ONLY" = "true" ]; then test "$P9_RESULT" = "skipped"; else test "$P9_RESULT" = "success"; fi

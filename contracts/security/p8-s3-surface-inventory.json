@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "defaultDisposition": "POLICY_DECISION_REQUIRED",
+  "dimensions": {
+    "public": ["source_digest", "operation"],
+    "authenticated": ["actor_digest", "household_digest", "source_digest", "operation"],
+    "internal": ["service_identity", "operation"]
+  },
+  "budgets": [
+    {
+      "class": "public-search",
+      "owner": "gateway",
+      "limit": 30,
+      "windowSeconds": 60,
+      "maxConcurrent": 8,
+      "maxPayloadBytes": 32768,
+      "recovery": "bounded-retry"
+    },
+    {
+      "class": "normal-read",
+      "owner": "gateway",
+      "limit": 120,
+      "windowSeconds": 60,
+      "maxConcurrent": 16,
+      "maxPayloadBytes": 32768,
+      "recovery": "bounded-retry"
+    },
+    {
+      "class": "normal-mutation",
+      "owner": "gateway",
+      "limit": 30,
+      "windowSeconds": 60,
+      "maxConcurrent": 8,
+      "maxPayloadBytes": 524288,
+      "recovery": "idempotent-backoff"
+    },
+    {
+      "class": "document-transfer",
+      "owner": "care-coordination",
+      "limit": 8,
+      "windowSeconds": 60,
+      "maxConcurrent": 2,
+      "maxPayloadBytes": 524288,
+      "recovery": "operator-remediation"
+    },
+    {
+      "class": "account-recovery",
+      "owner": "identity-consent",
+      "limit": 10,
+      "windowSeconds": 600,
+      "maxConcurrent": 4,
+      "maxPayloadBytes": 32768,
+      "recovery": "independent-accessible-budget"
+    },
+    {
+      "class": "emergency-recovery-read",
+      "owner": "gateway",
+      "limit": 30,
+      "windowSeconds": 60,
+      "maxConcurrent": 4,
+      "maxPayloadBytes": 32768,
+      "recovery": "independent-accessible-budget"
+    },
+    {
+      "class": "moderation",
+      "owner": "community",
+      "limit": 30,
+      "windowSeconds": 60,
+      "maxConcurrent": 4,
+      "maxPayloadBytes": 65536,
+      "recovery": "authoritative-reconcile"
+    },
+    {
+      "class": "internal-service",
+      "owner": "receiving-service",
+      "limit": 240,
+      "windowSeconds": 60,
+      "maxConcurrent": 16,
+      "maxPayloadBytes": 524288,
+      "recovery": "bounded-backoff-circuit"
+    }
+  ],
+  "privacyTargets": [
+    { "owner": "identity-consent", "residue": ["store", "events", "logs", "backup"] },
+    {
+      "owner": "care-coordination",
+      "residue": ["store", "events", "logs", "backup", "device-copy"]
+    },
+    { "owner": "notification", "residue": ["store", "events", "logs", "backup"] },
+    { "owner": "community", "residue": ["store", "events", "logs", "backup", "search-projection"] }
+  ],
+  "moderation": {
+    "supported": ["queue", "detail", "resolve", "reconcile"],
+    "unsupported": ["report-ingestion", "claim", "appeal"],
+    "nonDisclosure": true
+  },
+  "telemetry": {
+    "owner": "service-owner",
+    "identifiers": "digest-only",
+    "forbidden": ["raw_ip", "session", "secret", "pii", "care_content", "free_form_reason", "crlf"]
+  },
+  "claims": [
+    "engineering-evidence-only",
+    "not-legal-advice",
+    "not-certification",
+    "no-production-mutation"
+  ]
+}

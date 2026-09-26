@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "deployables": [
+    "web",
+    "gateway",
+    "identity-consent",
+    "care-coordination",
+    "notification",
+    "community"
+  ],
+  "container": {
+    "runAsNonRoot": true,
+    "readOnlyRootFilesystem": true,
+    "dropCapabilities": ["ALL"],
+    "noNewPrivileges": true,
+    "writablePaths": ["/tmp"],
+    "pidsLimit": 256,
+    "memoryLimitMiB": 512,
+    "cpuLimit": 1,
+    "shutdownSeconds": 15,
+    "declaredPortsOnly": true
+  },
+  "production": {
+    "fixtures": false,
+    "debug": false,
+    "sourceMaps": false,
+    "migrationCredentialsInRuntime": false,
+    "runtimeAutoMigration": false,
+    "healthContainsSecrets": false
+  },
+  "orchestratorEnforcementRequired": true
+}

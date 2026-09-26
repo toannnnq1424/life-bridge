@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s2-v1/schemas/common-failure.schema.json",
+  "title": "P5-S2 failure envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "messageKey", "retryable", "correlationId"],
+      "properties": {
+        "code": {
+          "enum": [
+            "COMMUNITY_MATCH_VALIDATION_FAILED",
+            "COMMUNITY_MATCH_NOT_FOUND",
+            "COMMUNITY_MATCH_AUTHORITY_REQUIRED",
+            "COMMUNITY_MATCH_CONSENT_REVOKED",
+            "COMMUNITY_MATCH_APPROVAL_REQUIRED",
+            "COMMUNITY_MATCH_APPROVAL_REVOKED",
+            "COMMUNITY_MATCH_OFFER_EXPIRED",
+            "COMMUNITY_MATCH_OFFER_STATE_CONFLICT",
+            "COMMUNITY_MATCH_NO_CAPACITY",
+            "COMMUNITY_MATCH_VERSION_CONFLICT",
+            "COMMUNITY_MATCH_ASSIGNMENT_CONFLICT",
+            "COMMUNITY_MATCH_PROGRESS_CONFLICT",
+            "COMMUNITY_MATCH_CLOSED",
+            "COMMUNITY_MATCH_REVOKED",
+            "COMMUNITY_MATCH_RESULT_UNKNOWN",
+            "COMMUNITY_ORGANIZATION_UNAVAILABLE",
+            "IDENTITY_SERVICE_UNAVAILABLE",
+            "COMMUNITY_SERVICE_UNAVAILABLE",
+            "IDEMPOTENCY_KEY_REQUIRED",
+            "IDEMPOTENCY_CONFLICT",
+            "INTERNAL_CONTRACT_INVALID"
+          ]
+        },
+        "messageKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^[a-z0-9._-]+$"
+        },
+        "retryable": { "type": "boolean" },
+        "correlationId": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      }
+    }
+  }
+}

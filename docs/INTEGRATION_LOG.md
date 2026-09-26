@@ -1,0 +1,1300 @@
+# Integration Log
+
+## INT-2026-036 — P8-S3 and Phase 8 convergence
+
+- Head `9a62acd52f945eddbf3a890b99b17d2072ea633e` passed 26 automatic
+  PR checks, including PostgreSQL/mixed-runtime and terminal Phase 8.
+- PR #89 merged only by merge commit
+  `adf0bad67a43d9dac73b0ce7cc540b60f7bb8ee8` into dev.
+- Automatic dev run `30739630918` passed. No manual dispatch/rerun, force push,
+  rebase, test/main promotion, production mutation or canary change occurred.
+
+## INT-2026-031 — P7-S2 accepted recovery slice
+
+- Base: exact `origin/dev@20361386a918d731b18ada5c7fbf16496cbfd171`.
+- Boundary: Care outbox → authenticated HTTP → Notification inbox; no broker,
+  datastore, shared credential or Community delivery.
+- Ownership: Care owns fenced attempts/terminal/replay audit; Notification owns
+  deduplication, monotonic receipt and durable result.
+- Operations: distinct operator scopes/keys, redacted API reconciliation and
+  dry-run-first single-event replay.
+- Gate: exact product head `2111cd5ba2da3632c060c41bf153fe7322c5570a`
+  passed push/PR runs `30730747200`/`30730748657`. PR #81 merged by merge
+  commit `c2c0f33516a7860dc40ec5c3376a45a06a3bf1c5`; automatic `dev` run
+  `30731150450` passed Windows, PostgreSQL/mixed-runtime/Chromium, P6-S2,
+  P6-S3, P7-S1, P7-S2 and the P1-through-P7-S2 aggregator. P7-S3 is excluded.
+
+This file records how branches, contracts, services, data, design artifacts, and
+environments are intended to converge. It is not a substitute for Git history.
+
+## Entry template
+
+```md
+## INT-YYYY-NNN — Title
+
+- Date:
+- Status:
+- Source:
+- Target:
+- Scope:
+- Contracts/data affected:
+- Validation:
+- Conflicts/risks:
+- Decision/change references:
+- Follow-up:
+```
+
+## INT-2026-001 — Adopt the existing Stitch/design baseline
+
+- Date: 2026-07-25
+- Status: In progress
+- Source: `ai/lifebridge/stitch-mcp-integration` at `74c5b31`
+- Target: `phase/0-foundation`
+- Scope: preserve existing design, accessibility, Stitch package review, and
+  incident evidence while replacing the active delivery path with Windows +
+  Codex App
+- Contracts/data affected: no executable application contract exists at source
+- Validation: tracked-file inventory, diff inspection, config parsing, heuristic
+  secret scan
+- Conflicts/risks: pre-existing uncommitted change in
+  `docs/orchestration/reports/STITCH_MCP_CANARY.md` remains user-owned
+- Decision/change references: `CHG-2026-001`
+- Follow-up: keep the dirty file unstaged; validate the new Codex configuration
+  offline
+
+## INT-2026-002 — Establish the research promotion lane
+
+- Date: 2026-07-25
+- Status: Baseline seeded; local promotion branches established
+- Source: `init/research`
+- Target: `data`, then `dev`
+- Scope: bilingual research register, provenance, evaluation, and synthetic
+  fixture specification based on 2016–2026 sources
+- Contracts/data affected: fixture metadata and source-attribution contract
+- Validation: freshness, publisher, geography, license/terms, limitations,
+  sensitivity, and intended-use review
+- Conflicts/risks: public sources may not permit redistribution; raw PII is
+  prohibited
+- Bootstrap exception: Phase 0 seeds governance/register documents on
+  `phase/0-foundation` before the governed branches exist. It contains no raw
+  dataset or product fixture and cannot be reused after branch creation.
+- Decision/change references: `CHG-2026-002`
+- Follow-up: create/push promotion branches only after Phase 0 validation
+
+## INT-2026-003 — Validate the Phase 0 integration baseline
+
+- Date: 2026-07-26
+- Status: Validated locally
+- Source: `phase/0-foundation`
+- Target: `dev`
+- Scope: governance, Windows tooling, CI, recent-data controls, service/data
+  boundaries, and Codex App Stitch gates
+- Contracts/data affected: documentation and validation contracts only; no
+  executable product service, migration, raw dataset, or product fixture
+- Validation: Phase 0 validator passed with 9 unit tests; dependency audit found
+  no known high-severity vulnerability; a clean detached worktree materialized
+  dependencies and passed bootstrap/validation twice
+- Conflicts/risks: the pre-existing user-owned
+  `docs/orchestration/reports/STITCH_MCP_CANARY.md` edit remains excluded
+- Decision/change references: ADR-001 through ADR-010, `CHG-2026-001`,
+  `CHG-2026-002`
+- Follow-up: publish the validated branch baseline, then start exactly one new
+  `P1-S1` or research conversation
+
+## Promotion rules
+
+- No direct feature commit to `main`, `test`, `dev`, or `data`.
+- `phase/*` integrates to `dev` through review and required checks.
+- `dev` promotes the exact tested commit to `test`; `test` promotes the exact
+  release candidate to `main`.
+- `init/research` may add research evidence only. Approved schemas/fixtures move
+  through `data`, then forward into `dev`.
+- Back-merges and conflict resolution are explicit; never choose an entire side
+  without contract review.
+
+## INT-2026-004 — Integrate the external research-driven runbook
+
+- Date: 2026-07-26
+- Status: Planning overlay accepted
+- Source: external runbook identified by SHA-256 in
+  `docs/RUNBOOK_ADOPTION.md`
+- Target: canonical repository planning/research/GitHub controls
+- Scope: research gates, evidence levels, assumption tracking, re-check
+  triggers, user-research safeguards, shared risk catalog, and phase crosswalk
+- Contracts/data affected: documentation contracts only; external source rows
+  are not imported as verified dataset records
+- Validation: three scoped independent reviews plus targeted repository
+  documentation/schema checks
+- Conflicts/risks: external P0 status is stale; P0–P15 order conflicts with the
+  early vertical-slice MVP; repeated edge matrices contain irrelevant rows
+- Decision/change references: `CHG-2026-003`, ADR-011
+- Follow-up: use GitHub milestones/issues for accepted P0–P6 slices and re-verify
+  candidate sources only when their phase/slice opens
+
+## INT-2026-005 — Publish governed GitHub execution objects
+
+- Date: 2026-07-26
+- Status: Published; integration review open; hosted CI not registered
+- Source: `phase/0-foundation`
+- Target: `dev`
+- Scope: 10 project labels, 7 undated milestones, 19 bilingual controlled
+  issues, and the Phase 0 integration pull request
+- Contracts/data affected: execution metadata only; no product contract,
+  migration, source dataset, or fixture value
+- Validation: 19/19 issue titles, label sets, and milestones matched
+  `docs/GITHUB_ISSUE_PLAN.md`; P0 has one closed issue; P1–P6 each have three
+  open issues
+- Conflicts/risks: [issue #3](https://github.com/toannnnq1424/life-bridge/issues/3)
+  remains the external Stitch credential/canary gate; the user-owned canary
+  diff remains excluded; `KI-012` records the initial GitHub Actions bootstrap
+  gate
+- Decision/change references: `CHG-2026-003`, ADR-011
+- Review:
+  [PR #21](https://github.com/toannnnq1424/life-bridge/pull/21),
+  `phase/0-foundation` → `dev`; two commits, no base conflict, zero registered
+  checks after the latest push; do not merge until required review/checks pass
+- Follow-up: open either
+  [P1-S1 #5](https://github.com/toannnnq1424/life-bridge/issues/5) or the
+  separate [DATA-S1 #4](https://github.com/toannnnq1424/life-bridge/issues/4)
+  in a new dedicated conversation
+
+## INT-2026-006 — Expand production execution topology and debt gates
+
+- Date: 2026-07-26
+- Status: Canonical docs and GitHub execution objects synchronized
+- Source: project-owner production-quality, MCP-debt, and GitHub Network
+  requirements
+- Target: active roadmap and GitHub milestones/issues/branch policy
+- Scope: preserve P0–P5, split former P6 into P6–P12, add 18 production issues,
+  remap open issues #18–#20, and make required MCP debt deploy-blocking
+- Contracts/data affected: no runtime contract or dataset yet; future gates now
+  require rolling compatibility, owned migrations, replay/recovery, security,
+  SLO/DR, performance/cost, rollout, and live-operations evidence
+- Validation: targeted cross-document checks followed by GitHub 1:1 audit;
+  each implementation phase retains its own Level C/D evidence
+- GitHub evidence: three new labels; P6 retitled; P7–P12 created; 18 new slice
+  issues #22–#39; #18→P9-S2, #19→P11-S1, #20→P11-S3; standing P11 gate #40;
+  P1 Stitch gate #3 carries `mcp-debt`
+- Conflicts/risks: Stitch remains `MCP-DEBT-2026-001`; repository branch
+  protection is unavailable on the current private GitHub plan, so PR-only and
+  merge-commit topology are documented/manual controls
+- Decision/change references: `CHG-2026-004`, `CHG-2026-005`, ADR-012,
+  ADR-013
+- Network policy: PR-only
+  `init/research -> data -> dev -> test -> main`; short-lived `phase/* -> dev`;
+  merge commits preserve convergence; production hotfixes forward-merge
+  `main -> test -> dev`; no direct push, force-push, or decorative branch
+- Follow-up: resolve KI-012, obtain hosted CI, and keep exact P1-S1 as the next
+  product slice
+
+## INT-2026-007 — Reclassify local Docker and Stitch evidence
+
+- Date: 2026-07-26
+- Status: Historical sandbox isolation classified; host Docker available;
+  Stitch debt open; no system mutation
+- Source: read-only Windows host and repository configuration audit
+- Target: Phase 0 environment truth and future slice runners
+- Scope: Docker Desktop/daemon visibility, sandbox permissions, repository
+  Stitch registration, current task tool discovery, and credential hygiene
+- Contracts/data affected: none
+- Validation at the time: host Docker client/server both reported 27.5.1 while
+  one restricted sandbox could not access `docker_engine`; repository Stitch
+  TOML parsed, remained disabled, and contained only the environment variable
+  name
+- Conflicts/risks: doctor warning is a sandbox false-negative for host daemon
+  availability; a key disclosed in chat cannot satisfy safe provisioning
+- Decision/change references: `CHG-2026-005`, ADR-013,
+  `MCP-DEBT-2026-001`, KI-001/KI-002/KI-004
+- Follow-up: do not alter Docker services/Registry/ACLs. A later host-capable P0
+  task reconfirmed client/server 27.5.1; Docker-backed product testing remains
+  owned by the first slice that introduces a containerized runtime.
+
+## INT-2026-008 — Activate official Stitch MCP and establish the P1 review set
+
+- Date: 2026-07-26
+- Status: Bounded MCP session complete; handoff in Design review—not Frozen
+- Source: official `stitch.googleapis.com/mcp` endpoint through the Codex
+  ChatGPT desktop app on Windows
+- Target: private LifeBridge Stitch project, private design system, and redacted
+  P1 review references for `LB-011`, `LB-013`, `LB-014`, and `LB-019`
+- Scope: official MCP handshake, complete tool-schema discovery, private project
+  listing, bounded project/design-system creation, desktop/mobile P1 generation,
+  and visual review using synthetic non-sensitive content
+- Contracts/data affected: design input only; no production UI code, real care
+  data, credential value, private project identifier, or signed project URL was
+  written to the repository
+- Validation: handshake, authentication, schema discovery, project listing, and
+  bounded generation succeeded; every listed review reference was visually
+  audited; the repository contains only redacted local aliases and extracted
+  intent
+- Conflicts/risks: the P1 correction list, task/event/API contracts,
+  localization, and manual accessibility/privacy/security evidence remain open;
+  production UI is not ready and the handoff is not Frozen
+- Decision/change references: `CHG-2026-006`, KI-001, KI-002, GitHub issue #3;
+  this entry supersedes only the Stitch-availability evidence in
+  `INT-2026-007`, whose historical Docker evidence remains unchanged
+- Credential control: the user authorized a one-time exception for a disposable
+  non-production key. Its value stayed in session memory and was never written
+  to Git, repository configuration, issues, logs, or task handoffs. It must be
+  retired/revoked and usage-reviewed before any deployment
+- Follow-up: complete the P1 correction and review gates before handoff freeze;
+  retire the disposable credential before clearing the deployment gate
+
+## INT-2026-009 — Synchronize the P6–P12 GitHub execution catalog
+
+- Date: 2026-07-26
+- Status: Applied and audited
+- Source: `docs/GITHUB_ISSUE_PLAN.md` under `CHG-2026-004` and
+  `CHG-2026-005`
+- Target: GitHub labels, milestones, issues, and standing deployment gate
+- Scope: add `reliability`, `performance`, and `mcp-debt`; retitle P6; create
+  P7–P12; create 18 slice issues; remap #18–#20 without deleting old bodies;
+  create standing gate #40 and update P1 gate #3
+- Contracts/data affected: execution metadata only; no application code,
+  migration, fixture, private Stitch identifier, or credential
+- Validation: all 21 P6–P12 slice titles, exact label sets, milestone mappings,
+  and historical-body markers matched the canonical plan; issue-body secret
+  shape scan returned zero findings
+- Conflicts/risks: GitHub branch protection is unavailable for this private
+  repository on the current plan; PR-only and merge-commit rules remain manual
+  governance until platform support changes
+- Decision/change references: `CHG-2026-004`, `CHG-2026-005`, ADR-012,
+  ADR-013; [gate #40](https://github.com/toannnnq1424/life-bridge/issues/40)
+- Follow-up: finish local P0 validation and restore hosted CI on PR #21 before
+  merge; do not begin P1 in this task
+
+## INT-2026-010 — Register hosted CI through the guarded default-branch bootstrap
+
+- Date: 2026-07-26
+- Status: Workflow registered; final PR #21 head still requires a green run
+- Source: `phase/0-ci-bootstrap` at `1a40b5d`
+- Target: `main` through [PR #41](https://github.com/toannnnq1424/life-bridge/pull/41)
+- Scope: `.github/workflows/ci.yml` only under `CHG-2026-007`
+- Contracts/data affected: CI registration only; no product/runtime/data change
+- Validation: PR file audit confirmed one workflow file; bootstrap branch and
+  bootstrap PR runs failed closed because the Phase 0 baseline was absent;
+  merge commit `b3095cc` registered the active workflow; reopening PR #21 then
+  created a full hosted run
+- Conflicts/risks: branch protection remains unavailable on the current private
+  plan; PR/check policy is manually enforced
+- Decision/change references: `CHG-2026-007`, ADR-015, KI-012
+- Follow-up: delete the bootstrap branch after reachability, then require the
+  full Windows validation on the final PR #21 commit before merge to `dev`
+
+## INT-2026-011 — Implement P1-S1 contracts, audience, and design handoff
+
+- Date: 2026-07-26
+- Status: Integrated and accepted
+- Source: `phase/1-accountable-task-loop` from `dev@4b633755`; accepted final
+  head `6ec1be362ce3512a8eba8b312cbe129f866d0aae`
+- Target: `dev`; merged through PR #42 as
+  `cea4f83fe7c0ff79a560e6bc14853a2f7f725133`
+- Scope: issue #5 create/assign/complete loop, completion outbox, cross-user
+  notification, confirmed dashboard/task/notification state, and VI/EN
+  Stitch-derived UI
+- Contracts/data affected: `P1-S1-v1` public task/dashboard/notification APIs,
+  `care.task.completed.v1`, Care idempotency/audit/outbox ownership,
+  Notification inbox/item ownership, and two owner-isolated PostgreSQL
+  databases
+- Validation: package Level A checks pass; real PostgreSQL integration is 5/5
+  for concurrency/idempotency, cross-user delivery, self-suppression,
+  authorization/conflict, outage/retry, restart and time zone. Dependency audit
+  first exposed high Sharp/PostCSS advisories; `CHG-2026-009` excludes unused
+  Sharp and applies the narrow patched PostCSS edge. Frozen install, zero-high
+  audit, production build/runtime and browser 4/4 then passed. The changed
+  candidate completed Level C with unit 19/19, contract 4/4, PostgreSQL 5/5,
+  browser 4/4, build/static/docs/security gates, and exact cleanup of its
+  Compose resources. Initial hosted push run `30182938417` then exposed a
+  Linux-only `git.exe` secret-validator defect and missing explicit masks for
+  disposable database passwords. The targeted portable process-output test is
+  10/10 and secrets/config/diff checks pass after adding pre-export masks.
+  The next PR run passed those gates and audit, then found Ubuntu lacks the
+  external `rg` used only by the no-image assertion. That assertion now uses
+  native PowerShell enumeration/search; parser and targeted reproducer pass.
+  Final feature head `6ec1be362ce3512a8eba8b312cbe129f866d0aae`
+  passed exact-head PR run `30183168519`. PR #42 merged to `dev` as merge
+  commit `cea4f83fe7c0ff79a560e6bc14853a2f7f725133`, whose parents preserve the
+  `4b633755` base and `6ec1be3` feature convergence. Post-merge `dev` run
+  `30183280672` passed and issue #5 was closed completed.
+- Conflicts/risks: Phase 0 draft did not name the one notification trigger or
+  recipient. `CHG-2026-008` selects creator-if-distinct and durable
+  self-suppression. Branch protection remains unavailable, so SHA/check review
+  is manual.
+- Design: six reviewed remote Stitch aliases remain the provenance. Handoff
+  version 1.0 freezes native semantic, localization, responsive, failure-state,
+  privacy, and accessibility corrections without importing generated source or
+  private locators.
+- Decision/change references: `CHG-2026-008`, `CHG-2026-009`, ADR-016,
+  ADR-017, issue #5
+- Follow-up: P1 promotion is complete. Start only a fresh task from current
+  integrated `dev` for P2-S1; freeze real identity/session/household access,
+  recovery, language, and accessibility-preference contracts before code.
+  DATA-S1 remains separate and neither next scope starts in this closeout.
+
+## INT-2026-012 — Build the P2-S1 backend candidate behind the Stitch gate
+
+- Date: 2026-07-26
+- Status: In progress; backend candidate validated locally and preserved in
+  draft PR #44, production UI and promotion blocked
+- Source: `phase/2-account-access-onboarding` from `dev@a3e9fc2`
+- Target: `dev` by PR only; no merge or issue #6 closure is permitted while
+  `MCP-DEBT-2026-002` remains open
+- Scope: first-party registration, password plus required TOTP, saved recovery
+  artifacts, password/factor recovery, opaque server sessions, optional VI/EN
+  and accessibility preferences, account-only onboarding and gateway boundary
+- Contracts/data affected: `P2-S1-v1`, Identity-owned PostgreSQL migration,
+  digest-only session/challenge/recovery storage, encrypted TOTP seed,
+  service-owned audit, gateway cookie/origin/CSRF contract; no Care or
+  Notification database write and no household capability
+- Validation: contract/config/crypto/internal/gateway Level A checks and
+  Identity PostgreSQL Level B are green. The 5/5 database cases cover
+  registration/factor/recovery acknowledgement, response equivalence, atomic
+  rate buckets, one-winner TOTP replay, recovery single-use, password/factor
+  recovery, preference persistence, session rotation/revoke/idle/absolute
+  expiry and audit evidence. CI is extended only with exact-head P2 backend
+  checks; P1 browser acceptance remains unchanged. The first hosted push run
+  `30187900426` failed before the P2 campaign because the workflow exported
+  `IDENTITY_DATABASE_URL` before provisioning and the preceding P1 unit
+  command therefore discovered the P2 integration suite. The classified CI
+  ordering/scope fix localizes that URL to the dedicated P2 campaign; a
+  replacement exact-head run is required. Replacement PR run `30188080211`
+  confirmed 32 aggregate units passed with all five database cases skipped,
+  then exposed that the cumulative P1 runtime launcher neither configured nor
+  started the newly required Identity readiness dependency. This second CI
+  orchestration defect is fixed by provisioning and running the real built
+  Identity service with masked ephemeral keys only around P1 runtime
+  acceptance, while keeping its database URL unset during aggregate unit
+  discovery. Another exact-head run is required.
+- Conflicts/risks: Stitch MCP inventory was empty at
+  `2026-07-26T02:09:54.193Z` and again after 180 seconds at
+  `2026-07-26T02:13:03.970Z`. No credential, locator, signed URL, remote ID or
+  generated Stitch source was inspected or persisted. Local Node 24.14 is
+  outside the pinned Node 22 range, so hosted Node 22 remains decisive.
+- Design: `docs/design/reviews/P2_S1_LOCAL_WIREFRAME.md` is a semantic local
+  wireframe and frozen backend handoff input only. It is not production UI or
+  a Stitch approval.
+- Decision/change references: issue #6, `CHG-2026-010`, ADR-018,
+  `MCP-DEBT-2026-002`, KI-017
+- Follow-up: restore the approved Stitch MCP/secret path, perform the bounded
+  synthetic reference session plus schema/data-egress/security/accessibility
+  review, freeze the redacted `LB-001`–`LB-007` handoff, then implement the UI
+  and run exactly one `pnpm.cmd run validate:p2-s1`. Do not start P2-S2 or
+  DATA-S1.
+
+## INT-2026-013 — Accept the future Node/Spring Community contract boundary
+
+- Date: 2026-07-26
+- Status: Accepted governance direction; implementation deferred
+- Source: project-owner change request recorded on the active P2-S1 branch
+- Target: P5-S1/issue #15 for implementation; P6 for cumulative proof
+- Scope: Community becomes the first Spring Boot service at P5-S1 and remains
+  the same bounded service through P5-S2/P5-S3; no current Node service rewrite
+- Contracts/data affected: planned Node Gateway ↔ Spring Community versioned
+  OpenAPI/JSON Schema with provider/consumer tests; Community-owned PostgreSQL
+  role/database/migrations/outbox/audit; Identity & Consent remains authority
+  and supplies only minimum authorized context
+- Validation: documentation format/config/docs/secrets/diff and exact-head
+  hosted CI now. Official JDK/Spring Boot/Maven/plugin/checksum and
+  repository-owned Windows wrapper research is deferred to the P5 gate and
+  must precede Java files. P6 must validate mixed-version compatibility,
+  independent artifact/upgrade, dependency isolation, health/readiness,
+  observability, SBOM/supply-chain, containers and rollback.
+- Conflicts/risks: no Java source, wrapper, toolchain or container exists yet.
+  PostgreSQL search is the accepted start; Elasticsearch, Redis, broker, object
+  storage or a new engine requires measured evidence and a later ADR. P2
+  scope/order and `MCP-DEBT-2026-002` remain unchanged.
+- Decision/change references: `CHG-2026-011`, ADR-019, issue #15
+- Follow-up: do not start P5 here. When P5-S1 is eligible, run its
+  official-source research gate, pin the exact supported toolchain/wrapper and
+  freeze the language-neutral provider/consumer contract before code.
+
+## INT-2026-014 — Activate the official Stitch namespace for the P2 handoff gate
+
+- Date: 2026-07-26
+- Status: Validated, merged and closed
+- Source: project-owner-authorized local Stitch activation on the existing
+  `phase/2-account-access-onboarding` task
+- Target: P2-S1 `LB-001`–`LB-007` design gate only
+- Scope: enable the repository-scoped official Stitch MCP stanza while
+  retaining environment-backed authentication, prompt approvals,
+  `required = false`, and secret-free tracked configuration
+- Validation: the read-only direct MCP canary returned HTTP
+  200 for initialization and tool discovery, negotiated protocol `2025-06-18`,
+  and exposed 15 project/screen/design-system tools without project mutation.
+  The task then classified all 15 schemas, reused the single safe-display-name
+  LifeBridge project and completed exactly seven additive synthetic generations.
+  No secret, locator, signed URL or generated source was persisted.
+- Conflicts/risks: Stitch references remain untrusted input. P2 browser
+  artifacts are disabled; manual assistive-technology evidence remains honest.
+- Decision/change references: issue #6, `MCP-DEBT-2026-002`, KI-017
+- Validation: the single `pnpm.cmd run validate:p2-s1` passed P1 regression,
+  Identity PostgreSQL 5/5, aggregate unit 37/37, contracts 6/6, P2 browser 4/4,
+  format/lint/type/build/docs/config/secrets/audit/diff and exact cleanup.
+- Promotion: exact-head commit `969e6e9`, PR run `30191477589` and push run
+  `30191476390` passed. PR #44 merged to `dev` as merge commit `0cb14e2`;
+  post-merge run `30191620201` passed and issue #6 closed.
+- Follow-up: start P2-S2 only in a fresh task from integrated `dev`; P5 remains
+  planned and was not started here.
+
+## INT-2026-015 — P2-S2 integration and Stitch UI resolution
+
+- Date: 2026-07-26
+- Status: Validated, merged and closed
+- Source: `phase/2-household-authorization` from verified
+  `dev@7e260c0315bb08a4f07b37c7604d416d999cb3e9`
+- Scope: Identity-owned household/membership/invitation/minimum-context
+  contracts, PostgreSQL migration, Gateway boundary, audit/logging, Frozen
+  LB-008–LB-010 handoff, native VI/EN UI and cumulative acceptance tooling
+- Ownership: no cross-service SQL/credentials and no new service/engine/ADR
+- Validation: targeted server/contracts/validator 35/35, PostgreSQL lifecycle
+  7/7, mocked browser 6/6, real built web-to-Gateway-to-Identity-to-PostgreSQL
+  browser 1/1, and the single cumulative local Level C campaign pass. Final
+  campaign evidence includes aggregate unit 46/46, contracts 8/8, P2-S2
+  PostgreSQL 7/7, P1 browser 4/4, real-plus-mocked P2-S2 browser 7/7, P2-S1
+  browser 4/4, production build, docs/config/secrets/dependency/diff checks and
+  exact task-owned cleanup.
+- Gate: local design/acceptance and hosted promotion portions of
+  `MCP-DEBT-2026-003` are resolved. Deployment remains separately blocked by
+  KI-001 and manual assistive-technology evidence remains KI-016.
+- Promotion: initial candidate `d74faf2` exposed one pull-request-run LB-008
+  locale race while the parallel push run passed. Targeted fix head
+  `af6a75f4fcf54a70b2185a903f4bcb330e837b31` then passed exact-head runs
+  `30202003327` and `30202004747`. PR #47 merged to `dev` as
+  `82a8c833ec15e01dacecbcde7285d5a63a307bbd`; post-merge run
+  `30202144955` passed. Issue #7 closed completed with canonical closeout
+  evidence at
+  https://github.com/toannnnq1424/life-bridge/issues/7#issuecomment-5083484971.
+- Follow-up: P2-S3 is the exact next product slice only after this docs-only
+  canonical closeout and controller dispatch. Its first action is to freeze
+  versioned consent grant/narrow/revoke and audit-history read contracts for
+  LB-028–LB-031, explicitly separating care-recipient consent from organizer
+  membership. No P2-S3 work started here.
+
+### User-authorized Stitch approval policy
+
+The repository-scoped `.codex/config.toml` changes only
+`default_tools_approval_mode` from `prompt` to `approve`, matching the
+controller-level authorization for all Stitch tools in future trusted
+LifeBridge worktrees. No credential, header, endpoint, tool allow/deny list,
+sandbox, network or OS setting changed.
+
+After reset, authenticated project reads passed. The first authorized
+synthetic LB-008 generation then exceeded the 60-second MCP call timeout; ten
+30-second read-only screen reconciliations found no new artifact. The write was
+not retried and LB-009/LB-010 were not issued. `MCP-DEBT-2026-003` now tracks a
+generation-capable MCP timeout/session rather than authentication.
+
+Controller diagnosis confirmed the repository override was the active
+60-second limit. User-authorized project policy now sets only
+`tool_timeout_sec = 600`, and the direct validator freezes that bounded
+generation window. No credential, endpoint, header, allow/deny list,
+sandbox/network or other server changed. The still-loaded runtime was not
+retried; one MCP restart is required before an absence check and any new write.
+
+After that restart, one read-only screen reconciliation confirmed LB-008 was
+absent. Exactly one bounded LB-008 retry and one LB-009/LB-010 generation
+succeeded in the existing project. Independent review rejected generated
+partial-save/offline queueing, account-existence disclosure, membership-removal
+scope, clinical/legal/consent content and generated source. The redacted Frozen
+handoff records aliases only; no credential, locator, remote ID, signed URL or
+generated source is persisted.
+
+Native routes are `/households/new`, `/households/{id}/invitations`,
+`/invitations`, and `/households/{id}/recipient-context`. The runtime path
+proves two verified accounts, bounded invite acceptance and authorized context
+view through the built web, Gateway, Identity and service-owned PostgreSQL.
+
+The single `pnpm.cmd run validate:p2-s2` invocation was interrupted after its
+P1 build by a cumulative fixture-readiness defect: Gateway correctly required
+Identity in normal mode but the safe loopback P1 fixture campaign does not run
+Identity. A targeted Level B made readiness skip that dependency only when the
+existing fixture-safe guard is active and passed Gateway format/lint/type plus
+13/13 unit tests. Per the one-campaign guard, already-green P1 checks were not
+repeated; P1 browser and every remaining P2-S2 phase were resumed at the
+smallest missing boundary and passed. One wrapper-only PowerShell parameter
+collision was classified without product edits before the runtime-only resume.
+The host interruption and wrapper collision were environment/orchestration
+failures, not product failures.
+
+## INT-2026-016 — P2-S3 consent, privacy and redacted audit candidate
+
+- Date: 2026-07-26
+- Status: Integrated; exact-head and post-merge hosted validation passed
+- Source: `phase/2-consent-privacy-audit` from verified
+  `dev@22157b10a9cdd479d7bb0a439a74fc18dccfaf67`
+- Scope: `P2-S3-v1` subject establishment, grant/strict-narrow/revoke,
+  governed recipient-context reads, atomic privacy preferences, redacted
+  bounded audit history, migration 003, Gateway routes, native
+  LB-028–LB-031 VI/EN UI and cumulative validation tooling
+- Ownership: Identity & Consent and its PostgreSQL database remain sole owner;
+  no service, engine, cross-service SQL, shared-table write, broker,
+  credential coupling or generated Stitch source was introduced
+- Contract: organizer/member status is not consent authority. Only the
+  eligible context creator may explicitly self-bind as subject; the subject
+  owns consent mutation and audit authority. Exact-scope governed reads are
+  evaluated at a server UTC instant; revoke denies at its effective boundary.
+  Commands are optimistic-versioned, digest-idempotent, row-locked and atomic.
+- Privacy/audit: retained transition and audit rows are redacted, scoped to the
+  subject, bounded to 90 days and keyset-paginated without totals. Sealed
+  cursors bind viewer, subject and filter. Logs/metrics/traces expose only
+  allow-listed operation/result/correlation/duration fields.
+- Design: four synthetic references were created exactly once in the existing
+  project. The Frozen redacted handoff rejects placeholder timestamps,
+  non-IANA `ICT`, offline queueing, hidden totals, missing confirmations and
+  generated source. Independent private-render inspection was unavailable, so
+  KI-019 blocks claims that the generated visuals alone were approved; native
+  automated evidence is mandatory.
+- Validation: the single cumulative command passed P1 browser 4/4, affected
+  unit 54/54, contracts 12/12, Identity PostgreSQL 9/9, transactional
+  migration rollback/reapply, production build, real-plus-mocked P2-S3 browser
+  8/8, P2-S2 browser 6/6, docs/config/secrets/dependency checks and exact
+  Compose/process cleanup. It then stopped on a P2-S1 strict locator after the
+  truthful preference-status correction. Targeted Level B traced and removed
+  a stale pre-factor announcement; affected format/lint, production web build
+  and P2-S1 browser 5/5 passed. No second Level C command was issued. Hosted
+  exact-head CI must run the coherent script from scratch; its runtime
+  sensitive-log scan now runs immediately after P2-S3 browser evidence.
+- Hosted deviation: push run `30208198696` passed static/security and all
+  P2-S3 browser checks 8/8, then failed when Linux PowerShell represented an
+  empty runtime log as `$null`. The scanner now normalizes null raw content to
+  an empty string before prohibited-value matching. This is tooling-only;
+  contracts, migrations and runtime behavior are unchanged. Targeted
+  parser/scan checks passed, followed by replacement push run `30208540352`
+  and PR run `30208541672`. Rewriting the pushed feature commit was prohibited,
+  so the recovery is a second small conventional commit rather than a
+  force-push.
+- Decision/change references: issue #8, `CHG-2026-012`, ADR-020,
+  `docs/security/P2_S3_THREAT_MODEL.md`, KI-019
+- Promotion: feature commit `f0ba524` plus portability recovery `cd7f0a8`
+  passed replacement exact-head push/PR runs `30208540352`/`30208541672`.
+  PR #49 merged into `dev` as
+  `bca04d1aff000abcedeed939dbfc9d7186cf1966`; post-merge run `30208723836`
+  passed; issue #8 closed completed with bilingual evidence.
+- Follow-up: P3-S1 is exact next. It begins with an authorized,
+  time-zone-explicit timeline projection and versioned handoff command against
+  the accepted P2 governed-read boundary. No P3, DATA, P5, deployment or
+  release work starts here.
+
+## INT-2026-017 — P3-S1 daily timeline and accountable handoff
+
+- Date: 2026-07-26
+- Promotion date: 2026-07-27
+- Status: Integrated; exact-head and post-merge hosted validation passed;
+  issue #9 closed
+- Source: `phase/3-daily-timeline-handoff` from verified
+  `dev@cd58229794e6e8bf562a49879de494515c262db5`
+- Owning work: GitHub issue #9 (`GH-008`)
+- Scope: `P3-S1-v1` fresh coordination authority decision, bounded daily
+  timeline, handoff review/command/result, `care.task.handed_off.v1`, Care
+  migration 002, Gateway/native VI/EN LB-012 and LB-014 extension,
+  Notification consumption and cumulative validation tooling
+- Ownership: Identity & Consent alone evaluates current P2 governed access.
+  Gateway composes without fabrication. Care Coordination alone writes task,
+  handoff, timeline, audit, outbox and idempotency rows in its PostgreSQL
+  database. Notification owns only its inbox/store. No new service, engine,
+  shared table, cross-service SQL or credential coupling exists.
+- Contract: decisions bind permission, household, request digest, correlation,
+  current subject/grant/privacy versions and a short server time. Care also
+  checks recipient, assignee, open state, expected version and target. UTC
+  occurrence plus event reference is stable order; IANA local-day bounds,
+  snapshot sequence and sealed keyset cursor cover DST, clock skew and
+  continuation with no total.
+- Mutation/evidence: handoff accepts one enumerated reason and immediate
+  server-time semantics. Idempotency is digest-only; one transaction updates
+  assignment/version and writes handoff, timeline, audit, outbox and replay
+  response. UI confirms only returned durable state and labels notification
+  separately. Offline mutation is blocked/no-queue; uncertain result requires
+  current-state check.
+- Privacy: task title exists only in the authorized Care read model. It and any
+  free-form content are absent from handoff command/event/audit/outbox/
+  Notification/telemetry. Pages expose no total or hidden count. Migration
+  starts an honest coverage boundary and backfills no history.
+- Design: the existing private LifeBridge project/design system was inspected.
+  Four synthetic desktop/mobile LB-012/LB-014 references were generated once
+  and read back individually; no credential, locator, remote ID, URL or
+  generated source was persisted. The Frozen redacted handoff rejects
+  placeholder times/zones, medical claims, free text, totals, false success
+  and offline queueing. KI-019 retains unavailable independent pixel review.
+- Planned versus actual: `CHG-2026-013` adds fresh decision binding, snapshot
+  chronology, no-total inference controls, explicit no-backfill and structured
+  context that the baseline left open. Reason is convergence of three audits
+  and the bounded official-source research cycle. Impact is P3-S1 only; phase
+  order, runtime boundaries and non-clinical scope are unchanged.
+- Validation: the single `pnpm.cmd run validate:p3-s1` invocation stopped at
+  its first formatting gate. Targeted recovery, without a second Level C,
+  completed affected lint/type, unit 52/52, contracts 16/16, P1 PostgreSQL
+  6/6, P3 Identity/Care PostgreSQL 14/14, migration rollback/reapply/
+  no-backfill, all builds, P1 browser 4/4, P3 mocked 6/6 plus real 1/1, and P2
+  mocked regressions 18/18. Docs/config/secrets/dependencies, privacy-safe
+  runtime logs and exact cleanup passed. Recovery corrected clean-host owner
+  provisioning/reset, focus and VI/EN selectors, and a real Gateway
+  correlation re-resolution defect; the no-header boundary passes 19/19.
+  Exact feature head `909c64542ccd4f3db6951e737dd83ef393cdf701`
+  passed push run `30216046313` and PR run `30216124915`. PR #51 merged through
+  a merge commit as `dev@2314ee99eec61ffa1532fead4e5bda3bc6bbae63`;
+  post-merge run `30216314035` passed all three gates and bilingual issue #9
+  closeout was posted before the issue closed completed.
+- Promotion transport deviation: planned GitHub App PR/issue/check operations
+  could not see the private repository and returned `404`; `gh` was absent.
+  The already-authorized signed-in GitHub browser session created ready PR
+  #51, verified exact SHA/run state, merged with the checked merge-commit
+  method and closed issue #9. Impact was transport-only: no source, contract,
+  validation, credential or branch-topology change. Direct PR/run/commit/issue
+  evidence validates the fallback; KI-006 retains the optional-tool limitation
+  and no Change ID is required.
+- Decision/change references: issue #9, `CHG-2026-013`, ADR-021,
+  `docs/security/P3_S1_THREAT_MODEL.md`, KI-001/KI-016/KI-019
+- Follow-up: actual code/contracts/tests confirm P3-S2 as exact next. A fresh
+  task must freeze its own appointment/calendar semantics against the accepted
+  P3-S1 time contract. P3-S2, P3-S3, DATA, P5, deployment and release are not
+  started here.
+
+## INT-2026-018 — P3-S2 calendar and appointment coordination
+
+- Date: 2026-07-27
+- Status: Integrated; exact-head and post-merge hosted validation passed
+- Source: `phase/3-calendar-appointment` from verified
+  `dev@83bfe45006241d160db7359eb61fafc4286de58b`
+- Owning work: GitHub issue #10
+- Scope: `P3-S2-v1` fresh action authority, calendar/detail projections,
+  finite structured create/change/cancel commands,
+  `care.appointment.reminder_intent.v1`, Care migration 003, Notification
+  migration 002, Gateway/native VI/EN LB-015/LB-016 and cumulative validation
+  tooling
+- Ownership: Identity & Consent evaluates the current accepted P2 governed
+  boundary for each action. Gateway composes only. Care owns appointment,
+  transition, audit, idempotency and outbox state in its PostgreSQL database.
+  Notification owns only inbox and structured reminder-intent receipt. There
+  is no new service, engine, shared table, cross-service SQL, credential or
+  direct import.
+- Contract/time: canonical millisecond `Z`, source local minute, numeric offset
+  and IANA zone are explicit. Care rejects DST gaps, requires explicit
+  earlier/later overlap policy plus matching first offset, preserves weekly
+  wall time, materializes at most 12 occurrences and supports only
+  occurrence-only mutation. Conflicts are half-open, serialized per recipient
+  context and ordered by UTC/opaque ID.
+- Mutation/evidence: one Care transaction writes durable occurrence state,
+  immutable transition, privacy-minimized audit, digest-only idempotency and
+  minimum reminder outbox intent. Stale/state/time conflicts preserve unsent
+  intent and require fresh review. Cancellation remains visible history.
+  Notification acknowledges schedule/cancel intent without claiming delivery.
+- UI/design: four private synthetic LB-015/LB-016 references were generated and
+  read back once; no locator, remote ID, signed URL or generated source was
+  persisted. The independent reviewer could not inspect private pixels, so
+  `KI-019` remains and no visual conformance is claimed. Native UI provides a
+  complete semantic agenda, calendar enhancement, explicit time/recurrence/
+  reminder facts, VI/EN, keyboard/focus, 320 px reflow, axe, denied,
+  unavailable, offline, stale, conflict, cancellation and recovery states.
+- Planned versus actual: `CHG-2026-014` planned one Level C after coherent
+  implementation. The single wrapper invocation continued after the desktop
+  shell detached, then exited with its output unavailable. Visible targeted
+  continuation retained classified green gates rather than issuing a second
+  full campaign. It found and fixed one legacy migration-reapply default,
+  browser locator ambiguity and two native recovery-state defects. Initial
+  hosted push run `30220557513` then passed P3-S2 itself but exposed a real
+  cumulative P2-S3 alert-focus race. The host `systemError` preserved the
+  smallest shared fix uncommitted; recovery verified worktree/index/remote/PR
+  state before continuing. A render-committed announcement sequence replaced
+  the racing animation-frame focus, and only the failed P2-S3 conflict/focus
+  path plus affected static scope were validated. Product scope, contracts,
+  data ownership, service boundaries and phase order did not change.
+- Validation: four format scopes; lint/type; unit 55 passed with 19
+  environment-skipped; contracts 19/19; P1 PostgreSQL 6/6; P3-S1
+  Identity/Care PostgreSQL 14/14; P3-S2 Care/Notification PostgreSQL 5/5;
+  P3-S1 and P3-S2 rollback/reapply/no-backfill scripts; dependency/docs/
+  config/secrets; all builds; retained P3-S2 mocked 6/6 plus real 1/1;
+  cumulative P3-S1 mocked 6/6 and P2 mocked 18/18; privacy-safe runtime logs,
+  `git diff --check` and exact PID-scoped cleanup.
+- Promotion: feature commit
+  `f37077fa90cf3740a004a617839dd447fb9b91df` plus cumulative accessibility
+  fix `e21334c2631f3617d79d827480be4563c34b31a2` passed exact-head push run
+  `30230392943` and pull-request run `30230394014`. Ready PR #53 merged through
+  a merge commit as `dev@142096516533aea7561b1b13a2187047dc726a71`;
+  post-merge run `30230627085` passed all required jobs. Issue #10 closed
+  completed with bilingual evidence at
+  https://github.com/toannnnq1424/life-bridge/issues/10#issuecomment-5086517596.
+- Decision/change references: issue #10, `CHG-2026-014`, ADR-022,
+  `docs/security/P3_S2_THREAT_MODEL.md`, KI-001/KI-016/KI-019
+- Follow-up: after this docs-only canonical closeout merges, P3-S3 is exact
+  next only in a fresh task. Its first action is to freeze versioned care-plan
+  review authority, command/read/event and time semantics against the accepted
+  P2 authority and P3-S2 appointment boundary. This task does not begin it.
+
+## INT-2026-019 — P3-S3 versioned support-plan review acceptance
+
+- Date: 2026-07-27–28
+- Source: `phase/3-care-plan-review` from verified clean
+  `origin/dev@875ffc61b33f9eec250689fb3f8ce6ec8fd9d811`
+- Canonical issue: #11 verified open with matching bilingual scope; no duplicate
+  branch, task, issue, or open PR existed before mutation.
+- Scope: `P3-S3-v1`, ADR-023/`CHG-2026-015`, Care migration 004 and one shared
+  draft/current aggregate, fresh Identity decisions, Gateway composition,
+  immutable confirmed history, content-free suppressed event, native LB-017,
+  and cumulative test/CI wiring.
+- Independent reviews: contract/data/authority/time/threat, Stitch
+  privacy/accessibility, and test/CI/operations completed independently and
+  were reconciled before code. Four synthetic private references were generated
+  and read back once; independent pixels remained unavailable, so KI-019 and the
+  corrected native-only handoff remain.
+- Planned versus actual: the planned private-pixel approval was unavailable;
+  generated source remained rejected and stricter native requirements govern.
+  A first mocked browser pass found only a duplicate-text locator; the failed
+  scenario and two not-yet-run scenarios passed classified targeted recovery.
+- Level C actual: the one `pnpm.cmd run validate:p3-s3` invocation stopped before
+  a gate while Docker's Linux engine was unavailable. Direct classified
+  continuations then retained green results and recovered only unproven or
+  dependency-affected gates. Final evidence is format 5/5, unit 57/57,
+  contracts 24/24, P1/P3-S1/P3-S2/P3-S3 integration 6/6 + 14/14 + 5/5 + 2/2,
+  cumulative P3 migrations, mocked LB-017 3/3, real P3-S3 browser 1/1, and
+  cumulative mocked browser P3-S2 5/5 + P3-S1 6/6 + P2-S3 7/7 + P2-S2 6/6 +
+  P2-S1 5/5. Lint/type/docs/config/secrets/audit/build/diff/log-scan and cleanup
+  also passed. No second Level C command was issued.
+- Final review correction: draft reads now redact a newly ineligible responsible
+  actor as `authorization_changed` and block confirmation until an eligible
+  replacement is saved. Affected formatter/lint, contracts 24/24, Gateway unit
+  21/21, typecheck, Care/web builds, P3-S3 integration 2/2, real browser 1/1 and
+  mocked LB-017 3/3 passed; cumulative migrations and older browsers were
+  retained and not rerun.
+- Promotion: feature `9bfd2263625e25e2f4c3bbf7b1d0257a002591c8` passed exact-head
+  push/PR runs `30329456918`/`30329530973`; ready PR #56 merged by merge commit
+  as `dev@f3576f40779617f0d7bd519ac44b178ccf269e3e`; post-merge run
+  `30329752886` passed all three jobs. Issue #11 closed with bilingual evidence.
+  Only the same-branch docs-only canonical closeout remains.
+- Non-goals preserved: no DATA-S1, P4/P5, Spring, deployment, release, new
+  service/engine, cross-service SQL, clinical advice, reminder delivery, real
+  care record, or canary mutation.
+- Follow-up: after docs-only closeout, P4-S1 is exact next only in a fresh task;
+  freeze non-clinical reminder authority, unit/time-zone, event, Notification
+  and failure truth before implementation.
+
+## INT-2026-020 — P4-S1 medication reminder
+
+- Date: 2026-07-28
+- Status: Integrated; hosted validation passed
+- Source: `phase/4-medication-reminder-acknowledgement` from accepted
+  `dev@aaf6113540925b3132a323afc6e1922a902a3e29`
+- Target: `dev`
+- Scope: P4-S1 only; LB-018 plus minimum LB-019
+- Contracts/data affected: frozen `P4-S1-v1`; fresh six-permission Identity
+  decisions; Care-owned exact schedule/migration 005; minimum-data intent;
+  Notification-owned delivery/seen/migration 003; Gateway composition only
+- Validation: independent three-review freeze, four one-time synthetic Stitch
+  read-backs, Frozen native-only handoff, 65 unit and 40 contract tests, all
+  cumulative static/build/security gates, 8 P4 PostgreSQL integration tests,
+  owner-isolated rollback/reapply/no-backfill and cumulative integrations
+  passed in the single Level C. That invocation stopped at Notification
+  readiness because startup replayed migration 002 over valid P4 inbox rows.
+  A version-aware migration-runner fix then passed targeted P4 integration,
+  runtime readiness, 4/4 P4 browser paths and all cumulative P2/P3 browser
+  suites; log scan, diff and cleanup passed.
+- Hosted promotion: initial exact-head push run `30342664176` passed all three
+  jobs.
+  PR run `30342757032` exposed a commit-timing race in the LB-019 duplicate
+  status focus while the same rendered state passed on push. Focus now follows
+  committed React state; lint/type/build and five repeated affected
+  browser/accessibility paths passed. Replacement exact-head push/PR runs
+  `30343304775`/`30343308183` passed on
+  `9a2b7fe9683f548a006c63fc673d294aedd39031`. PR #59 merged into `dev` as
+  `d58660cebd91f46b2deab38a38e7187ec7870804`; post-merge run `30343682227`
+  passed all three jobs. Issue #12 closed completed with bilingual evidence.
+- Conflicts/risks: KI-001/KI-016/KI-019 remain; project-list metadata lag and
+  private pixels are not visual approval; no blind Stitch retry
+- Decision/change references: ADR-024 / `CHG-2026-016`
+- Follow-up: merge only this same-task docs-only canonical closeout. P4-S2 may
+  start only in a fresh task and must first freeze purpose-specific authority,
+  ordered-contact, reviewed-plan, offline-copy freshness and minimum-disclosure
+  contracts. Do not invoke another local Level C or start P4-S2 here.
+
+## 2026-07-28 — P4-S2 emergency readiness
+
+- Scope/change: `P4-S2` / `CHG-2026-017`.
+- Status: Integrated; exact-head and post-merge hosted validation passed;
+  issue #13 closed completed.
+- Base/branch: verified live
+  `dev@f0b9163058c57a30f14f6eebd022c0a5ba98264e` to
+  `phase/4-emergency-contacts-offline-plan`; canonical issue #13 was verified
+  before mutation and no duplicate branch/task/PR existed.
+- Contract: `P4-S2-v1` and `P4-S2-offline-v1`; Care owns the aggregate and
+  migration 006. Identity issues fresh exact-purpose decisions and Gateway
+  forwards only authoritative Care results. Notification is uninvolved.
+- Design/security: three independent reviews, ADR-025, the P4-S2 threat model,
+  four bounded synthetic Stitch references with one direct read-back each,
+  and the Frozen redacted native-only handoff precede UI implementation.
+- Delivered paths: LB-020 ordered contacts, LB-021 reviewed plan and only the
+  required read-only LB-032 encrypted offline behavior. The service worker is
+  limited to the three exact shell assets and emergency-plan navigation;
+  online APIs are `no-store`; offline mutations are blocked and never queued.
+- Validation: exactly one local `validate:p4-s2` campaign ran.
+  Static/unit/contract/docs/config/secrets/audit/build and cumulative
+  integrations through P4-S1 passed before the P4-S2 Care suite exposed an
+  explicit timestamptz binding defect and PostgreSQL-integer history
+  sentinel. Classified targeted recovery—not a second Level C—proved the
+  corrected Care 6/6 suite, migration 006 rollback/reapply/no-backfill, the
+  real production-runtime/offline/purge journey, three mocked P4-S2 paths and
+  all cumulative P2–P4-S1 browser regressions.
+- Promotion: feature commit `1b28a16` passed push run `30356925555`. PR run
+  `30357031265` then exposed a test-only no-op ciphertext mutation;
+  deterministic recovery `ea5acf7` passed exact-head PR run `30358335589`.
+  PR #62 merged as `dev@7690a7c584891fbd2bd62de600a5b11bb58a8be7`;
+  post-merge run `30359250442` passed all three jobs. Issue #13 received
+  bilingual evidence and closed completed.
+- Deferred: no P4-S3, DATA-S1, P5, Spring, deployment, release, new service or
+  new persistence engine. KI-001/KI-016/KI-019 remain.
+- Follow-up: P4-S3 may start only in a fresh task. Freeze document authority,
+  minimum disclosure, retention/deletion, integrity and storage ownership
+  before implementing LB-023.
+
+## INT-2026-022 — P4-S3 document vault
+
+- Date: 2026-07-28
+- Status: integrated; exact-head and post-merge hosted validation passed;
+  issue #14 closed completed
+- Source: verified clean `phase/4-document-vault` from accepted live
+  `dev@1010aeabf7ae87737019477cb1961404299bf0a8`
+- Target: `dev`
+- Canonical issue: #14 was verified as the existing P4-S3 issue; no duplicate
+  task, branch, issue or PR existed before mutation.
+- Contract/authority: frozen `P4-S3-v1` adds only
+  `document_vault.access`. Gateway requests a fresh request-bound P2 decision
+  for every list, upload, metadata, download and delete; household role,
+  offline state and browser-local state grant no document authority.
+- Ownership/data: Care owns bounded metadata and strict UTF-8 `.txt` bytes in
+  owner-local PostgreSQL migration 007, plus audit, outbox, tombstone,
+  idempotency and optimistic concurrency. Identity owns only scope/grant
+  decision state under migration 004. Gateway stores and fabricates nothing.
+- Processing/security: accepted content remains truthfully
+  `ready_unscanned`/`not_configured`/`not_scanned`; no clean or safe claim is
+  made. Digest/object binding is checked before attachment-only octet-stream
+  retrieval. Delete atomically purges active bytes/metadata and invalidates
+  the original upload replay so an old key cannot resurrect content.
+- Design: four exact synthetic LB-023 states were created once and read back
+  once. The independent reviewer could not inspect private pixels, so KI-019
+  remains. Generated source was rejected; the Frozen redacted native-only
+  handoff governs VI/EN implementation, keyboard file input, progress,
+  recovery, reflow, forced-colors and reduced-motion behavior.
+- Planned versus actual: the accepted baseline allowed an object store or
+  scanner only after research and ADR acceptance. Bounded P4-S3 needs neither,
+  so ADR-026 retains PostgreSQL ownership and explicitly unscanned truth.
+  KI-020 records the deployment gate for production storage encryption,
+  historical-backup retirement, deletion reconciliation, scanner/stale
+  processing controls and RPO/RTO.
+- Local validation: exactly one `pnpm.cmd run validate:p4-s3` campaign ran and
+  passed without recovery: all cumulative format/lint/type/unit/contract/docs/
+  config/secrets/audit/build gates; P1 through P4-S3 integrations; P3/P4
+  migration checks; P4-S3 rollback/reapply/no-backfill; owner-local pre-delete
+  restore and post-delete non-resurrection; real Web→Gateway→Identity→Care→
+  PostgreSQL Chromium path 1/1; mocked LB-023 3/3; and all cumulative P2–P4-S2
+  browser regressions. The PID-scoped container, volume and network were
+  removed.
+- Non-goals: no object store, scanner service/engine, crypto scheme, cache,
+  new service, cross-service SQL/import/credential, real document, P5,
+  DATA-S1, Spring, deployment or release.
+- Decision/change references: issue #14, `CHG-2026-018`, ADR-026,
+  `docs/security/P4_S3_THREAT_MODEL.md`, KI-001/KI-016/KI-019/KI-020.
+- Promotion: feature commit
+  `3eb4bab7751a5e311a285adac17b999994f72c99` passed exact-head push/PR
+  runs `30375655611`/`30375846902`, each with all three jobs green. Sole ready
+  feature PR #64 merged by merge commit as
+  `dev@7b10d62d0cd1857e9d63e57d34bfd068040a8fd6`; post-merge run
+  `30376359437` passed all three jobs. Canonical issue #14 received verified
+  VI/EN evidence at comment `5106678490` and closed as completed.
+- Follow-up: merge only this same-task docs-only canonical closeout. P5-S1 may
+  start only in a fresh task with official toolchain research and frozen
+  Community authority/data/API/event/failure boundaries. Do not start it here.
+
+## INT-2026-023 — P5-S1 Spring Community request and directory
+
+- Date: 2026-07-29
+- Status: integrated; local and hosted validation passed
+- Source: `phase/5-consented-help-request-directory` from exact accepted
+  `origin/dev@486a5276ef43d143af8692501064e952a59a4829`
+- Target: accepted as
+  `dev@ac663a714b69aace443f712f1d8ee700b5e48636`; canonical issue #15 was
+  verified open immediately before bilingual closeout and is now closed
+- Scope: P5-S1 only; LB-022 `/help/new` and LB-024 `/community`; no P5-S2
+  matching, P5-S3 moderation, DATA-S1, P6+, deployment, pilot or release
+- Pre-code control: the contract/toolchain/threat, Stitch privacy/accessibility
+  and test/CI/operations reviewers completed independently and were reconciled
+  before Java/product code. Four synthetic desktop/mobile Stitch references
+  were written once and read back once; generated source and invented facts
+  were rejected. The redacted handoff is Frozen for native semantics and
+  KI-019 remains because private pixels were unavailable.
+- Contracts/authority: `contracts/community/p5-s1-v1` freezes language-neutral
+  OpenAPI/JSON Schemas and `SHA256SUMS`. Node and Java test the same five fixed
+  canonical request-digest vectors. Identity adds `community_support` plus
+  `community_help_request.access` without backfill and issues one fresh exact-
+  action decision for every protected request operation. Public directory
+  reads call Community without Identity or protected context.
+- Ownership/data: the greenfield Spring Boot Community service alone owns its
+  PostgreSQL role/database, Flyway V1, request/directory/search data,
+  idempotency/tombstones, privacy-safe audit and suppressed transactional
+  outbox. PostgreSQL structured search is the only engine. Gateway, Identity,
+  Care and Notification receive no Community SQL credential or ownership.
+- Product truth: requests accept only category, province/city, optional broad
+  day part and reviewed disclosure. `submitted` is a confirmed command outcome;
+  `pending` promises no review, queue, match, availability, eligibility,
+  safety, delivery or outcome. Protected offline submission is blocked. Public
+  listings show minimum reviewed provenance and explicit stale/not-verified/
+  not-determined/no-endorsement truth.
+- Toolchain: official pins are Temurin 25.0.3+9 with frozen Windows archive
+  SHA-256, Spring Boot 4.1.0, Maven 3.9.16, Wrapper 3.3.4 and explicit Maven
+  plugins/dependencies. Bootstrap and wrappers are repository-scoped and
+  process-local; machine Java/Maven/Execution Policy are unchanged.
+- Focused evidence: frozen contract integrity and hashes pass; Node consumer/
+  contracts pass 16/16; Spring clean package/provider/unit passes 9 total with
+  database-gated tests skipped only outside their owner harness; Community
+  PostgreSQL rollback/reapply/no-backfill/privilege proof and live integration
+  pass, including idempotency, conflict, concurrency, delete/tombstone,
+  provenance and content-free audit/outbox. Mocked desktop/mobile LB-022/
+  LB-024 passes 6/6 and the built real Web→Gateway→Identity→Spring Community→
+  PostgreSQL path passes 1/1. Task-scoped runtime resources were cleaned.
+- Level C actual: the sole full invocation
+  `01d2ea18bc4845f88bf55ceddbfeea44` records original candidate digest
+  `0d801063ff24673207878b9facd08e68ca35b93c186dca5f20fc99399643e449`.
+  Toolchain and locked install passed, then `static-schema-integrity` failed
+  because cumulative P1 formatting traversed generated Maven CycloneDX output
+  under `services/community/target/`. No Docker/runtime started and original
+  cleanup passed. The narrow generated-output ignore correction was verified
+  by the guarded `-TargetedRecoveryAfterStaticFailure` path, which reused the
+  same marker/invocation/project/ledger/transcript and recorded corrected
+  digest `6f234d1361b1707c69c122645521ce42038345f0e878b445c4a3856b5ddd70db`.
+  The continuation passed corrected static plus all unstarted contracts,
+  governance/security/dependency, build/reproducibility, cumulative
+  PostgreSQL, Community migration/integration 9/9, mixed-runtime P5 browser
+  8/8, cumulative P2–P4 browser, privacy/diff/canary and cleanup gates. The JAR
+  digest is
+  `811fcf733896383afd43a640718818d579e5c69d83308502468b3977b54d1586`.
+  The ledger ends `targeted-continuation: pass`; no second full Level C ran.
+- Late review reconciliation: promotion paused for aggregate replay
+  invalidation, same-key serialization, monotonic delete/purge versions, an
+  owned scheduled retention sweep, stable Identity denial/revocation mapping
+  and removal of the LB-024 geolocation call. Targeted proof—not another Level
+  C—then passed Node P5 contracts 18/18, isolated migration/owner proof,
+  Identity 10/10, Community 11/11, production Web build and mocked browser 6/6
+  with zero GPS calls. Two clean post-hardening Community packages produced the
+  same valid CycloneDX-backed JAR SHA-256
+  `13415e9ec9a8dfec40cb66f79bf16735ef3236ede83565b44330d78239285dbf`.
+  The first targeted browser attempt was truthfully retained as a locator-only
+  harness failure before the corrected 6/6 pass; task-owned resources were
+  cleaned.
+- Hosted promotion recovery: PR #66's initial exact head `094f0e8` failed
+  before acceptance because Windows setup-java required the exact hosted alias
+  `25.0.3+9.0.LTS` for the pinned Temurin build and detached Linux checkout
+  produced empty branch text for a null-unsafe guard. The first correction
+  proved the JDK alias but retained the PowerShell binder failure; its runs were
+  superseded. The array/join detached-HEAD correction preserved local branch
+  and hosted exact-SHA guards. Code head `74079f8` then passed push run
+  `30395832352` and PR run `30395839829`, including both owner/cumulative
+  acceptance jobs and the full aggregate gate. Final documentation-only
+  feature head `59f57e903ad71342e3259fce48b9de3315e7adef` passed exact-head
+  push run `30396846386` and PR run `30396851617`.
+- Planned versus actual: ADR-019 planned the future greenfield Spring boundary
+  and PostgreSQL-first search but deferred exact versions and P5 contracts.
+  The official-source review supplied complete supported pins, while
+  `P5-S1-v1` narrowed the slice to bounded non-free-form request data, explicit
+  purpose/visibility, no matching and content-free evidence. No new engine,
+  broker, cache service, object storage or Node rewrite was needed.
+- Promotion evidence: ready PR #66 merged by merge commit as
+  `dev@ac663a714b69aace443f712f1d8ee700b5e48636`; exact post-merge run
+  `30397698495` passed Windows static/build/security, PostgreSQL/mixed-runtime/
+  Chromium and the full aggregate gate. Canonical issue #15 closed with
+  bilingual immutable evidence at comment `5109595055`. The one-shot marker/
+  ledger/transcript remain immutable local evidence; no second full local
+  Level C was invoked.
+- Protected canary/evidence: the Stitch canary belongs to another workstream
+  and has no worktree/index diff. No credential, private locator, generated
+  source, remote ID or real data is part of P5-S1 evidence.
+- Deferred: KI-001 blocks deployment, KI-016 retains manual AT/device rows,
+  KI-019 retains private-render visual review and KI-020 remains scoped to
+  P4-S3 document-vault deployment controls.
+- Follow-up: P5-S2 is exact next in a fresh controller-dispatched task, which
+  must first freeze match/organization authority, approval, capacity,
+  revocation, minimum disclosure and audit/event/failure truth; do not start
+  it here.
+
+## INT-2026-024 — P5-S2 match coordination accepted
+
+- Date: 2026-07-29
+- State: accepted on `dev@f4de48ebf2d84e5e3616963097968399b3287cea`
+- Boundary: Node Gateway↔Identity↔Spring Community through frozen `P5-S2-v1`;
+  Community owns PostgreSQL V2/audit/outbox and Identity owns migration 006.
+- Planned versus actual: the planned same-service minimum-data extension was
+  retained. Three independent pre-code reviews and four bounded synthetic
+  Stitch references preceded implementation. No second service/engine,
+  automated dispatch, contact exchange or P5-S3 scope was added.
+- Validation: focused contracts, migration, provider/lifecycle/concurrency,
+  browser/accessibility and build proof; exactly one local Level C invocation
+  plus its hard-bound port-conflict continuation; PR #68 exact-head checks 6/6;
+  merge commit `f4de48e`; post-merge run `30406976766` green; issue #16 closed
+  with bilingual evidence. P5-S3 remains exact-next and unstarted.
+
+# INT-2026-025 — P5-S3 moderation resolution accepted
+
+- Base: `origin/dev@ed328f6806f1ed082708e7c84367eda6bb1bb2da`.
+- Boundary: Node Gateway/Identity consumer to accepted Spring Community owner;
+  P5-S3-v1 OpenAPI/JSON Schema/digest proof; Community Flyway V3 only.
+- UI: Frozen redacted LB-027 handoff and native `/admin/moderation`; KI-019
+  remains because independent private-pixel inspection was unavailable.
+- Validation: exactly one Level C invocation retained its PowerShell 5.1 runner
+  failure; classified targeted recovery passed Node/Java/PostgreSQL/Flyway/
+  browser/security proof without a second Level C invocation.
+- Promotion: feature PR #70 merged as `f92828a`; its post-merge run
+  `30425583410` exposed a UI initialization race. Narrow correction PR #71
+  passed 6/6 exact-head checks and merged as canonical
+  `dev@39e5914778f779c5e2b4b19bdb6a92fc6fdfbdde`; post-merge run
+  `30426581895` passed all required jobs.
+
+## INT-2026-026 — P6-S1 local rolling-compatibility candidate
+
+- Date: 2026-07-29
+- State: local candidate ready; owner CI hold; no push, PR, workflow, merge, or
+  issue mutation.
+- Base: accepted
+  `origin/dev@f7a4052f8181f2a0933a5e61884d91ae200b4da9`.
+- Boundary: `community-v2` current and `community-v1` previous on the
+  Gateway↔Spring Community release line; Identity authority and Community
+  PostgreSQL/Flyway/audit/outbox ownership are unchanged.
+- Planned versus actual: three independent reviews froze the 90-day support
+  window, provider-first rollout, consumer-first rollback, four-cell matrix,
+  breaking rules and uncertain-write truth. The implementation also corrected
+  the P5-S3 Spring moderation route mismatch and stale capability response
+  revealed by review. No UI, migration, service, engine, P6-S2 or P6-S3 scope
+  was added.
+- Validation: focused formatting/lint/type, Node 11/11 and Spring 8/8 passed.
+  Exactly one Level C invocation retained a detached-output static-stage
+  failure after toolchain/install passed. The same-invocation classified
+  continuation passed static/contracts, provider, docs/config/secrets/audit,
+  Node/Spring production builds, diff/canary integrity and cleanup. No second
+  Level C invocation occurred. Mocked primary-journey Chromium passed 6/6;
+  two database-backed runtime cases skipped locally and remain required in the
+  hosted PostgreSQL/mixed-runtime gate.
+- Hold: canonical issue #22 remains read-only and open. Exact-head/post-merge
+  hosted gates and acceptance wait for an explicit project-owner wake.
+
+### Owner wake and first hosted classification — 2026-08-02
+
+The owner removed the CI hold. Branch head `22231d0` was pushed and ready PR
+#73 opened into `dev`. Push run `30716660579` and PR run `30716684220` started
+without manual dispatch. The PostgreSQL job exposed one P6 route-digest defect:
+controllers and tests used canonical `/moderation/cases/...` paths while the
+Community service still verified Identity decisions against old paths. The
+service constants were corrected; focused Node 11/11 and Spring provider 5/5
+passed. Local Docker was unavailable, so the superseding exact-head hosted
+PostgreSQL run remains the authoritative recovery proof. No local Level C was
+repeated and no failed run was rerun.
+
+Correction head `c77ec8c` then passed the cumulative P5-S3 PostgreSQL campaign
+in push run `30716848172`, proving the route-digest fix. The subsequent P6
+runner stopped before its first stage because the exact-head checkout was
+shallow and did not contain accepted base `f7a4052`; this is a CI harness
+classification, not a product failure. The PostgreSQL job now fetches full
+ancestry while retaining literal-head verification and the base-ancestor
+guard. A new pushed head must supersede, not rerun, that failed run.
+
+Head `64561ae` then passed P6 static/contracts, Spring provider, governance,
+security and production builds. Its final P6 step incorrectly launched the
+P5-S1 Playwright command after the preceding cumulative campaign had already
+cleaned every runtime process, so port 3000 correctly refused connections
+before product assertions. The duplicate unprovisioned browser invocation was
+removed. The hosted job retains the cumulative PostgreSQL/mixed-runtime/
+Chromium campaign immediately before P6 current/previous gates.
+
+Head `1014f07` passed every P6 test/build stage and stopped only at final
+candidate-integrity because generic `test-results` from the preceding
+cumulative browser campaign remained in the shared hosted workspace. Workflow
+ownership is now explicit: it removes only `test-results` and
+`playwright-report` between the cumulative runner and P6, while the P6 guard
+continues to fail on any output it creates or leaves itself.
+
+### Canonical promotion — 2026-08-02
+
+- Exact candidate: `b36a18109acba574bc05092da0145ca68b3b3415`.
+- Literal-head evidence: automatic push run `30717512095` and PR run
+  `30717514007` both passed Windows quality/build/security,
+  PostgreSQL/mixed-runtime/cumulative Chromium and aggregate P1–P6-S1.
+- Promotion: ready PR #73 merged by merge commit
+  `f7aab7620d5fcde80c2129a54db1ac9291340489` into `dev`.
+- Post-merge evidence: automatic `dev` run `30717962735` passed all required
+  jobs; Windows reported 111+20 tests and mixed-runtime proof reported 10+11
+  tests. Cache-save path warnings were non-blocking and no gate failed.
+- No workflow was manually dispatched or rerun, local Level C was not repeated,
+  and `test`/`main` promotion was not performed. P6-S1 is accepted on `dev`;
+  P6-S2 remains unstarted pending a fresh canonical task.
+
+## 2026-08-02 — P6-S2 candidate integration contract
+
+- Source/target: `phase/6-independently-runnable-service-artifacts-ownership`
+  from exact accepted `dev@fa9807d6a5641a594d3eb1b54d6c3685dce8720d`, returning
+  to `dev` by ready PR and merge commit only.
+- Planned versus actual: accepted P6-S2 remains the primary artifact/ownership
+  outcome. `CHG-2026-019` reconciles stale canonical issue #23 metadata and adds
+  owner-mandated docs-only CI cost control as a subordinate change.
+- Contract impact: six owner manifests define build/start/config/probes,
+  datastore credential, migrations, SBOM and container. CI adds an always-run
+  classifier and bounded integrity job while preserving required context
+  `P1 through P6-S1 full required gate`.
+- Evidence: three independent pre-code reviews completed. Local focused
+  classifier/fitness/SBOM tests passed 21/21 and the classified continuation
+  passed format/lint/typecheck, all Node/Web builds and Community `clean verify`
+  with CycloneDX. The sole Level C invocation retained its pre-stage
+  non-interactive pnpm modules-state failure and was not rerun. Docker Desktop
+  Linux engine was unavailable locally; image and independent-upgrade proof
+  remains a hosted acceptance gate, not a local success claim.
+- Promotion: pending coherent commit, exact-head push/PR CI,
+  merge-commit, automatic dev CI and bilingual #23 closeout. No P6-S3/P7 work.
+
+### Product promotion evidence
+
+- Exact product head `0e10073e7389219913a2fcc1b0e647c9f05208e2` passed automatic
+  push run `30721320964` and PR run `30721323043`, including six isolated
+  container builds/probes, independent Notification upgrade, Windows,
+  PostgreSQL/mixed-runtime/Chromium, bounded integrity and the stable required
+  aggregator.
+- Ready PR #75 merged to `dev` by merge commit
+  `2b4c8d46725ed91d8c733cfc8f3177ce3e727d87`. Automatic dev run
+  `30721753390` passed the same full non-doc campaign. No workflow was manually
+  dispatched or rerun.
+- The retained hosted corrections were product defects: Maven availability,
+  ZIP launcher mode and the Community artifact's checksum-pinned contract build
+  input. Each old run remains retained; no failed run was cosmetically rerun.
+- Closeout uses only ordinary Markdown state documents so the classifier must
+  prove docs-only push/PR behavior while bounded checks and the aggregator still
+  report a real conclusion. P6-S3 is exact next and has not started.
+
+# P6-S3 accepted — 2026-08-02
+
+- Branch: `phase/6-authenticated-service-communication-dependency-isolation`
+  from exact `dev@6d7204d6272d70672a1c1f1429cdc742fd172bc0`.
+- Issue: #24 retained and reconciled in place under `CHG-2026-020`; no duplicate.
+- Contract: ADR-028 scoped short-lived service assertions, distinct
+  Gateway/Care Notification keys, fail-closed production transport, bounded
+  dependency guards and truthful secondary degradation.
+- Local gate: sole Level C `e1a1a5cc1003405ebd44912743befe2c` passed through a
+  classified continuation after Docker engine absence interrupted only the
+  environment-classification line. All five prior stages remained green and
+  were not rerun. Final local result is `passed_with_hosted_container_required`.
+- Promotion: PR #77 exact head `8450adb576ff6c8d1a03b21632f8e9941ed1bd80`
+  passed all 14 checks and merged as
+  `08fd1c895da712b7cff6254e38681a5250509ef7`. Automatic `dev` run
+  `30724770738` passed all seven checks, including the stable required
+  aggregator.
+- Next: close #24 bilingually after docs-only closeout; orient a fresh P7-S1
+  task from accepted `dev` without beginning it here.
+
+## 2026-08-02 — P7-S1 local candidate integration
+
+- Base/branch: exact `dev@ae48031652fbc9e751cd0b0928deb5c01f39b5e0` on
+  `phase/7-service-owned-migrations-schema-compatibility`.
+- `CHG-2026-021`/ADR-029 adds the four-owner ledger, Node checksum/lock
+  protocol, retained Flyway validation, credential split and additive N.
+- P6 classifier, bounded integrity, auth/artifacts and exact always-reported
+  aggregator name remain; one P7 non-doc job is added.
+- Promotion awaits the sole local Level C, exact-head gates, one ready PR to
+  dev, merge commit, automatic dev CI and bilingual #25 closeout.
+- First push run `30727684488` exposed a partial Docker build-context defect:
+  root quality tooling unnecessarily depended on the new workspace package.
+  Targeted correction uses a relative quality import while service artifacts
+  retain owned dependencies/copies; the failed run is retained, not rerun.
+
+### Canonical promotion evidence
+
+- Exact correction head `fea109328db910b40b8d95cb88d2f8716ec9b80a`
+  passed automatic push/PR runs `30727810915`/`30727812530`, 16/16 checks on
+  each candidate view including hosted P7-S1 PostgreSQL/Flyway, mixed-runtime,
+  credential isolation, failure/recovery and the unchanged aggregate gate.
+- Ready PR #79 merged to `dev` by merge commit
+  `2eac295de1fb33232023372ae974a4ce9a9354a2`. Automatic post-merge run
+  `30728240535` passed all eight jobs. No manual rerun or dispatch occurred.
+- P7-S1 is accepted. Same-task closeout is Markdown-only and must prove the
+  accepted docs classifier/always-reported aggregator before issue #25 closes
+  bilingually. P7-S2 remains unstarted pending a fresh canonical task.
+
+# INT-2026-032 — P7-S3 policy-neutral recovery candidate
+
+- Base/branch: exact `dev@36ba33372a2b138e10d0fc76b7e3ac96a008f05f` on
+  `phase/7-data-lifecycle-recovery-persistence-decisions`.
+- Scope: corrected Identity/Care ledger drift; frozen four-owner PostgreSQL
+  inventory; encrypted manifest-driven isolated restore tooling; fail-closed
+  lifecycle registry/reconciliation; focused tests and hosted P7-S3 aggregate.
+- Focused evidence: format, lint, typecheck and 48 initial P7-S3/classifier tests
+  passed; docs/config passed. The first secret scan correctly rejected the text
+  `task-owned...` as an OpenAI-key-shaped sentinel; the inventory wording was
+  corrected without weakening the scanner and requires revalidation.
+- Environment: targeted local PostgreSQL proof could not start because Docker
+  Desktop's Linux engine was unavailable; no resource was created. Hosted proof
+  remains required.
+- Policy gate: production dispositions, legal hold/statutory retention,
+  artifact expiry and regulatory export/erasure scope remain owner decisions.
+  Level C, push, PR and acceptance are intentionally not started.
+- Owner policy was subsequently accepted. The single Level C command was then
+  invoked as `pnpm.cmd run validate:p7-s3 -- --SkipInstall`, but pnpm forwarded
+  both `--` and `--SkipInstall`; PowerShell rejected duplicate parameter binding
+  before the runner created its marker, evidence directory or any stage. This is
+  an invocation-wrapper defect, not a product failure. No second campaign was
+  started; promotion remains blocked pending explicit authorization to run the
+  corrected entry point once.
+- The owner authorized one corrected invocation. Invocation
+  `f5a95124f1ea4b8b905c00adb5fdef30` completed every runner stage before the
+  outer terminal timeout: static policy/recovery fitness passed; local database
+  evidence was truthfully `environment_unavailable_hosted_required`; cumulative
+  security/build and candidate integrity passed; final result was
+  `passed_with_hosted_postgres_required`. No second runner campaign occurred.
+- Exact-head hosted acceptance: push/PR runs `30733182403` and `30733210842`
+  passed every required job and the P1-through-P7-S3 aggregator. Ready PR #83
+  merged by merge commit `34c716d2931f14851b3b552fadbbc961ec62753b`.
+  Automatic dev run `30733589109` then passed the full heavy path in 10m09s,
+  including P7-S3 recovery/lifecycle and the terminal aggregator. Phase 7 is
+  accepted; only bounded docs-only closeout and bilingual issue closure remain.
+
+# INT-2026-033 — P8-S1 authorization-isolation acceptance
+
+- Base/branch: exact `dev@a6cd86fd891e30828d04dbbae00a5da1f6922ae6`
+  on `phase/8-household-isolation-consent-enforcement`.
+- Boundary: session -> Identity household/consent decision -> owner route;
+  P6/P7 service and datastore ownership remain unchanged.
+- Contract: `CHG-2026-022`/ADR-030 and the P8-S1 machine policy default deny.
+- Evidence: three reviews, focused proof and sole Level C invocation
+  `3243be5e650649ae8f831ff4c49dfe66` passed. Exact product head
+  `376b88f8eb51ebceb1ad679de2119bca7dc65a39` passed push/PR runs
+  `30735140477`/`30735160950`; PR #85 merged by merge commit
+  `4da952eb97e72dbf8d9a6103a6e83438df292848`; automatic dev run
+  `30735583092` passed Windows, PostgreSQL/mixed-runtime, failure/recovery,
+  P8-S1 and the cumulative P1-through-P8-S1 gate without rerun.
+
+# INT-2026-034 — P8-S2 secrets/runtime/supply-chain acceptance
+
+- Base/branch: exact `dev@957ff9fcb5841ad51e07ca797bac83774dacbed2` on
+  `phase/8-secrets-encryption-runtime-supply-chain-hardening`.
+- Contract: `CHG-2026-023`/ADR-031 freezes repository-evidenced secret owners,
+  bounded rotation, encryption boundaries, runtime least privilege, isolated
+  SBOMs and digest-bound unsigned provenance without a new provider/KMS/PKI.
+- Evidence: three independent reviews, current official sources, focused proof
+  and sole Level C `096bf28d2bb54bc1bbd637a2b767a0d5` passed. Initial automatic
+  run `30737234013` retained a CI-only Docker-template quoting defect and was
+  not rerun. Exact correction head `8617f2021d84af5befcfb5582a91b5b30c90abd2`
+  passed automatic push/PR runs `30737326707`/`30737393207`.
+- Promotion: ready PR #87 merged by merge commit
+  `1e884b9651d6df6f2df77d25164c13ff9bfe5fc9`; automatic dev run
+  `30737823547` passed every heavy job and the terminal P1-through-P8-S2 gate.
+  Only bounded docs-only closeout, bilingual #29 closure and branch cleanup
+  remain. P8-S3 is unstarted.
+
+# 2026-08-02 — P9-S1 candidate integration
+
+`CHG-2026-025` preserves the accepted service/data/auth/recovery boundaries and adds exporter-neutral trusted context, strict allowlisted structured signals, Spring parity, machine dashboard/SLO inventory, negative leakage/spoof/cardinality fixtures, a one-shot Level C runner and exact-head cumulative CI. No collector, SaaS, shared datastore, business import or cross-service credential was added. Sole Level C `091f8d49c2734571ac1c934357b80b87` passed. Correction head `40613d4b9413c3ddda8f821432dec0558417d71a` passed all 30 PR checks; PR #91 merged by merge commit `bd4386fc34ac1421fc14d19423072d94bd56f680`, and automatic `dev` run `30741641848` passed in 11m37s without a rerun.
+
+# 2026-08-02 — P9-S2 intentional local-only checkpoint
+
+Exact base `dev@eb8a85aafafa6de83d5b0caa9c9f5cd0b434e66c`; branch
+`phase/9-offline-conflict-graceful-degradation`. `CHG-2026-026`/ADR-033 preserves
+P6 artifact/auth compatibility, P7 migration/replay/recovery, P8 isolation/
+privacy/supply-chain/abuse and P9-S1 redacted telemetry. No datastore/provider
+is added. Owner Actions-cost hold forbids issue #18 reconciliation, PR, hosted
+CI and dev mutation. The only allowed remote action is one final skip-CI branch
+push after local Level C and workflow re-audit; it is not promotion or acceptance.
+
+Sole local Level C `03e53b5753f24cc0b7fc9658ade654c0` passed format, lint,
+typecheck, P9-S2 14/14, P9-S1 65/65, P8 52/52, P7 replay 44/44,
+native mocked browser 2/2, production build and candidate integrity. Terminal
+classification is `passed_with_hosted_postgres_mixed_runtime_required`; it was
+not rerun.

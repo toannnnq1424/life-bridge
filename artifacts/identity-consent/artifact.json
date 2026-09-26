@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "name": "identity-consent",
+  "owner": "identity-consent",
+  "runtime": "node",
+  "build": "pnpm.cmd --filter @lifebridge/identity-consent build",
+  "entrypoint": "node dist/main.mjs",
+  "port": { "env": "IDENTITY_PORT", "default": 3100 },
+  "health": { "live": "/health/live", "ready": "/health/ready" },
+  "requiredConfig": [
+    "IDENTITY_DATABASE_URL",
+    "IDENTITY_MIGRATION_DATABASE_URL",
+    "IDENTITY_INTERNAL_TOKEN",
+    "IDENTITY_DATA_KEY",
+    "IDENTITY_RATE_LIMIT_KEY",
+    "RUNTIME_MODE"
+  ],
+  "allowedConfig": [
+    "IDENTITY_HOST",
+    "IDENTITY_PORT",
+    "IDENTITY_DATABASE_URL",
+    "IDENTITY_MIGRATION_DATABASE_URL",
+    "IDENTITY_INTERNAL_TOKEN",
+    "IDENTITY_INTERNAL_TOKEN_PREVIOUS",
+    "IDENTITY_DATA_KEY",
+    "IDENTITY_DATA_KEY_CURRENT",
+    "IDENTITY_DATA_KEY_CURRENT_ID",
+    "IDENTITY_DATA_KEY_PREVIOUS",
+    "IDENTITY_DATA_KEY_PREVIOUS_ID",
+    "IDENTITY_RATE_LIMIT_KEY",
+    "NODE_ENV",
+    "RUNTIME_MODE"
+  ],
+  "databaseCredential": "IDENTITY_DATABASE_URL",
+  "migrations": "migrations",
+  "sbom": "sbom/identity-consent.cdx.json",
+  "container": "artifacts/identity-consent/Dockerfile"
+}

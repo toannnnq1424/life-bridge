@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s1-v1/schemas/help-request-command.schema.json",
+  "title": "P5-S1 help-request commands",
+  "oneOf": [
+    { "$ref": "#/$defs/SubmitCommand" },
+    { "$ref": "#/$defs/QueryCommand" },
+    { "$ref": "#/$defs/ReconcileCommand" },
+    { "$ref": "#/$defs/CloseCommand" },
+    { "$ref": "#/$defs/DeleteCommand" }
+  ],
+  "$defs": {
+    "Authorization": {
+      "$ref": "authorization-context.schema.json"
+    },
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "SubmissionReference": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "Category": {
+      "enum": [
+        "daily_living_support",
+        "transport_coordination",
+        "household_errand",
+        "social_connection",
+        "digital_access",
+        "accessibility_support"
+      ]
+    },
+    "ProvinceCityCode": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 32,
+      "pattern": "^[A-Z0-9-]+$"
+    },
+    "DayPart": {
+      "oneOf": [
+        { "enum": ["flexible", "morning", "afternoon", "evening"] },
+        { "type": "null" }
+      ]
+    },
+    "Disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "visibility", "policyVersion", "confirmed"],
+      "properties": {
+        "purpose": { "const": "community_support" },
+        "visibility": { "const": "current_request_collaborators" },
+        "policyVersion": { "const": "P5-S1-v1" },
+        "confirmed": { "const": true }
+      }
+    },
+    "SubmitRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "submissionReference",
+        "category",
+        "location",
+        "dayPart",
+        "disclosure"
+      ],
+      "properties": {
+        "submissionReference": { "$ref": "#/$defs/SubmissionReference" },
+        "category": { "$ref": "#/$defs/Category" },
+        "location": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["granularity", "provinceCityCode"],
+          "properties": {
+            "granularity": { "const": "province_city" },
+            "provinceCityCode": { "$ref": "#/$defs/ProvinceCityCode" }
+          }
+        },
+        "dayPart": { "$ref": "#/$defs/DayPart" },
+        "disclosure": { "$ref": "#/$defs/Disclosure" }
+      }
+    },
+    "SubmitCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "authorization", "request"],
+      "properties": {
+        "operation": { "const": "submit" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "request": { "$ref": "#/$defs/SubmitRequest" }
+      }
+    },
+    "QueryCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "authorization"],
+      "properties": {
+        "operation": { "const": "list" },
+        "authorization": { "$ref": "#/$defs/Authorization" }
+      }
+    },
+    "ReconcileCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "authorization", "submissionReference"],
+      "properties": {
+        "operation": { "const": "reconcile" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "submissionReference": { "$ref": "#/$defs/SubmissionReference" }
+      }
+    },
+    "CloseCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "authorization", "expectedVersion"],
+      "properties": {
+        "operation": { "const": "close" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "expectedVersion": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "DeleteCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operation", "authorization", "expectedVersion"],
+      "properties": {
+        "operation": { "const": "delete" },
+        "authorization": { "$ref": "#/$defs/Authorization" },
+        "expectedVersion": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

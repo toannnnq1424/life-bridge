@@ -1,0 +1,70 @@
+{
+  "algorithm": "sha256",
+  "canonicalization": "UPPERCASE_METHOD + LF + exact_path + LF + recursively_key_sorted_minified_json",
+  "vectors": [
+    {
+      "name": "volunteer-query",
+      "method": "POST",
+      "path": "/internal/v1/community/matches/volunteer/query",
+      "body": {
+        "audience": "volunteer",
+        "organizationId": "organization_synthetic_0001"
+      },
+      "digest": "e8b1185fc3851e5184645e147b39fae2816e839d5fec3efd5e1851ee6876db58"
+    },
+    {
+      "name": "offer",
+      "method": "POST",
+      "path": "/internal/v1/community/matches/match_synthetic_0001/offers",
+      "body": {
+        "capacitySlot": {
+          "dayPart": "morning",
+          "serviceDate": "2026-08-01"
+        },
+        "expectedVersion": 2,
+        "expiresAt": "2026-08-01T00:00:00.000Z",
+        "organizationId": "organization_synthetic_0001",
+        "submissionReference": "submission_synthetic_0001",
+        "volunteerEnrollmentId": "enrollment_synthetic_0001"
+      },
+      "digest": "3e23cefda14d3b58f8d6f2067de70159b96096f451a9eed1933c662c91ce6f48"
+    },
+    {
+      "name": "accept",
+      "method": "POST",
+      "path": "/internal/v1/community/matches/match_synthetic_0001/offers/offer_synthetic_0001/response",
+      "body": {
+        "expectedOfferVersion": 1,
+        "expectedVersion": 3,
+        "offerId": "offer_synthetic_0001",
+        "organizationId": "organization_synthetic_0001",
+        "response": "accepted",
+        "submissionReference": "submission_synthetic_0002"
+      },
+      "digest": "ef8e41213ca1c835a1c886a07735427b46279be910a5c273e16854bbe7e8e18f"
+    },
+    {
+      "name": "progress",
+      "method": "POST",
+      "path": "/internal/v1/community/matches/match_synthetic_0001/progress",
+      "body": {
+        "checkpoint": "support_started",
+        "expectedVersion": 5,
+        "organizationId": "organization_synthetic_0001",
+        "submissionReference": "submission_synthetic_0003"
+      },
+      "digest": "827a55899cb4948d3e0c8eeef3654f998671fe92e8a82ebfc9d4c55a57978762"
+    },
+    {
+      "name": "reconcile",
+      "method": "POST",
+      "path": "/internal/v1/community/matches/reconcile",
+      "body": {
+        "command": "progress",
+        "organizationId": "organization_synthetic_0001",
+        "submissionReference": "submission_synthetic_0003"
+      },
+      "digest": "7d9b883ffe50fba75a1d883e47e8725f3d1dd22f7a1be3ed0ab0469335ad7625"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "name": "community",
+  "owner": "community",
+  "runtime": "java",
+  "build": "mvnw.cmd -B -ntp -f services/community/pom.xml clean verify",
+  "entrypoint": "java -jar lifebridge-community.jar",
+  "port": { "env": "COMMUNITY_PORT", "default": 3103 },
+  "health": { "live": "/health/live", "ready": "/health/ready" },
+  "requiredConfig": [
+    "COMMUNITY_DATABASE_URL",
+    "COMMUNITY_DATABASE_USERNAME",
+    "COMMUNITY_DATABASE_PASSWORD",
+    "COMMUNITY_MIGRATION_DATABASE_URL",
+    "COMMUNITY_MIGRATION_DATABASE_USERNAME",
+    "COMMUNITY_MIGRATION_DATABASE_PASSWORD",
+    "COMMUNITY_INTERNAL_TOKEN"
+  ],
+  "allowedConfig": [
+    "COMMUNITY_HOST",
+    "COMMUNITY_PORT",
+    "COMMUNITY_DATABASE_URL",
+    "COMMUNITY_DATABASE_USERNAME",
+    "COMMUNITY_DATABASE_PASSWORD",
+    "COMMUNITY_MIGRATION_DATABASE_URL",
+    "COMMUNITY_MIGRATION_DATABASE_USERNAME",
+    "COMMUNITY_MIGRATION_DATABASE_PASSWORD",
+    "COMMUNITY_INTERNAL_TOKEN",
+    "COMMUNITY_INTERNAL_TOKEN_PREVIOUS",
+    "COMMUNITY_ALLOWED_PROVINCE_CITY_CODES",
+    "COMMUNITY_FIXTURES_ENABLED",
+    "RUNTIME_MODE",
+    "JAVA_TOOL_OPTIONS"
+  ],
+  "databaseCredential": "COMMUNITY_DATABASE_PASSWORD",
+  "migrations": "BOOT-INF/classes/db/migration",
+  "sbom": "sbom/community.cdx.json",
+  "container": "artifacts/community/Dockerfile"
+}

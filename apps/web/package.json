@@ -1,0 +1,25 @@
+{
+  "name": "@lifebridge/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "format:check": "prettier --check .",
+    "lint": "eslint \"app/**/*.{ts,tsx}\" \"src/**/*.{ts,tsx}\" next.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "next dev --hostname 127.0.0.1 --port 3000",
+    "start": "next start --hostname 127.0.0.1 --port 3000",
+    "build": "next build"
+  },
+  "dependencies": {
+    "@fontsource/be-vietnam-pro": "5.3.0",
+    "@lifebridge/contracts": "workspace:*",
+    "next": "16.2.11",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3"
+  }
+}

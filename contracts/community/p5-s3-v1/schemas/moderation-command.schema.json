@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s3-v1/schemas/moderation-command.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operation", "authorization", "moderatorEnrollmentId"],
+  "properties": {
+    "operation": { "enum": ["queue", "detail", "resolve", "reconcile"] },
+    "authorization": { "$ref": "./authorization-context.schema.json" },
+    "moderatorEnrollmentId": { "type": "string" },
+    "caseId": { "type": "string" },
+    "submissionReference": { "type": "string" },
+    "expectedVersion": { "type": "integer", "minimum": 1 },
+    "outcome": {
+      "enum": ["no_change", "content_visibility_restricted", "community_participation_restricted"]
+    },
+    "reason": {
+      "enum": [
+        "insufficient_authoritative_evidence",
+        "duplicate_report",
+        "outside_moderation_scope",
+        "policy_content_boundary",
+        "policy_privacy_boundary",
+        "policy_contact_boundary"
+      ]
+    },
+    "confirmed": { "const": true }
+  }
+}

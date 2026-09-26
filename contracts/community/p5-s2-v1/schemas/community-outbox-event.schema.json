@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s2-v1/schemas/community-outbox-event.schema.json",
+  "title": "P5-S2 content-free match event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "producer",
+    "aggregateId",
+    "aggregateVersion",
+    "organizationDigest",
+    "lifecycleOutcome",
+    "deliveryState",
+    "occurredAt",
+    "correlationId",
+    "causationId"
+  ],
+  "properties": {
+    "eventId": { "$ref": "#/$defs/OpaqueId" },
+    "eventType": {
+      "enum": [
+        "community.match.approved.v1",
+        "community.match.rejected.v1",
+        "community.match.offered.v1",
+        "community.match.offer_responded.v1",
+        "community.match.assigned.v1",
+        "community.match.reassigned.v1",
+        "community.match.progress_recorded.v1",
+        "community.match.closed.v1",
+        "community.match.revoked.v1"
+      ]
+    },
+    "eventVersion": { "const": 1 },
+    "producer": { "const": "community" },
+    "aggregateId": { "$ref": "#/$defs/OpaqueId" },
+    "aggregateVersion": { "type": "integer", "minimum": 1 },
+    "organizationDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "lifecycleOutcome": {
+      "enum": [
+        "approved",
+        "rejected",
+        "offered",
+        "accepted",
+        "declined",
+        "assigned",
+        "reassigned",
+        "in_progress",
+        "closed",
+        "revoked"
+      ]
+    },
+    "progressCheckpoint": {
+      "enum": [
+        "arrangements_confirmed",
+        "support_started",
+        "support_completed",
+        "unable_to_proceed"
+      ]
+    },
+    "deliveryState": { "const": "suppressed_not_configured" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "$ref": "#/$defs/OpaqueId" },
+    "causationId": { "$ref": "#/$defs/OpaqueId" }
+  },
+  "$defs": {
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    }
+  }
+}

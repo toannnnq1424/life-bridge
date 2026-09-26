@@ -1,0 +1,332 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "LifeBridge Community P5-S1 internal API",
+    "version": "P5-S1-v1",
+    "description": "Language-neutral Node Gateway to Spring Community contract. Public directory reads are separate from protected help-request operations."
+  },
+  "servers": [{ "url": "http://127.0.0.1:3103" }],
+  "paths": {
+    "/internal/v1/community/directory": {
+      "get": {
+        "operationId": "searchPublicDirectory",
+        "security": [{ "internalToken": [] }],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "./schemas/public-directory-query.schema.json#/properties/category"
+            }
+          },
+          {
+            "name": "provinceCityCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "./schemas/public-directory-query.schema.json#/properties/provinceCityCode"
+            }
+          },
+          {
+            "name": "organizationType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "./schemas/public-directory-query.schema.json#/properties/organizationType"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative bounded public directory result",
+            "headers": {
+              "Cache-Control": {
+                "schema": { "type": "string" },
+                "description": "public, max-age=300"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicDirectorySuccess"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      }
+    },
+    "/internal/v1/community/help-requests/query": {
+      "post": {
+        "operationId": "listHelpRequests",
+        "security": [{ "internalToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/help-request-command.schema.json#/$defs/QueryCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Freshly authorized request projection",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HelpRequestListSuccess" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      }
+    },
+    "/internal/v1/community/help-requests/reconcile": {
+      "post": {
+        "operationId": "reconcileHelpRequest",
+        "security": [{ "internalToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/help-request-command.schema.json#/$defs/ReconcileCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Freshly authorized reconciliation result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HelpRequestMutationSuccess" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      }
+    },
+    "/internal/v1/community/help-requests": {
+      "post": {
+        "operationId": "submitHelpRequest",
+        "security": [{ "internalToken": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/IdempotencyKey" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/help-request-command.schema.json#/$defs/SubmitCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Durably submitted request; current state is pending",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HelpRequestMutationSuccess" }
+              }
+            }
+          },
+          "200": {
+            "description": "Idempotent replay or authorized duplicate reconciliation",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HelpRequestMutationSuccess" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "409": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      }
+    },
+    "/internal/v1/community/help-requests/{requestId}/close": {
+      "post": {
+        "operationId": "closeHelpRequest",
+        "security": [{ "internalToken": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/help-request-command.schema.json#/$defs/CloseCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably closed request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HelpRequestMutationSuccess" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "409": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      }
+    },
+    "/internal/v1/community/help-requests/{requestId}": {
+      "delete": {
+        "operationId": "deleteHelpRequest",
+        "security": [{ "internalToken": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/help-request-command.schema.json#/$defs/DeleteCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Active protected request fields deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HelpRequestDeleteSuccess" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/Failure" },
+          "404": { "$ref": "#/components/responses/Failure" },
+          "409": { "$ref": "#/components/responses/Failure" },
+          "503": { "$ref": "#/components/responses/Failure" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "internalToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-internal-service-token"
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        }
+      },
+      "RequestId": {
+        "name": "requestId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      }
+    },
+    "responses": {
+      "Failure": {
+        "description": "Stable non-enumerating P5-S1 failure",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "./schemas/common-failure.schema.json"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Meta": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["correlationId"],
+        "properties": {
+          "correlationId": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          }
+        }
+      },
+      "PublicDirectorySuccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": {
+            "$ref": "./schemas/public-directory-result.schema.json"
+          },
+          "meta": { "$ref": "#/components/schemas/Meta" }
+        }
+      },
+      "HelpRequestListSuccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": {
+            "$ref": "./schemas/help-request-result.schema.json#/$defs/ListProjection"
+          },
+          "meta": { "$ref": "#/components/schemas/Meta" }
+        }
+      },
+      "HelpRequestMutationSuccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": {
+            "$ref": "./schemas/help-request-result.schema.json#/$defs/MutationResult"
+          },
+          "meta": { "$ref": "#/components/schemas/Meta" }
+        }
+      },
+      "HelpRequestDeleteSuccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["data", "meta"],
+        "properties": {
+          "data": {
+            "$ref": "./schemas/help-request-result.schema.json#/$defs/DeleteResult"
+          },
+          "meta": { "$ref": "#/components/schemas/Meta" }
+        }
+      }
+    }
+  }
+}

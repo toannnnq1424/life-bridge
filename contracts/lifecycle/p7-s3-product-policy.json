@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": 1,
+  "approvedBy": "product-owner-delegated-engineering-decision-2026-08-02",
+  "classification": "product-engineering-default-not-legal-advice",
+  "legalHold": "unsupported-fail-closed-requires-counsel-decision",
+  "exportArtifactExpiryHours": 24,
+  "backupArtifactRetentionDays": 30,
+  "dispositions": [
+    {
+      "owner": "identity-consent",
+      "dataClass": "account-security",
+      "delete": "pseudonymize",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 365
+    },
+    {
+      "owner": "identity-consent",
+      "dataClass": "household-authority",
+      "delete": "pseudonymize",
+      "export": "export_include",
+      "evidenceRetentionDays": 365
+    },
+    {
+      "owner": "identity-consent",
+      "dataClass": "consent-privacy",
+      "delete": "pseudonymize",
+      "export": "export_include",
+      "evidenceRetentionDays": 365
+    },
+    {
+      "owner": "identity-consent",
+      "dataClass": "redacted-audit",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 365
+    },
+    {
+      "owner": "care-coordination",
+      "dataClass": "care-coordination",
+      "delete": "pseudonymize",
+      "export": "export_include",
+      "evidenceRetentionDays": 90
+    },
+    {
+      "owner": "care-coordination",
+      "dataClass": "reminders",
+      "delete": "delete",
+      "export": "export_include",
+      "evidenceRetentionDays": 30
+    },
+    {
+      "owner": "care-coordination",
+      "dataClass": "emergency-readiness",
+      "delete": "delete",
+      "export": "export_include",
+      "evidenceRetentionDays": 30
+    },
+    {
+      "owner": "care-coordination",
+      "dataClass": "document-bytes",
+      "delete": "tombstone",
+      "export": "export_include",
+      "evidenceRetentionDays": 30
+    },
+    {
+      "owner": "care-coordination",
+      "dataClass": "redacted-audit",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 365
+    },
+    {
+      "owner": "care-coordination",
+      "dataClass": "event-outbox",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 90
+    },
+    {
+      "owner": "notification",
+      "dataClass": "notification-result",
+      "delete": "delete",
+      "export": "export_include",
+      "evidenceRetentionDays": 30
+    },
+    {
+      "owner": "notification",
+      "dataClass": "event-inbox",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 30
+    },
+    {
+      "owner": "notification",
+      "dataClass": "delivery-evidence",
+      "delete": "pseudonymize",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 90
+    },
+    {
+      "owner": "community",
+      "dataClass": "community-directory",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 0
+    },
+    {
+      "owner": "community",
+      "dataClass": "help-request",
+      "delete": "tombstone",
+      "export": "export_include",
+      "evidenceRetentionDays": 30
+    },
+    {
+      "owner": "community",
+      "dataClass": "match-coordination",
+      "delete": "pseudonymize",
+      "export": "export_include",
+      "evidenceRetentionDays": 90
+    },
+    {
+      "owner": "community",
+      "dataClass": "moderation-evidence",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 365
+    },
+    {
+      "owner": "community",
+      "dataClass": "redacted-audit",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 365
+    },
+    {
+      "owner": "community",
+      "dataClass": "event-outbox",
+      "delete": "retain",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 90
+    },
+    {
+      "owner": "web-user-device",
+      "dataClass": "emergency-readiness-derived-copy",
+      "delete": "delete",
+      "export": "export_exclude",
+      "evidenceRetentionDays": 0
+    }
+  ]
+}

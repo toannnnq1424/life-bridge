@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s1-v1/schemas/community-outbox-event.schema.json",
+  "title": "P5-S1 Community outbox event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "producer",
+    "aggregateId",
+    "aggregateVersion",
+    "lifecycleOutcome",
+    "deliveryState",
+    "occurredAt",
+    "correlationId",
+    "causationId"
+  ],
+  "properties": {
+    "eventId": { "$ref": "#/$defs/OpaqueId" },
+    "eventType": {
+      "enum": [
+        "community.help_request.submitted.v1",
+        "community.help_request.closed.v1",
+        "community.help_request.deleted.v1"
+      ]
+    },
+    "eventVersion": { "const": 1 },
+    "producer": { "const": "community" },
+    "aggregateId": { "$ref": "#/$defs/OpaqueId" },
+    "aggregateVersion": { "type": "integer", "minimum": 1 },
+    "lifecycleOutcome": { "enum": ["pending", "closed", "deleted"] },
+    "deliveryState": { "const": "suppressed_not_configured" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "$ref": "#/$defs/OpaqueId" },
+    "causationId": { "$ref": "#/$defs/OpaqueId" }
+  },
+  "$defs": {
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s3-v1/schemas/moderation-event.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "producer", "caseDigest", "aggregateVersion", "occurredAt"],
+  "properties": {
+    "eventId": { "type": "string" },
+    "eventType": { "enum": ["community.moderation.case_resolved.v1"] },
+    "producer": { "const": "community" },
+    "caseDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "aggregateVersion": { "type": "integer", "minimum": 1 },
+    "outcome": {
+      "enum": ["no_change", "content_visibility_restricted", "community_participation_restricted"]
+    },
+    "reason": { "type": "string" },
+    "occurredAt": { "type": "string", "format": "date-time" }
+  }
+}

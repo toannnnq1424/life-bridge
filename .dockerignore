@@ -1,0 +1,14 @@
+.git
+.github
+.lifebridge-local
+.next
+**/dist
+**/node_modules
+**/target
+docs
+playwright-report
+test-results
+tests
+**/*.log
+**/.env*
+!**/.env.example

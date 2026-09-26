@@ -1,0 +1,62 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "LifeBridge P5-S3 moderation", "version": "P5-S3-v1" },
+  "paths": {
+    "/internal/v1/community/moderation/cases/query": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "bounded queue",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./schemas/moderation-result.schema.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/v1/community/moderation/cases/{caseId}/query": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "redacted case",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./schemas/moderation-result.schema.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/v1/community/moderation/cases/{caseId}/resolution": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "authoritative resolution",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./schemas/moderation-result.schema.json" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/v1/community/moderation/cases/reconcile": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "authoritative reconciliation",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "./schemas/moderation-result.schema.json" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

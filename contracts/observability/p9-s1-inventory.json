@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "evidenceClass": "engineering-synthetic-baseline-not-production-or-compliance",
+  "signals": {
+    "destination": "deployable stdout and ephemeral CI artifacts; no external collector configured",
+    "retention": "inherits runner or hosting environment policy; repository does not enforce a duration",
+    "access": "local process owner or repository Actions readers; access auditing inherits the environment",
+    "forbidden": [
+      "secret",
+      "token",
+      "password",
+      "session",
+      "baggage",
+      "actorId",
+      "householdId",
+      "resourceId",
+      "task",
+      "medication",
+      "document",
+      "carePayload"
+    ],
+    "bounds": {
+      "tokenChars": 64,
+      "durationMs": 86400000,
+      "retryCount": 100,
+      "metricIdentifiers": "enum-only"
+    }
+  },
+  "journeys": [
+    {
+      "id": "task-durable-delivery",
+      "owners": ["gateway", "identity-consent", "care-coordination", "notification"],
+      "paths": ["http", "postgresql", "outbox", "dispatcher", "inbox", "replay", "reconciliation"],
+      "sli": {
+        "numerator": "synthetic accepted journeys reaching one confirmed notification result",
+        "denominator": "synthetic accepted journeys started",
+        "exclusions": ["validation", "authorization", "privacy_policy"]
+      }
+    },
+    {
+      "id": "community-runtime-parity",
+      "owners": ["gateway", "identity-consent", "community"],
+      "paths": ["http", "spring", "postgresql"],
+      "sli": {
+        "numerator": "synthetic authorized commands with a terminal bounded result",
+        "denominator": "synthetic authorized commands",
+        "exclusions": ["validation", "authorization", "privacy_policy"]
+      }
+    }
+  ],
+  "sloBaseline": {
+    "source": "local-and-hosted-synthetic",
+    "sampleCount": 0,
+    "commit": "populated-by-exact-head-gate",
+    "availability": null,
+    "latencyMs": null,
+    "errorBudget": null,
+    "reviewTrigger": "first exact-head hosted P9-S1 evidence",
+    "claim": "measurement scaffold only; no production traffic or target invented"
+  },
+  "alerts": {
+    "owner": "LifeBridge operator",
+    "escalation": [
+      "service owner",
+      "security/privacy owner when leakage or policy block is implicated",
+      "incident lead for terminal multi-service impact"
+    ]
+  }
+}

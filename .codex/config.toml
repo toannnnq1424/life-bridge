@@ -1,0 +1,11 @@
+# Repository-scoped Codex configuration.
+# Codex loads this file only after the repository is trusted.
+
+[mcp_servers.stitch]
+url = "https://stitch.googleapis.com/mcp"
+env_http_headers = { "X-Goog-Api-Key" = "STITCH_API_KEY" }
+enabled = true
+required = false
+default_tools_approval_mode = "approve"
+startup_timeout_sec = 20
+tool_timeout_sec = 600

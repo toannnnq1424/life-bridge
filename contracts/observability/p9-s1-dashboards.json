@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "definitions": [
+    { "id": "validation", "signal": "operation_total", "failureClass": "validation" },
+    { "id": "authorization-denial", "signal": "operation_total", "failureClass": "authorization" },
+    { "id": "abuse-rate-limit", "signal": "operation_total", "failureClass": "rate_limited" },
+    {
+      "id": "dependency-circuit",
+      "signal": "operation_total",
+      "failureClass": "unavailable",
+      "groupBy": ["dependency", "circuitState"]
+    },
+    { "id": "database-migration-storage", "signal": "operation_total", "failureClass": "database" },
+    {
+      "id": "event-lag-replay-poison-terminal",
+      "signal": "event_lag_ms",
+      "failureClass": "event_lag"
+    },
+    { "id": "privacy-policy-block", "signal": "operation_total", "failureClass": "privacy_policy" }
+  ],
+  "alertStateMachine": {
+    "inactive": "below measured synthetic threshold",
+    "firing": "threshold reached for bounded window",
+    "resolving": "recovery observed",
+    "resolved": "two consecutive successful probes",
+    "owner": "LifeBridge operator",
+    "runbook": "docs/operations/P9_S1_OBSERVABILITY_RUNBOOK.md"
+  }
+}

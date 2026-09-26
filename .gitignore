@@ -1,0 +1,42 @@
+# Local Stitch credentials and state
+.env.stitch.local
+.stitch-mcp/
+stitch-credentials/
+stitch-token-cache/
+
+# Private design exports
+docs/design/exports/private/
+
+# Local-only package review evidence and configuration backups
+.security-review/
+
+# Node.js and workspace-local outputs
+node_modules/
+.pnpm-store/
+dist/
+coverage/
+test-results/
+playwright-report/
+**/target/
+.next/
+*.tsbuildinfo
+
+# Local application secrets and runtime state
+.env
+.env.local
+.env.*.local
+!.env.stitch.example
+!.env.example
+.lifebridge-local/
+
+# Local database and generated artifacts
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+.turbo/
+
+# Private research inputs and raw datasets
+data/raw/
+data/private/
+docs/research/private/

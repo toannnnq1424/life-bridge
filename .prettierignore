@@ -1,0 +1,10 @@
+node_modules/
+coverage/
+.pnpm-store/
+.security-review/
+docs/design/assets/
+docs/design/screenshots/
+docs/design/exports/
+prototypes/
+pnpm-lock.yaml
+**/target/

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lifebridge.local/contracts/community/p5-s2-v1/schemas/authorization-context.schema.json",
+  "title": "P5-S2 match authorization context",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decisionId",
+    "purpose",
+    "permission",
+    "actorRef",
+    "recipientContextId",
+    "subjectVersion",
+    "grantId",
+    "grantVersion",
+    "privacyVersion",
+    "decidedAt",
+    "expiresAt",
+    "correlationId",
+    "requestDigest"
+  ],
+  "properties": {
+    "decisionId": { "$ref": "#/$defs/OpaqueId" },
+    "purpose": { "const": "community_match_coordination" },
+    "permission": {
+      "enum": [
+        "community_match.volunteer.read",
+        "community_match.volunteer.respond",
+        "community_match.coordinator.read",
+        "community_match.coordinator.manage",
+        "community_match.progress.record"
+      ]
+    },
+    "actorRef": { "$ref": "#/$defs/OpaqueId" },
+    "recipientContextId": { "$ref": "#/$defs/OpaqueId" },
+    "subjectVersion": { "type": "integer", "minimum": 1 },
+    "grantId": { "$ref": "#/$defs/OpaqueId" },
+    "grantVersion": { "type": "integer", "minimum": 1 },
+    "privacyVersion": { "type": "integer", "minimum": 1 },
+    "decidedAt": { "type": "string", "format": "date-time" },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "$ref": "#/$defs/OpaqueId" },
+    "requestDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "OpaqueId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    }
+  }
+}
